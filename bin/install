@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+# Author: Konstantin Gredeskoul, at App,
+#         © 2018 All rights reserved, MIT License.
+#
+# BashMatic Bootstrap Installer. It can be run straight off github and it downloads the
+# larger bootstrap script, which then does the rest of the setup.
+#
+# This library will install `./bin/bootstrap` script relative to the local folder,
+# as well clone this repo into `../bashmatic`, and then create a symlink from `bin/bashmatic` to
+# `../bashmatic/lib`. This way you can leverage all helpers defined in this project in your code.
+#
+# Run me as:
+#
+#     curl -fsSL https://raw.githubusercontent.com/kigster/bashmatic/master/bin/install | bash
+#
+export True=1
+export False=0
+
+export ProjectRoot=$(pwd)
+
+export BashMatic__RandomQueryString="q=${RANDOM}-$(date '+%s')"
+
+export BashMatic__BootstrapExec="bootstrap"
+export BashMatic__BinPath="bin"
+export BashMatic__RelPath="${ProjectRoot}/../bashmatic"
+export BashMatic__BootstrapLibPath="${BashMatic__RelPath}/${BashMatic__BinPath}/${BashMatic__BootstrapExec}"
+export BashMatic__BootstrapLocalPath="${BashMatic__BinPath}/${BashMatic__BootstrapExec}"
+export BashMatic__Branch="master"
+export BashMatic__GithubURL="https://raw.githubusercontent.com/kigster/bashmatic"
+export BashMatic__InstallerURL="${BashMatic__GithubURL}/${BashMatic__Branch}/bin/install?${BashMatic__RandomQueryString}"
+export BashMatic__BootstrapURL="${BashMatic__GithubURL}/${BashMatic__Branch}/bin/${BashMatic__BootstrapExec}?${BashMatic__RandomQueryString}"
+
+unset BashMatic__Downloader
+
+[[ -z ${BashMatic__Downloader} && -n $(which curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
+[[ -z ${BashMatic__Downloader} && -n $(which wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
+
+[[ -z "${BashMatic__Downloader}" ]] && {
+  printf "Error: can't figure out how to download things. No curl or wget found."
+  exit 1
+}
+
+debug_log() {
+  if [[ -n ${DEBUG} || ${USER} == "kig" ]] ; then
+    [[ -n ${LIB_BASH_QUIET} ]] || printf " ${bldwht}${bakgrn} ✔ ${clr} ${txtgrn}${1}${clr}\n"
+  fi
+}
+
+debug_log "using downloader ${bldylw}${BashMatic__Downloader}"
+
+lib::bash::clean-old-bootstrap() {
+  if [[ -d ${BashMatic__BinPath} ]] ; then
+    find ${BashMatic__BinPath} -mmin +1440 -type f -name ${BashMatic__BootstrapExec} -print -exec rm {} \;
+  fi
+}
+
+lib::bash::bootstrap() {
+  lib::bash::clean-old-bootstrap
+
+  if [[ ! -s "${BashMatic__BootstrapLocalPath}" ]]; then
+    mkdir -p $(dirname ${BashMatic__BootstrapLocalPath}) > /dev/null
+    if [[ -s ${BashMatic__BootstrapLibPath} ]]; then
+      debug_log "${BashMatic__BootstrapLibPath} exists, copying to ${bldylw}${BashMatic__BootstrapLocalPath}"
+      cp -p ${BashMatic__BootstrapLibPath} ${BashMatic__BootstrapLocalPath} > /dev/null
+    else
+      debug_log "grabbing bootstrap script from:\n  → ${italic}${undblu}${BashMatic__BootstrapURL}"
+      ${BashMatic__Downloader} ${BashMatic__BootstrapURL} > ${BashMatic__BootstrapLocalPath}
+    fi
+    touch ${BashMatic__BootstrapLocalPath}
+    chmod 755 ${BashMatic__BootstrapLocalPath} > /dev/null
+  fi
+
+  if [[ -s "${BashMatic__BootstrapLocalPath}" ]]; then
+    debug_log "running script ${bldylw}${BashMatic__BootstrapLocalPath}"
+    if [[ -s ${BashMatic__BootstrapLocalPath} ]]; then
+      source ${BashMatic__BootstrapLocalPath}
+      # only run the function if it's defined
+      type lib::bash::bootstrap::main 2>/dev/null 1>/dev/null && lib::bash::bootstrap::main
+    fi
+  fi
+}
+
+lib::bash::bootstrap

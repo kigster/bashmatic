@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+export TERM=${TERM:-xterm-256color}
+
+source "lib/Loader.bash"
+
+export ProjectRoot=$(pwd)
+export BatsRoot=${ProjectRoot}/.bats
+export BatsTestCase=
+export SingleTestFile="test/all.bats"
+
+export True=1
+export False=0
+
+usage() {
+  echo
+  printf "USAGE\n    ${bldgrn}bin/specs [ options ]${clr}\n\n"
+  printf "DESCRIPTION\n    ${txtblu}Run BASH tests using Bats framework\n"
+  printf "    ${txtblu}Use to run the Bats Test Suite.\n\n"
+  printf "OPTIONS\n"
+  printf "    -j | --join     Join all tests into a single file\n"
+  printf "    -h | --help     Show help message\n\n"
+}
+
+trap 'printf "\n\n\n${bldred}BOOOOM! Ctrl-C will set you free...${clr}\n\n"; exit 1' SIGINT
+
+ConfigJoinFiles=${False}
+
+# Parse additional flags
+while :; do
+  case $1 in
+    -h|-\?|--help)
+      shift
+      usage
+      exit 0
+      ;;
+    -j|--join)
+      shift
+      ConfigJoinFiles=${True}
+      ;;
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    -?*)
+      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
+    *)  # Default case: If no more options then break out of the loop.
+      file="$1"
+      [[ -f ${file} && -z ${BatsTestCase} ]] && BatsTestCase="${file}"; shift
+      break
+  esac
+done
+
+test::setup-joined-file() {
+  run "rm -f ${SingleTestFile} && touch ${SingleTestFile}"
+  printf "#!/usr/bin/env bats\nload test_helper\n\n" > ${SingleTestFile}
+}
+
+run-spec() {
+  local file=${1}
+  if [[ ${ConfigJoinFiles} -eq ${True} ]] ; then
+    cat ${file} | sed '/test_helper/d;/source/d' >> ${SingleTestFile}
+  else 
+    h1 "Running test file ${bldylw}${file}"
+    bats -p "${file}"
+  fi
+}
+
+if [[ ${ConfigJoinFiles} -eq ${False} ]] ; then
+  h2 "Running Tests one file at a time."
+  trap '' EXIT
+else
+  h2 "Running Tests by Concatenating all files"
+  test::setup-joined-file
+  trap "rm -f ${SingleTestFile}" EXIT
+fi
+
+[[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
+
+[[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
+[[ -f bin/bats ]] || run "cd ${BatsRoot} && ./install.sh ${ProjectRoot}; cd ${ProjectRoot}"
+
+set -e
+
+if [[ -f "${BatsTestCase}" ]] ; then
+  run-spec ${BatsTestCase}
+  exit $?
+else
+  for file in $(ls -1 test/*_test.*); do
+    run-spec ${file} 
+  done
+fi
+
+export os=$(uname -s | tr [A-Z] [a-z])
+
+if [[ -d "test/${os}" && -n $(ls -1 test/${os}) ]]; then
+  for file in $(ls -1 test/${os}/*_test.*); do
+    run-spec ${file}
+  done
+fi
+
+if [[ ${ConfigJoinFiles} -eq ${True} ]]; then 
+  bats -p "${SingleTestFile}"
+fi
+
+
