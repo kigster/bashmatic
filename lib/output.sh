@@ -381,7 +381,7 @@ h::yellow() {
 }
 
 h::red() {
-  center "${txtwht}${bakred}" "$@"
+  center "${txtblk}${bakred}" "$@"
 }
 
 h::green() {

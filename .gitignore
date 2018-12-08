@@ -53,7 +53,6 @@ build-iPhoneSimulator/
 # unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
 .rvmrc
 bin/bashmatic
-bin/bootstrap
 .last-rebase
 Gemfile.lock
 test/all.bats

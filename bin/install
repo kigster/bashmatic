@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Author: Konstantin Gredeskoul, at App,
-#         © 2018 All rights reserved, MIT License.
+# Author: Konstantin Gredeskoul
+# © 2018 All rights reserved, MIT License.
 #
 # BashMatic Bootstrap Installer. It can be run straight off github and it downloads the
 # larger bootstrap script, which then does the rest of the setup.
@@ -12,7 +12,7 @@
 #
 # Run me as:
 #
-#     curl -fsSL https://raw.githubusercontent.com/kigster/bashmatic/master/bin/install | bash
+#     curl -fsSL https://bit.ly/bashmatic | /usr/bin/env bash
 #
 export True=1
 export False=0

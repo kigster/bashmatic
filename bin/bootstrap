@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+#
+# Author: Konstantin Gredeskoul, at App,
+#         © 2018 All rights reserved, MIT License.
+#
+#
+# This is the bootstrap script that can be either sourced in, or run.
+# If you source it in, you can run the primary BASH function:
+#
+#         $ source bin/bootstrap
+#         $ lib::bash::bootstrap::main
+#
+# Alernatively:
+#
+#         $ bin/bootstrap
+#
+#
+( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
+  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && _s_=1 || _s_=0
+
+set +e
+
+export BashMatic__Root=$(pwd)
+
+export BashMatic__LibFolder="bashmatic"
+export BashMatic__InstallationFolder="bin/bashmatic"
+export BashMatic__GitDestinationFolder="../bashmatic"
+export BashMatic__GitUrl="https://github.com/kigster/bashmatic"
+export BashMatic__RebasePeriodHours=24 # hours
+export BashMatic__LastRebaseAt=1
+
+export True=1
+export False=0
+
+debug_log() {
+  if [[ -n ${DEBUG} || ${USER} == "kig" ]]; then
+    [[ -n ${LIB_BASH_QUIET} ]] || printf " ${bldwht}${bakgrn} ✔ ${clr} ${txtgrn}$*${clr}\n"
+  fi
+}
+
+error_log() {
+  printf "${bldwht}${bakred} « ERROR » ${clr}: ${bldred}$*${clr}\n"
+}
+
+info_log() {
+  printf "${bldylw} « info » ${clr}: ${bldblu}$*${clr}\n"
+}
+
+quiet_cd() {
+  dir=$1
+  [[ -d ${dir} ]] && cd ${dir} >/dev/null
+  [[ -d ${dir} ]] || {
+    error_log "folder ${dir} does not exist."
+    exit 1
+  }
+}
+
+lib::bash::epoch() {
+  date +%s
+}
+
+lib::bash::clone() {
+  local dir="${BashMatic__GitDestinationFolder}"
+  if [[ ! -d "${dir}" ]]; then
+    debug_log "cloning bashmatic repo to ${dir}..."
+    git clone --quiet ${BashMatic__GitUrl} ${dir} 2>&1 >/dev/null
+    [[ ! -d  "${dir}" ]] && {
+      error_log "Unable to find bashmatic clone folder after checkout"; exit 1
+    }
+  else
+    lib::bash::rebase-if-stale
+  fi
+}
+
+lib::bash::update() {
+  local dir="${BashMatic__GitDestinationFolder}"
+  local cwd=$(pwd)
+  local now=$(lib::bash::epoch)
+
+  if [[ -d "${dir}" ]]; then
+    quiet_cd ${dir}
+
+    [[ $(basename $(pwd)) == 'bashmatic' ]] || {
+      error_log "expected to be in the ${BashMatic__GitDestinationFolder} folder, but actually in $(pwd)"
+      exit 5
+    }
+
+    git fetch --quiet > /dev/null
+
+    local changes=$(git diff-index --name-only HEAD -- 2>/dev/null)
+    if [[ -n "${changes}" ]]; then
+      echo
+      info_log "It looks like you have some local changes in ${bldgrn}${dir}."
+      info_log "I am going to create a patch and reset."
+
+      patch="../bashmatic.locally-modified.$(lib::bash::epoch).patch"
+      git reset .
+      git diff --patch > ${patch}
+      info_log "Patch created at ${bldgrn}${patch}."
+    fi
+
+    git reset --hard origin/master --quiet >/dev/null
+    echo ${now} > .last-rebase
+    debug_log "recorded the last rebase at $(lib::bash::epoch)"
+    quiet_cd ${cwd}
+    return 0
+  else
+    error_log "directory ${dir} does not exist, aborting"
+    return 1
+  fi
+}
+
+lib::bash::last-rebase() {
+  local dir="${BashMatic__GitDestinationFolder}"
+  if [[ -s "${dir}/.last-rebase" ]]; then
+    printf "%d" $(cat ${dir}/.last-rebase)
+  else
+    printf "%d" 1
+  fi
+}
+
+lib::bash::hours-since-last-rebase() {
+  local lastRebaseAt=$1
+  local now=$(lib::bash::epoch)
+  printf $(( ( ${now} - ${lastRebaseAt} ) / 3600 ))
+}
+
+lib::bash::rebase-if-stale() {
+  local lastRebaseAt=$(lib::bash::last-rebase)
+  [[ -z ${lastRebaseAt} ]] && lastRebaseAt=0
+
+  local hoursSinceLastRebase=$(lib::bash::hours-since-last-rebase ${lastRebaseAt})
+
+  if [[ ${lastRebaseAt} -gt 0 && ${hoursSinceLastRebase} -gt ${BashMatic__RebasePeriodHours} ]]; then
+    debug_log "updating ${bldblu}bashmatic${txtgrn}, which is ${hoursSinceLastRebase} hours old."
+    lib::bash::update
+  else
+    debug_log "bashmatic is recent, its age is ${bldgrn}${hoursSinceLastRebase}hrs..."
+  fi
+}
+
+lib::bash::symlink() {
+  cd ${BashMatic__Root}
+  if [[ ! -L "${BashMatic__InstallationFolder}" ]]; then
+    debug_log "symlink ${BashMatic__InstallationFolder} is missing, creating ..."
+    ln -nfs ../${BashMatic__GitDestinationFolder}/lib/ ${BashMatic__InstallationFolder} >/dev/null
+  fi
+}
+
+lib::bash::gitignore() {
+  cd ${BashMatic__Root}
+  [[ -s .gitignore ]] || return
+  local ignored="bin/bootstrap"
+  if [[ -z $(grep ${ignored} .gitignore 2>/dev/null) ]] ; then
+    debug_log "adding ${ignored} to .gitignore..."
+    echo bin/bootstrap >> .gitignore
+  else
+    debug_log "file .gitignore already has ${ignored}..."
+  fi
+}
+
+lib::bash::bootstrap::main() {
+  lib::bash::clone
+  lib::bash::symlink
+  lib::bash::gitignore
+}
+
+(( $_s_ )) || lib::bash::bootstrap::main

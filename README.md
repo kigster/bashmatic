@@ -2,8 +2,11 @@
 
 # BashMatic
 
+> #### We would like to thank the Homebase Engineering Team for open-sourcing the predecessor of this library (named lib-bash). Note that [Homebase](https://joinhomebase.com) is hiring!
+
 <!-- TOC START min:2 max:4 link:true update:true -->
-- [Reusable BASH Components for UI, Runtime, Ruby, Database and More.](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
+- [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
+  - [Installation](#installation)
   - [Whats Included?](#whats-included)
     - [Runtime Framework](#runtime-framework)
     - [Examples of Runtime Framework](#examples-of-runtime-framework)
@@ -25,11 +28,9 @@
 
 ## Reusable BASH Components for UI, Runtime, Ruby, Database and More
 
-Welcome to BashMatic — an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
+Welcome to **BashMatic** — an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
 
 We have adopted the [Google Bash Style Guide](https://google.github.io/styleguide/shell.xml), and it's recommended that anyone committing to this repo reads the guides to understand the conventions, gotchas and anti-patterns.
-
-> ### Please note that this library would not be open source without the generosity of the Engineering Team at [Homebase](https://joinhomebase.com). Need a job? They are hiring!
 
 ### Whats Included?
 
@@ -56,8 +57,8 @@ Programming style used in this project lends itself nicely to using a DSL-like a
 
 ```bash
 #!/usr/bin/env bash
-# source the library
-source .bashmatic/lib/Loader.bash
+# (See below on the location of .bashmatic and ways to install it)
+source .bashmatic/Loader.bash
 
 # configure global behavior of all run() invocations
 run::set-all abort-on-error show-output-off
@@ -112,36 +113,9 @@ lib::output::is_tty && h1 "Yay For Terminals!"
 
 The above reads more like a high level language like Ruby or Python than Shell. That's because BASH is more powerful than most people think.
 
-Below is a comprehensive example showing various terminal output functions and runtime framework:
+There is an [example script](examples/test-ui.sh) that demonstrates the capabilities of BashMatic.
 
-```bash
-#!/usr/bin/env bash
-source .bashmatic/lib/Loader.bash
-
-h1   "Welcome to My Awesome Script" "Version 1.0.1"
-h2   "Super cool headers in a box!"
-hl::subtle "Or a more subtle header, can be more appropriate?"
-info "This is an information message."
-inf  "This is also information message, without the line break."
-ok:
-info "^ That was the 'closure' of the info line with the OK result."
-inf  "But the result does not always have to be OK — in this case it's an error."
-not_ok:
-error "We did something wrong, didn't we?"
-run  "mkdir -p hello"
-run  "cd hello"
-# Let's simulate having a Gemfile.lock:
-echo "    activesupport (5.0.7)" > Gemfile.lock
-info "and we can detect a gem version from a lock file:"
-info "active support version is ${bldylw}$(lib::gem::gemfile::version activesupport)"
-hl::subtle "Did you notice that commands are printed with their execution times?"
-run "sleep 1"
-h::yellow "Thanks for checking this library out, and happy bashing!"
-br
-hr
-```
-
-And here is the output of this script — as you can see UI elements are rather advanced, and auto-adjust for the width of the terminal.
+If you ran it, below is what you would see (although your colors may vary depending on what color scheme and font you use for your terminal).
 
 ![bashmatic](.bashmatic.png)
 
@@ -161,20 +135,33 @@ The utilities contained herein are of various types, such as:
 
 Each library will have a set of private functions, typically named `__lib::util::blah`, and public functions, named as `lib::util::foo`, with shortcuts such as `foo` created when makes sense.
 
+----
+
 ## Usage
 
-### Integrating With Your Code
+There are a couple of ways that you can install and use this library.
 
-#### Using Provided Installer / Boostrapper
+   1. One is doing a simple manual `git clone`, and then "sourcing" the main `lib/Loader.bash` file from one of your "dotfiles".
 
-In order to install this library into your environment, we recommend the following code in your primary "bash environment" file for a given project:
+   2. However, we find that it often more useful to integrate **BashMatic** with other projects, so that they can build their own internal BASH tooling using all the goodies in this library. This of this method as a better version of "git submodules".
+
+### 1. Manual Install
 
 ```bash
-#!/usr/bin/env bash
-#
-# Bootstrap BashMatic into `bin/bashmatic` folder
+cd ~/workspace
+git clone https://github.com/kigster/bashmatic
+source ~/workspace/bashmatic/lib/Loader.bash
+```
+
+### 2. Integrating With Your Project
+
+**BashMatic** comes with a clever installer that can be used to install it into any subfolder of an existing project.0
+
+Here is an example of how you could integrate it directly into an existing repo:
+
+```bash
+cd ~/workspace/my-project
 curl -fsSL https://git.io/fxZSi | /usr/bin/env bash
-source bin/bashmatic/Loader.bash
 ```
 
 
@@ -186,7 +173,6 @@ The installer above will do the following:
  * At this point, you should be able to source the library with `source bin/bashmatic/Loader.bash` and have all of the tools available to you.
 
 #### Custom Installer
-
 
 Alternatively, you can always do something like this instead:
 
