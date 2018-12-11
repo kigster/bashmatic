@@ -2,7 +2,7 @@
 
 # BashMatic
 
-> #### We would like to thank the Homebase Engineering Team for open-sourcing the predecessor of this library (named lib-bash). Note that [Homebase](https://joinhomebase.com) is hiring!
+> #### We would like to thank the Homebase Engineering Team for open-sourcing the predecessor of this library (named lib-bash). Note that [Homebase is Hiring in San Francisco, CA and Houston, TX](https://joinhomebase.com/careers/).
 
 <!-- TOC START min:2 max:4 link:true update:true -->
 - [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
