@@ -3,8 +3,6 @@
 # © 2016 — 2017 Author: Konstantin Gredeskoul
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
-#
-# Any modifications, © 2017 Konstantin Gredeskoul, Inc. All rights reserved.
 #———————————————————————————————————————————————————————————————————————————————
 export LibBrew__PackageCacheList="/tmp/.lib_brew_packages.txt"
 export LibBrew__CaskCacheList="/tmp/.lib_brew_casks.txt"
@@ -14,6 +12,8 @@ lib::brew::cache-reset() {
 }
 
 lib::brew::upgrade() {
+  lib::brew::install
+
   if [[ -z "$(which brew)" ]]; then
     warn "brew is not installed...."
     return 1
@@ -24,23 +24,24 @@ lib::brew::upgrade() {
   run "brew cleanup -s"
 }
 
-lib::brew::setup() {
+lib::brew::install() {
   declare -a brew_packages=$@
 
   local brew=$(which brew 2>/dev/null)
 
   if [[ -z "${brew}" ]]; then
-    curl -fsSL "https://raw.githubusercontent.com/Homebrew/install/master/install" > /tmp/brew.rb
-    info "installing Homebrew from scratch, this is so exciting!..."
-    run "/usr/bin/ruby < /tmp/brew.rb"
+    info "Installing Homebrew, please wait..."
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   else
-    info "Homebrew is already installed – version: $(brew --version)"
+    info "Homebrew is already installed."
+    info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
   fi
 
   # Let's install that goddamn brew-cask
   run "brew tap caskroom/cask"
+}
 
-  # Let's run this damn upgrade
+lib::brew::setup() {
   lib::brew::upgrade
 }
 

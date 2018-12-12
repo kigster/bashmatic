@@ -4,7 +4,7 @@
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modifications, © 2017 Konstantin Gredeskoul, Inc. All rights reserved.
+# Any modifications, © 2017 PioneerWorks, Inc. All rights reserved.
 #——————————————————————————————————————————————————————————————————————————————
 
 # The following "global" variables define how the run framework executes
@@ -225,7 +225,7 @@ __lib::run::exec() {
 
   __lib::run::initializer
   __lib::run::cleanup
-
+  printf ${clr}
   return ${LibRun__LastExitCode}
 }
 
