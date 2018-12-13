@@ -11,6 +11,11 @@ lib::brew::cache-reset() {
   rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}
 }
 
+lib::brew::cache-reset::delayed() {
+  (( $_s_ )) && lib::brew::cache-reset
+  (( $_s_ )) || trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
+}
+
 lib::brew::upgrade() {
   lib::brew::install
 
@@ -75,41 +80,50 @@ lib::cache-or-command() {
 }
 
 lib::brew::package::is-installed() {
-  local package=${1}
-  declare -a installed_packages=($(lib::brew::package::list))
-  array-contains-element ${package} ${installed_packages[@]}
+  local package="${1}"
+  local -a installed_packages=($(lib::brew::package::list))
+  array-contains-element "${package}" "${installed_packages[@]}"
 }
 
 
 lib::brew::cask::is-installed() {
-  local cask=${1}
-  declare -a installed_casks=($(lib::brew::cask::list))
-  array-contains-element ${cask} ${installed_casks[@]}
+  local cask="${1}"
+  local -a installed_casks=($(lib::brew::cask::list))
+  array-contains-element "${cask}" "${installed_casks[@]}"
 }
 
+lib::brew::reinstall::package() {
+  local package="${1}"
+  local force=
+  local verbose=
+  [[ -n ${opts_force} ]] && force="--force"
+  [[ -n ${opts_verbose} ]] && verbose="--verbose"
+
+  run "brew unlink ${package} ${force} ${verbose}; true"
+  run "brew uninstall ${package}  ${force} ${verbose}; true"
+  run "brew install ${package} ${force} ${verbose}"
+  run "brew link ${package} --overwrite ${force} ${verbose}"
+  lib::brew::cache-reset::delayed
+}
 
 lib::brew::install::package() {
   local package=$1
   local force=
   local verbose=
-
   [[ -n ${opts_force} ]] && force="--force"
   [[ -n ${opts_verbose} ]] && verbose="--verbose"
 
-  inf "checking brew package ${bldylw}${package}"
+  inf "checking if package ${bldylw}${package}$(txt-info) is already installed..."
   if [[ $(lib::brew::package::is-installed ${package}) == "true" ]]; then
     ok:
   else
-    kind_of_ok:
+    printf "${bldred}not found.${clr}\n"
     run "brew install ${package} ${force} ${verbose}"
     if [[ ${LibRun__LastExitCode} != 0 ]]; then
-      not_ok:
-      info "${package} failed to install, attempting to reinstall..."
-      run "brew unlink ${package} ${force} ${verbose}; true"
-      run "brew uninstall ${package}  ${force} ${verbose}; true"
-      run "brew install ${package} ${force} ${verbose}"
-      run "brew link ${package} --overwrite ${force} ${verbose}"
+      info "NOTE: ${bldred}${package}$(txt-info) failed to install, attempting to reinstall..."
+      lib::brew::reinstall::package "${package}"
     fi
+    lib::brew::cache-reset::delayed
   fi
 }
 
@@ -131,6 +145,8 @@ lib::brew::install::cask() {
     kind_of_ok:
     run "brew cask install ${cask} ${force} ${verbose}"
   fi
+
+  lib::brew::cache-reset::delayed
 }
 
 lib::brew::uninstall::package() {
@@ -146,6 +162,8 @@ lib::brew::uninstall::package() {
 
   export LibRun__AbortOnError=${False}
   run "brew uninstall ${package} ${force} ${verbose}"
+
+  lib::brew::cache-reset::delayed
 }
 
 # set $opts_verbose to see more output
