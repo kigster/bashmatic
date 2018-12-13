@@ -53,12 +53,25 @@ lib::brew::relink() {
 }
 
 lib::brew::package::list() {
-  lib::file::exists_and_newer_than "${LibBrew__PackageCacheList}" 30 || rm -f ${LibBrew__PackageCacheList}
-  if [[ -f ${LibBrew__PackageCacheList} ]]; then
-    cat ${LibBrew__PackageCacheList}
-  else
-    brew list -1 | tee -a "${LibBrew__PackageCacheList}"
-  fi
+  lib::cache-or-command "${LibBrew__PackageCacheList}" 30 "brew ls -1"
+}
+
+lib::brew::cask::list() {
+  lib::cache-or-command "${LibBrew__CaskCacheList}" 30 "brew cask ls -1"
+}
+
+lib::cache-or-command() {
+  local file="$1"; shift
+  local stale_minutes="$1"; shift
+  local command="$*"
+  
+  lib::file::exists_and_newer_than "${file}" ${stale_minutes} && {
+    cat "${file}"
+    return 0
+  }
+
+  cp /dev/null ${file} > /dev/null
+  eval "${command}" | tee -a "${file}"
 }
 
 lib::brew::package::is-installed() {
@@ -67,14 +80,6 @@ lib::brew::package::is-installed() {
   array-contains-element ${package} ${installed_packages[@]}
 }
 
-lib::brew::cask::list() {
-  lib::file::exists_and_newer_than "${LibBrew__CaskCacheList}" 30 || rm -f ${LibBrew__CaskCacheList}
-  if [[ -f ${LibBrew__CaskCacheList} ]]; then
-    cat ${LibBrew__CaskCacheList}
-  else
-    brew cask list -1 | tee -a "${LibBrew__CaskCacheList}"
-  fi
-}
 
 lib::brew::cask::is-installed() {
   local cask=${1}

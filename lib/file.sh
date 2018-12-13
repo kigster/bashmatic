@@ -28,7 +28,13 @@ __lib::file::size_bytes() {
 # Usage:
 #   (( $(lib::file::exists_and_newer_than "/tmp/file.txt" 30) )) && echo "Yes!"
 lib::file::exists_and_newer_than() {
-  [[ -n "$(find ${1} -mmin -${2} -print 2>/dev/null)" ]]
+  local file="${1}"; shift
+  local minutes="${1}"; shift
+  if [[ -n "$(find ${file} -mmin -${minutes} -print 2>/dev/null)" ]] ; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 lib::file::install_with_backup() {
