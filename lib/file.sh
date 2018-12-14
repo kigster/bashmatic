@@ -97,3 +97,15 @@ file::size() {
   file::stat "$1" st_size
 }
 
+file::list::filter-existing() {
+  for file in $@; do
+    [[ -f ${file} ]] && echo "${file}"
+  done
+}
+
+file::list::filter-non-empty() {
+  for file in $@; do
+    [[ -s ${file} ]] && echo "${file}"
+  done
+}
+
