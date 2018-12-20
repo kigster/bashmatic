@@ -97,6 +97,13 @@ file::size() {
   file::stat "$1" st_size
 }
 
+file::size::mb() {
+  local file="$1"; shift
+  local s=$(file::size ${file})
+  local mb=$(echo $(($s / 1024 / 102)) | hbsed 's/(.)$/.\1/g')
+  printf "%.1fMb" ${mb}
+}
+
 file::list::filter-existing() {
   for file in $@; do
     [[ -f ${file} ]] && echo "${file}"
