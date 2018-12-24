@@ -94,7 +94,12 @@ file::stat() {
 }
 
 file::size() {
-  file::stat "$1" st_size
+  AppCurrentOS=${AppCurrentOS:-`uname -s`}
+  if [[ "Linux" == ${AppCurrentOS} ]]; then
+    stat -c %s "$1"
+  else
+    file::stat "$1" st_size
+  fi
 }
 
 file::size::mb() {
