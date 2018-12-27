@@ -7,7 +7,7 @@
 # between the very few gem dependencies of the zeus subsystem, and Rails.
 
 export LibGem__GemListCache=/tmp/gem_list.txt
-export LibGem__GemInstallFlags="--no-ri --no-rdoc --force --quiet"
+export LibGem__GemInstallFlags=" -N --force --quiet "
 
 lib::gem::version() {
   local gem=$1
