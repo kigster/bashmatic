@@ -105,8 +105,8 @@ file::size() {
 file::size::mb() {
   local file="$1"; shift
   local s=$(file::size ${file})
-  local mb=$(echo $(($s / 1024 / 102)) | hbsed 's/(.)$/.\1/g')
-  printf "%.1fMb" ${mb}
+  local mb=$(echo $(($s / 10000)) | hbsed 's/([0-9][0-9])$/.\1/g')
+  printf "%.2f MB" ${mb}
 }
 
 file::list::filter-existing() {
