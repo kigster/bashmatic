@@ -1,15 +1,15 @@
 #!/usr/bin/env bats
-#jjjjjjjjjjjjjjj
+#
 load test_helper
 
-set -e 
+set -e
 
 @test "millis()" {
   then=$(millis)
   sleep 0.01
   now=$(millis)
 
-  [ ${now} -gt 0 ] && 
+  [ ${now} -gt 0 ] &&
   [ ${now} -gt ${then} ] &&
   [ $(( ${now} - ${then})) -gt 10 ] &&
   [ $(( ${now} - ${then})) -lt 150 ]
@@ -20,9 +20,9 @@ set -e
   sleep 1
   now=$(epoch)
 
-  [ ${now} -gt 0 ] && 
-  [ ${now} -gt ${then} ] && 
-  [ $(( ${now} - ${then})) -gt 0 ] && 
+  [ ${now} -gt 0 ] &&
+  [ ${now} -gt ${then} ] &&
+  [ $(( ${now} - ${then})) -gt 0 ] &&
   [ $(( ${now} - ${then})) -lt 3 ]
 }
 
