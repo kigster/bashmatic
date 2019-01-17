@@ -373,7 +373,7 @@ hl::subtle() {
 }
 
 hl::desc() {
-  left "${txtblk}${bakylw}" "$@"
+  left "${bakylw}${txtblk}${bakylw}" "$@"
 }
 
 h::yellow() {
