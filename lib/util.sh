@@ -114,7 +114,7 @@ lib::util::remove-from-init-files() {
       is_detail && not_ok:
     fi
   done
-  return ${LibRun__LastExitStatus}
+  return ${LibRun__LastExitCode} 
 }
 
 lib::util::whats-installed() {
