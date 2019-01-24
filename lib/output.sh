@@ -369,7 +369,7 @@ hl::yellow() {
 }
 
 hl::subtle() {
-  left "${bakylw}${txtblk}${bakylw}" "$@"
+  left "${bldcyn}${bakblk}${underlined}" "$@"
 }
 
 hl::desc() {
