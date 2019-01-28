@@ -22,18 +22,28 @@ __lib::deploy::check-vpn() {
 }
 
 __lib::deploy::vpn-error() {
-  local host="$1"
-  [[ -n ${host} ]] && host=" to ${bldgrn}${host}"
-  error "No VPN connection detected! Please connect to VPN before deploying${host}."
-  if [[ -n "${LibDeploy__VpnInfoUrl}" ]]; then
-    h1 "For instructions on how to configure VPN, ⌘ -click below: " \
+  local env=${1:-"appropriate"}
+
+  error "No VPN connection detected matching ${LibDeploy__VpnSubnet}! " \
+    "Please make sure you are connected to the ${env} VPN Connection."
+
+  if  [[ -n "${LibDeploy__VpnInfoUrl}" ]]; then
+    h1 "For instructions on how to configure VPN, pl0ease ⌘ -click below: " \
        "${undblu}${LibDeploy__VpnInfoUrl}${clr}"
   fi
+
+  if [[ -n "$(netstat -rn | grep utun)" ]]; then
+    info "Your current VPN routes are as follows:\n"
+    printf "${bldylw}"
+    netstat -rn | egrep '^[0-9].*tun'
+    printf "${clr}\n"
+  fi
+
   exit 1
 }
 
 lib::deploy::validate-vpn() {
-  __lib::deploy::check-vpn || __lib::deploy::vpn-error
+  __lib::deploy::check-vpn "$@" || __lib::deploy::vpn-error "$@"
 }
 
 ################################################################################
