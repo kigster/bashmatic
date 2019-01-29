@@ -38,8 +38,7 @@ specs::usage() {
 specs::prepare() {
   [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
   [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
-  [[ -d ${BatsRoot} ]] && run "cd ${BatsRoot} && git pull --rebase 2>/dev/null; cd -"
-  [[ -L bin/bats ]] && run "cd ${BatsRoot} && ./install.sh ${ProjectRoot}; cd ${ProjectRoot}"
+  [[ -d ${BatsRoot} ]] && run "cd ${BatsRoot} && git pull --rebase 2>/dev/null; ./install /usr/local/bin; cd ${ProjectRoot}"
 }
 
 specs::run-file() {
@@ -52,9 +51,9 @@ specs::run-file() {
     error "File ${file} is not found."
     return 1
   fi
-  hl::green "${file}"
+  hl::subtle "${file}"
   set -e
-  bats -p "${file}"
+  /usr/local/bin/bats -p "${file}"
   set +e
 }
 

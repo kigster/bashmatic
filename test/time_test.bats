@@ -42,3 +42,11 @@ set -e
   date=$(lib::time::epoch-to-local $(epoch))
   [[ "${date}" =~ $(date '+%Y') ]]
 }
+
+@test 'lib::time::duration::humanize()' {
+  [[ $(lib::time::duration::humanize 1)         ==          "01s" ]] 
+  [[ $(lib::time::duration::humanize 64)        ==      "01m:04s" ]] 
+  [[ $(lib::time::duration::humanize 164)       ==      "02m:44s" ]] 
+  [[ $(lib::time::duration::humanize 1644)      ==      "27m:24s" ]] 
+  [[ $(lib::time::duration::humanize 1646324)   == "457h:18m:44s" ]] 
+}

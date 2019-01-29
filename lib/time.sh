@@ -61,6 +61,18 @@ lib::time::epoch::minutes-ago() {
   echo $(( ${epoch} - ${seconds} ))
 }
 
+lib::time::duration::humanize() {
+  local seconds=${1}
+  local hours=$(( ${seconds} / 3600 ))
+  local remainder=$(( ${seconds} - ${hours} * 3600 ))
+  local mins=$(( ${remainder} / 60 ))
+  local secs=$(( ${seconds} - ${hours} * 3600 - ${mins} * 60 ))
+  local prefixed=0
+  [[ ${hours} -gt 0 ]] && { printf "%02dh:" ${hours}; prefixed=1; }
+  [[ ${mins} -gt 0 || ${prefixed} == 1 ]] && { printf "%02dm:" ${mins}; prefixed=1; }
+  { printf "%02ds" ${secs}; }
+}
+
 epoch() {
   date +%s
 }
