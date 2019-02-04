@@ -276,7 +276,8 @@ lib::run::ask() {
     hr
     echo
   else
-    info "${bldylw}Great idea, answer ${a} is just what I waas hoping. Abort!"
+    info "${bldylw}Good idea, who knows what would happen?"
+    info "${bldred}Abort! Abandon the ship!"
     hr
     echo
     (( $_s_ )) || exit 1
