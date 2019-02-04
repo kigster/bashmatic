@@ -260,8 +260,7 @@ lib::run::with-min-duration() {
 # Choosing no exits the program. The arguments are printed as a question.
 lib::run::ask() {
   local question=$*
-
-  hr
+  echo
   inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}"
 
   read a 2>/dev/null
