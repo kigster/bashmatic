@@ -261,6 +261,7 @@ lib::run::with-min-duration() {
 lib::run::ask() {
   local question=$*
 
+  hr
   inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}"
 
   read a 2>/dev/null
@@ -271,10 +272,13 @@ lib::run::ask() {
   fi
   echo
   if [[ ${a} == 'y' || ${a} == 'Y' || ${a} == '' ]]; then
-    info: "${txtgrn}Great, let's do this ☺ "
-    return 0
+    info "${bldblu}Great answer! Although, I hope you know what you are doing ..."
+    hr
+    echo
   else
-    info: "${txtylw}OK, no problem. Cheers! 😊 ${clr}\n"
+    info "${bldylw}Great idea, answer ${a} is just what I waas hoping. Abort!"
+    hr
+    echo
     (( $_s_ )) || exit 1
     (( $_s_ )) && return 1
   fi
