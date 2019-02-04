@@ -27,6 +27,10 @@ lib::user() {
   echo "${user}"
 }
 
+lib::user::first() {
+  lib::user | awk '{print $1}'
+}
+
 lib::user::my::ip() {
   dig +short myip.opendns.com @resolver1.opendns.com
 }
