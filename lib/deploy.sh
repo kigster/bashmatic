@@ -13,6 +13,8 @@ export LibDeploy__VpnSubnet=${LibDeploy__VpnSubnet:-"^10/16"}
 # Set me to something like https://hooks.slack.com/services/XXXXX/YYYYY/AAAAA
 export LibDeploy__SlackHookUrl=${LibDeploy__SlackHookUrl:-''}
 
+export LibDeploy__NoSlack=false
+
 ################################################################################
 # VPN Commands
 ################################################################################
@@ -59,11 +61,15 @@ lib::deploy::slack() {
   local slack_url="${LibDeploy__SlackHookUrl}"
 
   [[ ${LibRun__DryRun} -eq ${False} ]] && {
-    curl -s -d "payload=$json" "${slack_url}" 1>/dev/null
-    if [[ $? -eq 0 ]]; then
-      info: "sent to Slack: [${text}]"
+    if ${LibDeploy__NoSlack}; then
+      hl::green "${original_text}"
     else
-      warning: "error sending to Slack, is your SLACK_URL set?"
+      curl -s -d "payload=$json" "${slack_url}" 1>/dev/null
+      if [[ $? -eq 0 ]]; then
+        info: "sent to Slack: [${text}]"
+      else
+        warning: "error sending to Slack, is your SLACK_URL set?"
+      fi
     fi
   }
   [[ ${LibRun__DryRun} -eq ${True} ]] && run "send to slack [${text}]"
