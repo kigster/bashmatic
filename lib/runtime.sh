@@ -276,11 +276,10 @@ lib::run::ask() {
     echo
   else
     info "${bldylw}Good idea, who knows what would happen?"
-    info "${bldred}Abort! Abandon the ship!"
+    info "${bldred}Abort! Abandon ship!  🛳  "
     hr
     echo
-    (( $_s_ )) || exit 1
-    (( $_s_ )) && return 1
+    exit 1
   fi
 }
 

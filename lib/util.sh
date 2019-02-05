@@ -5,6 +5,11 @@
 #
 # Therefore, it is here for the reference.
 
+lib::util::is-variable-defined() {
+  local var_name="$1"
+  [[ ${!var_name+x} ]]
+}
+
 lib::util::generate-password() {
    local len=${1:-32}
    local val=$(($(date '+%s') - 100000 * $RANDOM))
