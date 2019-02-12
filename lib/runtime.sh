@@ -297,6 +297,7 @@ lib::run::inspect-variable() {
   local value=""
 
   local print_value=
+  local max_len=120
   local avail_len=$(($(screen.width) - 45))
   local lcase_var_name="$(echo ${var_name} | tr 'A-Z' 'a-z')"
 
@@ -330,7 +331,7 @@ lib::run::inspect-variable() {
   fi
 
   printf "    ${bldylw}%-35s ${txtblk}${color} " ${var_name}
-  [[ ${avail_len} -gt 40 ]] && avail_len=40
+  [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
 
   if [[ "${print_value}" -eq 1 ]]; then
     if [[ -n "${value}" ]] ; then

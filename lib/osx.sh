@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 # Breaks up a file containing a pasted cookie into individual cookies sorted
 # by cookie size. To use, either pass a file name as an argument, or have
