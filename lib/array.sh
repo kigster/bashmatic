@@ -29,17 +29,27 @@
 #
 
 array-contains-element() {
-  local e
+  local search="$1"; shift
   local r="false"
-  for e in "${@:2}"; do [[ "$e" == "$1" ]] && r="true"; done
+  local e
+
+  [[ "$*" =~ "${search}" ]] || {
+    echo -n $r
+    return 1
+  }
+  for e in "${@}"; do 
+    [[ "$e" == "${search}" ]] && r="true"
+  done
   echo -n $r
   [[ $r == "false" ]] && return 1
   return 0
 }
 
 lib::array::contains-element() {
-  for e in "${@:2}"; do
-    [[ "$e" == "$1" ]] && {
+  local search="$1"; shift
+  [[ "$*" =~ "${search}" ]] || return 1
+  for e in "${@}"; do
+    [[ "$e" == "${search}" ]] && {
       return 0
     }
   done
@@ -73,3 +83,17 @@ lib::array::complain-unless-includes() {
 lib::array::exit-unless-includes() {
   lib::array::complain-unless-includes "$@" || exit 1
 }
+
+lib::array::join() {
+  local sep="$1"; shift
+  echo ${*} | sed -E "s/ /${sep}/g"
+}
+
+array-join() { lib::array::join "$@"; }
+
+lib::array::join-piped() {
+  lib::array::join ' | ' "$@"
+}
+
+array-join-piped() { lib::array::join-piped "$@"; }
+

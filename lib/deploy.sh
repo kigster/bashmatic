@@ -41,7 +41,7 @@ __lib::deploy::vpn-error() {
     printf "${clr}\n"
   fi
 
-  exit 1
+  return 1
 }
 
 lib::deploy::validate-vpn() {
