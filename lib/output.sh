@@ -576,3 +576,7 @@ reset-color() {
 reset-color:() {
   printf "${clr}"
 }
+
+ascii-clean() {
+  __lib::output::clean "$@"
+}

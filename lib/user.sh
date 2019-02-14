@@ -28,7 +28,7 @@ lib::user() {
 }
 
 lib::user::first() {
-  lib::user | awk '{print $1}'
+  lib::user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'
 }
 
 lib::user::my::ip() {

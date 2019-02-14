@@ -1,30 +1,34 @@
 load test_helper
 
+source lib/output.sh
+source lib/runtime.sh
+
 @test "run() with a successful command and defaults" {
-  source lib/runtime.sh
-  export LibRun__DryRun=${True}
-  run lib::run "ls"
-  [[ "${status}" -eq 0 ]]
+  set +e
+  run::set-next show-output-off
+  output=$(lib::run "/bin/ls -al")
+  clean_output=$(ascii-clean $(printf "${output}"))
+  code=$?
+  set -e
+  [[ "${code}" -eq 0 ]]
   [[ "${LibRun__LastExitCode}" -eq 0 ]]
+  [[ ${clean_output} =~ 'ls -al' ]]
 }
 
 @test "run() with an unsuccessful command and defaults" {
-  source lib/runtime.sh
-  export LibRun__DryRun=${False}
-  run "lib::run lssdf"
-  [[ "${status}" -eq 127 ]]
+  set +e
+  lib::run lssdf
+  code=$?
+  set -e
+  [[ "${code}" -eq 127 ]]
 }
 
 @test "inspect variables with names starting with LibRun" {
-  source lib/output.sh
-  source lib/runtime.sh
-  export LibRun__DryRun=${False}
-  run lib::run::inspect-variables-that-are starting-with LibRun
-  echo "TEST ENVIRONMENT:"
-  echo "current folder: $(pwd)"
-  echo "status=${status}"
-  echo "output=${output}"
-  [ "${status}" -eq 0 ]
+  set +e
+  output=$(lib::run::inspect-variables-that-are starting-with LibRun)
+  code=$?
+  set -e
+  [[ "${code}" -eq 0 ]]
   [[ "${output}" =~ "LibRun__DryRun" ]]
   [[ "${output}" =~ "LibRun__Verbose" ]]
 }
