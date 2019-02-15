@@ -145,7 +145,9 @@ __lib::output::box-bottom() {
 }
 
 __lib::output::which-ruby() {
-  if [[ -x /usr/bin/ruby ]]; then
+  if [[ -n $(which rbenv) && -n $(rbenv which ruby) ]]; then
+    rbenv which ruby
+  elif [[ -x /usr/bin/ruby ]]; then
     printf /usr/bin/ruby
   elif [[ -x /usr/local/bin/ruby ]] ; then
     printf /usr/local/bin/ruby
