@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
+  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
+
 loader=$(find . -name Loader.bash)
 source ${loader}
 

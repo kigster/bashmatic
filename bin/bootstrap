@@ -16,7 +16,7 @@
 #
 #
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && _s_=1 || _s_=0
+  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
 
 set +e
 
@@ -165,4 +165,4 @@ lib::bash::bootstrap::main() {
   lib::bash::gitignore
 }
 
-(( $_s_ )) || lib::bash::bootstrap::main
+(( $__ran_as_script )) || lib::bash::bootstrap::main

@@ -11,7 +11,7 @@ export BashMatic__Loader=$(find -L . -maxdepth 3 -type f -name "${BashMatic__Sea
 
 if [[ -z ${BashMatic__Loader} ]]; then
   printf "${bldred}ERROR: ${clr}Can not find ${bldylw}${BashMatic__SearchTarget}${clr} file, aborting."
-  (( $_s_ )) && return 1 || exit 1
+  (( ${__ran_as_script} )) && exit 1 || return 1
 fi
 
 export BashMatic__LibDir=$(dirname "${BashMatic__Loader}")

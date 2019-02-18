@@ -195,16 +195,16 @@ Here is one method:
 #!/usr/bin/env bash
 # If you want to be able to tell if the script is run or sourced:
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && _s_=1 || _s_=0
+  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
 
-export _s_
-(( $_s_ )) && {
+export __ran_as_script
+(( $__ran_as_script )) && {
   echo; printf "This script should be run, not sourced.${clr}\n"
   echo; exit 1
 }
 ```
 
-This method sets the variable `$_s_` to either 1 (if the script is *sourced in*) and 0 if the script is run. Since both values are numeric we can use BASH's numeric expansion, which evaluates as follows:
+This method sets the variable `$__ran_as_script` to either 1 (if the script is *sourced in*) and 0 if the script is run. Since both values are numeric we can use BASH's numeric expansion, which evaluates as follows:
 
 ```bash
 (( 1 )) && echo "1 is true and therefore this is printed"

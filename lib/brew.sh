@@ -12,8 +12,8 @@ lib::brew::cache-reset() {
 }
 
 lib::brew::cache-reset::delayed() {
-  (( $_s_ )) && lib::brew::cache-reset
-  (( $_s_ )) || trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
+  (( ${__ran_as_script} )) || lib::brew::cache-reset
+  (( ${__ran_as_script} )) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
 }
 
 lib::brew::upgrade() {
@@ -69,7 +69,7 @@ lib::cache-or-command() {
   local file="$1"; shift
   local stale_minutes="$1"; shift
   local command="$*"
-  
+
   lib::file::exists_and_newer_than "${file}" ${stale_minutes} && {
     cat "${file}"
     return 0

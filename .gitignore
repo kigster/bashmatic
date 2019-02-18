@@ -8,3 +8,4 @@ test/all.bats
 .idea/
 libexec/
 share/
+hello/

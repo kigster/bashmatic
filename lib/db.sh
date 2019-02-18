@@ -212,7 +212,7 @@ lib::db::top() {
   if [[ ${#connections[@]} == 0 ]] ; then
     error "usage: $0 db1, db2, ... "
     info  "eg: lib::db::top m r2 "
-    (( $_s_ )) && return 1 || exit 1
+    (( ${__ran_as_script} )) && exit 1 || return 1
   fi
 
   trap "clear" TERM
