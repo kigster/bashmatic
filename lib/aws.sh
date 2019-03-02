@@ -19,7 +19,10 @@ export LibAws__DefaultUploadFolder=${LibAws__DefaultUploadFolder:-""}
 export LibAws__DefaultRegion=${LibAws__DefaultRegion:-"us-west-2"}
 
 aws::s3::upload() {
-  local pathname="$1"
+  local pathname="$1"; shift
+  local skip_file_modification="$1"
+  [[ -n ${skip_file_modification} ]] && skip_file_modification=true
+  [[ -z ${skip_file_modification} ]] && skip_file_modification=false
 
   if [[ -z "${LibAws__DefaultUploadBucket}" || -z "${LibAws__DefaultUploadFolder}" ]]; then
     error "Required AWS S3 configuration is not defined." \
@@ -42,12 +45,14 @@ aws::s3::upload() {
   [[ -z ${year} ]] && year=$(date +'%Y')
   [[ -z ${date} ]] && date=$(today)
 
+  ${skip_file_modification} || {
   # remove the date from file, in case it's at the end or something
-  [[ "${remote_file}" =~ "${date}" ]] && remote_file=$(echo "${remote_file}" | hbsed "s/[_\.-]?${date}[_\.-]//g")
+    [[ "${remote_file}" =~ "${date}" ]] && remote_file=$(echo "${remote_file}" | hbsed "s/[_\.-]?${date}[_\.-]//g")
 
-  # prepend the date to the beginning of the file unless already in the file
-  [[ "${remote_file}" =~ "${date}" ]] || remote_file="${date}.${remote_file}"
+    # prepend the date to the beginning of the file unless already in the file
+    [[ "${remote_file}" =~ "${date}" ]] || remote_file="${date}.${remote_file}"
 
+  }
   # clean up spaces
   remote_file=$(echo "${remote_file}" | sed -E 's/ /-/g;s/--+/-/g' | tr '[A-Z]' '[a-z]')
 

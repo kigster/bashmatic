@@ -30,7 +30,17 @@ lib::url::shorten() {
   if [[ -z "${BITLY_LOGIN}" || -z "${BITLY_API_KEY}" ]]; then
     printf "${longUrl}\n"
   else
-    $(lib::url::downloader) "http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}"
+
+    export BITLY_LOGIN=$(printf ${BITLY_LOGIN} | tr -d '^M')
+    export BITLY_API_KEY=$(printf ${BITLY_API_KEY} | tr -d '^M')
+
+    if [[ -n $(which ruby) ]]; then
+      longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI::encode(str)")
+    fi
+
+    bitlyUrl="http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}"
+
+    $(lib::url::downloader) "${bitlyUrl}"
   fi
 }
 
