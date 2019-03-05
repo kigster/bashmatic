@@ -18,6 +18,8 @@
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
   [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
 
+export __ran_as_script
+
 set +e
 
 export BashMatic__Root=$(pwd)
@@ -27,18 +29,14 @@ export BashMatic__GitUrl="https://github.com/kigster/bashmatic"
 export BashMatic__RebasePeriodHours=24 # hours
 export BashMatic__LastRebaseAt=1
 
-
 export BashMatic__SymlinkFolder="bin/"
 [[ -d ${BashMatic__SymlinkFolder} ]] || { 
-  export BashMatic__SymlinkFolder="."; 
-  mkdir -p ${BashMatic__SymlinkFolder}; 
+  export BashMatic__SymlinkFolder="."
+  mkdir -p "${BashMatic__SymlinkFolder}"
 }
 
-export BashMatic__BashmaticRootFolder=".."
-test_folder="${BashMatic__BashmaticRootFolder}/.x1098428357983745"
-mkdir -p ${test_folder} 2>/dev/null || {
-  export BashMatic__BashmaticRootFolder="."
-}
+export BashMatic__BashmaticRootFolder="${HOME}"
+[[ -d "${BashMatic__BashmaticRootFolder}" ]] || export BashMatic__BashmaticRootFolder="/tmp"
 
 export BashMatic__GitDestinationFolder="${BashMatic__BashmaticRootFolder}/.bashmatic"
 
@@ -91,12 +89,7 @@ lib::bash::update() {
   local now=$(lib::bash::epoch)
 
   if [[ -d "${dir}" ]]; then
-    quiet_cd ${dir}
-
-    [[ $(basename $(pwd)) == 'bashmatic' ]] || {
-      error_log "expected to be in the ${BashMatic__GitDestinationFolder} folder, but actually in $(pwd)"
-      exit 5
-    }
+    quiet_cd "${dir}"
 
     git fetch --quiet > /dev/null
 
@@ -158,10 +151,14 @@ lib::bash::rebase-if-stale() {
 }
 
 lib::bash::symlink() {
-  cd ${BashMatic__Root}
+  cd "${BashMatic__Root}"
   if [[ ! -L "${BashMatic__SymlinkFolder}" ]]; then
     debug_log "symlink ${BashMatic__SymlinkFolder} is missing, creating ..."
-    ln -nfs ${BashMatic__GitDestinationFolder}/lib/ ${BashMatic__SymlinkFolder} >/dev/null
+    ln -nfs "${BashMatic__GitDestinationFolder}/lib" "${BashMatic__SymlinkFolder}" >/dev/null
+    ln -nfs "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__SymlinkFolder}" >/dev/null
+  elif [[ ! -d "${BashMatic__SymlinkFolder}" ]]; then
+    debug_log "directory ${BashMatic__SymlinkFolder} exists, can't replace with a symlink"
+    return 1 
   fi
 }
 
@@ -183,4 +180,4 @@ lib::bash::bootstrap::main() {
   lib::bash::gitignore
 }
 
-(( $__ran_as_script )) || lib::bash::bootstrap::main
+lib::bash::bootstrap::main
