@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Author: Konstantin Gredeskoul, at App,
-#         © 2018 All rights reserved, MIT License.
+# Author: Konstantin Gredeskoul
 #
+# © 2018-2019 All rights reserved, MIT License.
 #
-# This is the bootstrap script that can be either sourced in, or run.
+# This is primary bootstrap script that can be either sourced in, or run.
 # If you source it in, you can run the primary BASH function:
 #
 #         $ source bin/bootstrap
@@ -30,7 +30,7 @@ export BashMatic__RebasePeriodHours=24 # hours
 export BashMatic__LastRebaseAt=1
 
 export BashMatic__SymlinkFolder="bin/"
-[[ -d ${BashMatic__SymlinkFolder} ]] || { 
+[[ -d ${BashMatic__SymlinkFolder} ]] || {
   export BashMatic__SymlinkFolder="."
   mkdir -p "${BashMatic__SymlinkFolder}"
 }
@@ -100,7 +100,7 @@ lib::bash::update() {
       echo
       info_log "Changes are:"
       git status --short
-      echo 
+      echo
       info_log "So, we are going to create a patch and reset."
 
       patch="../bashmatic.locally-modified.$(lib::bash::epoch).patch"
@@ -155,10 +155,10 @@ lib::bash::symlink() {
   if [[ ! -L "${BashMatic__SymlinkFolder}" ]]; then
     debug_log "symlink ${BashMatic__SymlinkFolder} is missing, creating ..."
     ln -nfs "${BashMatic__GitDestinationFolder}/lib" "${BashMatic__SymlinkFolder}" >/dev/null
-    ln -nfs "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__SymlinkFolder}" >/dev/null
+    cp -p "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__SymlinkFolder}/bootstrap" >/dev/null
   elif [[ ! -d "${BashMatic__SymlinkFolder}" ]]; then
     debug_log "directory ${BashMatic__SymlinkFolder} exists, can't replace with a symlink"
-    return 1 
+    return 1
   fi
 }
 

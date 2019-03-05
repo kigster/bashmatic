@@ -23,7 +23,7 @@ export BashMatic__RandomQueryString="q=${RANDOM}-$(date '+%s')"
 
 export BashMatic__BootstrapExec="bootstrap"
 export BashMatic__BinPath="bin"
-export BashMatic__RelPath="${ProjectRoot}/../bashmatic"
+export BashMatic__RelPath="${HOME}/.bashmatic"
 export BashMatic__BootstrapLibPath="${BashMatic__RelPath}/${BashMatic__BinPath}/${BashMatic__BootstrapExec}"
 export BashMatic__BootstrapLocalPath="${BashMatic__BinPath}/${BashMatic__BootstrapExec}"
 export BashMatic__Branch="master"
