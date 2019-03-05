@@ -162,7 +162,7 @@ Here is an example of how you could integrate it directly into an existing repo:
 
 ```bash
 cd ~/workspace/my-project
-curl -fsSL https://git.io/fxZSi | /usr/bin/env bash
+curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 ```
 
 

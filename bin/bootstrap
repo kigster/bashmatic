@@ -23,11 +23,24 @@ set +e
 export BashMatic__Root=$(pwd)
 
 export BashMatic__LibFolder="bashmatic"
-export BashMatic__InstallationFolder="bin/bashmatic"
-export BashMatic__GitDestinationFolder="../bashmatic"
 export BashMatic__GitUrl="https://github.com/kigster/bashmatic"
 export BashMatic__RebasePeriodHours=24 # hours
 export BashMatic__LastRebaseAt=1
+
+
+export BashMatic__SymlinkFolder="bin/"
+[[ -d ${BashMatic__SymlinkFolder} ]] || { 
+  export BashMatic__SymlinkFolder="."; 
+  mkdir -p ${BashMatic__SymlinkFolder}; 
+}
+
+export BashMatic__BashmaticRootFolder=".."
+test_folder="${BashMatic__BashmaticRootFolder}/.x1098428357983745"
+mkdir -p ${test_folder} 2>/dev/null || {
+  export BashMatic__BashmaticRootFolder="."
+}
+
+export BashMatic__GitDestinationFolder="${BashMatic__BashmaticRootFolder}/.bashmatic"
 
 export True=1
 export False=0
@@ -87,13 +100,18 @@ lib::bash::update() {
 
     git fetch --quiet > /dev/null
 
-    local changes=$(git diff-index --name-only HEAD -- 2>/dev/null)
+    local changes=$(git status --short 2>/dev/null)
     if [[ -n "${changes}" ]]; then
       echo
       info_log "It looks like you have some local changes in ${bldgrn}${dir}."
-      info_log "I am going to create a patch and reset."
+      echo
+      info_log "Changes are:"
+      git status --short
+      echo 
+      info_log "So, we are going to create a patch and reset."
 
       patch="../bashmatic.locally-modified.$(lib::bash::epoch).patch"
+
       git reset .
       git diff --patch > ${patch}
       info_log "Patch created at ${bldgrn}${patch}."
@@ -141,9 +159,9 @@ lib::bash::rebase-if-stale() {
 
 lib::bash::symlink() {
   cd ${BashMatic__Root}
-  if [[ ! -L "${BashMatic__InstallationFolder}" ]]; then
-    debug_log "symlink ${BashMatic__InstallationFolder} is missing, creating ..."
-    ln -nfs ../${BashMatic__GitDestinationFolder}/lib/ ${BashMatic__InstallationFolder} >/dev/null
+  if [[ ! -L "${BashMatic__SymlinkFolder}" ]]; then
+    debug_log "symlink ${BashMatic__SymlinkFolder} is missing, creating ..."
+    ln -nfs ${BashMatic__GitDestinationFolder}/lib/ ${BashMatic__SymlinkFolder} >/dev/null
   fi
 }
 
