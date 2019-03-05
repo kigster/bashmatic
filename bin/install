@@ -55,9 +55,7 @@ lib::bash::clean-old-bootstrap() {
   fi
 }
 
-lib::bash::bootstrap() {
-  lib::bash::clean-old-bootstrap
-
+lib::bash::smart-ass-caching-unsed() {
   if [[ ! -s "${BashMatic__BootstrapLocalPath}" ]]; then
     mkdir -p $(dirname ${BashMatic__BootstrapLocalPath}) > /dev/null
     if [[ -s ${BashMatic__BootstrapLibPath} ]]; then
@@ -79,6 +77,11 @@ lib::bash::bootstrap() {
       type lib::bash::bootstrap::main 2>/dev/null 1>/dev/null && lib::bash::bootstrap::main
     fi
   fi
+}
+
+lib::bash::bootstrap() {
+  lib::bash::clean-old-bootstrap
+  ${BashMatic__Downloader} http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 }
 
 lib::bash::bootstrap

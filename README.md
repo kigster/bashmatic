@@ -7,15 +7,14 @@
 
 <!-- TOC START min:2 max:4 link:true update:true -->
 - [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
-  - [Installation](#installation)
   - [Whats Included?](#whats-included)
     - [Runtime Framework](#runtime-framework)
     - [Examples of Runtime Framework](#examples-of-runtime-framework)
     - [UI Drawing / Output functions](#ui-drawing--output-functions)
     - [Other Utilities](#other-utilities)
 - [Usage](#usage)
-  - [Integrating With Your Code](#integrating-with-your-code)
-    - [Using Provided Installer / Boostrapper](#using-provided-installer--boostrapper)
+  - [1. Integrating With Your Project](#1-integrating-with-your-project)
+  - [2. Manual Install](#2-manual-install)
     - [Custom Installer](#custom-installer)
   - [Some Tips on Writing Shell Scripts](#some-tips-on-writing-shell-scripts)
   - [The List of Available Functions](#the-list-of-available-functions)
@@ -142,8 +141,7 @@ Each library will have a set of private functions, typically named `__lib::util:
 
 There are a couple of ways that you can install and use this library.
 
-
-   1. The simplest way is to use the online bootstrap script.  This method is often used to integrate **BashMatic** with your other projects, so that they can be built upon their own internal BASH tooling using all the goodies in this library. 
+   1. The simplest way is to use the online bootstrap script.  This method is often used to integrate **BashMatic** with your other projects, so that they can be built upon their own internal BASH tooling using all the goodies in this library.
 
    1. One is doing a simple manual `git clone`, and then "sourcing" the main `lib/Loader.bash` file from one of your "dotfiles".
 
@@ -171,7 +169,7 @@ The installer above will do the following:
 ```bash
 cd ~/workspace
 git clone https://github.com/kigster/bashmatic
-cd workspace/bashmatic 
+cd workspace/bashmatic
 source lib/Loader.bash
 ```
 
