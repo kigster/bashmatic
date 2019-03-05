@@ -142,19 +142,12 @@ Each library will have a set of private functions, typically named `__lib::util:
 
 There are a couple of ways that you can install and use this library.
 
+
+   1. The simplest way is to use the online bootstrap script.  This method is often used to integrate **BashMatic** with your other projects, so that they can be built upon their own internal BASH tooling using all the goodies in this library. 
+
    1. One is doing a simple manual `git clone`, and then "sourcing" the main `lib/Loader.bash` file from one of your "dotfiles".
 
-   2. However, we find that it often more useful to integrate **BashMatic** with other projects, so that they can build their own internal BASH tooling using all the goodies in this library. This of this method as a better version of "git submodules".
-
-### 1. Manual Install
-
-```bash
-cd ~/workspace
-git clone https://github.com/kigster/bashmatic
-source ~/workspace/bashmatic/lib/Loader.bash
-```
-
-### 2. Integrating With Your Project
+### 1. Integrating With Your Project
 
 **BashMatic** comes with a clever installer that can be used to install it into any subfolder of an existing project.0
 
@@ -165,13 +158,22 @@ cd ~/workspace/my-project
 curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 ```
 
-
 The installer above will do the following:
 
- * Checkout `bashmatic` repo into a folder above the current project — i.e. `../bashmatic`
- * If your project already has a `bin` folder — it's used, otherwise it's created.
- * The script will then create a symlink `./bin/bashmatic` pointing to `../bashmatic/lib`.
- * At this point, you should be able to source the library with `source bin/bashmatic/Loader.bash` and have all of the tools available to you.
+ * Checkout `bashmatic` repo into a folder typically in your home: `${HOME}/.bashmatic`
+ * If your project already has a `bin` folder — it's will be used to create a `lib` symlink, otherwise it's created in the current folder.
+ * The script will also create a symlink to Bashmatic's `bin/bootstrap` script, again — either in the local `bin` folder, or in the current one.
+ * Finally, it will add both `bin/lib` and `bin/bootstrap` to `.gitignore` file, if that was found.
+ * At this point you should be able to source the library with `source bin/lib/Loader.bash` and have all of the tools available to you.
+
+### 2. Manual Install
+
+```bash
+cd ~/workspace
+git clone https://github.com/kigster/bashmatic
+cd workspace/bashmatic 
+source lib/Loader.bash
+```
 
 #### Custom Installer
 
