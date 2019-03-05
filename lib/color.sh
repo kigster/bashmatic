@@ -63,7 +63,7 @@ lib::color::enable() {
 
 txt-info()      { printf "${clr}${txtblu}"; }
 txt-err()       { printf "${clr}${bldylw}${bakred}"; }
-txt-warn()      { printf "${clr}${bldwht}${bakylw}"; }
+txt-warn()      { printf "${clr}${bldylw}"; }
 
 error-text()    { printf "${txtred}"; }
 bold()          { ansi 1 "$@"; }

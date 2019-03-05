@@ -156,10 +156,10 @@ lib::gem::uninstall() {
 
 ## Shortcuts
 
-function g-i() {
+g-i() {
   lib::gem::install "$@"
 }
 
-function g-u() {
+g-u() {
   lib::gem::uninstall "$@"
 }

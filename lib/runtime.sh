@@ -125,6 +125,7 @@ __lib::run::eval() {
   local command="$*"
 
   if [[ ${LibRun__ShowCommandOutput} -eq ${True} ]]; then
+    echo
     eval "${command}"
   else
     eval "${command}" 2>${stderr} 1>${stdout}

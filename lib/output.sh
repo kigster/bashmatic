@@ -434,9 +434,14 @@ hdr() {
   h1 "$@"
 }
 
+screen-width() {
+  __lib::output::screen-width
+}
+
 hr::colored() {
-  local color=${1:-"red"}
-  __lib::output::hr $(__lib::output::screen-width) "—" ${color}
+  local color="$*"
+  [[ -z ${color} ]] && color="${bldred}"
+  __lib::output::hr "$(screen-width)" "—" "${*}"
 }
 
 function hr() {

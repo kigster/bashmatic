@@ -14,18 +14,18 @@
 #  lib::json::end-hash
 # lib::json::end-hash
  
-function lib::json::begin-array() {
+lib::json::begin-array() {
   [[ -n "$1" ]] && lib::json::begin-key "$1"
   echo " ["
 }
 
-function lib::json::end-array() {
+lib::json::end-array() {
   printf "]"
   [[ "$1" == "true" ]] && printf ","
   echo
 }
 
-function lib::json::file-to-array() {
+lib::json::file-to-array() {
   lib::json::begin-array "$1"
   cat $2 |  \
     tr -d '\r' | \
@@ -38,18 +38,18 @@ function lib::json::file-to-array() {
   lib::json::end-array $3
 }
 
-function lib::json::begin-key() {
+lib::json::begin-key() {
   if [[ -n "$1" ]]; then
     printf "\"${1}\": "
   fi
 }
 
-function lib::json::begin-hash() {
+lib::json::begin-hash() {
   [[ -n "$1" ]] && lib::json::begin-key "$1"
   echo "{"
 }
 
-function lib::json::end-hash() {
+lib::json::end-hash() {
   printf "}"
   [[ "$1" == "true" ]] && printf ","
   echo

@@ -6,34 +6,11 @@
 export RAILS_SCHEMA_RB="db/schema.rb"
 export RAILS_SCHEMA_SQL="db/structure.sql"
 
-__lib::db::current_settings() {
+lib::psql::db-settings() {
   psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
-__lib::db::by_shortname() {
-  if [[ -z $1 || $1 == "master" || $1 == "m" ]]; then
-    dbtype=master
-    export HB_DB_MS="-U ${DBUSER} -h $(aws::rds::hostname production) ${DATABASE_NAME}"
-    db=$HB_DB_MS
-  elif [[ $1 == "replica1" || $1 == "r1" ]]; then
-    export HB_DB_R1="-U ${DBUSER} -h $(aws::rds::hostname production-replica1) ${DATABASE_NAME}"
-    dbtype=replica
-    db=$HB_DB_R1
-  elif [[ $1 == "replica2" || $1 == "r2" ]]; then
-    export HB_DB_R2="-U ${DBUSER} -h $(aws::rds::hostname production-replica2) ${DATABASE_NAME}"
-    dbtype=replica
-    db=$HB_DB_R2
-  elif [[ $1 == "replica3" || $1 == "r3" ]]; then
-    export HB_DB_R3="-U ${DBUSER} -h $(aws::rds::hostname production-replica3) ${DATABASE_NAME}"
-    dbtype=replica
-    db=$HB_DB_R3
-  else
-    dbtype=
-  fi
-  printf "%s %s" "${dbtype}" "${db}"
-}
-
-lib::db::psql::args:: () {
+lib::db::psql::args::() {
   printf -- "-U ${AppPostgresUsername} -h ${AppPostgresHostname} $*"
 }
 
@@ -49,31 +26,7 @@ lib::db::psql::args::maint() {
   printf -- "-U postgres -h localhost --maintenance-db=postgres $*"
 }
 
-__lib::db::args_for() {
-  declare -a results=( $(__lib::db::by_shortname $1) )
-  if [[ ${#results[@]} -gt 1 ]]; then
-    db=${results[@]:1}
-    dbtype=${results[0]}
-  fi
-  printf "%s" "${db}"
-}
-
-__lib::db::psql() {
-  local db=$1
-
-  declare -a results=( $(__lib::db::by_shortname $1) )
-  if [[ ${#results[@]} -gt 1 ]]; then
-    db=${results[@]:1}
-    dbtype=${results[0]}
-  fi
-
-  info "database: ${bldylw}${db}" >&2
-  info "_db_type: ${bldylw}${dbtype}" >&2
-
-  printf "psql ${db}"
-}
-
-__lib::db::wait_for_db() {
+lib::db::wait-until-db-online() {
   local db=${1}
   inf 'waiting for the database to come up...'
   while true; do
@@ -88,15 +41,11 @@ __lib::db::wait_for_db() {
   return 0
 }
 
-__lib::db::aliases() {
-  alias hb.db.log='pgbadger --prefix "%t:%r:%u@%d:[%p]:" '
-}
-
-__lib::db::num_procs() {
+lib::db::num_procs() {
   ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
 }
 
-__lib::db::datetime() {
+lib::db::datetime() {
   date '+%Y%m%d-%H%M%S'
 }
 
@@ -108,15 +57,6 @@ __lib::db::backup-filename() {
   else
     printf "${checksum}.$(lib::util::arch).${dbname}.dump"
   fi
-}
-
-__lib::db::is_valid() {
-  local dbname="${1}"
-  [[ -z ${dbname} ]] && return 1
-
-  psql -U postgres -h localhost -c 'select count(*) from accounts' ${dbname} 1>/dev/null 2>/dev/null
-  code=$?
-  return ${code}
 }
 
 __lib::db::top::page() {
@@ -138,7 +78,9 @@ __lib::db::top::page() {
   printf "${bldcyn}[${dbtype}] ${bldpur}Above: Replication Status / Below: Active Queries:${clr}\n\n${bldylw}" >> ${tof}
 
   psql -X -P pager ${db} -c \
-      "select pid, client_addr || ':' || client_port as Client, substring(state for 10) as State, now() - query_start as Duration, waiting as Wait, substring(query for ${query_width}) as Query from pg_stat_activity where state != 'idle' order by Duration desc" | \
+      "select pid, client_addr || ':' || client_port as Client, substring(state for 10) as State, now() - query_start " \
+      "as Duration, waiting as Wait, substring(query for ${query_width}) as Query from pg_stat_activity where state != 'idle' " \
+      "order by Duration desc" | \
       egrep -v 'select.*client_addr' 2>&1 >> ${tof}
 }
 
@@ -256,7 +198,7 @@ lib::db::top() {
       __lib::db::top::page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
     done
     clear
-    h::yellow " «   DB-TOP V0.1.2 © 2018 Konstantin Gredeskoul Inc. » "
+    h::yellow " «   DB-TOP V0.1.2 © 2018-2019 Konstantin Gredeskoul, ReinventONE Inc. » "
     cat ${tof}
     cursor.at.y $(( $(__lib::output::screen-height) + 1 ))
     printf "${bldwht}Press Ctrl-C to quit.${clr}"
@@ -325,20 +267,4 @@ lib::db::restore() {
     return ${code}
   fi
   return ${LibRun__LastExitCode}
-}
-
-hb.db.dump() {
-  lib::db::dump "$@"
-}
-
-hb.db.restore() {
-  lib::db::restore "$@"
-}
-
-hb.db() {
-  bash -c "$(__lib::db::psql $@)"
-}
-
-hb.db.top() {
-  lib::db::top "$@"
 }
