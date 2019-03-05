@@ -7,13 +7,7 @@
 # This is primary bootstrap script that can be either sourced in, or run.
 # If you source it in, you can run the primary BASH function:
 #
-#         $ source bin/bootstrap
-#         $ lib::bash::bootstrap::main
-#
-# Alernatively:
-#
-#         $ bin/bootstrap
-#
+#      $ bin/bootstrap
 #
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
   [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
@@ -23,7 +17,6 @@ export __ran_as_script
 set +e
 
 export BashMatic__Root=$(pwd)
-
 export BashMatic__LibFolder="bashmatic"
 export BashMatic__GitUrl="https://github.com/kigster/bashmatic"
 export BashMatic__RebasePeriodHours=24 # hours
@@ -50,11 +43,15 @@ debug_log() {
 }
 
 error_log() {
-  printf "${bldwht}${bakred} « ERROR » ${clr}: ${bldred}$*${clr}\n"
+  printf " 💀  ${clr}: ${bldred}$*${clr}\n"
 }
 
 info_log() {
-  printf "${bldylw} « info » ${clr}: ${bldblu}$*${clr}\n"
+  printf " ℹ️  ${clr}: ${bldblu}$*${clr}\n"
+}
+
+success_log() {
+  printf " ✅  ${clr}: ${bldblu}$*${clr}\n"
 }
 
 quiet_cd() {
@@ -154,10 +151,10 @@ lib::bash::symlink() {
   cd "${BashMatic__Root}"
   if [[ ! -L "${BashMatic__SymlinkFolder}" ]]; then
     debug_log "symlink ${BashMatic__SymlinkFolder} is missing, creating ..."
-    ln -nfs "${BashMatic__GitDestinationFolder}/lib" "${BashMatic__SymlinkFolder}" >/dev/null
-    cp -p "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__SymlinkFolder}/bootstrap" >/dev/null
-  elif [[ ! -d "${BashMatic__SymlinkFolder}" ]]; then
-    debug_log "directory ${BashMatic__SymlinkFolder} exists, can't replace with a symlink"
+    ln -nfs "${BashMatic__GitDestinationFolder}/lib" "${BashMatic__SymlinkFolder}/${BashMatic__LibFolder}" >/dev/null
+    cp -p "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__SymlinkFolder}" >/dev/null
+  elif [[ -d "${BashMatic__SymlinkFolder}" ]]; then
+    error_log "directory ${BashMatic__SymlinkFolder} already exists as a folder, can't replace with a symlink"
     return 1
   fi
 }
