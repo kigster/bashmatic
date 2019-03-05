@@ -18,20 +18,23 @@ set +e
 
 export BashMatic__Root=$(pwd)
 export BashMatic__LibFolder="bashmatic"
+export BashMatic__BootstrapLocal="bootstrap"
 export BashMatic__GitUrl="https://github.com/kigster/bashmatic"
 export BashMatic__RebasePeriodHours=24 # hours
-export BashMatic__LastRebaseAt=1
+export BashMatic__LastRebaseAt=0
 
-export BashMatic__SymlinkFolder="bin/"
-[[ -d ${BashMatic__SymlinkFolder} ]] || {
-  export BashMatic__SymlinkFolder="."
-  mkdir -p "${BashMatic__SymlinkFolder}"
-}
+export BashMatic__SymlinkEnclosingDir="bin/"
+[[ -d ${BashMatic__SymlinkEnclosingDir} ]] || export BashMatic__SymlinkEnclosingDir="."
 
 export BashMatic__BashmaticRootFolder="${HOME}"
 [[ -d "${BashMatic__BashmaticRootFolder}" ]] || export BashMatic__BashmaticRootFolder="/tmp"
 
 export BashMatic__GitDestinationFolder="${BashMatic__BashmaticRootFolder}/.bashmatic"
+export BashMatic__LastRebaseFile="${BashMatic__GitDestinationFolder}/.last-rebase"
+
+export BashMatic__TargetLibSymlink="${BashMatic__SymlinkEnclosingDir}/${BashMatic__LibFolder}"
+export BashMatic__BootstrapSymlink="${BashMatic__SymlinkEnclosingDir}/${BashMatic__BootstrapLocal}"
+
 
 export True=1
 export False=0
@@ -108,7 +111,7 @@ lib::bash::update() {
     fi
 
     git reset --hard origin/master --quiet >/dev/null
-    echo ${now} > .last-rebase
+    echo ${now} > "${BashMatic__LastRebaseFile}"
     debug_log "recorded the last rebase at $(lib::bash::epoch)"
     quiet_cd ${cwd}
     return 0
@@ -119,9 +122,8 @@ lib::bash::update() {
 }
 
 lib::bash::last-rebase() {
-  local dir="${BashMatic__GitDestinationFolder}"
-  if [[ -s "${dir}/.last-rebase" ]]; then
-    printf "%d" $(cat ${dir}/.last-rebase)
+  if [[ -s "${BashMatic__LastRebaseFile}" ]]; then
+    printf "%d" $(cat "${BashMatic__LastRebaseFile}")
   else
     printf "%d" 1
   fi
@@ -149,26 +151,36 @@ lib::bash::rebase-if-stale() {
 
 lib::bash::symlink() {
   cd "${BashMatic__Root}"
-  if [[ ! -L "${BashMatic__SymlinkFolder}" ]]; then
-    debug_log "symlink ${BashMatic__SymlinkFolder} is missing, creating ..."
-    ln -nfs "${BashMatic__GitDestinationFolder}/lib" "${BashMatic__SymlinkFolder}/${BashMatic__LibFolder}" >/dev/null
-    cp -p "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__SymlinkFolder}" >/dev/null
-  elif [[ -d "${BashMatic__SymlinkFolder}" ]]; then
-    error_log "directory ${BashMatic__SymlinkFolder} already exists as a folder, can't replace with a symlink"
-    return 1
+  if [[ -d "${BashMatic__SymlinkEnclosingDir}" ]]; then
+    [[ -L "${BashMatic__TargetLibSymlink}" ]] || /bin/ln -s "${BashMatic__GitDestinationFolder}/lib"           "${BashMatic__TargetLibSymlink}" >/dev/null
+    [[ -L "${BashMatic__BootstrapSymlink}" ]] || /bin/ln -s "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__BootstrapSymlink}" >/dev/null
+  fi
+
+  if [[ ! -L "${BashMatic__TargetLibSymlink}" || ! -L "${BashMatic__BootstrapSymlink}" ]]; then
+    error_log "directory ${BashMatic__SymlinkEnclosingDir} already exists as a folder, can't replace with a symlink"
+    (( ${__ran_as_script} )) && exit 1 || return 1
   fi
 }
 
+lib::bash::gitignore::add-item() {
+  for ignored in "$@"; do
+    local gitignore_file="${HOME}/.gitignore"
+
+    if [[ -d "${BashMatic__Root}/.git" ]]; then
+      gitignore_file="${BashMatic__Root}/.gitignore"
+    fi
+
+    if [[ ! -f "${gitignore_file}" || -z $(grep ${ignored} "${gitignore_file}"  2>/dev/null) ]] ; then
+      debug_log "adding ${ignored} to ${gitignore_file}"
+      echo "${ignored}" >> "${gitignore_file}"
+    fi
+  done
+}
+
 lib::bash::gitignore() {
-  cd ${BashMatic__Root}
-  [[ -s .gitignore ]] || return
-  local ignored="bin/bootstrap"
-  if [[ -z $(grep ${ignored} .gitignore 2>/dev/null) ]] ; then
-    debug_log "adding ${ignored} to .gitignore..."
-    echo bin/bootstrap >> .gitignore
-  else
-    debug_log "file .gitignore already has ${ignored}..."
-  fi
+  lib::bash::gitignore::add-item \
+    "**/$(basename ${BashMatic__TargetLibSymlink})" \
+    "**/$(basename ${BashMatic__BootstrapSymlink})"
 }
 
 lib::bash::bootstrap::main() {
