@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# This module can aid in debugging bash functions and their return values.
+# This module can aid in BASHMATIC_DEBUGging bash functions and their return values.
 #
 # It provides just four functions:
 # 

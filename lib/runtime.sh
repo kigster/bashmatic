@@ -144,7 +144,7 @@ __lib::run::eval() {
 __lib::run::exec() {
   command="$*"
 
-  if [[ -n ${DEBUG} && ${LibRun__Verbose} -eq ${True} ]] ; then
+  if [[ -n ${BASHMATIC_DEBUG} && ${LibRun__Verbose} -eq ${True} ]] ; then
     lib::run::inspect
   fi
 

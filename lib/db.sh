@@ -193,7 +193,7 @@ lib::db::top() {
       local vertical_shift=$(( ${percent_total_height} * ${screen_height} / 100 ))
 
       cursor.at.y ${vertical_shift} >> ${tof}
-      [[ -n ${DEBUG} ]] && h::blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >> ${tof}
+      [[ -n ${BASHMATIC_DEBUG} ]] && h::blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >> ${tof}
       hr::colored ${bldpur} >> ${tof}
       __lib::db::top::page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
     done

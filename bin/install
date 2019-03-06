@@ -41,13 +41,13 @@ unset BashMatic__Downloader
   exit 1
 }
 
-debug_log() {
-  if [[ -n ${DEBUG} || ${USER} == "kig" ]] ; then
+BASHMATIC_DEBUG_log() {
+  if [[ -n ${BASHMATIC_DEBUG} || ${USER} == "kig" ]] ; then
     [[ -n ${LIB_BASH_QUIET} ]] || printf " ${bldwht}${bakgrn} ✔ ${clr} ${txtgrn}${1}${clr}\n"
   fi
 }
 
-debug_log "using downloader ${bldylw}${BashMatic__Downloader}"
+BASHMATIC_DEBUG_log "using downloader ${bldylw}${BashMatic__Downloader}"
 
 lib::bash::clean-old-bootstrap() {
   if [[ -d ${BashMatic__BinPath} ]] ; then
@@ -59,10 +59,10 @@ lib::bash::smart-ass-caching-unsed() {
   if [[ ! -s "${BashMatic__BootstrapLocalPath}" ]]; then
     mkdir -p $(dirname ${BashMatic__BootstrapLocalPath}) > /dev/null
     if [[ -s ${BashMatic__BootstrapLibPath} ]]; then
-      debug_log "${BashMatic__BootstrapLibPath} exists, copying to ${bldylw}${BashMatic__BootstrapLocalPath}"
+      BASHMATIC_DEBUG_log "${BashMatic__BootstrapLibPath} exists, copying to ${bldylw}${BashMatic__BootstrapLocalPath}"
       cp -p ${BashMatic__BootstrapLibPath} ${BashMatic__BootstrapLocalPath} > /dev/null
     else
-      debug_log "grabbing bootstrap script from:\n  → ${italic}${undblu}${BashMatic__BootstrapURL}"
+      BASHMATIC_DEBUG_log "grabbing bootstrap script from:\n  → ${italic}${undblu}${BashMatic__BootstrapURL}"
       ${BashMatic__Downloader} ${BashMatic__BootstrapURL} > ${BashMatic__BootstrapLocalPath}
     fi
     touch ${BashMatic__BootstrapLocalPath}
@@ -70,7 +70,7 @@ lib::bash::smart-ass-caching-unsed() {
   fi
 
   if [[ -s "${BashMatic__BootstrapLocalPath}" ]]; then
-    debug_log "running script ${bldylw}${BashMatic__BootstrapLocalPath}"
+    BASHMATIC_DEBUG_log "running script ${bldylw}${BashMatic__BootstrapLocalPath}"
     if [[ -s ${BashMatic__BootstrapLocalPath} ]]; then
       source ${BashMatic__BootstrapLocalPath}
       # only run the function if it's defined
@@ -81,7 +81,7 @@ lib::bash::smart-ass-caching-unsed() {
 
 lib::bash::bootstrap() {
   lib::bash::clean-old-bootstrap
-  ${BashMatic__Downloader} http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
+  ${BashMatic__Downloader} curl http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 }
 
 lib::bash::bootstrap

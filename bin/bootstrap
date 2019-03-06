@@ -9,14 +9,10 @@
 #
 #      $ bin/bootstrap
 #
-# Or simply: 
+# Or simply:
 #
-#      $ curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash 
+#      $ curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 #
-( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
-
-export __ran_as_script
 
 set +e
 
@@ -43,8 +39,8 @@ export BashMatic__BootstrapSymlink="${BashMatic__SymlinkEnclosingDir}/${BashMati
 export True=1
 export False=0
 
-debug_log() {
-  if [[ -n ${DEBUG} || ${USER} == "kig" ]]; then
+BASHMATIC_DEBUG_log() {
+  if [[ -n ${BASHMATIC_DEBUG} || ${USER} == "kig" ]]; then
     [[ -n ${LIB_BASH_QUIET} ]] || printf " ${bldwht}${bakgrn} ✔ ${clr} ${txtgrn}$*${clr}\n"
   fi
 }
@@ -77,7 +73,7 @@ lib::bash::epoch() {
 lib::bash::clone() {
   local dir="${BashMatic__GitDestinationFolder}"
   if [[ ! -d "${dir}" ]]; then
-    debug_log "cloning bashmatic repo to ${dir}..."
+    BASHMATIC_DEBUG_log "cloning bashmatic repo to ${dir}..."
     git clone --quiet ${BashMatic__GitUrl} ${dir} 2>&1 >/dev/null
     [[ ! -d  "${dir}" ]] && {
       error_log "Unable to find bashmatic clone folder after checkout"; exit 1
@@ -116,7 +112,7 @@ lib::bash::update() {
 
     git reset --hard origin/master --quiet >/dev/null
     echo ${now} > "${BashMatic__LastRebaseFile}"
-    debug_log "recorded the last rebase at $(lib::bash::epoch)"
+    BASHMATIC_DEBUG_log "recorded the last rebase at $(lib::bash::epoch)"
     quiet_cd ${cwd}
     return 0
   else
@@ -146,10 +142,10 @@ lib::bash::rebase-if-stale() {
   local hoursSinceLastRebase=$(lib::bash::hours-since-last-rebase ${lastRebaseAt})
 
   if [[ ${lastRebaseAt} -gt 0 && ${hoursSinceLastRebase} -gt ${BashMatic__RebasePeriodHours} ]]; then
-    debug_log "updating ${bldblu}bashmatic${txtgrn}, which is ${hoursSinceLastRebase} hours old."
+    BASHMATIC_DEBUG_log "updating ${bldblu}bashmatic${txtgrn}, which is ${hoursSinceLastRebase} hours old."
     lib::bash::update
   else
-    debug_log "bashmatic is recent, its age is ${bldgrn}${hoursSinceLastRebase}hrs..."
+    BASHMATIC_DEBUG_log "bashmatic is recent, its age is ${bldgrn}${hoursSinceLastRebase}hrs..."
   fi
 }
 
@@ -175,7 +171,7 @@ lib::bash::gitignore::add-item() {
     fi
 
     if [[ ! -f "${gitignore_file}" || -z $(grep ${ignored} "${gitignore_file}"  2>/dev/null) ]] ; then
-      debug_log "adding ${ignored} to ${gitignore_file}"
+      BASHMATIC_DEBUG_log "adding ${ignored} to ${gitignore_file}"
       echo "${ignored}" >> "${gitignore_file}"
     fi
   done

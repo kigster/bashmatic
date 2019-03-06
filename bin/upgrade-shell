@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+#
+# Usage:       upgrade-bash
+# Description: Upgrade BASH to version 4 on MacOSX
+#
+# Written by Konstantin Gredeskoul
+#
+#################################################################
+
+( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
+  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
+
+(( $__ran_as_script )) || {
+  echo
+  printf "${txtred}This script should be run, not sourced.${clr}\n"
+  echo; return
+}
+
+source ${BASHMATIC_HOME}/lib/Loader.bash
+
+export SHELL_BASH_OSX="/bin/bash"
+export SHELL_BASH_BREW="/usr/local/bin/bash"
+
+trap "printf \"\${clr}\n\"" EXIT
+
+bash.install() {
+  inf "installing latest BASH with brew, please hold on ... "
+  set -e
+  brew install bash --force 2>&1 | cat 1>/dev/null
+  set +e
+  ok:
+}
+
+bash.check.version() {
+  local bash=${1:-${SHELL_BASH_BREW}}
+  local version=${2:-4}
+  ${bash} --version 2>/dev/null | grep "version ${version}"
+}
+
+bash.install.version4() {
+  if [[ -z $(bash.check.version bash 4) ]] ; then
+    if [[ -x ${SHELL_BASH_BREW} ]]; then
+      if [[ -n $(bash.check.version ${SHELL_BASH_BREW} 4) ]] ; then
+        info "You already have BASH version 4 installed in ${SHELL_BASH_BREW}"
+      else
+        bash.install
+      fi
+    else
+      bash.install
+    fi
+  else
+    info 'Your bash is already at version 4, so all good mate!'
+  fi
+}
+
+bash.append_path() {
+  local file=${1}
+  local new_path=${2:-"/usr/local/bin"}
+  local string="export PATH=\"${new_path}:\${PATH}\""
+  if [[ -z $(egrep "export PATH=\"${new_path}" ${file}) ]]; then
+    inf "adding ${txtblue}${new_path}${clr} to ${txtgrn}${file}${clr}"
+    set -e
+    echo >> ${file}
+    echo "${string}" >> ${file}
+    echo >> ${file}
+    set +e
+    ok:
+  else
+    info "file ${bldylw}${file}${txtblu} already contains ${bldgrn}${string}${clr}..."
+  fi
+}
+
+bash.install.path.rc() {
+  if [[ ${PATH} != /usr/local/bin:* ]]; then
+    export PATH="/usr/local/bin:$PATH"
+    bash.append_path ~/.bashrc
+    bash.append_path ~/.bash_profile
+  fi
+}
+
+bash.current.shell() {
+  if [[ -n $(which finger) ]]; then
+    finger ${USER} | grep Shell | awk '{print $4}'
+  else
+    echo $SHELL
+  fi
+}
+
+bash.user.chsh() {
+  local new_shell=${1}
+
+  if [[ "${SHELL}" == "${new_shell}" ]]; then
+    warning: "abort: ${bldylw} shell ${new_shell} is already current."
+    return -1
+  fi
+
+  if ! [[ -x "${new_shell}" ]]; then
+    bash.install.version4
+  fi
+
+  if [[ -x ${new_shell} ]]; then
+    if [[ -z $(grep ${new_shell} /etc/shells) ]]; then
+      info "Please enter your password if asked, as the following command may require sudo:"
+      echo ${new_shell} | sudo tee -a /etc/shells
+    fi
+
+    printf ${bldblu} 1>&2
+    set -e
+    chsh -s ${new_shell}
+    set +e
+    printf ${clr}
+    info: "Great, shell change was successful."
+    echo
+    bash.instructions
+  else
+    error "${new_shell} is still not there, or not executable :("
+  fi
+}
+
+bash.confirm() {
+  h1 "Upgrade Your BASH"
+
+  h2  "This script will: " \
+      "  1. install (if needed) version 4 of BASH to /usr/local/bin/bash" \
+      "  2. append the shell path to the /etc/shells file, and " \
+      "  3. it will switch your shell to the new one. " \
+      "You will need keep your current session open, and start a new terminal." \
+      "To verify that you have a new version, type 'echo \$BASH_VERSION' in " \
+      "the new terminal; you should see something like '4.4.12(1)-release'"
+
+  echo
+
+  lib::run::ask "Are you sure you want to proceed?"
+  [[ $? != 0 ]] && return
+}
+
+bash.quit_if_already_upgraded() {
+  if [[ $(bash.current.shell) == ${SHELL_BASH_BREW} ]]; then
+    echo
+    box::yellow-in-blue \
+        "It appears that your current shell is already" \
+        "${bldcyn}${SHELL_BASH_BREW}${bldylw}"
+
+    exit 0
+  fi
+}
+
+bash.instructions() {
+  h2  "NOTE, that your current session will still be on the old shell." \
+      "You need to start a new terminal session, make sure it loads "\
+      "before you close this one. In the new termninal you should see " \
+      "something similar to '4.4.12(1)-release' when you type 'echo \$BASH_VERSION'"
+}
+
+#——————————————————————————————————————————————————————————————————————————————
+# Main
+#——————————————————————————————————————————————————————————————————————————————
+
+main() {
+  bash.quit_if_already_upgraded
+  bash.confirm
+  bash.user.chsh ${SHELL_BASH_BREW}
+  bash.install.path.rc
+}
+
+main $*

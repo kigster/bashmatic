@@ -57,7 +57,7 @@ lib::color::enable() {
 
     export AppColorsLoaded=1
   else
-    [[ -n ${DEBUG} ]] && echo "colors already loaded..."
+    [[ -n ${BASHMATIC_DEBUG} ]] && echo "colors already loaded..."
   fi
 }
 

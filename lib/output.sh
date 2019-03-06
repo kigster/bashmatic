@@ -537,8 +537,8 @@ br() {
   echo
 }
 
-debug() {
-  if [[ -n ${DEBUG} ]]; then
+BASHMATIC_DEBUG() {
+  if [[ -n ${BASHMATIC_DEBUG} ]]; then
     info $@ 1>&2
   fi
 }

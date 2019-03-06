@@ -1,38 +1,76 @@
 
 [![Build Status](https://travis-ci.org/kigster/bashmatic.svg?branch=master)](https://travis-ci.org/kigster/bashmatic)
 
-# BashMatic
+# BashMatic — Sane DSL for BASH scripts
 
-<!-- TOC START min:2 max:4 link:true update:true -->
-- [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
-  - [Whats Included?](#whats-included)
-    - [Runtime Framework](#runtime-framework)
-    - [Examples of Runtime Framework](#examples-of-runtime-framework)
-    - [UI Drawing / Output functions](#ui-drawing--output-functions)
-    - [Other Utilities](#other-utilities)
-- [Usage](#usage)
-  - [1. Integrating With Your Project](#1-integrating-with-your-project)
-  - [2. Manual Install](#2-manual-install)
-    - [Custom Installer](#custom-installer)
-  - [Some Tips on Writing Shell Scripts](#some-tips-on-writing-shell-scripts)
-  - [The List of Available Functions](#the-list-of-available-functions)
-  - [Naming Conventions](#naming-conventions)
-  - [Writing tests](#writing-tests)
-- [Helpful Scripts](#helpful-scripts)
-  - [Changing OSX Underscan for Old Monitors](#changing-osx-underscan-for-old-monitors)
-  - [Contributing](#contributing)
+> NOTE: installation hooks are currently under revision and will soon be much easier.
 
-<!-- TOC END -->
+## Motivation
 
-## Reusable BASH Components for UI, Runtime, Ruby, Database and More
+Welcome to **BashMatic**!
 
-Welcome to **BashMatic** — an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
+This project was born out of a realization by several very senior and highly experienced engineers, who built software for several decades in over ten languages and apps using Java, Ruby, NodeJS, React, AngularJS, C/C++ applications. All of these projects had databases, had somewhat complicated dependencies, and so a realization was born that:
+
+ 1. It is often easier to use BASH for writing things like universal **installers**, a.k.a. **setup scripts**, **uploaders**, wrappers for all sorts of functionality, such as **NPM**, **rbenv**, installing gems, rubies, using AWS, deploying code, etc.
+
+ 2. A lot of tasks are easy and compact to automate in BASH, and BASH function's return values lend themselves nicely to a compact DSL [domain specific language](https://en.wikipedia.org/wiki/Domain-specific_language) where multiple functions can be chained by logical AND `&&` and OR `||` to provide a very compact execution logic. Most importantly, we think that this logic is **extremely easy to read and understand.**
+
+ 3. By using a consistent programming style and descriptive method names we can create installers and uploaders that are easy to read, maintain and debug. Did we mention about the most awesome **runtime** framework? See below!
+
+## DSL Example
+
+The following example is the actual code from a soon to be integrated AWS credentials install script. This code below checks that a user has a local `~/.aws/credentials` file needed by the `awscli`, and in the right INI format. If it doesn't find it, it checks for the access key CSV file in the `~/Downloads` folder, and converts that if found. Now, if even that is not found, it prompts the user with instructions on how to generate a new key pair on AWS IAM website, and download it locally, thereby quickly converting and installing it as a proper credentials file. Not bad, for a compact BASH script, right? (of course, you are not seeing all of the involved functions, only the public ones).
+
+```bash
+  # NOTE: some functions used here are not shown.
+  aws::credentials::ensure-or-exit() {
+    aws::credentials::present && return 0
+    aws::credentials::install-if-missing || bashmatic::exit-or-return 1
+  }
+
+  aws::credentials::install-if-missing() {
+    aws::credentials::present || {
+      aws::access-key::present || aws::access-key::download
+      aws::access-key::present && aws::credentials::from-access-key-file
+    }
+
+    aws::credentials::present || {
+      error "Unable to find AWS credentials. Please try again." && return 1        
+    }
+    return 0
+  }    
+```
+
+Now, **how would you use it in a script?** Let's say you need a script to upload
+something to AWS S3. But before you begin, wouldn't it be nice to verify
+that the credentials exist, and if not — help the user install it? Yes it would.
+
+And that is exactly what the code above does, but it looks like a DSL. because
+it *is* a DSL.
+
+> This script could be your `bin/s3-uploader`
+
+```bash
+  #!/usr/bin/env bash
+
+  # Initialize BashMatic in this subshell
+  eval "$("${BASHMATIC_HOME}/init")"
+
+  # call the function. It will exit if the user fails to follow instructions
+  # and install a proper file.
+  aws::credentials::ensure-or-exit
+
+  # if we are here, that means that AWS credentials have been found.
+  # and we can continue with our script.
+```
+
+### BASH Programming Style
 
 We have adopted the [Google Bash Style Guide](https://google.github.io/styleguide/shell.xml), and it's recommended that anyone committing to this repo reads the guides to understand the conventions, gotchas and anti-patterns.
 
 ### Whats Included?
 
-There is a ton of useful scripts, functions, shortcuts and frameworks that make programming BASH fun. At least for me they do! 
+There is a ton of useful scripts, functions, shortcuts and frameworks that make programming BASH fun. At least for me they do!
 
 To get a sense of the number of functions included, run `bin/print-functions` command, optionally passing a number of columns you want to see them printed with. If your screen is wide, use eg. `bin/print-functions 5`.
 
@@ -40,28 +78,29 @@ To get a sense of the number of functions included, run `bin/print-functions` co
 
 One of the core tenets of this library is it's "runtime" framework, which offers a way to run and display commands as they run, while having a fine-grained control over the following:
 
- * What happens when one of the commands fails? Options include:
-   * Ignore and continue (default) — *continue-on-error*
-   * Ask the user if she wants to proceed — *ask-on-error*
-   * Abort the entire run — *abort-on-error*.
- * How is command output displayed?
-   * Is it swallowed for compactness, and only shown if there is an error? (default) — *show-output-off*
-   * Or is it shown regardless? — *show-output-on*
- * Should commands actually run (*dry-run-off*), or simply be printed? (*dry-run-on*).
+* What happens when one of the commands fails? Options include:
+  * Ignore and continue (default) — `continue-on-error`
+  * Ask the user if she wants to proceed — `ask-on-error`
+  * Abort the entire run — `abort-on-error`.
+* How is command output displayed?
+  * Is it swallowed for compactness, and only shown if there is an error? (default) — `show-output-off`
+  * Or is it shown regardless? — `show-output-on`
+* Should commands actually run (`dry-run-off`), or simply be printed? (`dry-run-on`).
 
-#### Examples of Runtime Framework
-
-> NOTE, in the following examples we assume you installed the library into your project's folder as `.bashmatic` (a "hidden" folder starting with a dot).
+##### Examples of Runtime Framework
 
 Programming style used in this project lends itself nicely to using a DSL-like approach to shell programming.  For example, in order to configure the behavior of the run-time framework (see below) you would run the following command:
 
 ```bash
 #!/usr/bin/env bash
-
-# (See below on the location of .bashmatic and ways to install it)
-source ~/.bashmatic/lib/Loader.bash
+# Load BashMatic
+eval "$("${BASHMATIC_HOME}/init")"
 
 # configure global behavior of all run() invocations
+# we set to abort on any error, similar to -e with the shell,
+# and we also choose to swallow the STDOUT of the commands
+# being executed. If a command fails, it's STDERR is printed,
+# because it's saved to a temp file anyway.
 run::set-all abort-on-error show-output-off
 
 run "git clone https://gthub.com/user/rails-repo rails"
@@ -144,7 +183,7 @@ box::blue-in-green                  inf
 box::yellow-in-blue                 warn
 box::red-in-yellow                  warning
 box::red-in-red                     br
-box::green-in-magenta               debug
+box::green-in-magenta               BASHMATIC_DEBUG
 box::red-in-magenta                 info
 box::green-in-green                 error
 box::magenta-in-green               info:
@@ -190,7 +229,13 @@ Each library will have a set of private functions, typically named `__lib::util:
 
 There are a couple of ways that you can install and use this library.
 
-   1. The simplest way is to use the online bootstrap script.  This method is often used to integrate **BashMatic** with your other projects, so that they can be built upon their own internal BASH tooling using all the goodies in this library.
+   * The first one, is to simply git clone the repo into `~/.bashmatic`:
+
+    ```bash
+    git clone https://github.com/kigster/bashmatic ~/.bashmatic
+    ```
+
+   *he simplest way is to use the online bootstrap script.  This method is often used to integrate **BashMatic** with your other projects, so that they can be built upon their own internal BASH tooling using all the goodies in this library.
 
    1. One is doing a simple manual `git clone`, and then "sourcing" the main `lib/Loader.bash` file from one of your "dotfiles".
 

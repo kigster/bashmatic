@@ -75,7 +75,6 @@ specs::run-all() {
 specs::main() {
   specs::prepare
   specs::select-files
-
   specs::run-all
 }
 

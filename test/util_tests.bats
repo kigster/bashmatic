@@ -1,5 +1,4 @@
 #!/usr/bin/env bats
-#
 
 load test_helper
 
@@ -22,4 +21,18 @@ set -e
   pw2=$(lib::util::generate-password ${len})
 
   [ "${pw1}" != "${pw2}" ]
+}
+
+@test "is-function with a valid function" {
+  set +e
+  is-function lib::util::generate-password
+  code=$?
+  [[ ${code} -eq 0 ]]
+}
+
+@test "is-function with a invalid function" {
+  set +e
+  is-function asdf::sdfkljdsf::sdfksdjf
+  code=$?
+  [[ ${code} -ne 0 ]]
 }

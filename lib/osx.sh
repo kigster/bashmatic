@@ -80,7 +80,7 @@ lib::osx::display::change-underscan() {
   lib::run::ask "Have you changed the resolution and exited Display Prefs? "
 
   local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')
-  [[ -n $DEBUG ]] && info "diff line is at ${line}"
+  [[ -n $BASHMATIC_DEBUG ]] && info "diff line is at ${line}"
   value=
 
   if [[ "${line}" -gt 0 ]]; then
@@ -88,7 +88,7 @@ lib::osx::display::change-underscan() {
     line_pscn_value=$(( $line - 3 ))
     ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && {
       value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}')
-      [[ -n $DEBUG ]] && info "current value is ${value}"
+      [[ -n $BASHMATIC_DEBUG ]] && info "current value is ${value}"
     }
   else
     error "It does not appear that anything changed, sorry."
