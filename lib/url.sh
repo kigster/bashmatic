@@ -28,19 +28,24 @@ lib::url::shorten() {
   local longUrl="$1"
 
   if [[ -z "${BITLY_LOGIN}" || -z "${BITLY_API_KEY}" ]]; then
-    printf "${longUrl}\n"
-  else
+    printf "${longUrl}"
 
-    export BITLY_LOGIN=$(printf ${BITLY_LOGIN} | tr -d '^M')
-    export BITLY_API_KEY=$(printf ${BITLY_API_KEY} | tr -d '^M')
+  else
+    export BITLY_LOGIN=$(printf '%s' "${BITLY_LOGIN}" | tr -d '\r' | tr -d '\n')
+    export BITLY_API_KEY=$(printf '%s' "${BITLY_API_KEY}" | tr -d '\r' | tr -d '\n')
 
     if [[ -n $(which ruby) ]]; then
       longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI::encode(str)")
     fi
 
+    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_LOGIN}" | cat -vet  
+    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_API_KEY}" | cat -vet  
+
     bitlyUrl="http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}"
 
-    $(lib::url::downloader) "${bitlyUrl}"
+    #[[ -n ${DEBUG} ]] && debug "BitlyAPI URL is:\n${bitlyUrl}\n"
+
+    $(lib::url::downloader) "${bitlyUrl}" | tr -d '\n' | tr -d ' '
   fi
 }
 
