@@ -37,7 +37,7 @@ array-contains-element() {
     echo -n $r
     return 1
   }
-  for e in "${@}"; do 
+  for e in "${@}"; do
     [[ "$e" == "${search}" ]] && r="true"
   done
   echo -n $r
@@ -86,14 +86,40 @@ lib::array::exit-unless-includes() {
 
 lib::array::join() {
   local sep="$1"; shift
-  echo ${*} | sed -E "s/ /${sep}/g"
+  local lines="$1"
+
+  if [[ ${lines} == true || ${lines} == false ]];  then
+    shift
+  else
+    lines=false
+  fi
+
+  local result=""
+  local br=""
+  local elem
+
+  ${lines} && {
+    br="\n"
+  }
+  for elem in "$@"; do
+    if [[ -z ${result} ]]; then
+      ${lines} || result="${elem}"
+      ${lines} && result="${sep}${elem}"
+    else
+      result="${result}${br}${sep}${elem}"
+    fi
+  done
+  printf "${result}${br}"
 }
 
 array-join() { lib::array::join "$@"; }
 
+array-bullet-list() {
+  lib::array::join ' • ' true "$@"
+}
+
 lib::array::join-piped() {
-  lib::array::join ' | ' "$@"
+  lib::array::join ' | ' false "$@"
 }
 
 array-join-piped() { lib::array::join-piped "$@"; }
-

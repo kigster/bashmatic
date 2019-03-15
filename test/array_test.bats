@@ -2,9 +2,20 @@
 
 load test_helper
 
-@test "lib::array::join" {
+
+@test "lib::array::join with a pipe" {
+  declare -a array=("a string" "test2000" "hello" "one")
+  result=$(lib::array::join '|' "${array[@]}")
+  echo ${result}
+  [[ "${result}" == "a string|test2000|hello|one" ]]
+}
+
+@test "lib::array::join with comma" {
+  unset result array code status
   declare -a array=(uno dos tres quatro cinco seis)
-  [[ $(lib::array::join ', ' "${array[@]}") == "uno, dos, tres, quatro, cinco, seis" ]]
+  set -e
+  result=$(lib::array::join ', ' "${array[@]}")
+  [[ ${result} == "uno, dos, tres, quatro, cinco, seis" ]]
   [[ $status -eq 0 ]]
 }
 
@@ -71,4 +82,18 @@ load test_helper
 @test "array-contains-element when element does not exist and is a space " {
   declare -a array=("a string" "test2000" "hello" "one")
   [[ $(array-contains-element ' ' "${array[@]}")  == "false" ]]
+}
+
+@test "array-bullet-list" {
+  declare -a array=(kig pig)
+  tmp=$(mktemp)
+  array-bullet-list "${array[@]}" > ${tmp}
+  
+  lines=$(cat "${tmp}" | wc -l | tr -d ' ')
+  echo "${tmp}"
+
+  result="$(cat "${tmp}")"
+  [[ ${lines} -eq 2                              ]]
+  [[ $(cat "${tmp}" | egrep -c ' • kig') -eq 1  ]]
+  [[ $(cat "${tmp}" | egrep -c ' • pig') -eq 1  ]]
 }
