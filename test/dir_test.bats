@@ -27,3 +27,16 @@ source lib/dir.sh
   dir="/tmp/azsdfasdfasd9asd/oazsifoasdufolids/sld5-1474905687.${RANDOM}"
   [[ $(lib::dir::is-a-dir "${dir}") -eq false ]]
 }
+
+@test "lib::dir::expand-dir on ~ dir" {
+  [[ "$(lib::dir::expand-dir ~/tmp)" =~ "/Users" ]]
+  [[ "$(lib::dir::expand-dir ~/tmp)" == "${HOME}/tmp" ]]
+}
+@test "lib::dir::expand-dir on / dir" {
+  [[ "$(lib::dir::expand-dir /tmp/mahaha)" == "/tmp/mahaha" ]]
+}
+
+@test "lib::dir::expand-dir on ~ dir" {
+  [[ "$(lib::dir::expand-dir tmp)" == "$(pwd)/tmp" ]]
+}
+
