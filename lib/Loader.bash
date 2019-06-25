@@ -48,3 +48,5 @@ lib::bash-source() {
 }
 
 [[ -n ${BashMatic__LibDir} ]] && lib::bash-source "${BashMatic__LibDir}"
+
+source "${BashMatic__LibDir}/Initializer.bash"
