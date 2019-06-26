@@ -155,9 +155,11 @@ lib::osx::set-fqdn() {
 
   echo
 
-  info "• You provided the followin fqdn  : ${bldylw}${fqdn}"
-  info "• The new hostname will be set to : ${bldgrn}${host}"
-  info "• Thew new domain will be set to  : ${bldgrn}${domain}"
+  info "• You provided the following FQDN : ${bldylw}${fqdn}"
+  echo
+  info "• Hostname will be set to: ${bldgrn}${host}"
+  info "• Domain will also change: ${bldgrn}${domain}"
+
  
   echo
 
@@ -184,20 +186,22 @@ lib::osx::set-fqdn() {
 
   h2 "Result of the changes:"
 
-  inf "HostName      — "
-  printf ${bldylw}
-  sudo scutil --get HostName | tr -d '\n'
-  ok:
+  lib::osx::scutil-print HostName
+  lib::osx::scutil-print LocalHostName
+  lib::osx::scutil-print ComputerName
+  lib::osx::env-print HOSTNAME
+  echo
+  hr
+}
 
-  inf "LocalHostName — "
-  printf ${bldylw}
-  sudo scutil --get LocalHostName | tr -d '\n'
-  ok:
+lib::osx::scutil-print() {
+  local var="$1"
+  printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} $(sudo scutil --get ${var} | tr -d '\n')
+}
 
-  inf "ComputerName  — "
-  printf ${bldylw}
-  sudo scutil --get ComputerName | tr -d '\n'
-  ok: 
+lib::osx::env-print() {
+  local var="$1"
+  printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} ${!var}
 }
 
 bashmatic-set-fqdn() {
