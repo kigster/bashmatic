@@ -143,3 +143,63 @@ lib::osx::ramdisk::unmount() {
   fi
 }
 
+# Pass a fully qualified domain name, such as "apollo.mydomain.me"
+# This function will set the computer name to "apollo", and HostName to the
+# full fqdn.
+lib::osx::set-fqdn() {
+  local fqdn="$1"
+  local domain=$(echo ${fqdn} | sed -E 's/^[^.]*\.//g')
+  local host=$(echo ${fqdn} | sed -E 's/\..*//g')
+
+  h1 "Current HostName: ${bldylw}${HOSTNAME}"
+
+  echo
+
+  info "• You provided the followin fqdn  : ${bldylw}${fqdn}"
+  info "• The new hostname will be set to : ${bldgrn}${host}"
+  info "• Thew new domain will be set to  : ${bldgrn}${domain}"
+ 
+  echo
+
+  lib::run::ask "Does that look correct to you?"
+
+  echo
+
+  inf "Now, please provide your SUDO password, if asked: "
+
+  sudo printf '' || {
+    not_ok: 
+    exit 1
+  }
+
+  ok:
+
+  run "sudo scutil --set HostName ${fqdn}"
+  run "sudo scutil --set LocalHostName ${host}.local 2>/dev/null|| true"
+  run "sudo scutil --set ComputerName ${host}"
+  
+  run "dscacheutil -flushcache"
+
+  echo
+
+  h2 "Result of the changes:"
+
+  inf "HostName      — "
+  printf ${bldylw}
+  sudo scutil --get HostName | tr -d '\n'
+  ok:
+
+  inf "LocalHostName — "
+  printf ${bldylw}
+  sudo scutil --get LocalHostName | tr -d '\n'
+  ok:
+
+  inf "ComputerName  — "
+  printf ${bldylw}
+  sudo scutil --get ComputerName | tr -d '\n'
+  ok: 
+}
+
+bashmatic-set-fqdn() {
+  lib::osx::set-fqdn "$@"
+}
