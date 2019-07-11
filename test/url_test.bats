@@ -13,3 +13,21 @@ load test_helper
     false
   fi
 }
+
+@test "lib::url::http-code() with a valid url" {
+  source lib/url.sh
+  local code=$(lib::url::http-code https://google.com)
+  [[ ${code} == 200 ]]
+}
+
+@test "lib::url::http-code() with a valid url but non-existant page" {
+  source lib/url.sh
+  local code=$(lib::url::http-code https://google.com/asdfasldkfjasldkjf)
+  [[ ${code} == 404 ]]
+}
+
+@test "lib::url::http-code() with an invalid URL" {
+  source lib/url.sh
+  local code=$(lib::url::http-code zhopa-egorovna 2>&1)
+  [[ ${code} =~ 'The URL provided is not a valid URL' ]]
+}

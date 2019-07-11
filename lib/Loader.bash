@@ -5,6 +5,7 @@ export False=0
 
 # Set this externally if your bashmatic is not installed in ~/.bashmatic
 export BashMatic__Home=${BashMatic__Home:-"${HOME}/.bashmatic"}
+export BASHMATIC_HOME="${BashMatic__Home}"
 
 export BashMatic__SearchTarget="Loader.bash"
 export BashMatic__Loader=$(find -L . -maxdepth 3 -type f -name "${BashMatic__SearchTarget}" -print 2>/dev/null | tail -1)

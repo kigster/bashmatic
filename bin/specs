@@ -35,10 +35,26 @@ specs::usage() {
   exit 0
 }
 
-specs::prepare() {
-  [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
-  [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
-  [[ -d ${BatsRoot} ]] && run "cd ${BatsRoot} && git pull --rebase 2>/dev/null; ./install /usr/local/bin; cd ${ProjectRoot}"
+specs::install-bats() {
+
+  [[ -n $(which bats) ]] && return 0
+
+  if [[ -n $(which brew) ]] ; then
+    run "brew install bats"
+  else
+    [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
+    [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
+    [[ -d ${BatsRoot} ]] && run "cd ${BatsRoot} && git pull --rebase 2>/dev/null"
+    [[ -x install.sh ]] && run "./install.sh /usr/local; cd ${ProjectRoot}"
+  fi
+
+  run 'hash -r'
+
+  [[ -z $(which bats) ]] && {
+    error "Can't find bats after attemping to install..."
+    exit 1
+  }
+
 }
 
 specs::run-file() {
@@ -73,9 +89,8 @@ specs::run-all() {
 }
 
 specs::main() {
-  specs::prepare
+  specs::install-bats
   specs::select-files
-
   specs::run-all
 }
 

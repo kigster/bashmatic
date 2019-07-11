@@ -38,8 +38,8 @@ lib::url::shorten() {
       longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI::encode(str)")
     fi
 
-    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_LOGIN}" | cat -vet  
-    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_API_KEY}" | cat -vet  
+    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_LOGIN}" | cat -vet
+    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_API_KEY}" | cat -vet
 
     bitlyUrl="http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}"
 
@@ -65,4 +65,70 @@ lib::url::downloader() {
   fi
 
   printf "${LibUrl__Downloader}"
+}
+
+# Returns 'ok' or 'invalid' based on the URL
+lib::url::valid-status() {
+  local url="$1"
+
+  echo "${url}" | ruby -ne '
+    require "uri"
+    u = URI::parse("#{$_}".chomp)
+    if u && u.host && u.host&.include?(".") && u&.scheme =~ /^http/
+      print "ok"
+    else
+      print "invalid"
+    end'
+}
+
+# Returns function exit status 0 if the URL is valid.
+lib::url::is-valid() {
+  local url="$1"
+  if [[ $(lib::url::valid-status "$url") = "ok" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+# Returns HTTP code when attempting to fetch the URL.
+# If the URL does not parse, prints error and returns a non-zero status.
+#
+# Finally, sets a global variable LibUrl__LastHttpCode to the
+# HTTP code received.
+#
+# If the second argument is +true+, intead of printing the code to
+# the STDOUT, function silently exits eith with 0 (200+) or 1 (other.)
+lib::url::http-code() {
+  local url="$1"
+  local quiet="${2:-false}"
+
+  [[ -z $(which wget) ]] && {
+    echo >&2
+    err "This function currently only supports ${bldylw}wget.\n" >&2
+    echo >&2
+    return 100
+  }
+
+  lib::url::is-valid "$url" || {
+    echo >&2
+    err "The URL provided is not a valid URL: ${bldylw}${url}\n" >&2
+    echo >&2
+    return 101
+  }
+
+  local result=$(wget -v --spider "${url}" 2>&1 | egrep "response" | awk '{print $6}' | tr -d ' ' | tail -1)
+
+  export LibUrl__LastHttpCode="${result}"
+
+  if [[ ${quiet} == true ]]; then
+    # if the return code between 200 and 209 we return success.
+    if [[ ${result} -gt 199 && ${result} -lt 210 ]]; then
+       return 0
+     else
+       return 1
+     fi
+  else
+    [[ -n "${result}" ]] && printf ${result} || printf "404"
+  fi
 }
