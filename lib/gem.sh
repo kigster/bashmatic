@@ -16,7 +16,7 @@ lib::gem::version() {
   [[ -z ${gem} ]] && return
 
   local version
-  [[ -f Gemfile.lock ]] && version=$(lib::gem::gemfile::version ${gem})
+  [[ -f Gemfile ]] && version=$(lib::gem::gemfile::version ${gem})
   [[ -z ${version} ]] && version=$(lib::gem::global::latest-version ${gem})
   [[ -z ${version} && -n ${default} ]] && version=${default} # fallback to the default if not found
 
@@ -55,15 +55,43 @@ lib::gem::gemfile::version() {
 
   [[ -z ${gem} ]] && return
 
+  lib::gem::gemfile::bundle-install
+
   if [[ -f Gemfile.lock ]]; then
     egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9]\)" Gemfile.lock | awk '{print $2}' | hbsed 's/[()]//g'
+  fi
+}
+
+# Installs bundler and runs bundle install if a local gemfile
+# is found.
+lib::gem::gemfile::bundle-install() {
+  if [[ -f Gemfile ]] ; then
+    [[ -z $(which bundle) ]] && gem install bundler 1>&2 | cat > /dev/null
+    ( bundle check || bundle install ) 2>&1 1>/dev/null
+  fi
+}
+
+# Returns either 'gem' or 'bundle exec gem' depending on
+# whether there is a Gemfile in the current folder.
+lib::gem::command() {
+
+  # ensure we have Gemfile.lock
+  lib::gem::gemfile::bundle-install
+
+  if [[ -f Gemfile.lock ]] ; then
+    export LibGem__Command="bundle exec gem"
+    export LibGem__GemListCache=/tmp/gem_list.txt.$(ruby --version).$(pwd | sed 's/ /-/g; s/\//--/g')
+  else
+    export LibGem__Command="gem"
+    export LibGem__GemListCache=/tmp/gem_list.txt.$(ruby --version)
   fi
 }
 
 # this ensures the cache is only at most 30 minutes old
 lib::gem::cache-installed() {
   if [[ ! -s "${LibGem__GemListCache}" || -z $(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null) ]]; then
-    run "gem list > ${LibGem__GemListCache}"
+    export LibGem__Command=$(lib::gem::command)
+    run "${LibGem__Command} list > ${LibGem__GemListCache}"
   fi
 }
 
@@ -81,7 +109,7 @@ lib::gem::ensure-gem-version() {
   lib::gem::cache-installed
 
   if [[ -z $(cat  ${LibGem__GemListCache} | grep "${gem} (${gem_version})") ]]; then
-    lib::gem::uninstall ${gem} 
+    lib::gem::uninstall ${gem}
     lib::gem::install ${gem} ${gem_version}
   else
     info "gem ${gem} version ${gem_version} is already installed."
@@ -109,6 +137,8 @@ lib::gem::install() {
   local gem_version_flags=
   local gem_version_name=
 
+  export LibGem__Command=$(lib::gem::command)
+
   gem_version=${gem_version:-$(lib::gem::version ${gem_name})}
 
   if [[ -z ${gem_version} ]]; then
@@ -121,7 +151,7 @@ lib::gem::install() {
 
   if [[ -z $(lib::gem::is-installed ${gem_name} ${gem_version}) ]]; then
     info "installing ${bldylw}${gem_name} ${bldgrn}(${gem_version_name})${txtblu}..."
-    run "gem install ${gem_name} ${gem_version_flags} ${LibGem__GemInstallFlags}"
+    run "${LibGem__Command} install ${gem_name} ${gem_version_flags} ${LibGem__GemInstallFlags}"
     if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
       rbenv rehash >/dev/null 2>/dev/null
       lib::gem::cache-refresh
@@ -130,7 +160,7 @@ lib::gem::install() {
     fi
     return ${LibRun__LastExitCode}
   else
-    info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed"
+    info: "${LibGem__Command} ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed"
   fi
 }
 
@@ -150,7 +180,9 @@ lib::gem::uninstall() {
     gem_flags="${gem_flags} --version ${gem_version}"
   fi
 
-  run "gem uninstall ${gem_name} ${gem_flags}"
+  export LibGem__Command=$(lib::gem::command)
+
+  run "${LibGem__Command} uninstall ${gem_name} ${gem_flags}"
   lib::gem::cache-refresh
 }
 
