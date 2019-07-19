@@ -1,12 +1,21 @@
-export LibSed__TargetVersion=
+export LibSed__latestVersion=
 
-hbsed() {
-  local target=${LibSed__TargetVersion:-'/usr/local/bin/gsed'}
+hbsed() { 
+  local current=$(which sed)
+  local latest=${LibSed__latestVersion:-'/usr/local/bin/gsed'}
   local os=$(uname -s)
-  [[ ! -x ${target} && ${os} == "Darwin" ]] && ( brew install gnu-sed --force --fast ) 2>&1 | cat > /dev/null
-  [[ ! -x ${target} && ${os} == "Linux" ]] && target=$(which sed)
 
-  [[ -x ${target} ]] || return 1
+  if [[ ! -x "${latest}" ]]; then
+    if [[ "${os}" == "Darwin" ]] ; then
+      [[ -n $(which brew) ]] || return 1
+      brew install gnu-sed 1>/dev/null 2>&1
+      [[ -x "${latest}" ]] || latest="${current}"
+    elif [[ "${os}" == "Linux" ]] ; then
+      latest="${current}"
+    fi
+  fi
 
-  ${target} -E "$@"
+  latest=${latest:-${current}}
+
+  ${latest} -E "$@"
 }

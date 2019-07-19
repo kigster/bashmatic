@@ -8,7 +8,7 @@ load test_helper
   touch ${LibGem__GemListCache}
   cp -f test/Gemfile.lock .
   result=$(lib::gem::gemfile::version activesupport)
-  [[ "${result}" == "5.0.7" ]]
+  [[ "${result}" == "5.2.0" ]]
   [[ -d test && -f Gemfile.lock ]] && ( rm -f Gemfile.lock ; true ) 
 } 
 

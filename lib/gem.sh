@@ -56,7 +56,7 @@ lib::gem::gemfile::version() {
   [[ -z ${gem} ]] && return
 
   if [[ -f Gemfile.lock ]]; then
-    egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9]\)" Gemfile.lock | awk '{print $2}' | hbsed 's/[()]//g'
+    egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9]\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
   fi
 }
 
@@ -81,7 +81,7 @@ lib::gem::ensure-gem-version() {
   lib::gem::cache-installed
 
   if [[ -z $(cat  ${LibGem__GemListCache} | grep "${gem} (${gem_version})") ]]; then
-    lib::gem::uninstall ${gem} 
+    lib::gem::uninstall ${gem}
     lib::gem::install ${gem} ${gem_version}
   else
     info "gem ${gem} version ${gem_version} is already installed."
