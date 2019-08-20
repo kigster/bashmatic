@@ -207,3 +207,17 @@ lib::osx::env-print() {
 bashmatic-set-fqdn() {
   lib::osx::set-fqdn "$@"
 }
+
+bashmatic-term-program() {
+  if [[ -d /Applications/iTerm.app ]] ; then
+    printf '%s' /Applications/iTerm.app
+  elif [[ -d /Applications/Utilities/Terminal.app ]]; then
+    printf '%s' /Applications/Utilities/Terminal.app
+  else
+    printf '%s' "echo 'No TERMINAL application found'"
+  fi
+}
+
+bashmatic-term() {
+  open $(bashmatic-term-program)
+}
