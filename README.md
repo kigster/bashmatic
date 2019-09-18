@@ -419,21 +419,23 @@ The framework comes with a bunch of automated unit tests based on the fantastic 
 To run all tests:
 
 ```bash
-cd ~/.BashMatic
+cd ~/.bashmatic
+bin/specs
+```
 
 While not every single function is tested (far from it), we do try to add tests to the critical ones.
 
 Please see [existing tests](https://github.com/kigster/bashmatic/tree/master/test) for the examples.
 
-## Helpful Scripts
+## How To?
 
-### Changing OSX Underscan for Old Monitors
+### How To Change Underscan or Overscan for Old Monitors
 
 If you are stuck working on a monitor that does not support switching digit input from TV to PC, NOR does OS-X show the "underscan" slider in the Display Preferences, you may be forced to change the underscan manually. The process is a bit tricky, but we have a helpful script to do that:
 
 ```bash
 $ source lib/Loader.bash
-$ lib::osx::display::change-underscan 5
+$ change-underscan 5
 ```
 
 This will reduce underscan by 5% compared to the current value. The total value is 10000, and is stored in the file `/var/db/.com.apple.iokit.graphics`. The tricky part is determining which of the display entries map to your problem monitor. This is what the script helps with.
