@@ -23,3 +23,18 @@ set -e
 
   [ "${pw1}" != "${pw2}" ]
 }
+
+@test "lib::util::is-a-function() - when function exists" {
+  lib::util::is-a-function lib::util::generate-password
+}
+
+@test "lib::util::is-a-function() - when function does not exists" {
+  set +e
+  lib::util::is-a-function lib::util::generate-password123
+  code=$?
+  set -e
+  [ $code -ne 0 ]
+}
+
+
+

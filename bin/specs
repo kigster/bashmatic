@@ -2,7 +2,9 @@
 
 export TERM=${TERM:-xterm-256color}
 
-source "lib/Loader.bash"
+cd lib > /dev/null
+source "Loader.bash"
+cd - > /dev/null
 
 export ProjectRoot=$(pwd)
 export BatsRoot=${ProjectRoot}/.bats
@@ -29,6 +31,7 @@ specs::usage() {
 
   printf "DESCRIPTION\n    ${txtblu}Run BASH tests using Bats framework\n"
   printf "    ${txtblu}Use to run the Bats Test Suite.\n\n"
+
   printf "OPTIONS\n"
   printf "    -h | --help     Show help message\n\n"
 
@@ -36,25 +39,17 @@ specs::usage() {
 }
 
 specs::install-bats() {
-
   [[ -n $(which bats) ]] && return 0
+  [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
+  [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
 
-  if [[ -n $(which brew) ]] ; then
-    run "brew install bats"
-  else
-    [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
-    [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
-    [[ -d ${BatsRoot} ]] && run "cd ${BatsRoot} && git pull --rebase 2>/dev/null"
-    [[ -x install.sh ]] && run "./install.sh /usr/local; cd ${ProjectRoot}"
+  if [[ -d ${BatsRoot} && ! -x /usr/local/bin/bats ]] ; then
+    run "cd ${BatsRoot} && git pull --rebase 2>/dev/null"
+    run::set-next show-output-on abort-on-error
+    run "./install.sh /usr/local"
+    run "cd ${ProjectRoot}"
+    run 'hash -r'
   fi
-
-  run 'hash -r'
-
-  [[ -z $(which bats) ]] && {
-    error "Can't find bats after attemping to install..."
-    exit 1
-  }
-
 }
 
 specs::run-file() {
@@ -67,7 +62,7 @@ specs::run-file() {
     error "File ${file} is not found."
     return 1
   fi
-  hl::subtle "${file}"
+  hl::green "${file}"
   set -e
   /usr/local/bin/bats -p "${file}"
   set +e

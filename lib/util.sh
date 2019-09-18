@@ -131,6 +131,10 @@ lib::util::whats-installed() {
   info "hb.ssh <server-name-substring>, eg hb.ssh web"
 }
 
+lib::util::is-a-function() {
+  type "$1" 2>/dev/null | head -1 | grep -q 'is a function'
+}
+
 lib::util::lines-in-folder() {
   local folder=${1:-'.'}
   find ${folder} -type f -exec wc -l {} \;| awk 'BEGIN{a=0}{a+=$1}END{print a}'

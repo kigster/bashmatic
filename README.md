@@ -3,27 +3,27 @@
 
 # BashMatic
 
-<!-- TOC START min:2 max:4 link:true update:true -->
+<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
 - [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
-  - [Whats Included?](#whats-included)
-    - [Runtime Framework](#runtime-framework)
-    - [Examples of Runtime Framework](#examples-of-runtime-framework)
-    - [UI Drawing / Output functions](#ui-drawing--output-functions)
-    - [Other Utilities](#other-utilities)
+	- [Whats Included?](#whats-included)
+		- [Runtime Framework](#runtime-framework)
+		- [Examples of Runtime Framework](#examples-of-runtime-framework)
+		- [UI Drawing / Output functions](#ui-drawing-output-functions)
+		- [Other Utilities](#other-utilities)
 - [Usage](#usage)
-  - [1. Integrating With Your Project](#1-integrating-with-your-project)
-  - [2. Manual Install](#2-manual-install)
-    - [Custom Installer](#custom-installer)
-  - [Some Tips on Writing Shell Scripts](#some-tips-on-writing-shell-scripts)
-  - [The List of Available Functions](#the-list-of-available-functions)
-  - [Naming Conventions](#naming-conventions)
-  - [Writing tests](#writing-tests)
+	- [1. Integrating With Your Project](#1-integrating-with-your-project)
+	- [2. Manual Install](#2-manual-install)
+		- [Custom Installer](#custom-installer)
+	- [Some Tips on Writing Shell Scripts](#some-tips-on-writing-shell-scripts)
+	- [The List of Available Functions](#the-list-of-available-functions)
+	- [Naming Conventions](#naming-conventions)
+	- [Writing tests](#writing-tests)
 - [Helpful Scripts](#helpful-scripts)
-  - [Changing OSX Underscan for Old Monitors](#changing-osx-underscan-for-old-monitors)
-  - [Contributing](#contributing)
+	- [Changing OSX Underscan for Old Monitors](#changing-osx-underscan-for-old-monitors)
+	- [Contributing](#contributing)
 
-<!-- TOC END -->
-
+<!-- /TOC -->
 ## Reusable BASH Components for UI, Runtime, Ruby, Database and More
 
 Welcome to **BashMatic** — an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
@@ -32,7 +32,7 @@ We have adopted the [Google Bash Style Guide](https://google.github.io/styleguid
 
 ### Whats Included?
 
-There is a ton of useful scripts, functions, shortcuts and frameworks that make programming BASH fun. At least for me they do! 
+There is a ton of useful scripts, functions, shortcuts and frameworks that make programming BASH fun. At least for me they do!
 
 To get a sense of the number of functions included, run `bin/print-functions` command, optionally passing a number of columns you want to see them printed with. If your screen is wide, use eg. `bin/print-functions 5`.
 
@@ -182,8 +182,6 @@ The utilities contained herein are of various types, such as:
  * [ruby](lib/ruby.sh), [sym](lib/sym.sh) (encryption) and [utility](lib/utility.sh) helpers
  * and finally, [*LibRun*](lib/runtime.sh) — a BASH runtime framework that executes commands, while measuring their duration and following a set of flags to decide what to do on error, and so on.
 
-Each library will have a set of private functions, typically named `__lib::util::blah`, and public functions, named as `lib::util::foo`, with shortcuts such as `foo` created when makes sense.
-
 ----
 
 ## Usage
@@ -208,33 +206,36 @@ curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 The installer above will do the following:
 
  * Checkout `bashmatic` repo into a folder typically in your home: `${HOME}/.bashmatic`
+
  * If your project already has a `bin` folder — it's will be used to create a `lib` symlink, otherwise it's created in the current folder.
+
  * The script will also create a symlink to Bashmatic's `bin/bootstrap` script, again — either in the local `bin` folder, or in the current one.
+
  * Finally, it will add both `bin/lib` and `bin/bootstrap` to `.gitignore` file, if that was found.
+
  * At this point you should be able to source the library with `source bin/lib/Loader.bash` and have all of the tools available to you.
 
-### 2. Manual Install
+### Installation
+
+The standard location of Bashmatic is in your home folder — `~/.bashmatic`
+
+Therefore the manual installation is as follows:
 
 ```bash
-cd ~/workspace
-git clone https://github.com/kigster/bashmatic
-cd workspace/bashmatic
-source lib/Loader.bash
+cd ${HOME} && git clone http://github.com/kigster/bashmatic ~/.bashmatic
 ```
 
-#### Custom Installer
-
-Alternatively, you can always do something like this instead:
+If you want to automatically load all functions during your shell initialization, you could run the following command to auto-load Bashmatic from your `~/.bashrc`:
 
 ```bash
-git clone https://github.com/kigster/bashmatic .bashmatic
-source .bashmatic/lib/Loader.bash
-# Now all functions are availble to you.
+[[ -f ~/.bashrc ]] && \
+  ( grep -q bashmatic ~/.bashrc || \
+	   echo 'source ~/.bashmatic/lib/Loader.bash' >> ~/.bashrc )
 ```
 
-### Some Tips on Writing Shell Scripts
+### Detecting If Your Script is "Sourced In" or "Ran"
 
-Some bash files exists as libraries to be "sourced in", and others exist as scripts to be run. But users won't always know what is what, and may try to source in a script that shoudl be run, or vice versa — run a script that should be sourced in.
+Some bash files exists as libraries to be "sourced in", and others exist as scripts to be run. But users won't always know what is what, and may try to source in a script that should be run, or vice versa — run a script that should be sourced in.
 
 What do you, programmer, do to educate the user about correct usage of your script/library?
 
@@ -279,88 +280,127 @@ Where `COLUMNS` is an optional number of columns to split them by.
 Here are the non-UI related functions of BashMatic, reducted for brevity (since the UI list is already shown above.)
 
 ```
-array-contains-element              lib::json::begin-key
-lib::array::contains-element        lib::json::begin-hash
-lib::array::complain-unless-include lib::json::end-hash
-lib::array::exit-unless-includes    lib::osx::cookie-dump
-lib::array::join                    cookie-dump
-array-join                          lib::osx::display::change-underscan
-lib::array::join-piped              lib::osx::ramdisk::mount
-array-join-piped                    lib::osx::ramdisk::unmount
-aws::rds::hostname                  lib::progress::bar
-lib::brew::cache-reset              lib::ruby::gemfile-lock-version
-lib::brew::cache-reset::delayed     lib::ruby::bundler-version
-lib::brew::upgrade                  lib::ruby::version
-lib::brew::install                  run
-lib::brew::setup                    run::set-next
-lib::brew::relink                   run::set-all
-lib::brew::package::list            run::set-next::list
-lib::brew::cask::list               run::set-all::list
-lib::cache-or-command               run::inspect
-lib::brew::package::is-installed    lib::run::with-min-duration
-lib::brew::cask::is-installed       lib::run::ask
-lib::brew::reinstall::package       lib::run::inspect::set-skip-false-o
-lib::brew::install::package         lib::run::inspect-variable
-lib::brew::install::cask            lib::run::print-variable
-lib::brew::uninstall::package       lib::run::inspect-variables
-lib::brew::install::packages        lib::run::print-variables
-lib::brew::reinstall::packages      lib::run::variables-starting-with
-lib::brew::uninstall::packages      lib::run::variables-ending-with
-lib::psql::db-settings              lib::run::inspect-variables-that-ar
-lib::db::psql::args::               lib::run::inspect
-lib::db::psql-args                  lib::run
-lib::db::psql::args::default        with-min-duration
-lib::db::psql::args::maint          with-bundle-exec
-lib::db::wait-until-db-online       with-bundle-exec-and-output
-lib::db::datetime                   onoe
-lib::db::rails::schema::file        odie
-lib::db::rails::schema::checksum    lib::ssh::load-keys
-lib::db::top                        sym::hb::install-shell-helpers
-lib::db::dump                       sym::install::symit
-lib::db::restore                    sym::hb::configure
-lib::deploy::validate-vpn           sym::hb::import
-lib::deploy::slack                  sym::hb::files
-lib::deploy::slack-ding             hb::crypt::chef
-lib::docker::last-version           hb::sym
-lib::docker::next-version           hb::encrypt::str
-lib::docker::build::container       hb::decrypt::str
-lib::docker::actions::build         hb::encrypt::file
-lib::docker::actions::clean         hb::edit::file
-lib::docker::actions::up            hb::decrypt::file
-lib::docker::actions::start         lib::time::date-from-epoch
-lib::docker::actions::stop          lib::time::epoch-to-iso
-lib::docker::actions::pull          lib::time::epoch-to-local
-lib::docker::actions::tag           lib::time::epoch::minutes-ago
-lib::docker::actions::push          lib::time::duration::humanize
-lib::docker::actions::setup         epoch
-lib::docker::actions::update        millis
-lib::file::last-modified-date       today
-lib::file::last-modified-year       lib::url::shorten
-file::stat                          lib::url::downloader
-file::size                          lib::user::gitconfig::email
-file::size::mb                      lib::user::gitconfig::name
-file::list::filter-existing         lib::user::finger::name
-file::list::filter-non-empty        lib::user::username
-ftrace-on                           lib::user
-ftrace-off                          lib::user::first
-ftrace-in                           lib::user::my::ip
-ftrace-out                          lib::user::my::reverse-ip
-lib::gem::version                   lib::user::host
-lib::gem::global::versions          lib::util::is-variable-defined
-lib::gem::global::latest-version    lib::util::generate-password
-lib::gem::gemfile::version          lib::util::is-numeric
-lib::gem::cache-installed           lib::util::ver-to-i
-lib::gem::cache-refresh             lib::util::i-to-ver
-lib::gem::ensure-gem-version        lib::util::shell-name
-lib::gem::is-installed              lib::util::arch
-lib::gem::install                   lib::util::shell-init-files
-lib::gem::uninstall                 lib::util::append-to-init-files
-g-i                                 lib::util::remove-from-init-files
-g-u                                 lib::util::whats-installed
-hbsed                               lib::util::lines-in-folder
-lib::json::begin-array              lib::util::functions-matching
-lib::json::end-array                lib::util::checksum::files
-lib::json::file-to-array            lib::util::install-direnv
+ansi                                             lib::docker::last-version
+array-bullet-list                                lib::docker::next-version
+array-contains-element                           lib::file::last-modified-date
+array-join                                       lib::file::last-modified-year
+array-join-piped                                 lib::gem::cache-installed
+ascii-clean                                      lib::gem::cache-refresh
+aws::rds::hostname                               lib::gem::ensure-gem-version
+bashmatic-functions                              lib::gem::gemfile::version
+bashmatic-set-fqdn                               lib::gem::global::latest-version
+bold                                             lib::gem::global::versions
+box::blue-in-green                               lib::gem::install
+box::blue-in-yellow                              lib::gem::is-installed
+box::green-in-green                              lib::gem::uninstall
+box::green-in-magenta                            lib::gem::version
+box::magenta-in-blue                             lib::json::begin-array
+box::magenta-in-green                            lib::json::begin-hash
+box::red-in-magenta                              lib::json::begin-key
+box::red-in-red                                  lib::json::end-array
+box::red-in-yellow                               lib::json::end-hash
+box::yellow-in-blue                              lib::json::file-to-array
+box::yellow-in-red                               lib::osx::cookie-dump
+box::yellow-in-yellow                            lib::osx::display::change-underscan
+br                                               lib::osx::env-print
+center                                           lib::osx::ramdisk::mount
+cookie-dump                                      lib::osx::ramdisk::unmount
+debug                                            lib::osx::scutil-print
+duration                                         lib::osx::set-fqdn
+epoch                                            lib::output::color::off
+err                                              lib::output::color::on
+error                                            lib::progress::bar
+error-text                                       lib::psql::db-settings
+error:                                           lib::ruby::bundler-version
+file::list::filter-existing                      lib::ruby::gemfile-lock-version
+file::list::filter-non-empty                     lib::ruby::version
+file::size                                       lib::run
+file::size::mb                                   lib::run::ask
+file::stat                                       lib::run::inspect
+ftrace-in                                        lib::run::inspect-variable
+ftrace-off                                       lib::run::inspect-variables
+ftrace-on                                        lib::run::inspect-variables-that-are
+ftrace-out                                       lib::run::inspect::set-skip-false-or-blank
+g-i                                              lib::run::print-variable
+g-u                                              lib::run::print-variables
+h::black                                         lib::run::variables-ending-with
+h::blue                                          lib::run::variables-starting-with
+h::green                                         lib::run::with-min-duration
+h::red                                           lib::ssh::load-keys
+h::yellow                                        lib::time::date-from-epoch
+hb::crypt::chef                                  lib::time::duration::humanize
+hb::decrypt::file                                lib::time::epoch-to-iso
+hb::decrypt::str                                 lib::time::epoch-to-local
+hb::edit::file                                   lib::time::epoch::minutes-ago
+hb::encrypt::file                                lib::url::downloader
+hb::encrypt::str                                 lib::url::shorten
+hb::sym                                          lib::user
+hbsed                                            lib::user::finger::name
+hdr                                              lib::user::first
+hl::blue                                         lib::user::gitconfig::email
+hl::desc                                         lib::user::gitconfig::name
+hl::green                                        lib::user::host
+hl::subtle                                       lib::user::my::ip
+hl::yellow                                       lib::user::my::reverse-ip
+hr::colored                                      lib::user::username
+inf                                              lib::util::append-to-init-files
+info                                             lib::util::arch
+info:                                            lib::util::checksum::files
+italic                                           lib::util::functions-matching
+left                                             lib::util::generate-password
+lib::array::complain-unless-includes             lib::util::i-to-ver
+lib::array::contains-element                     lib::util::install-direnv
+lib::array::exit-unless-includes                 lib::util::is-a-function
+lib::array::join                                 lib::util::is-numeric
+lib::array::join-piped                           lib::util::is-variable-defined
+lib::brew::cache-reset                           lib::util::lines-in-folder
+lib::brew::cache-reset::delayed                  lib::util::remove-from-init-files
+lib::brew::cask::is-installed                    lib::util::shell-init-files
+lib::brew::cask::list                            lib::util::shell-name
+lib::brew::install                               lib::util::ver-to-i
+lib::brew::install::cask                         lib::util::whats-installed
+lib::brew::install::package                      long-pause
+lib::brew::install::packages                     millis
+lib::brew::package::is-installed                 odie
+lib::brew::package::list                         ok
+lib::brew::reinstall::package                    ok:
+lib::brew::reinstall::packages                   okay
+lib::brew::relink                                onoe
+lib::brew::setup                                 pause
+lib::brew::uninstall::package                    puts
+lib::brew::uninstall::packages                   red
+lib::brew::upgrade                               reset-color
+lib::cache-or-command                            reset-color:
+lib::color::disable                              run
+lib::color::enable                               run::inspect
+lib::db::datetime                                run::set-all
+lib::db::dump                                    run::set-all::list
+lib::db::psql-args                               run::set-next
+lib::db::psql::args::                            run::set-next::list
+lib::db::psql::args::default                     screen-width
+lib::db::psql::args::maint                       short-pause
+lib::db::rails::schema::checksum                 shortish-pause
+lib::db::rails::schema::file                     shutdown
+lib::db::restore                                 stderr
+lib::db::top                                     stdout
+lib::db::wait-until-db-online                    strikethrough
+lib::deploy::slack                               success
+lib::deploy::slack-ding                          sym::hb::configure
+lib::deploy::validate-vpn                        sym::hb::files
+lib::dir::count-slashes                          sym::hb::import
+lib::dir::expand-dir                             sym::hb::install-shell-helpers
+lib::dir::is-a-dir                               sym::install::symit
+lib::docker::actions::build                      today
+lib::docker::actions::clean                      txt-err
+lib::docker::actions::pull                       txt-info
+lib::docker::actions::push                       txt-warn
+lib::docker::actions::setup                      underline
+lib::docker::actions::start                      warn
+lib::docker::actions::stop                       warning
+lib::docker::actions::tag                        warning:
+lib::docker::actions::up                         with-bundle-exec
+lib::docker::actions::update                     with-bundle-exec-and-output
+lib::docker::build::container                    with-min-duration
 
 ```
 
@@ -370,11 +410,16 @@ We use the following naming conventions:
 
  1. Namespaces are separated by `::`
  2. Private functions are prefixed with `__`, eg `__lib::output::hr1`
- 3. Public functions do not need to be namespaced, or be prefixed with `__`
+ 3. Public functions do not need to be name-spaced, or be prefixed with `__`
 
-### Writing tests
+## Unit Testing
 
-We are using [`bats`](https://github.com/sstephenson/bats.git) for unit testing.
+The framework comes with a bunch of automated unit tests based on the fantastic framework [`bats`](https://github.com/sstephenson/bats.git).
+
+To run all tests:
+
+```bash
+cd ~/.BashMatic
 
 While not every single function is tested (far from it), we do try to add tests to the critical ones.
 

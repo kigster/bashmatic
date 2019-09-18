@@ -39,19 +39,21 @@ cookie-dump() {
   lib::osx::cookie-dump "$@"
 }
 
-lib::osx::display::change-underscan() {
+change-underscan() {
   set +e
   local amount_percentage="$1"
   if [[ -z "${amount_percentage}" ]] ; then
-    printf "    usage: $0 <percentage-change> \n"
-    printf "       eg: $0 5    # underscan by 5% \n"
+    printf "%s\n\n"  "USAGE: change-underscan percent"
+    printf "%s\n"    "   eg: change-underscan   5  # underscan by 5%"
+    printf "%s\n"    "   eg: change-underscan -10  # overscan by 10%"
     return -1
   fi
 
   local file="/var/db/.com.apple.iokit.graphics"
-  local backup="/tmp/.com.apple.iokit.graphics.bak"
+  local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"
 
-  local amount=$(( 100 * ${amount_percentage} ))
+  # Compute new value as a percentage of 10000
+  local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
 
   h1 'This utility allows you to change underscan/overscan' \
      'on monitors that do not offer that option via GUI.'
@@ -98,17 +100,20 @@ lib::osx::display::change-underscan() {
   h2 "Now, please unplug the problem monitor temporarily..."
   lib::run::ask "...and press Enter to continue "
 
-  if [[ -n ${value} ]]; then
-    local new_value=$(( $value - ${amount} ))
+  if [[ -n ${value} && ${value} -ne ${new_value} ]]; then
     export LibRun__AbortOnError=${True}
     run "sudo sed -i.backup \"${line_pscn_value}s/${value}/${new_value}/g\" \"${file}\""
     echo
     h2 "Congratulations!" "Your display underscan value has been changed."
-    info "Previous Value  ${bldpur}${value}"
-    info "New value:      ${bldgrn}${new_value}"
+    info "Previous Value — ${bldpur}${value}"
+    info "New value:     — ${bldgrn}${new_value}"
     hr
     info "${bldylw}IMPORTANT!"
     info "You must restart your computer for the settings to take affect."
+    echo
+    lib::run::ask "Should I reboot your computer now? "
+    info "Very well, rebooting!"
+    run "sudo reboot"
   else
     warning "Unable to find the display scan value to change. "
     info "Could it be that you haven't restarted since your last run?"
@@ -160,7 +165,7 @@ lib::osx::set-fqdn() {
   info "• Hostname will be set to: ${bldgrn}${host}"
   info "• Domain will also change: ${bldgrn}${domain}"
 
- 
+
   echo
 
   lib::run::ask "Does that look correct to you?"
@@ -170,7 +175,7 @@ lib::osx::set-fqdn() {
   inf "Now, please provide your SUDO password, if asked: "
 
   sudo printf '' || {
-    not_ok: 
+    not_ok:
     exit 1
   }
 
@@ -179,7 +184,7 @@ lib::osx::set-fqdn() {
   run "sudo scutil --set HostName ${fqdn}"
   run "sudo scutil --set LocalHostName ${host}.local 2>/dev/null|| true"
   run "sudo scutil --set ComputerName ${host}"
-  
+
   run "dscacheutil -flushcache"
 
   echo

@@ -7,6 +7,10 @@ export False=0
 export BashMatic__Home=${BashMatic__Home:-"${HOME}/.bashmatic"}
 export BASHMATIC_HOME="${BashMatic__Home}"
 
+function bashmatic-reload() {
+  source ${BashMatic__Home}/lib/Loader.bash
+}
+
 export BashMatic__SearchTarget="Loader.bash"
 export BashMatic__Loader=$(find -L . -maxdepth 3 -type f -name "${BashMatic__SearchTarget}" -print 2>/dev/null | tail -1)
 
@@ -22,7 +26,7 @@ if [[ -z "${BashMatic__Loader}" ]]; then
   printf "${bldblu}If you installed BashMatic not in ~/.bashmatic (it's default home), \n"
   printf "you might consider setting environment variable ${bldylw}BashMatic__Home${bldblu} \n"
   printf "like so:\n\n"
-  
+
   printf "   ${bldylw}echo 'export BashMatic__Home=/Users/kig/.scripts/bashmatic' >> ~/.bash_profile${clr}\n\n"
 
   printf "${bldblu}Have you installed BashMatic using the bootstrap script? If not,\n"
@@ -35,10 +39,13 @@ fi
 
 export BashMatic__LibDir=$(dirname "${BashMatic__Loader}")
 
+source ${BashMatic__LibDir}/output.sh
+
 lib::bash-source() {
   local folder=${1}
 
-  [[ -n ${DEBUG} ]] && printf "sourcing folder ${bldylw}$folder${clr}...\n" >&2
+  [[ -n ${DEBUG} ]] && hl:subtle "❯ $folder"
+
   # Let's list all lib files
   declare -a files=($(ls -1 ${folder}/*.sh))
 
