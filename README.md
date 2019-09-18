@@ -5,6 +5,9 @@
 
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [Quick Install](#quick-install)
+	- [Install and Load Functions into the Current Shell](#install-and-load-functions-into-the-current-shell)
+	- [Install and Load BashMatic at BASH login session start time](#install-and-load-bashmatic-at-bash-login-session-start-time)
 - [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
 	- [Whats Included?](#whats-included)
 		- [Runtime Framework](#runtime-framework)
@@ -13,15 +16,15 @@
 		- [Other Utilities](#other-utilities)
 - [Usage](#usage)
 	- [1. Integrating With Your Project](#1-integrating-with-your-project)
-	- [2. Manual Install](#2-manual-install)
-		- [Custom Installer](#custom-installer)
-	- [Some Tips on Writing Shell Scripts](#some-tips-on-writing-shell-scripts)
+	- [Installation](#installation)
+	- [Detecting If Your Script is "Sourced In" or "Ran"](#detecting-if-your-script-is-sourced-in-or-ran)
 	- [The List of Available Functions](#the-list-of-available-functions)
 	- [Naming Conventions](#naming-conventions)
-	- [Writing tests](#writing-tests)
-- [Helpful Scripts](#helpful-scripts)
-	- [Changing OSX Underscan for Old Monitors](#changing-osx-underscan-for-old-monitors)
+- [Unit Testing](#unit-testing)
+- [How To?](#how-to)
+	- [How To Change Underscan or Overscan for Old Monitors](#how-to-change-underscan-or-overscan-for-old-monitors)
 	- [Contributing](#contributing)
+
 <!-- /TOC -->
 
 ## Quick Install
