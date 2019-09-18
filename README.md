@@ -22,8 +22,34 @@
 - [Helpful Scripts](#helpful-scripts)
 	- [Changing OSX Underscan for Old Monitors](#changing-osx-underscan-for-old-monitors)
 	- [Contributing](#contributing)
-
 <!-- /TOC -->
+
+## Quick Install
+
+For the impatient, here is how to install bashmatic quickly:
+
+### Install and Load Functions into the Current Shell
+```bash
+curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
+source ~/.bashmatic/lib/Loader.bash
+```
+
+### Install and Load BashMatic at BASH login session start time
+
+The following script will install bashmatic hook in one of your BASH initialization files:
+
+```bash
+curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
+for file in ~/.bashrc ~/.bash_profile ~/.profile; do
+  if [[ -f "${file}" ]] ; then
+    echo "Adding bashmatic loader to ${file}..."
+    grep -q bashmatic "${file}" || echo 'source ~/.bashmatic/lib/Loader.bash' >> "${file}"
+    source "${file}"
+    break
+  fi
+done
+```
+
 ## Reusable BASH Components for UI, Runtime, Ruby, Database and More
 
 Welcome to **BashMatic** — an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
