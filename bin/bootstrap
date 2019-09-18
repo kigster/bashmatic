@@ -9,9 +9,9 @@
 #
 #      $ bin/bootstrap
 #
-# Or simply: 
+# Or simply:
 #
-#      $ curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash 
+#      $ curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 #
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
   [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
@@ -167,17 +167,17 @@ lib::bash::symlink() {
 }
 
 lib::bash::gitignore::add-item() {
+  local gitignore_file
+  if [[ -d ./.git ]]; then
+    gitignore_file=".gitignore"
+  else
+    gitignore_file="${HOME}/.gitignore"
+  fi
+
+  [[ -f ${gitignore_file} ]] || touch ${gitignore_file}
+  
   for ignored in "$@"; do
-    local gitignore_file="${HOME}/.gitignore"
-
-    if [[ -d "${BashMatic__Root}/.git" ]]; then
-      gitignore_file="${BashMatic__Root}/.gitignore"
-    fi
-
-    if [[ ! -f "${gitignore_file}" || -z $(grep ${ignored} "${gitignore_file}"  2>/dev/null) ]] ; then
-      debug_log "adding ${ignored} to ${gitignore_file}"
-      echo "${ignored}" >> "${gitignore_file}"
-    fi
+    grep -q "${ignored}" "${gitignore_file}" || echo "${ignored}" >> "${gitignore_file}"
   done
 }
 

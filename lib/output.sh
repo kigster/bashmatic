@@ -512,7 +512,7 @@ okay() {
 }
 
 success() {
-  printf -- "    ${bakgrn}${bldylw}  « SUCCESS »  ${clr} ${bldgrn}$*${clr}" >&2
+  printf -- "    ${bakgrn}${bldwht}  « SUCCESS ✅ »  ${clr} ${bldgrn}$*${clr}" >&2
   echo
 }
 

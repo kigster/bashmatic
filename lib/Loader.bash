@@ -7,10 +7,6 @@ export False=0
 export BashMatic__Home=${BashMatic__Home:-"${HOME}/.bashmatic"}
 export BASHMATIC_HOME="${BashMatic__Home}"
 
-function bashmatic-reload() {
-  source ${BashMatic__Home}/lib/Loader.bash
-}
-
 export BashMatic__SearchTarget="Loader.bash"
 export BashMatic__Loader=$(find -L . -maxdepth 3 -type f -name "${BashMatic__SearchTarget}" -print 2>/dev/null | tail -1)
 
@@ -38,8 +34,28 @@ if [[ -z "${BashMatic__Loader}" ]]; then
 fi
 
 export BashMatic__LibDir=$(dirname "${BashMatic__Loader}")
-
 source ${BashMatic__LibDir}/output.sh
+
+function bashmatic-reload() {
+  source ${BashMatic__Home}/lib/Loader.bash
+}
+
+function bashmatic-load-at-login() {
+  for file in ~/.bashrc ~/.bash_profile ~/.profile; do
+    if [[ -f "${file}" ]] ; then
+      grep -q bashmatic "${file}" && {
+        success "BashMatic is already loaded from ${bldblu}${file}"
+        return 0
+      }
+      grep -q bashmatic "${file}" || {
+        h2 "Adding BashMatic auto-loader to ${bldgrn}${file}..."
+        echo "source ${BashMatic__Home}/lib/Loader.bash" >> "${file}"
+      }
+      source "${file}"
+      break
+    fi
+  done
+}
 
 lib::bash-source() {
   local folder=${1}

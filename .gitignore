@@ -9,7 +9,3 @@ test/all.bats
 libexec/
 share/
 hello/
-**/bashmatic
-**/bootstrap
-**/bashmatic
-**/bootstrap
