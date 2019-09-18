@@ -9,12 +9,16 @@ source ${loader}
 h1  "Welcome to My Awesome Script" "${bldylw}Version 1.0.1" \
     "We hope you'll enjoy your demo!"
 
+press-any-key-to-continue
+
 info "info() prints an information message in blue. You can use other"
 info "colors inside, such as ${bldred}RED$(txt-info) just reset it afterwards."
 
 echo
 hl::subtle "Sometimes it's more appropriate to have a more 'subtle' header."
 info "These headers are great for styling help pages, for example:"
+
+press-any-key-to-continue
 
 hl::subtle "USAGE — this type of header is great for this!"
 info "command-line-tool [ --verbose ] [ -d/--directory DIR ]"
@@ -34,24 +38,28 @@ h::red "MY MESSAGE IS VERY IMPORTANT"
 echo
 hr
 echo
-info "Noticed a horizontal line?"
+info "Noticed a horizontal line above?"
+
+press-any-key-to-continue
 
 info "Lets talk about running commands. This is where it gets cool!"
 inf  "For example, this info message does not end with a line break! "
-shortish-pause
+
 ok:
 
 info "Above we put a check box next to it, but there are other options:"
 
+press-any-key-to-continue
+
 inf  "In this next case it's will be an error..."
-shortish-pause
+pause
 not_ok:
 
 h2 "And we have 'info()', 'error()' and 'warning()' methods to communicate'" \
    "with the user effectively and easily" \
    "using multiple lines in this awesome header box :) "
 
-br 
+br
 warning "A Warning is usually yellow and indicates something is awry, no? ⚠️  ${clr}"
 
 error "Perhaps we encountered an error!" \
@@ -69,24 +77,31 @@ run::set-next abort-on-error
 run  "touch ${temp_file}"
 run  "rm -f ${temp_file}"
 
+press-any-key-to-continue
+
 hl::subtle "Let's simulate having a Gemfile.lock — for those of you using Ruby:"
 run "cp -v ../test/Gemfile.lock ."
-run::set-next show-output-on
+
+press-any-key-to-continue
+
+info "Here is the top 10 lines of this file:"
 hr
+run::set-next show-output-on
 run 'head -10 Gemfile.lock'
-hr::colored "${bldred}"
-br
-info "This is so that now we can detect a gem version from the Gemfile.lock:"
+
+hr::colored "${bldred}"; br
+info "We are going to demo a function that detects Ruby Gem version"
+info "from the Gemfile.lock!"
+
+press-any-key-to-continue
+
 info "${bldylw}IMPORTANT! $(txt-info)Active support version is ${bldylw}$(lib::gem::gemfile::version activesupport)"
 
-hl::subtle "Did you notice that commands are printed with their execution times?"
+hl::subtle "BTW, did you notice that commands are printed with their execution times?"
 
 shortish-pause
-hr
-br
-success "This demonstration was a remarkable success!"
-br
-h1 "Thanks for checking this library out, and happy bashing!"
-br
 
-
+hr; br
+success "This demonstration was a remarkable success!"; br
+h1 "Thanks for checking this library out, and happy bashing!"; br
+okay "You Rock!"; br

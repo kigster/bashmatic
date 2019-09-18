@@ -33,6 +33,23 @@ cursor.rewind() {
   __lib::output::cursor-move-to-x ${x}
 }
 
+cursor.left() {
+  __lib::output::cursor-left-by "$@"
+}
+
+cursor.up() {
+  __lib::output::cursor-up-by "$@"
+}
+
+cursor.down() {
+  __lib::output::cursor-down-by "$@"
+}
+
+cursor.right() {
+  __lib::output::cursor-right-by "$@"
+}
+
+
 __lib::ver-to-i() {
   version=${1}
   echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
@@ -507,17 +524,17 @@ puts() {
 }
 
 okay() {
-  header=$(printf -- "${bakgrn}${bldwht} « OKAY » ${clr}")
-  box::green-in-green "${header}   ${bldgrn}$@" >&2
+  printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" >&2
+  echo
 }
 
 success() {
-  printf -- "    ${bakgrn}${bldwht}  « SUCCESS ✅ »  ${clr} ${bldgrn}$*${clr}" >&2
+  printf -- "    ${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
   echo
 }
 
 err() {
-  printf -- "    ${bldylw}${bakred}  « ERROR »  ${clr} ${bldred}$*${clr}" >&2
+  printf -- "    ${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
 }
 
 inf() {
@@ -525,7 +542,7 @@ inf() {
 }
 
 warn() {
-  printf -- "    ${bldwht}${bakylw} « WARNING » ${clr} ${bldylw}$*${clr}" >&2
+  printf -- "    ${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
 }
 
 warning() {

@@ -257,6 +257,19 @@ lib::run::with-min-duration() {
   return ${result}
 }
 
+press-any-key-to-continue() {
+  local prompt="$*"
+  [[ -z ${prompt} ]] && prompt="Press any key to continue..."
+  br
+  printf "    ${txtgrn}${italic}${prompt} ${clr}  "
+  read -r -s -n1 key
+  cursor.rewind
+  printf "                                                           "
+  cursor.up 2
+  cursor.rewind
+  echo
+}
+
 # Ask the user if they want to proceed, defaulting to Yes.
 # Choosing no exits the program. The arguments are printed as a question.
 lib::run::ask() {
