@@ -6,8 +6,6 @@
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [Quick Install](#quick-install)
-	- [Install and Load Functions into the Current Shell](#install-and-load-functions-into-the-current-shell)
-	- [Install and Load BashMatic at BASH login session start time](#install-and-load-bashmatic-at-bash-login-session-start-time)
 - [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
 	- [Whats Included?](#whats-included)
 		- [Runtime Framework](#runtime-framework)
@@ -29,28 +27,22 @@
 
 ## Quick Install
 
-For the impatient, here is how to install bashmatic quickly:
+For the impatient, here is how to install BashMatic very quickly and easily:
 
-### Install and Load Functions into the Current Shell
 ```bash
 curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 source ~/.bashmatic/lib/Loader.bash
+bashmatic-load-at-login
 ```
 
-### Install and Load BashMatic at BASH login session start time
+When you run the `bashmatic-load-at-login` function, it will add a bashmatic hook to one of your BASH initialization files, so all of its functions are available in your shell.
 
-The following script will install bashmatic hook in one of your BASH initialization files:
+The output of this function may look like this:
 
-```bash
-curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
-for file in ~/.bashrc ~/.bash_profile ~/.profile; do
-  if [[ -f "${file}" ]] ; then
-    echo "Adding bashmatic loader to ${file}..."
-    grep -q bashmatic "${file}" || echo 'source ~/.bashmatic/lib/Loader.bash' >> "${file}"
-    source "${file}"
-    break
-  fi
-done
+```
+┌────────────────────────────────────────────────────────────────────┐
+│ Adding BashMatic auto-loader to /Users/<your-username>/.bashrc...  │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Reusable BASH Components for UI, Runtime, Ruby, Database and More
