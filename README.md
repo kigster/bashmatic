@@ -291,7 +291,7 @@ $ bashmatic.functions [ COLUMNS ]
 
 Where `COLUMNS` is an optional number of columns to split them by.
 
-Here are the non-UI related functions of BashMatic, reducted for brevity (since the UI list is already shown above.)
+Here is the comprehensive list of BashMatic public functions you can use:
 
 ```
 ❯ bashmatic.functions 2
