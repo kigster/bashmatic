@@ -14,9 +14,9 @@
 #      $ curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 #
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
+  [[ -n ${BASH_VERSION} && $0 != "${BASH_SOURCE}" ]]) && BASH_IN_SUBSHELL=0 || BASH_IN_SUBSHELL=1
 
-export __ran_as_script
+export BASH_IN_SUBSHELL
 
 set +e
 
@@ -162,7 +162,7 @@ lib::bash::symlink() {
 
   if [[ ! -L "${BashMatic__TargetLibSymlink}" || ! -L "${BashMatic__BootstrapSymlink}" ]]; then
     error_log "directory ${BashMatic__SymlinkEnclosingDir} already exists as a folder, can't replace with a symlink"
-    (( ${__ran_as_script} )) && exit 1 || return 1
+    (( ${BASH_IN_SUBSHELL} )) && exit 1 || return 1
   fi
 }
 

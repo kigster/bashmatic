@@ -12,8 +12,8 @@ lib::brew::cache-reset() {
 }
 
 lib::brew::cache-reset::delayed() {
-  (( ${__ran_as_script} )) || lib::brew::cache-reset
-  (( ${__ran_as_script} )) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
+  (( ${BASH_IN_SUBSHELL} )) || lib::brew::cache-reset
+  (( ${BASH_IN_SUBSHELL} )) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
 }
 
 lib::brew::upgrade() {

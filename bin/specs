@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
 export TERM=${TERM:-xterm-256color}
-
-cd lib > /dev/null
-source "Loader.bash"
-cd - > /dev/null
+source "$(pwd)/init.sh"
 
 export ProjectRoot=$(pwd)
 export BatsRoot=${ProjectRoot}/.bats
@@ -79,6 +76,7 @@ specs::select-files() {
 
 specs::run-all() {
   for file in ${TestFiles[@]}; do
+    set +e
     specs::run-file "${file}"
   done
 }

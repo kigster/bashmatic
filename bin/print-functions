@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source lib/Loader.bash
+source init.sh
 
 # pass number of columns as an argument, eg: bin/print-functions 5
 bashmatic-functions "$@"

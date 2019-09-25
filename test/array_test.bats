@@ -2,7 +2,6 @@
 
 load test_helper
 
-
 @test "lib::array::join with a pipe" {
   declare -a array=("a string" "test2000" "hello" "one")
   result=$(lib::array::join '|' "${array[@]}")

@@ -249,7 +249,7 @@ lib::run::with-min-duration() {
         "The command took ${bldylw}${duration}${txtred} secs." \
         "${bldylw}${cmd}${txtred}"
 
-    (( ${__ran_as_script} )) && exit 1 || return 1
+    (( ${BASH_IN_SUBSHELL} )) && exit 1 || return 1
   elif [[ ${duration} -gt ${min_duration} ]]; then
     info "minimum duration operation ran in ${duration} seconds."
   fi

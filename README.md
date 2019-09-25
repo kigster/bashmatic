@@ -31,11 +31,11 @@ For the impatient, here is how to install BashMatic very quickly and easily:
 
 ```bash
 curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
-source ~/.bashmatic/lib/Loader.bash
-bashmatic-load-at-login
+source ~/.bashmatic/init.sh
+bashmatic.load-at-login
 ```
 
-When you run the `bashmatic-load-at-login` function, it will add a bashmatic hook to one of your BASH initialization files, so all of its functions are available in your shell.
+When you run the `bashmatic.load-at-login` function, it will add a bashmatic hook to one of your BASH initialization files, so all of its functions are available in your shell.
 
 The output of this function may look like this:
 
@@ -44,6 +44,8 @@ The output of this function may look like this:
 │ Adding BashMatic auto-loader to /Users/<your-username>/.bashrc...  │
 └────────────────────────────────────────────────────────────────────┘
 ```
+
+You can always reload BashMatic with `bashmatic.reload` function.
 
 ## Reusable BASH Components for UI, Runtime, Ruby, Database and More
 
@@ -80,7 +82,7 @@ Programming style used in this project lends itself nicely to using a DSL-like a
 #!/usr/bin/env bash
 
 # (See below on the location of .bashmatic and ways to install it)
-source ~/.bashmatic/lib/Loader.bash
+source ~/.bashmatic/init.sh
 
 # configure global behavior of all run() invocations
 run::set-all abort-on-error show-output-off
@@ -99,7 +101,7 @@ You can reliably install gems or brew packages:
 
 ```bash
 #!/usr/bin/env bash
-source .bashmatic/lib/Loader.bash
+source .bashmatic/init.sh
 lib::gem::install sym 1.3.0
 lib::brew::install::package curl
 sym_version=$(lib::gem::version sym)
@@ -211,7 +213,7 @@ There are a couple of ways that you can install and use this library.
 
    1. The simplest way is to use the online bootstrap script.  This method is often used to integrate **BashMatic** with your other projects, so that they can be built upon their own internal BASH tooling using all the goodies in this library.
 
-   1. One is doing a simple manual `git clone`, and then "sourcing" the main `lib/Loader.bash` file from one of your "dotfiles".
+   1. One is doing a simple manual `git clone`, and then "sourcing" the main `init.sh` file from one of your "dotfiles".
 
 ### 1. Integrating With Your Project
 
@@ -234,7 +236,7 @@ The installer above will do the following:
 
  * Finally, it will add both `bin/lib` and `bin/bootstrap` to `.gitignore` file, if that was found.
 
- * At this point you should be able to source the library with `source bin/lib/Loader.bash` and have all of the tools available to you.
+ * At this point you should be able to source the library with `source bin/init.sh` and have all of the tools available to you.
 
 ### Installation
 
@@ -251,7 +253,7 @@ If you want to automatically load all functions during your shell initialization
 ```bash
 [[ -f ~/.bashrc ]] && \
   ( grep -q bashmatic ~/.bashrc || \
-	   echo 'source ~/.bashmatic/lib/Loader.bash' >> ~/.bashrc )
+	   echo 'source ~/.bashmatic/init.sh' >> ~/.bashrc )
 ```
 
 ### Detecting If Your Script is "Sourced In" or "Ran"
@@ -266,16 +268,16 @@ Here is one method:
 #!/usr/bin/env bash
 # If you want to be able to tell if the script is run or sourced:
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
+  [[ -n ${BASH_VERSION} && $0 != "${BASH_SOURCE}" ]]) && BASH_IN_SUBSHELL=0 || BASH_IN_SUBSHELL=1
 
-export __ran_as_script
-(( $__ran_as_script )) && {
+export BASH_IN_SUBSHELL
+(( ${BASH_IN_SUBSHELL} )) && {
   echo; printf "This script should be run, not sourced.${clr}\n"
   echo; exit 1
 }
 ```
 
-This method sets the variable `$__ran_as_script` to either 1 (if the script is *sourced in*) and 0 if the script is run. Since both values are numeric we can use BASH's numeric expansion, which evaluates as follows:
+This method sets the variable `${BASH_IN_SUBSHELL}` to either 1 (if the script is *sourced in*) and 0 if the script is run. Since both values are numeric we can use BASH's numeric expansion, which evaluates as follows:
 
 ```bash
 (( 1 )) && echo "1 is true and therefore this is printed"
@@ -455,7 +457,7 @@ Please see [existing tests](https://github.com/kigster/bashmatic/tree/master/tes
 If you are stuck working on a monitor that does not support switching digit input from TV to PC, NOR does OS-X show the "underscan" slider in the Display Preferences, you may be forced to change the underscan manually. The process is a bit tricky, but we have a helpful script to do that:
 
 ```bash
-$ source lib/Loader.bash
+$ source init.sh
 $ change-underscan 5
 ```
 

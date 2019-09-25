@@ -1,2 +1,4 @@
 set -e
-source lib/Loader.bash
+
+source init.sh
+

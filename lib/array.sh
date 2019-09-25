@@ -33,7 +33,7 @@ array-contains-element() {
   local r="false"
   local e
 
-  [[ "$*" =~ "${search}" ]] || {
+  [[ "$*" =~ ${search} ]] || {
     echo -n $r
     return 1
   }
@@ -47,7 +47,7 @@ array-contains-element() {
 
 lib::array::contains-element() {
   local search="$1"; shift
-  [[ "$*" =~ "${search}" ]] || return 1
+  [[ "$*" =~ ${search} ]] || return 1
   for e in "${@}"; do
     [[ "$e" == "${search}" ]] && {
       return 0
@@ -59,21 +59,18 @@ lib::array::contains-element() {
 lib::array::complain-unless-includes() {
   lib::array::contains-element "$@" || {
     element=$1; shift
-    local output=""
-    local comma=false
+    local -a output=()
     while true; do
       [[ -z $1 ]] && break
-      ${comma} && output="${output}, "
-      ${comma} || comma=true
       if [[ "$1" =~ " " ]]; then
-        output="${output} '$1'"
+        output=("${output[@]}" "$1")
       else
-        output="${output} $1"
+        output=("$1")
       fi
       shift
     done
-    output=$(echo $output | hbsed 's/  / /g')
-    error "Value ${bldwht}${element}${error_color}${bldylw} must be one of the following values: ${bldgrn}${output}"
+    error "Value ${element} must be one of the following values: " \
+        "$(array-csv "${output[@]}")"
     echo
     return 0
   }
@@ -94,25 +91,27 @@ lib::array::join() {
     lines=false
   fi
 
-  local result=""
-  local br=""
   local elem
+  local len="$#"
+  local last_index=$(( len - 1 ))
+  local index=0
 
-  ${lines} && {
-    br="\n"
-  }
   for elem in "$@"; do
-    if [[ -z ${result} ]]; then
-      ${lines} || result="${elem}"
-      ${lines} && result="${sep}${elem}"
+    if ${lines}; then
+      printf "${sep}%s\n" "${elem}"
     else
-      result="${result}${br}${sep}${elem}"
+      printf "%s" "${elem}"
+      [[ ${index} -lt ${last_index} ]] && printf '%s' "${sep}"
     fi
+    index=$(( index + 1 ))
   done
-  printf "${result}${br}"
 }
 
 array-join() { lib::array::join "$@"; }
+
+array-csv() {
+  lib::array::join ', ' false "$@"
+}
 
 array-bullet-list() {
   lib::array::join ' • ' true "$@"
@@ -122,4 +121,14 @@ lib::array::join-piped() {
   lib::array::join ' | ' false "$@"
 }
 
+lib::array::from-command-output() {
+  local array_name=$1; shift
+  local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)"
+  eval "${script}"
+}
+
 array-join-piped() { lib::array::join-piped "$@"; }
+
+
+
+

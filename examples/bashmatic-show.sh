@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-( [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
+[[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || [[ -n ${BASH_VERSION} && $0 != "${BASH_SOURCE[0]}" ]]
+[[ $? -eq 0 ]] && BASH_IN_SUBSHELL=0 || BASH_IN_SUBSHELL=1
+
+echo "BASH_IN_SUBSHELL: ${BASH_IN_SUBSHELL}"
+
+(( $BASH_IN_SUBSHELL )) && exit 0
+(( $BASH_IN_SUBSHELL )) || return 0
 
 loader=$(find . -name Loader.bash)
 source ${loader}

@@ -172,7 +172,7 @@ long-pause() { sleep "${1:-10}"; }
 # pass number of columns to print, default is 2
 bashmatic-functions() {
   local columns="${1:-2}"
-  [[ -f lib/Loader.bash ]] || {
+  [[ -f init.sh ]] || {
     printf "\n${bldred}Sorry, but you must run this command from BashMatic's root folder.\n\n"
     return 1
   }
