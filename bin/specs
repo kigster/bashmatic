@@ -69,7 +69,7 @@ specs::select-files() {
   export os=$(uname -s | tr [A-Z] [a-z])
   if [[ -z ${TestFiles[*]} ]]; then
     TestFiles=($(ls -1 test/*_test.*))
-    [[ -d "test/${os}" ]] && TestFiles=(${TestFiles[@]} $(ls -1 test/${os}/*_test.*))
+    [[ -d "test/${os}" ]] && TestFiles=(${TestFiles[@]} $(ls -1 test/${os}/*_test.* 2>/dev/null))
   fi
   export TestFiles
 }
