@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
 
-[[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || [[ -n ${BASH_VERSION} && $0 != "${BASH_SOURCE[0]}" ]]
-[[ $? -eq 0 ]] && BASH_IN_SUBSHELL=0 || BASH_IN_SUBSHELL=1
+if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
 
-echo "BASH_IN_SUBSHELL: ${BASH_IN_SUBSHELL}"
-
-(( $BASH_IN_SUBSHELL )) && exit 0
-(( $BASH_IN_SUBSHELL )) || return 0
-
-loader=$(find . -name Loader.bash)
-source ${loader}
+bashmatic::validate-subshell || return 1
 
 h1  "Welcome to My Awesome Script" "${bldylw}Version 1.0.1" \
     "We hope you'll enjoy your demo!"

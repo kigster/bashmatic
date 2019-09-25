@@ -262,33 +262,24 @@ Some bash files exists as libraries to be "sourced in", and others exist as scri
 
 What do you, programmer, do to educate the user about correct usage of your script/library?
 
-Here is one method:
+BashMatic offers a reliable way to test this:
 
 ```bash
 #!/usr/bin/env bash
-# If you want to be able to tell if the script is run or sourced:
-( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n ${BASH_VERSION} && $0 != "${BASH_SOURCE}" ]]) && BASH_IN_SUBSHELL=0 || BASH_IN_SUBSHELL=1
-
-export BASH_IN_SUBSHELL
-(( ${BASH_IN_SUBSHELL} )) && {
-  echo; printf "This script should be run, not sourced.${clr}\n"
-  echo; exit 1
-}
+# load library
+if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
+bashmatic::validate-subshell || return 1
 ```
 
-This method sets the variable `${BASH_IN_SUBSHELL}` to either 1 (if the script is *sourced in*) and 0 if the script is run. Since both values are numeric we can use BASH's numeric expansion, which evaluates as follows:
+If you'd rather require a library to be sourced in, but not run, use the code as follows:
 
 ```bash
-(( 1 )) && echo "1 is true and therefore this is printed"
-(( 0 )) && echo "0 is false, so this statement is not printed"
+#!/usr/bin/env bash
+# load library
+if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
+bashmatic::validate-sourced-in || exit 1
 ```
 
-If you run the above, you should see only one line printed:
-
-```
-1 is true and therefore this is printed
-```
 
 ### The List of Available Functions
 
