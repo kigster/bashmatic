@@ -168,32 +168,3 @@ pause() { sleep "${1:-1}"; }
 shortish-pause() { sleep "${1:-0.3}"; }
 short-pause() { sleep "${1:-0.1}"; }
 long-pause() { sleep "${1:-10}"; }
-
-# pass number of columns to print, default is 2
-bashmatic-functions() {
-  local columns="${1:-2}"
-  [[ -f init.sh ]] || {
-    printf "\n${bldred}Sorry, but you must run this command from BashMatic's root folder.\n\n"
-    return 1
-  }
-  
-  # grab all function names from lib files                  
-  # remove private functions                                
-  # remove brackets, word 'function' and empty lines        
-  # print in two column format                              
-  # replace tabs with spaces.. Geez.                        
-  # finally, delete more empty lines with only spaces inside
-  local screen_width=$(screen-width)
-  [[ -z ${screen_width} ]] && screen_width=80
-  
-  grep --color=never -h -E '^[a-zA-Z::-]+ *\(\)' lib/*.sh |          \
-    grep -v '^_' |                                     \
-    sed -E 's/\(\) *.*//g; s/^function //g; /^ *$/d' | \
-    sort                                             | \
-    pr -l 10000 -${columns} -e4 -w ${screen_width}   | \
-    expand -8 |                                        \
-    sed -E '/^ *$/d'                                 | \
-    grep -v 'Page ' 
-}
-
-

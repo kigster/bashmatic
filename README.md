@@ -13,7 +13,7 @@
 		- [UI Drawing / Output functions](#ui-drawing-output-functions)
 		- [Other Utilities](#other-utilities)
 - [Usage](#usage)
-	- [1. Integrating With Your Project](#1-integrating-with-your-project)
+	- [Integrating With Your Project](#integrating-with-your-project)
 	- [Installation](#installation)
 	- [Detecting If Your Script is "Sourced In" or "Ran"](#detecting-if-your-script-is-sourced-in-or-ran)
 	- [The List of Available Functions](#the-list-of-available-functions)
@@ -215,7 +215,7 @@ There are a couple of ways that you can install and use this library.
 
    1. One is doing a simple manual `git clone`, and then "sourcing" the main `init.sh` file from one of your "dotfiles".
 
-### 1. Integrating With Your Project
+### Integrating With Your Project
 
 **BashMatic** comes with a clever installer that can be used to install it into any subfolder of an existing project.0
 
@@ -286,7 +286,7 @@ bashmatic::validate-sourced-in || exit 1
 You can get the list of functions printed by loading bashmatic as shown above, and then typing:
 
 ```bash
-$ bashmatic-functions [ COLUMNS ]
+$ bashmatic.functions [ COLUMNS ]
 ```
 
 Where `COLUMNS` is an optional number of columns to split them by.
@@ -294,128 +294,156 @@ Where `COLUMNS` is an optional number of columns to split them by.
 Here are the non-UI related functions of BashMatic, reducted for brevity (since the UI list is already shown above.)
 
 ```
-ansi                                             lib::docker::last-version
-array-bullet-list                                lib::docker::next-version
-array-contains-element                           lib::file::last-modified-date
-array-join                                       lib::file::last-modified-year
-array-join-piped                                 lib::gem::cache-installed
-ascii-clean                                      lib::gem::cache-refresh
-aws::rds::hostname                               lib::gem::ensure-gem-version
-bashmatic-functions                              lib::gem::gemfile::version
-bashmatic-set-fqdn                               lib::gem::global::latest-version
-bold                                             lib::gem::global::versions
-box::blue-in-green                               lib::gem::install
-box::blue-in-yellow                              lib::gem::is-installed
-box::green-in-green                              lib::gem::uninstall
-box::green-in-magenta                            lib::gem::version
-box::magenta-in-blue                             lib::json::begin-array
-box::magenta-in-green                            lib::json::begin-hash
-box::red-in-magenta                              lib::json::begin-key
-box::red-in-red                                  lib::json::end-array
-box::red-in-yellow                               lib::json::end-hash
-box::yellow-in-blue                              lib::json::file-to-array
-box::yellow-in-red                               lib::osx::cookie-dump
-box::yellow-in-yellow                            lib::osx::display::change-underscan
-br                                               lib::osx::env-print
-center                                           lib::osx::ramdisk::mount
-cookie-dump                                      lib::osx::ramdisk::unmount
-debug                                            lib::osx::scutil-print
-duration                                         lib::osx::set-fqdn
-epoch                                            lib::output::color::off
-err                                              lib::output::color::on
-error                                            lib::progress::bar
-error-text                                       lib::psql::db-settings
-error:                                           lib::ruby::bundler-version
-file::list::filter-existing                      lib::ruby::gemfile-lock-version
-file::list::filter-non-empty                     lib::ruby::version
-file::size                                       lib::run
-file::size::mb                                   lib::run::ask
-file::stat                                       lib::run::inspect
-ftrace-in                                        lib::run::inspect-variable
-ftrace-off                                       lib::run::inspect-variables
-ftrace-on                                        lib::run::inspect-variables-that-are
-ftrace-out                                       lib::run::inspect::set-skip-false-or-blank
-g-i                                              lib::run::print-variable
-g-u                                              lib::run::print-variables
-h::black                                         lib::run::variables-ending-with
-h::blue                                          lib::run::variables-starting-with
-h::green                                         lib::run::with-min-duration
-h::red                                           lib::ssh::load-keys
-h::yellow                                        lib::time::date-from-epoch
-hb::crypt::chef                                  lib::time::duration::humanize
-hb::decrypt::file                                lib::time::epoch-to-iso
-hb::decrypt::str                                 lib::time::epoch-to-local
-hb::edit::file                                   lib::time::epoch::minutes-ago
-hb::encrypt::file                                lib::url::downloader
-hb::encrypt::str                                 lib::url::shorten
-hb::sym                                          lib::user
-hbsed                                            lib::user::finger::name
-hdr                                              lib::user::first
-hl::blue                                         lib::user::gitconfig::email
-hl::desc                                         lib::user::gitconfig::name
-hl::green                                        lib::user::host
-hl::subtle                                       lib::user::my::ip
-hl::yellow                                       lib::user::my::reverse-ip
-hr::colored                                      lib::user::username
-inf                                              lib::util::append-to-init-files
-info                                             lib::util::arch
-info:                                            lib::util::checksum::files
-italic                                           lib::util::functions-matching
-left                                             lib::util::generate-password
-lib::array::complain-unless-includes             lib::util::i-to-ver
-lib::array::contains-element                     lib::util::install-direnv
-lib::array::exit-unless-includes                 lib::util::is-a-function
-lib::array::join                                 lib::util::is-numeric
-lib::array::join-piped                           lib::util::is-variable-defined
-lib::brew::cache-reset                           lib::util::lines-in-folder
-lib::brew::cache-reset::delayed                  lib::util::remove-from-init-files
-lib::brew::cask::is-installed                    lib::util::shell-init-files
-lib::brew::cask::list                            lib::util::shell-name
-lib::brew::install                               lib::util::ver-to-i
-lib::brew::install::cask                         lib::util::whats-installed
-lib::brew::install::package                      long-pause
-lib::brew::install::packages                     millis
-lib::brew::package::is-installed                 odie
-lib::brew::package::list                         ok
-lib::brew::reinstall::package                    ok:
-lib::brew::reinstall::packages                   okay
-lib::brew::relink                                onoe
-lib::brew::setup                                 pause
-lib::brew::uninstall::package                    puts
-lib::brew::uninstall::packages                   red
-lib::brew::upgrade                               reset-color
-lib::cache-or-command                            reset-color:
-lib::color::disable                              run
-lib::color::enable                               run::inspect
-lib::db::datetime                                run::set-all
-lib::db::dump                                    run::set-all::list
-lib::db::psql-args                               run::set-next
-lib::db::psql::args::                            run::set-next::list
-lib::db::psql::args::default                     screen-width
-lib::db::psql::args::maint                       short-pause
-lib::db::rails::schema::checksum                 shortish-pause
-lib::db::rails::schema::file                     shutdown
-lib::db::restore                                 stderr
-lib::db::top                                     stdout
-lib::db::wait-until-db-online                    strikethrough
-lib::deploy::slack                               success
-lib::deploy::slack-ding                          sym::hb::configure
-lib::deploy::validate-vpn                        sym::hb::files
-lib::dir::count-slashes                          sym::hb::import
-lib::dir::expand-dir                             sym::hb::install-shell-helpers
-lib::dir::is-a-dir                               sym::install::symit
-lib::docker::actions::build                      today
-lib::docker::actions::clean                      txt-err
-lib::docker::actions::pull                       txt-info
-lib::docker::actions::push                       txt-warn
-lib::docker::actions::setup                      underline
-lib::docker::actions::start                      warn
-lib::docker::actions::stop                       warning
-lib::docker::actions::tag                        warning:
-lib::docker::actions::up                         with-bundle-exec
-lib::docker::actions::update                     with-bundle-exec-and-output
-lib::docker::build::container                    with-min-duration
-
+❯ bashmatic.functions 2
+7z.a                                     lib::docker::abort_if_down
+7z.x                                     lib::docker::actions::build
+ansi                                     lib::docker::actions::clean
+array-bullet-list                        lib::docker::actions::pull
+array-contains-element                   lib::docker::actions::push
+array-csv                                lib::docker::actions::setup
+array-join                               lib::docker::actions::start
+array-join-piped                         lib::docker::actions::stop
+ascii-clean                              lib::docker::actions::tag
+aws::rds::hostname                       lib::docker::actions::up
+aws::s3::upload                          lib::docker::actions::update
+bashmatic-set-fqdn                       lib::docker::build::container
+bashmatic-term                           lib::docker::last-version
+bashmatic-term-program                   lib::docker::next-version
+bashmatic.functions                      lib::file::exists_and_newer_than
+bashmatic.load-at-login                  lib::file::install_with_backup
+bashmatic.reload                         lib::file::last-modified-date
+bashmatic::detect-subshell               lib::file::last-modified-year
+bashmatic::validate-sourced-in           lib::gem::cache-installed
+bashmatic::validate-subshell             lib::gem::cache-refresh
+bold                                     lib::gem::ensure-gem-version
+box::blue-in-green                       lib::gem::gemfile::version
+box::blue-in-yellow                      lib::gem::global::latest-version
+box::green-in-green                      lib::gem::global::versions
+box::green-in-magenta                    lib::gem::install
+box::magenta-in-blue                     lib::gem::is-installed
+box::magenta-in-green                    lib::gem::uninstall
+box::red-in-magenta                      lib::gem::version
+box::red-in-red                          lib::json::begin-array
+box::red-in-yellow                       lib::json::begin-hash
+box::yellow-in-blue                      lib::json::begin-key
+box::yellow-in-red                       lib::json::end-array
+box::yellow-in-yellow                    lib::json::end-hash
+br                                       lib::json::file-to-array
+center                                   lib::osx::cookie-dump
+change-underscan                         lib::osx::env-print
+cookie-dump                              lib::osx::ramdisk::mount
+cursor.at.x                              lib::osx::ramdisk::unmount
+cursor.at.y                              lib::osx::scutil-print
+cursor.down                              lib::osx::set-fqdn
+cursor.left                              lib::output::color::off
+cursor.rewind                            lib::output::color::on
+cursor.right                             lib::output::is_pipe
+cursor.up                                lib::output::is_redirect
+debug                                    lib::output::is_ssh
+decrypt.secrets                          lib::output::is_terminal
+duration                                 lib::output::is_tty
+epoch                                    lib::progress::bar
+err                                      lib::psql::db-settings
+error                                    lib::ruby::bundler-version
+error-text                               lib::ruby::gemfile-lock-version
+error:                                   lib::ruby::version
+file::list::filter-existing              lib::run
+file::list::filter-non-empty             lib::run::ask
+file::size                               lib::run::inspect
+file::size::mb                           lib::run::inspect-variable
+file::stat                               lib::run::inspect-variables
+ftrace-in                                lib::run::inspect-variables-that-are
+ftrace-off                               lib::run::inspect::set-skip-false-or-blank
+ftrace-on                                lib::run::print-variable
+ftrace-out                               lib::run::print-variables
+g-i                                      lib::run::variables-ending-with
+g-u                                      lib::run::variables-starting-with
+h1                                       lib::run::with-min-duration
+h1::blue                                 lib::ssh::load-keys
+h1::green                                lib::time::date-from-epoch
+h1::purple                               lib::time::duration::humanize
+h1::red                                  lib::time::epoch-to-iso
+h1::yellow                               lib::time::epoch-to-local
+h2                                       lib::time::epoch::minutes-ago
+h3                                       lib::url::downloader
+h::black                                 lib::url::http-code
+h::blue                                  lib::url::is-valid
+h::green                                 lib::url::shorten
+h::red                                   lib::url::valid-status
+h::yellow                                lib::user
+hb::crypt::chef                          lib::user::finger::name
+hb::decrypt::file                        lib::user::first
+hb::decrypt::str                         lib::user::gitconfig::email
+hb::edit::file                           lib::user::gitconfig::name
+hb::encrypt::file                        lib::user::host
+hb::encrypt::str                         lib::user::my::ip
+hb::sym                                  lib::user::my::reverse-ip
+hbsed                                    lib::user::username
+hdr                                      lib::util::append-to-init-files
+hl::blue                                 lib::util::arch
+hl::desc                                 lib::util::checksum::files
+hl::green                                lib::util::functions-matching
+hl::subtle                               lib::util::generate-password
+hl::yellow                               lib::util::i-to-ver
+hr::colored                              lib::util::install-direnv
+inf                                      lib::util::is-a-function
+info                                     lib::util::is-numeric
+info:                                    lib::util::is-variable-defined
+is_ask_on_error                          lib::util::lines-in-folder
+is_detail                                lib::util::remove-from-init-files
+is_verbose                               lib::util::shell-init-files
+italic                                   lib::util::shell-name
+kind_of_ok                               lib::util::ver-to-i
+kind_of_ok:                              lib::util::whats-installed
+left                                     long-pause
+lib::7z::install                         millis
+lib::7z::unzip                           not_ok
+lib::7z::unzip                           not_ok:
+lib::7z::zip                             odie
+lib::array::complain-unless-includes     ok
+lib::array::contains-element             ok:
+lib::array::exit-unless-includes         okay
+lib::array::from-command-output          onoe
+lib::array::join                         pause
+lib::array::join-piped                   press-any-key-to-continue
+lib::brew::cache-reset                   puts
+lib::brew::cache-reset::delayed          red
+lib::brew::cask::is-installed            reset-color
+lib::brew::cask::list                    reset-color:
+lib::brew::install                       run
+lib::brew::install::cask                 run::inspect
+lib::brew::install::package              run::set-all
+lib::brew::install::packages             run::set-all::list
+lib::brew::package::is-installed         run::set-next
+lib::brew::package::list                 run::set-next::list
+lib::brew::reinstall::package            safe_cd
+lib::brew::reinstall::packages           screen-width
+lib::brew::relink                        screen.height
+lib::brew::setup                         screen.width
+lib::brew::uninstall::package            short-pause
+lib::brew::uninstall::packages           shortish-pause
+lib::brew::upgrade                       shutdown
+lib::cache-or-command                    stderr
+lib::color::disable                      stdout
+lib::color::enable                       strikethrough
+lib::db::datetime                        success
+lib::db::dump                            sym::hb::configure
+lib::db::num_procs                       sym::hb::files
+lib::db::psql-args                       sym::hb::have_key
+lib::db::psql::args::                    sym::hb::import
+lib::db::psql::args::default             sym::hb::install-shell-helpers
+lib::db::psql::args::maint               sym::install::symit
+lib::db::rails::schema::checksum         today
+lib::db::rails::schema::file             txt-err
+lib::db::restore                         txt-info
+lib::db::top                             txt-warn
+lib::db::wait-until-db-online            underline
+lib::deploy::slack                       warn
+lib::deploy::slack-ding                  warning
+lib::deploy::validate-vpn                warning:
+lib::dir::count-slashes                  with-bundle-exec
+lib::dir::expand-dir                     with-bundle-exec-and-output
+lib::dir::is-a-dir                       with-min-duration
 ```
 
 ### Naming Conventions
