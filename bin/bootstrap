@@ -14,7 +14,7 @@
 #      $ curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
 #
 ( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
-  [[ -n ${BASH_VERSION} && $0 != "${BASH_SOURCE}" ]]) && BASH_IN_SUBSHELL=0 || BASH_IN_SUBSHELL=1
+  [[ -n ${BASH_VERSION} && $0 != "${BASH_SOURCE[0]}" ]]) && BASH_IN_SUBSHELL=0 || BASH_IN_SUBSHELL=1
 
 export BASH_IN_SUBSHELL
 
@@ -28,10 +28,10 @@ export BashMatic__RebasePeriodHours=24 # hours
 export BashMatic__LastRebaseAt=0
 
 export BashMatic__SymlinkEnclosingDir="bin/"
-[[ -d ${BashMatic__SymlinkEnclosingDir} ]] || export BashMatic__SymlinkEnclosingDir="."
+[[ -d ${BashMatic__SymlinkEnclosingDir} ]] || export BashMatic__SymlinkEnclosingDir=
 
 export BashMatic__BashmaticRootFolder="${HOME}"
-[[ -d "${BashMatic__BashmaticRootFolder}" ]] || export BashMatic__BashmaticRootFolder="/tmp"
+[[ -d "${BashMatic__BashmaticRootFolder}" ]] || export BashMatic__BashmaticRootFolder=
 
 export BashMatic__GitDestinationFolder="${BashMatic__BashmaticRootFolder}/.bashmatic"
 export BashMatic__LastRebaseFile="${BashMatic__GitDestinationFolder}/.last-rebase"
@@ -155,6 +155,11 @@ lib::bash::rebase-if-stale() {
 
 lib::bash::symlink() {
   cd "${BashMatic__Root}"
+
+  if [[ -z "${BashMatic__SymlinkEnclosingDir}" ]]; then
+    return
+  fi
+
   if [[ -d "${BashMatic__SymlinkEnclosingDir}" ]]; then
     [[ -L "${BashMatic__TargetLibSymlink}" ]] || /bin/ln -s "${BashMatic__GitDestinationFolder}/lib"           "${BashMatic__TargetLibSymlink}" >/dev/null
     [[ -L "${BashMatic__BootstrapSymlink}" ]] || /bin/ln -s "${BashMatic__GitDestinationFolder}/bin/bootstrap" "${BashMatic__BootstrapSymlink}" >/dev/null
@@ -167,7 +172,12 @@ lib::bash::symlink() {
 }
 
 lib::bash::gitignore::add-item() {
+  if [[ -z "${BashMatic__SymlinkEnclosingDir}" ]]; then
+    return
+  fi
+
   local gitignore_file
+
   if [[ -d ./.git ]]; then
     gitignore_file=".gitignore"
   else
@@ -194,3 +204,4 @@ lib::bash::bootstrap::main() {
 }
 
 lib::bash::bootstrap::main
+
