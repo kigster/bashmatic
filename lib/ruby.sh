@@ -1,5 +1,24 @@
 #!/usr/bin/env bash
 
+lib::ruby::install-ruby() {
+  local version="$1"
+
+  [[ -z ${version} ]] && { 
+    [[ -f .ruby-version ]] && version="$(cat .ruby-version | tr -d '\n')"
+  }
+
+  [[ -z ${version} ]] && { 
+    error "usage: lib::ruby::install-ruby ruby-version"
+    return 1
+  }
+
+  lib::brew::install::packages rbenv ruby-build jemalloc
+
+  eval "$(rbenv init -)"
+
+  run "RUBY_CONFIGURE_OPTS=--with-jemalloc rbenv install ${version}"
+}
+
 lib::ruby::gemfile-lock-version() {
   local gem=${1}
 
