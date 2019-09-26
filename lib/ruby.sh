@@ -3,20 +3,40 @@
 lib::ruby::install-ruby() {
   local version="$1"
 
-  [[ -z ${version} ]] && { 
-    [[ -f .ruby-version ]] && version="$(cat .ruby-version | tr -d '\n')"
+  [[ -z ${version} ]] && {
+    [[ -f .ruby-version ]] && {
+      hl::subtle "Auto-detected ruby version: ${version}"
+      version="$(cat .ruby-version | tr -d '\n')"
+    }
   }
 
-  [[ -z ${version} ]] && { 
-    error "usage: lib::ruby::install-ruby ruby-version"
+  [[ -z ${version} ]] && {
+    error "usage: ${BASH_SOURCE[*]} ruby-version"
     return 1
   }
 
-  lib::brew::install::packages rbenv ruby-build jemalloc
+  lib::ruby::validate-version "${version}" || return 1
 
+  lib::brew::install::packages rbenv ruby-build jemalloc
   eval "$(rbenv init -)"
 
-  run "RUBY_CONFIGURE_OPTS=--with-jemalloc rbenv install ${version}"
+  run "RUBY_CONFIGURE_OPTS=--with-jemalloc rbenv install -s ${version}"
+  return "${LibRun__LastExitCode:-"0"}"
+}
+
+lib::ruby::validate-version() {
+  local version="$1"
+  local -a ruby_versions=()
+
+  run "brew upgrade ruby-build || true"
+  lib::array::from-command-output ruby_versions 'rbenv install --list | sed -E "s/\s+//g"'
+
+  lib::array::contains-element "${version}" "${ruby_versions[@]}" || {
+    error "Ruby Version provided was found by rbenv: ${bldylw}${version}"
+    return 1
+  }
+
+  return 0
 }
 
 lib::ruby::gemfile-lock-version() {
@@ -40,4 +60,18 @@ lib::ruby::bundler-version() {
 
 lib::ruby::version() {
   ruby --version
+}
+
+# Public Interfaces
+bashmatic.ruby.install() {
+  lib::ruby::install-ruby "$@"
+}
+
+bashmatic.ruby.compiled-libs() {
+  ruby -r rbconfig -e "puts RbConfig::CONFIG['LIBS']"
+}
+
+# ...ruby.compiled-with jemalloc && echo yes
+bashmatic.ruby.compiled-with() {
+  ruby -r rbconfig -e "puts RbConfig::CONFIG['LIBS']" | grep -q "$*"
 }

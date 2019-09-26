@@ -58,10 +58,10 @@ lib::array::contains-element() {
 
 lib::array::complain-unless-includes() {
   lib::array::contains-element "$@" || {
-    element=$1; shift
+    element="$1"; shift
     local -a output=()
     while true; do
-      [[ -z $1 ]] && break
+      [[ -z "$1" ]] && break
       if [[ "$1" =~ " " ]]; then
         output=("${output[@]}" "$1")
       else
@@ -69,8 +69,13 @@ lib::array::complain-unless-includes() {
       fi
       shift
     done
-    error "Value ${element} must be one of the following values: " \
-        "$(array-csv "${output[@]}")"
+
+    if [[ ${#output[@]} -gt 10 ]]; then
+      error "Value ${element} must be one of the supplied values."
+    else
+      error "Value ${element} must be one of the supplied values:" \
+        "${output[@:0:10]}"
+    fi
     echo
     return 0
   }
@@ -127,8 +132,6 @@ lib::array::from-command-output() {
   eval "${script}"
 }
 
-array-join-piped() { lib::array::join-piped "$@"; }
-
-
-
-
+array-join-piped() {
+  lib::array::join-piped "$@";
+}
