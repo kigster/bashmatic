@@ -302,7 +302,7 @@ array-bullet-list                        lib::docker::actions::pull
 array-contains-element                   lib::docker::actions::push
 array-csv                                lib::docker::actions::setup
 array-join                               lib::docker::actions::start
-array-join-piped                         lib::docker::actions::stop
+array-piped                              lib::docker::actions::stop
 ascii-clean                              lib::docker::actions::tag
 aws::rds::hostname                       lib::docker::actions::up
 aws::s3::upload                          lib::docker::actions::update
@@ -405,7 +405,7 @@ lib::array::contains-element             ok:
 lib::array::exit-unless-includes         okay
 lib::array::from-command-output          onoe
 lib::array::join                         pause
-lib::array::join-piped                   press-any-key-to-continue
+lib::array::piped                        press-any-key-to-continue
 lib::brew::cache-reset                   puts
 lib::brew::cache-reset::delayed          red
 lib::brew::cask::is-installed            reset-color

@@ -122,7 +122,7 @@ array-bullet-list() {
   lib::array::join ' • ' true "$@"
 }
 
-lib::array::join-piped() {
+lib::array::piped() {
   lib::array::join ' | ' false "$@"
 }
 
@@ -132,6 +132,6 @@ lib::array::from-command-output() {
   eval "${script}"
 }
 
-array-join-piped() {
-  lib::array::join-piped "$@";
+array-piped() {
+  lib::array::piped "$@";
 }

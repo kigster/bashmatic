@@ -18,9 +18,9 @@ load test_helper
   [[ $status -eq 0 ]]
 }
 
-@test "lib::array::join-piped" {
+@test "lib::array::piped" {
   declare -a array=(orange yellow red)
-  [[ $(lib::array::join-piped "${array[@]}") == "orange | yellow | red" ]]
+  [[ $(lib::array::piped "${array[@]}") == "orange | yellow | red" ]]
   [[ $status -eq 0 ]]
 }
 
