@@ -226,3 +226,15 @@ bashmatic-term-program() {
 bashmatic-term() {
   open $(bashmatic-term-program)
 }
+
+lib::osx::local-servers() {
+  local protocol="${1:-"ssh"}"
+  run::set-next show-output-on
+  run "timeout 20 dns-sd -B _${protocol}._tcp ."
+} 
+
+...ssh.servers() { lib::osx::local-servers ssh; }
+...afp.servers() { lib::osx::local-servers afp; }
+...http.servers() { lib::osx::local-servers http; }
+...https.servers() { lib::osx::local-servers https; }
+
