@@ -541,6 +541,11 @@ inf() {
   printf -- "    ${txtblu}${clr}${txtblu}$*${clr}"
 }
 
+debug() {
+  [[ -z ${DEBUG} ]] && return
+  printf -- "    ${txtblk}${bakwht}[ debug ] $*  ${clr}\n"
+}
+
 warn() {
   printf -- "    ${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
 }
@@ -552,12 +557,6 @@ warning() {
 
 br() {
   echo
-}
-
-debug() {
-  if [[ -n ${DEBUG} ]]; then
-    info $@ 1>&2
-  fi
 }
 
 info() {
