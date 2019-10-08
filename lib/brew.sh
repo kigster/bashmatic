@@ -41,9 +41,6 @@ lib::brew::install() {
     info "Homebrew is already installed."
     info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
   fi
-
-  # Let's install that goddamn brew-cask
-  run "brew tap homebrew/cask-cask"
 }
 
 lib::brew::setup() {
@@ -65,6 +62,10 @@ lib::brew::cask::list() {
   lib::cache-or-command "${LibBrew__CaskCacheList}" 30 "brew cask ls -1"
 }
 
+lib::brew::cask::tap() {
+  run "brew tap homebrew/cask-cask"
+}
+
 lib::cache-or-command() {
   local file="$1"; shift
   local stale_minutes="$1"; shift
@@ -82,14 +83,14 @@ lib::cache-or-command() {
 lib::brew::package::is-installed() {
   local package="${1}"
   local -a installed_packages=($(lib::brew::package::list))
-  array-contains-element "${package}" "${installed_packages[@]}"
+  array-contains-element $(basename "${package}") "${installed_packages[@]}"
 }
 
 
 lib::brew::cask::is-installed() {
   local cask="${1}"
   local -a installed_casks=($(lib::brew::cask::list))
-  array-contains-element "${cask}" "${installed_casks[@]}"
+  array-contains-element $(basename "${cask}") "${installed_casks[@]}"
 }
 
 lib::brew::reinstall::package() {
@@ -140,7 +141,7 @@ lib::brew::install::cask() {
     ok:
   elif [[ $(lib::brew::cask::is-installed ${cask}) == "true" ]]; then
     ok:
-    run "brew cask link ${cask} ${force} ${verbose}; true"
+    return 0
   else
     kind_of_ok:
     run "brew cask install ${cask} ${force} ${verbose}"
