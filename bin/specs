@@ -59,7 +59,7 @@ specs::run-file() {
     error "File ${file} is not found."
     return 1
   fi
-  hl::green "${file}"
+  hl::white-on-salmon "${file}"
   set -e
   /usr/local/bin/bats -p "${file}"
   set +e

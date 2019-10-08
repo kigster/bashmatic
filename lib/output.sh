@@ -250,12 +250,12 @@ __lib::output::center() {
   [[ $(( ( ${width} - ${#clean_text} ) % 2 )) == 1 ]] && offset=1
 
   printf "${color}"
-  cursor.at.x -1
+  cursor.at.x 0
   __lib::output::repeat-char " " ${remaining_space_len}
   printf "%s" "${text}"
-  __lib::output::repeat-char " " $(( ${remaining_space_len} + ${offset} ))
+  __lib::output::repeat-char " " $(( ${remaining_space_len} + ${offset} - 1 ))
   reset-color
-  cursor.at.x -1
+  cursor.at.x 0
 }
 
 __lib::output::left-justify() {
@@ -375,6 +375,26 @@ box::magenta-in-blue() {
   __lib::output::box "${bldblu}" "${bldpur}" "$@"
 }
 
+hl::white-on-orange() {
+  left "${white_on_orange}" "$@"
+}
+
+hl::white-on-salmon() {
+  left "${white_on_salmon}" "$@"
+}
+
+hl::orange() {
+  left "${white_on_orange}" "$@"
+}
+
+hl::yellow-on-gray() {
+  left "${yellow_on_gray}" "$@s"
+}
+
+hl::yellow-on-gray() {
+  left "${yellow_on_gray}" "$@s"
+}
+
 hl::blue() {
   left "${bldwht}${bakpur}" "$@"
 }
@@ -384,7 +404,7 @@ hl::green() {
 }
 
 hl::yellow() {
-  left "${txtblk}${bakylw}" "$@"
+  left "${bakylw}${txtblk}" "$@"
 }
 
 hl::subtle() {
@@ -450,6 +470,7 @@ h3() {
 hdr() {
   h1 "$@"
 }
+
 
 screen-width() {
   __lib::output::screen-width

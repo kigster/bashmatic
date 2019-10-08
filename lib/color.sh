@@ -55,6 +55,13 @@ lib::color::enable() {
     export underlined='\e[4m'
     export strikethrough='\e[9m'
 
+    export white_on_orange="\e[48;5;208m"
+    export white_on_yellow="\e[48;5;214m"
+    export white_on_red="\e[48;5;9m"
+    export white_on_pink="\e[48;5;199m"
+    export white_on_salmon="\e[48;5;196m"
+    export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
+
     export AppColorsLoaded=1
   else
     [[ -n ${DEBUG} ]] && echo "colors already loaded..."
