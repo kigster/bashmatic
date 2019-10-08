@@ -43,7 +43,7 @@ lib::brew::install() {
   fi
 
   # Let's install that goddamn brew-cask
-  run "brew tap caskroom/cask"
+  run "brew tap homebrew/cask-cask"
 }
 
 lib::brew::setup() {
