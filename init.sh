@@ -14,10 +14,16 @@ bashmatic::source-dir() {
   # Let's list all lib files
   declare -a files=($(ls -1 "${folder}"/*.sh))
 
+  local loaded=false
   for bash_file in "${files[@]}"; do
     [[ -n ${DEBUG} ]] && printf "sourcing ${txtgrn}$bash_file${clr}...\n" >&2
     source "${bash_file}"
+    loaded=true
   done
+
+  ${loaded} || {
+    printf "Unable to find BashMatic library folder with files: ${BashMatic__LibDir}"
+  }
 }
 
 bashmatic.setup() {
@@ -32,12 +38,12 @@ bashmatic.setup() {
   [[ -z ${BashMatic__Downloader} && -n $(which wget) ]] && \
     export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
 
-  source "${BashMatic__LibDir}/color.sh"
-  source "${BashMatic__LibDir}/output.sh"
-  source "${BashMatic__LibDir}/time.sh"
-  source "${BashMatic__LibDir}/array.sh"
-
   bashmatic::source-dir "${BashMatic__LibDir}"
+
+  source "${BashMatic__LibDir}/util.sh"
+  source "${BashMatic__LibDir}/git.sh"
+
+  lib::git::sync
 }
 
 bashmatic.setup

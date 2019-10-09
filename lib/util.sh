@@ -157,6 +157,10 @@ lib::util::checksum::files() {
   cat $* | shasum | awk '{print $1}'
 }
 
+lib::util::checksum::stdin() {
+  shasum | awk '{print $1}'
+}
+
 lib::util::install-direnv() {
   [[ -n $(which direnv) ]] || lib::brew::install::package direnv
 
