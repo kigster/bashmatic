@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-export LibGit__DefaultUpdatePeriodHrs="${LibGit__DefaultUpdatePeriodHrs:-"1"}"
+# You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
+export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
 export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | lib::util::checksum::stdin)"
 export LibGit__QuietUpdate=${LibGit__QuietUpdate:-''}
 
@@ -45,7 +46,7 @@ function lib::git::seconds-since-last-pull() {
 function lib::git::check-if-should-update-repo() {
   local last_update_at=$(lib::git::last-update-at)
   local second_since_update=$(lib::git::seconds-since-last-pull ${last_update_at})
-  local update_period_seconds=$(( LibGit__DefaultUpdatePeriodHrs * 60 * 60 ))
+  local update_period_seconds=$(( LibGit__StaleAfterThisManyHours * 60 * 60 ))
   if [[ ${second_since_update} -gt ${update_period_seconds} ]]; then
     [[ ${last_update_at} -gt 0 ]] && {
       lib::git::quiet || hl::blue "BASH Library may be out of date (last updated: $(lib::time::epoch-to-local ${last_update_at})"
@@ -94,7 +95,7 @@ function lib::git::local-vs-remote() {
       remote_repo = ${remote_repo}
     "
   fi
-  
+
   local result=
   if [[ "${local_repo}" == "${remote_repo}" ]]; then
     result="ok"

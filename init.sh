@@ -38,11 +38,10 @@ bashmatic.setup() {
   [[ -z ${BashMatic__Downloader} && -n $(which wget) ]] && \
     export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
 
+  source "${BashMatic__LibDir}/util.sh"
   bashmatic::source-dir "${BashMatic__LibDir}"
 
-  source "${BashMatic__LibDir}/util.sh"
-  source "${BashMatic__LibDir}/git.sh"
-
+  # sync bashmatic repo if hasn't been sync'd in a while
   lib::git::sync
 }
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Note, this function does not actually work as a function, but only with ZSH
 # where it always detects "script" and never "sourced" unless you put them
 # first line of the as your first line in the script.

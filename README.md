@@ -30,9 +30,8 @@
 For the impatient, here is how to install BashMatic very quickly and easily:
 
 ```bash
-curl -fsSL http://bit.ly/bashmatic-bootstrap | /usr/bin/env bash
-source ~/.bashmatic/init.sh
-bashmatic.load-at-login
+cd ~/ && git clone https://github.com/kigster/bashmatic .bashmatic
+source ~/.bashmatic/init.sh && bashmatic.load-at-login
 ```
 
 When you run the `bashmatic.load-at-login` function, it will add a bashmatic hook to one of your BASH initialization files, so all of its functions are available in your shell.
