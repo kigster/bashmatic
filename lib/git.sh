@@ -47,9 +47,6 @@ function lib::git::check-if-should-update-repo() {
   local second_since_update=$(lib::git::seconds-since-last-pull ${last_update_at})
   local update_period_seconds=$(( LibGit__StaleAfterThisManyHours * 60 * 60 ))
   if [[ ${second_since_update} -gt ${update_period_seconds} ]]; then
-    [[ ${last_update_at} -gt 0 ]] && {
-      lib::git::quiet || hl::blue "BASH Library may be out of date (last updated: $(lib::time::epoch-to-local ${last_update_at})"
-    }
     lib::git::sync-remote
   elif [[ -n ${DEBUG} ]]; then
     lib::git::quiet || info "${BashMatic__Home} will update in $(( update_period_seconds - second_since_update )) seconds..."
