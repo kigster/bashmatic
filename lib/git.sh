@@ -109,7 +109,15 @@ function lib::git::local-vs-remote() {
 }
 
 lib::git::repo-is-clean() {
-  [[ -z $(git status -s) ]]
+  local cwd="${PWD}"
+  cd ${BashMatic__Home} >/dev/null
+  if [[ -z $(git status -s) ]]; then
+    cd - >/dev/null
+    return 0
+  else
+    cd - >/dev/null
+    return 1
+  fi
 }
 
 lib::git::remotes() {
