@@ -1,39 +1,38 @@
 #!/usr/bin/env bash
 
-# You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
-export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | lib::util::checksum::stdin)"
-export LibGit__QuietUpdate=${LibGit__QuietUpdate:-''}
+function lib::git::configure-auto-updates() {
+  # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
+  export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
+  export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | lib::util::checksum::stdin)"
+  mkdir -p $(dirname ${LibGit__LastUpdateTimestampFile})
+}
 
 function lib::git::quiet() {
   [[ -n ${LibGit__QuietUpdate} ]]
 }
 
 function lib::git::sync() {
-  local dir=${PWD}
-  cd ${BashMatic__Home}
+  local dir="$(pwd)"
+  cd "${BashMatic__Home}" >/dev/null
   lib::git::repo-is-clean || {
     error "${bldylw}${BashMatic__Home} has locally modified files." \
-          "Please commit or stash them to allow auto-upgrade to function as designed."
-
-    git status -s
-    cd ${dir} > /dev/null
-    return 1
+          "Please commit or stash them to allow auto-upgrade to function as designed." >&2
+    cd "${dir}" > /dev/null
+    exit 1
   }
 
-  mkdir -p $(dirname ${LibGit__LastUpdateTimestampFile})
   lib::git::check-if-should-update-repo
-  cd ${dir} > /dev/null
-
+  
+  cd "${dir}" > /dev/null
   return 0
 }
 
 function lib::git::last-update-at {
+  lib::git::configure-auto-updates
+
   local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
   local last_update=0
-  if [[ -f ${file} ]] ; then
-    last_update=$(cat $file | tr -d '\n')
-  fi
+  [[ -f ${file} ]] && last_update="$(cat $file | tr -d '\n')"
   printf "%d" ${last_update}
 }
 
@@ -118,4 +117,16 @@ lib::git::repo-is-clean() {
 
 lib::git::remotes() {
   git remote -v | awk '{print $2}' | uniq
+}
+
+function bashmatic.auto-update() {
+  lib::git::configure-auto-updates
+
+  lib::git::repo-is-clean || {
+    error "Locally modified changes detected in BashMatic folder ${BashMatic__Home}" \
+      "Refusing to auto-update until changes are committed or stashed."
+    return 1
+  }
+
+  lib::git::sync
 }

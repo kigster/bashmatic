@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+purrent="$(pwd)"
+
 set -e -x
 
 which -s git || {
@@ -12,14 +14,14 @@ cd "${HOME}"
 
 if [[ -d .bashmatic ]]; then
   echo "It appears BashMatic is already installed locally..."
-  cd .bashmatic 
+  cd .bashmatic
   if [[ -n $(git status -s) ]]; then
     echo "Looks like your .bashmattic folder has some locally modified files."
     echo "Please commit, stash or remove those files, and re-run this setup."
     exit 1
   fi
   git checkout master
-  git pull --rebase 
+  git pull --rebase
 else
   git clone https://github.com/kigster/bashmatic .bashmatic
 fi
@@ -30,3 +32,7 @@ source ${HOME}/.bashmatic/init.sh
 bashmatic.load-at-login
 
 success "Your BashMatic has been successfully installed."
+
+if [[ ${purrent} != ${HOME} ]]; then
+  cd ${purrent} >/dev/null
+end
