@@ -1,19 +1,33 @@
 #!/usr/bin/env bash
 
-lib::ruby::install-ruby() {
+lib::ruby::install-ruby-with-deps() {
   local version="$1"
 
-  [[ -z ${version} ]] && {
-    [[ -f .ruby-version ]] && {
-      hl::subtle "Auto-detected ruby version: ${version}"
-      version="$(cat .ruby-version | tr -d '\n')"
-    }
-  }
+  declare -a packages=(
+    cask bash bash-completion git go haproxy htop jemalloc
+    libxslt jq libiconv libzip netcat nginx  openssl pcre
+    pstree p7zip rbenv redis ruby_build
+    tree vim watch wget zlib
+  )
+
+  brew install --display-times ${packages[*]}
+}
+
+lib::ruby::install-ruby() {
+  local version="$1"
+  local version_source="provided as an argument"
+
+  if [[ -z ${version} && -f .ruby-version ]] ; then
+    version="$(cat .ruby-version | tr -d '\n')"
+    version_source="auto-detected from .ruby-version file"
+  fi 
 
   [[ -z ${version} ]] && {
-    error "usage: ${BASH_SOURCE[*]} ruby-version"
+    error "usage: ${BASH_SOURCE[*]} ruby-version" "Alternatively, create .ruby-version file"
     return 1
   }
+
+  hl::subtle "Installing Ruby Version ${version} ${version_source}."
 
   lib::ruby::validate-version "${version}" || return 1
 
@@ -63,15 +77,20 @@ lib::ruby::version() {
 }
 
 # Public Interfaces
-bashmatic.ruby.install() {
+ruby.install() {
   lib::ruby::install-ruby "$@"
 }
 
-bashmatic.ruby.compiled-libs() {
+ruby.linked-libs() {
   ruby -r rbconfig -e "puts RbConfig::CONFIG['LIBS']"
 }
 
 # ...ruby.compiled-with jemalloc && echo yes
-bashmatic.ruby.compiled-with() {
+ruby.compiled-with() {
+  if [[ -z "$*" ]]; then
+    error "usage: ruby.compiled-with <library>"
+    return 1
+  fi
+
   ruby -r rbconfig -e "puts RbConfig::CONFIG['LIBS']" | grep -q "$*"
 }
