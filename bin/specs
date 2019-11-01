@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 
 export TERM=${TERM:-xterm-256color}
-source "$(pwd)/init.sh"
 
 export ProjectRoot=$(pwd)
 export BatsRoot=${ProjectRoot}/.bats
+
 declare -a TestFiles=()
 
 export True=1
 export False=0
+
+export Bashmatic__Test=${True}
+
+source "$(pwd)/init.sh"
 
 specs::test-filename() {
   file=$1

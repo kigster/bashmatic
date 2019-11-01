@@ -1,4 +1,6 @@
 #!/usr/bin/env bats 
+# vi: ft=sh
+
 load test_helper
 
 @test "lib::git::repo-is-clean() when dirty" { 
@@ -9,12 +11,16 @@ load test_helper
   echo '## README' >> README
   git init . && git add . && git commit -m 'initial commit'
   echo '### Modified' >> README
-  clean=false
-  lib::git::repo-is-clean && clean=true
+  clean=0
+  export Bashmatic__Test=1
+  set +e
+  lib::git::repo-is-clean "${dir}" || clean=1 
   cd /tmp && rm -rf clean
   cd $pwd
-  [[ ${clean} == false ]] 
+  set -e
+  [[ ${clean} == 1 ]] 
 }
+
 @test "lib::git::repo-is-clean() when clean" { 
   pwd=$(pwd)
   dir="/tmp/clean/repo"
@@ -22,9 +28,12 @@ load test_helper
   touch README
   echo '## README' >> README
   git init . && git add . && git commit -m 'initial commit'
-  clean=false
-  lib::git::repo-is-clean && clean=true
+  export Bashmatic__Test=1
+  clean=1
+  set +e
+  lib::git::repo-is-clean "${dir}" && clean=0
   cd /tmp && rm -rf clean
   cd $pwd
-  [[ ${clean} == true ]] 
+  set -e
+  [[ ${clean} -eq 0 ]]
 }

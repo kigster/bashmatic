@@ -12,6 +12,7 @@ function lib::git::quiet() {
 }
 
 function lib::git::sync() {
+
   local dir="$(pwd)"
   cd "${BashMatic__Home}" >/dev/null
   lib::git::repo-is-clean || {
@@ -109,8 +110,9 @@ function lib::git::local-vs-remote() {
 }
 
 lib::git::repo-is-clean() {
+  local repo="${1:-${BashMatic__Home}}"
   local cwd="${PWD}"
-  cd ${BashMatic__Home} >/dev/null
+  cd ${repo} >/dev/null
   if [[ -z $(git status -s) ]]; then
     cd - >/dev/null
     return 0
@@ -125,6 +127,8 @@ lib::git::remotes() {
 }
 
 function bashmatic.auto-update() {
+  [[ ${Bashmatic__Test} -eq 1 ]] && return 0
+
   lib::git::configure-auto-updates
 
   lib::git::repo-is-clean || {
