@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 lib::vim::setup() {
-  export LibVim__initFile="${HOME}/.bashrc"
+  export LibVim__initFile="${HOME}/.bash_profile"
   export LibVim__editorVi="vi"
   export LibVim__editorGvimOn="gvim"
   export LibVim__editorGvimOff="vim"
