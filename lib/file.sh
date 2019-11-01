@@ -25,6 +25,27 @@ __lib::file::size_bytes() {
   local file=$1
   printf $(($(wc -c < $file) + 0))
 }
+
+# Replaces a given regex with a string
+lib::file::gsub() { 
+  local file="$1"
+  local find="$2"
+  local replace="$3"
+
+  [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && {
+    error "Invalid usage of lib::file::sub — " \
+          "USAGE: lib::file::gsub <file>    <find-regex>        <replace-regex>" \
+          "EG:    lib::file::gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'"
+    return 1
+  }  
+
+  # fix any EDITOR assignments in ~/.bashrc
+  egrep -q "${find}" "${file}" || return 0
+
+  # replace
+  run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
+}
+
 # Usage:
 #   (( $(lib::file::exists_and_newer_than "/tmp/file.txt" 30) )) && echo "Yes!"
 lib::file::exists_and_newer_than() {
@@ -120,4 +141,5 @@ file::list::filter-non-empty() {
     [[ -s ${file} ]] && echo "${file}"
   done
 }
+
 

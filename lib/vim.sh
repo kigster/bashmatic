@@ -10,20 +10,23 @@ lib::vim::setup() {
 lib::vim::gvim-off() {
   lib::vim::setup
 
+  local regex_from='^export EDITOR=.*$'
+  local regex_to='export EDITOR=vim'
+
   # fix any EDITOR assignments in ~/.bashrc
-  egrep -q '^export EDITOR=gvim' ${LibVim__initFile} && \
-    run "cat ${LibVim__initFile} | sed -e 's/^export EDITOR=.*$/export EDITOR=vim/g' > /tmp/.a.$$"
-  egrep -q '^export EDITOR=gvim' ${LibVim__initFile} && \
-    run "mv /tmp/.a.$$ ${LibVim__initFile}"
+  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
+  lib::file::gsub "${LibVim__initFile}" '^gvim.on$' 'gvim.off'
 
   # append to ~/.bashrc
-  egrep -q '^export EDITOR=' ${LibVim__initFile} || echo "export EDITOR=${LibVim__editorGvimOff}" >> ${LibVim__initFile}
+  egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
+  egrep -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >> ${LibVim__initFile}
+
   # import into the current shell
   eval "
     set -x
     export EDITOR=${LibVim__editorGvimOn}
-    unalias ${LibVim__editorVi}
-    unalias ${LibVim__editorGvimOff}
+    unalias ${LibVim__editorVi} 2>/dev/null
+    unalias ${LibVim__editorGvimOff} 2>/dev/null
     set +x
   "
 }
@@ -31,15 +34,15 @@ lib::vim::gvim-off() {
 lib::vim::gvim-on() {
   lib::vim::setup
 
-  # fix any EDITOR assignments in ~/.bashrc
-  egrep -q '^export EDITOR=gvim' ${LibVim__initFile} && \
-    run "cat ${LibVim__initFile} | sed -e 's/^export EDITOR=.*$/export EDITOR=${LibVim__editorGvimOn}/g' > /tmp/.a.$$"
-  egrep -q '^export EDITOR=gvim' ${LibVim__initFile} && \
-    run "mv /tmp/.a.$$ ${LibVim__initFile}"
+  local regex_from='^export EDITOR=.*$'
+  local regex_to='export EDITOR=gvim'
+
+  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
+  lib::file::gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'
 
   # append to ~/.bashrc
-  egrep -q '^export EDITOR=' ${LibVim__initFile} || \
-    echo "export EDITOR=${LibVim__editorGvimOn}" >> ${LibVim__initFile}
+  egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
+  egrep -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >> ${LibVim__initFile}
 
   # import into the current shell
   eval "
