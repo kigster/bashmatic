@@ -77,7 +77,7 @@ __lib::output::screen-width() {
     w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | hbsed 's/;//g')
   fi
 
-  MIN_WIDTH=${MIN_WIDTH:-80}
+  MIN_WIDTH=${MIN_WIDTH:-50}
   w=${w:-${MIN_WIDTH}}
   [[ "${w}" -lt "${MIN_WIDTH}" ]] && w=${MIN_WIDTH}
 

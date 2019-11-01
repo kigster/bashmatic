@@ -15,13 +15,13 @@ function lib::git::sync() {
   local dir="$(pwd)"
   cd "${BashMatic__Home}" >/dev/null
   lib::git::repo-is-clean || {
-    error "${bldylw}${BashMatic__Home} has locally modified files." \
+    warning "${bldylw}${BashMatic__Home} has locally modified files." \
           "Please commit or stash them to allow auto-upgrade to function as designed." >&2
     cd "${dir}" > /dev/null
-    exit 1
+    return 1
   }
 
-  lib::git::check-if-should-update-repo
+  lib::git::update-repo-if-needed
   
   cd "${dir}" > /dev/null
   return 0
@@ -42,7 +42,7 @@ function lib::git::seconds-since-last-pull() {
   printf $(( now - last_update ))
 }
 
-function lib::git::check-if-should-update-repo() {
+function lib::git::update-repo-if-needed() {
   local last_update_at=$(lib::git::last-update-at)
   local second_since_update=$(lib::git::seconds-since-last-pull ${last_update_at})
   local update_period_seconds=$(( LibGit__StaleAfterThisManyHours * 60 * 60 ))
@@ -128,8 +128,8 @@ function bashmatic.auto-update() {
   lib::git::configure-auto-updates
 
   lib::git::repo-is-clean || {
-    error "Locally modified changes detected in BashMatic folder ${BashMatic__Home}" \
-      "Refusing to auto-update until changes are committed or stashed."
+    h1 "${BashMatic__Home} has locally modified changes." \
+      "Will wait with git sync until it's cleaned up."
     return 1
   }
 
