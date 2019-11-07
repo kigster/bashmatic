@@ -24,7 +24,7 @@ lib::vim::gvim-off() {
   # import into the current shell
   eval "
     set -x
-    export EDITOR=${LibVim__editorGvimOn}
+    export EDITOR=${LibVim__editorGvimOff}
     unalias ${LibVim__editorVi} 2>/dev/null
     unalias ${LibVim__editorGvimOff} 2>/dev/null
     set +x
