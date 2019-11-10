@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# vi: ft=sh
 lib::ruby::install-ruby-with-deps() {
   local version="$1"
 
@@ -43,6 +43,12 @@ lib::ruby::validate-version() {
   local -a ruby_versions=()
 
   run "brew upgrade ruby-build || true"
+
+  # Ensure that we get the very latest ruby versions
+  [[ -d ~/.rbenv/plugins/ruby-build ]] && { 
+    run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
+  }
+
   lib::array::from-command-output ruby_versions 'rbenv install --list | sed -E "s/\s+//g"'
 
   lib::array::contains-element "${version}" "${ruby_versions[@]}" || {
