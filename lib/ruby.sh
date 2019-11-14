@@ -100,3 +100,26 @@ ruby.compiled-with() {
 
   ruby -r rbconfig -e "puts RbConfig::CONFIG['LIBS']" | grep -q "$*"
 }
+
+ruby.stop() {
+  local regex='/[r]uby| [p]uma| [i]rb| [r]ails | [b]undle| [u]nicorn| [r]ake'
+  local procs=$(ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | wc -l)
+  [[ ${procs} -eq 0 ]] && { 
+    info: "No ruby processes were found."
+    return 0
+  }
+
+  local -a pids=$(ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')
+
+  h2 "Detected ${#pids[@]} Ruby Processes..., here is the tree:"
+  printf "${txtcyn}"
+  pstree ${pids[*]}
+  printf "${clr}"
+  hr
+
+  printf "To abort, press Ctrl-C. To kill them all press any key.."
+  press-any-key-to-continue
+  
+  ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | xargs kill -9 
+}
+
