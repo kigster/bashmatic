@@ -2,8 +2,8 @@
 
 export BashMatic__DiffTool="ydiff"
 
-lib::yaml::expand() {
-  ruby -e "require 'yaml'; puts YAML.dump(YAML.load(File.read('${1}')))"
+lib::yaml::expand-aliases() {
+  ruby -e "require 'yaml'; require 'json'; puts YAML.dump(JSON.parse(JSON.pretty_generate(YAML.load(File.read('${1}')))))"
 }
 
 lib::yaml::diff() {
@@ -17,16 +17,38 @@ lib::yaml::diff() {
 
   [[ -n $(which ${BashMatic__DiffTool})  ]] || lib::brew::package::install ${BashMatic__DiffTool}
 
-  local t1="/tmp/${RANDOM}.$(basename ${f1}).$$"
-  local t2="/tmp/${RANDOM}.$(basename ${f2}).$$"
+  local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
+  local t2="/tmp/${RANDOM}.$(basename ${f2}).$$.yml"
 
-  lib::yaml::expand "$f1" > "$t1"
-  lib::yaml::expand "$f2" > "$t2"
+  lib::yaml::expand-aliases "$f1" > "$t1"
+  lib::yaml::expand-aliases "$f2" > "$t2"
 
   run::set-next show-output-on
+  hr
   run "ydiff $* ${t1} ${t2}"
+  hr
+
+  run "rm -rf ${t1} ${t2}"
 }
 
 yaml-diff() {
   lib::yaml::diff "$@"
+}
+
+lib::yaml::dump() {
+  local f1="$1"; shift
+  [[ -f "$f1" ]] || {
+    h2 "USAGE: ${bldylw}yaml-dump file.yml"
+    return 1
+  }
+
+  [[ -n $(which ${BashMatic__DiffTool})  ]] || lib::brew::package::install ${BashMatic__DiffTool}
+  local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
+  lib::yaml::expand-aliases "$f1" > "$t1"
+  vim "$t1"
+  run "rm -rf ${t1}"
+}
+
+yaml-dump() {
+  lib::yaml::dump "$@"
 }
