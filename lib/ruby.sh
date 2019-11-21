@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # vi: ft=sh
+
+
+
 lib::ruby::install-ruby-with-deps() {
   local version="$1"
 
@@ -83,6 +86,12 @@ lib::ruby::version() {
 }
 
 # Public Interfaces
+
+bundle.gems-with-c-extensions() {
+  run::set-next show-output-on
+  run "bundle show --paths | ruby -e \"STDIN.each_line {|dep| puts dep.split('/').last if File.directory?(File.join(dep.chomp, 'ext')) }\""
+}
+
 ruby.install() {
   lib::ruby::install-ruby "$@"
 }
