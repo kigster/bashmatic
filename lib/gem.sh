@@ -95,9 +95,9 @@ lib::gem::is-installed() {
   lib::gem::cache-installed
 
   if [[ -z ${version} ]]; then
-    egrep "${gem} \(" "${LibGem__GemListCache}"
+    egrep "^${gem} \(" "${LibGem__GemListCache}"
   else
-    egrep "${gem} \(" "${LibGem__GemListCache}" | grep "${version}"
+    egrep "^${gem} \(" "${LibGem__GemListCache}" | grep "${version}"
   fi
 }
 
