@@ -12,7 +12,6 @@ function lib::git::quiet() {
 }
 
 function lib::git::sync() {
-
   local dir="$(pwd)"
   cd "${BashMatic__Home}" >/dev/null
   lib::git::repo-is-clean || {
@@ -23,7 +22,6 @@ function lib::git::sync() {
   }
 
   lib::git::update-repo-if-needed
-  
   cd "${dir}" > /dev/null
   return 0
 }

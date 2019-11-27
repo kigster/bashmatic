@@ -6,8 +6,18 @@
 # default (argument) is used. This helps prevent version mismatch
 # between the very few gem dependencies of the zeus subsystem, and Rails.
 
-export LibGem__GemListCache=/tmp/gem_list.txt
-export LibGem__GemInstallFlags=" -N --force --quiet "
+lib::gem::configure-cache() {
+  export LibGem__GemListCacheBase=/tmp/.bashmatic/.gem/gem.list
+  export LibGem__GemListCache=
+  export LibGem__GemInstallFlags=" -N --force --quiet "
+
+  local ruby_version=$(ruby.numeric-version)
+
+  export LibGem__GemListCache="${LibGem__GemListCacheBase}.${ruby_version}"
+
+  local dir=$(dirname ${LibGem__GemListCache})
+  [[ -d ${dir} ]] || run "mkdir -p ${dir}"
+}
 
 lib::gem::version() {
   local gem=$1
@@ -37,7 +47,6 @@ lib::gem::global::latest-version() {
   [[ -z ${gem} ]] && return
 
   declare -a versions=($(lib::gem::global::versions ${gem}))
-
   local max=0
   local max_version=
   for v in ${versions[@]}; do
@@ -62,13 +71,19 @@ lib::gem::gemfile::version() {
 
 # this ensures the cache is only at most 30 minutes old
 lib::gem::cache-installed() {
+  lib::gem::configure-cache
   if [[ ! -s "${LibGem__GemListCache}" || -z $(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null) ]]; then
     run "gem list > ${LibGem__GemListCache}"
   fi
 }
 
-lib::gem::cache-refresh() {
+gem.clear-cache() {
   rm -f ${LibGem__GemListCache}
+}
+
+lib::gem::cache-refresh() {
+  lib::gem::configure-cache
+  gem.clear-cache
   lib::gem::cache-installed
 }
 
@@ -80,7 +95,7 @@ lib::gem::ensure-gem-version() {
 
   lib::gem::cache-installed
 
-  if [[ -z $(cat  ${LibGem__GemListCache} | grep "${gem} (${gem_version})") ]]; then
+  if [[ -z $(cat ${LibGem__GemListCache} | grep "${gem} (${gem_version})") ]]; then
     lib::gem::uninstall ${gem}
     lib::gem::install ${gem} ${gem_version}
   else

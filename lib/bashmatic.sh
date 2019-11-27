@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vi: ft=sh
 #
 # Public Functions 
 #

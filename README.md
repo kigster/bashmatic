@@ -345,7 +345,7 @@ epoch                                    lib::progress::bar
 err                                      lib::psql::db-settings
 error                                    lib::ruby::bundler-version
 error-text                               lib::ruby::gemfile-lock-version
-error:                                   lib::ruby::version
+error:                                   ruby.full-version
 file::list::filter-existing              lib::run
 file::list::filter-non-empty             lib::run::ask
 file::size                               lib::run::inspect
