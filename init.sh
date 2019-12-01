@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
+# vim: ft=sh
 
 export True=1
 export False=0
+export LoadedShown=${LoadedShown:-0}
 
 bashmatic::-init-source() {
   local source=${BASH_SOURCE[0]}
@@ -17,13 +19,22 @@ bashmatic::source-dir() {
   local loaded=false
   for bash_file in "${files[@]}"; do
     [[ -n ${DEBUG} ]] && printf "sourcing ${txtgrn}$bash_file${clr}...\n" >&2
+    set +e
     source "${bash_file}"
-    loaded=true
+    [[ $? == 0 ]] && loaded=true
   done
 
   ${loaded} || {
     printf "Unable to find BashMatic library folder with files: ${BashMatic__LibDir}"
+    return 1
   }
+
+  if [[ ${LoadedShown} -eq 0 ]]; then
+    hr
+    success "BashMatic was loaded! Happy Bashing :) "
+    hr
+    export LoadedShown=1
+  fi
 }
 
 bashmatic.setup() {
@@ -46,5 +57,3 @@ bashmatic.setup() {
 }
 
 bashmatic.setup
-
-

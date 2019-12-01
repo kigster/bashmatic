@@ -26,8 +26,8 @@ __lib::progress::draw-emtpy-bar() {
   printf "]"
 }
 
-# Usage: 
-# 
+# Usage:
+#
 #    lib::progress::bar 10 0.3 5
 #
 # Arguments:
@@ -82,5 +82,3 @@ __lib::progress::bar() {
   reset-color:
   return 0
 }
-
-

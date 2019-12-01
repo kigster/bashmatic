@@ -566,6 +566,11 @@ success() {
   echo
 }
 
+abort() {
+  printf -- "    ${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  echo
+}
+
 err() {
   printf -- "    ${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
 }

@@ -6,7 +6,7 @@ __load() {
   local script="${BASH_SOURCE[${last_index}]}"
   local dir=$(cd $(dirname ${script}); pwd -P)
   local init=$(dirname ${dir})/init.sh
- 
+
   [[ -f "${init}" ]] && source "${init}"
 }
 
