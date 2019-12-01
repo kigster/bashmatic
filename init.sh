@@ -3,7 +3,7 @@
 
 export True=1
 export False=0
-export LoadedShown=${LoadedShown:-0}
+export LoadedShown=${LoadedShown:-1}
 
 bashmatic::-init-source() {
   local source=${BASH_SOURCE[0]}
