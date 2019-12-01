@@ -174,7 +174,15 @@ lib::util::install-direnv() {
   eval "$(direnv hook bash)"
 }
 
+watch-ls-al() {
+  while true; do 
+    ls -al
+    sleep 0.3
+    clear
+  done
+}
 pause() { sleep "${1:-1}"; }
+
 shortish-pause() { sleep "${1:-0.3}"; }
 short-pause() { sleep "${1:-0.1}"; }
 long-pause() { sleep "${1:-10}"; }

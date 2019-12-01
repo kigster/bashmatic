@@ -194,6 +194,7 @@ function ruby.init() {
 lib::ruby::install-ruby-with-deps() {
   local version="$1"
 
+  # Brew Packages we like to install.
   declare -a packages=(
   cask bash bash-completion git go haproxy htop jemalloc
   libxslt jq libiconv libzip netcat nginx  openssl pcre

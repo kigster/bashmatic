@@ -1,0 +1,9 @@
+{
+   "terminal.integrated.cursorBlinking": true,
+   "editor.fontFamily": "Roboto Mono Medium for Powerline",
+   "editor.fontSize": 15,
+   "editor.tabSize": 2,
+   "editor.cursorStyle": "block",
+   "files.autoSave": "afterDelay",
+   "editor.find.autoFindInSelection": "always"
+}

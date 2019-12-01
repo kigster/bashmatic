@@ -367,6 +367,14 @@ box::green-in-green() {
   __lib::output::box "${bldgrn}" "${bldgrn}" "$@"
 }
 
+box::green-in-yellow(){
+  __lib::output::box "${bldgrn}" "${bldylw}" "$@"
+}
+
+box::green-in-cyan(){
+  __lib::output::box "${bldgrn}" "${bldcyn}" "$@"
+}
+
 box::magenta-in-green() {
   __lib::output::box "${bldpur}" "${bldgrn}" "$@"
 }
@@ -433,6 +441,10 @@ h::blue() {
 
 h::black() {
   center "${bldylw}${bakblk}" "$@"
+}
+
+h2::green() {
+  box::green-in-cyan "$@"
 }
 
 h1::green() {
