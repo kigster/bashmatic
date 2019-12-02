@@ -17,10 +17,15 @@
 #           source ~/.bashmatic/init.sh
 #           bashmatic::validate-sourced-in || exit 1
 
-BASH_SUBSHELL_DETECTED=
+bashmatic::subshell-init() {
+  export BASH_SUBSHELL_DETECTED=
+} 
 
 bashmatic::detect-subshell() {
-  [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && return ${BASH_IN_SUBSHELL}
+  bashmatic::subshell-init
+
+  [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && 
+    return ${BASH_IN_SUBSHELL}
 
   unset BASH_IN_SUBSHELL
   export BASH_SUBSHELL_DETECTED=true
@@ -47,7 +52,7 @@ bashmatic::detect-subshell() {
 bashmatic::validate-sourced-in() {
   bashmatic::detect-subshell
   [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || {
-    echo "This script to be sourced in, not run in a subshell."
+    echo "This script to be sourced in, not run in a subshell." >&2
     return 1
   }
 
@@ -57,7 +62,7 @@ bashmatic::validate-sourced-in() {
 bashmatic::validate-subshell() {
   bashmatic::detect-subshell
   [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || {
-    echo "This script to be run, not sourced-in"
+    echo "This script to be run, not sourced-in" >&2
     return 1
   }
 

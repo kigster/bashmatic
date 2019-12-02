@@ -134,6 +134,10 @@ lib::util::is-a-function() {
   type "$1" 2>/dev/null | head -1 | grep -q 'is a function'
 }
 
+is-func() {
+  lib::util::is-a-function "$@"
+}
+
 lib::util::call-if-function() {
   local func="$1"; shift
   lib::util::is-a-function "${func}" && {

@@ -97,7 +97,7 @@ EXAMPLES:
 
   pid::alive "${pid}" && \
     ( pid::sig "${pid}" "TERM" || true ) && \
-    sleep ${delay}
+      sleep ${delay}
 
   pid::alive "${pid}" && \
     pid::sig "${pid}" "KILL"
@@ -195,7 +195,7 @@ EXAMPLES:
     return 0
   fi
 
-  local pattern="$(pids::normalize::pattern "$1")"; shift
+  local pattern="$(pids::normalize::search-string "$1")"; shift
   ps -ef | egrep "${pattern}" | egrep -v grep
 }
 
@@ -219,7 +219,7 @@ EXAMPLES:
     return 0
   fi
   
-  local pattern="$(pids::normalize::pattern "$1")"; shift
+  local pattern="$(pids::normalize::search-string "$1")"; shift
   local func=${1:-"echo"}
 
   if [[ -z $(which ${func}) && -z $(type ${func} 2>/dev/null) ]]; then
@@ -228,11 +228,9 @@ EXAMPLES:
   fi
 
   while true; do
-    local -a pids=($(pids::pids "${pattern}"))
+    local -a pids=($(pids::matchin "${pattern}"))
 
-    if [[ ${#pids[@]} == 0 ]]; then
-      break
-    fi
+    [[ ${#pids[@]} == 0 ]] && break
 
     eval "${func} ${pids[0]}"
     sleep 0.1
@@ -269,6 +267,3 @@ pall() {
   pids::all "$@"
 }
 
-ppids() {
-  pids::pids "$@"
-}
