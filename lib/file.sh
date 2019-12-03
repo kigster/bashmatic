@@ -142,4 +142,10 @@ file::list::filter-non-empty() {
   done
 }
 
+file::source-if-exists() {
+  local file
+  for file in "$@"; do
+    [[ -f "${file}" ]] && source "${file}"
+  done
+}
 
