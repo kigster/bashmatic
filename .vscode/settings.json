@@ -1,9 +1,20 @@
 {
    "terminal.integrated.cursorBlinking": true,
-   "editor.fontFamily": "Roboto Mono Medium for Powerline",
-   "editor.fontSize": 15,
+   "editor.fontFamily": "Lekton, Roboto Mono Medium for Powerline",
+   "editor.fontSize": 14,
    "editor.tabSize": 2,
    "editor.cursorStyle": "block",
    "files.autoSave": "afterDelay",
-   "editor.find.autoFindInSelection": "always"
+   "editor.find.autoFindInSelection": "always",
+   "editor.fontWeight": "600",
+   "editor.formatOnPaste": true,
+   "editor.formatOnSave": true,
+   "editor.formatOnType": true,
+   "editor.minimap.scale": 2,
+   "editor.minimap.showSlider": "always",
+   "editor.wordWrapColumn": 120,
+   "editor.glyphMargin": false,
+   "editor.highlightActiveIndentGuide": false,
+   "editor.letterSpacing": -0.2,
+   "editor.renderControlCharacters": true
 }

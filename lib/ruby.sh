@@ -5,6 +5,7 @@ function ruby.default-gems() {
   declare -a DEFAULT_RUBY_GEMS=(
     rubocop
     relaxed-rubocop
+    rubocop-performance
     warp-dir
     colored2
     sym

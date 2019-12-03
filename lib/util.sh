@@ -13,7 +13,7 @@ lib::util::generate-password() {
    local len=${1:-32}
    local val=$(($(date '+%s') - 100000 * $RANDOM))
    [[ ${val:0:1} == "-" ]] && val=${val/-//}
-   printf $(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c ${len})
+   printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c ${len})"
  }
 
 # This returns true if the argument is numeric
