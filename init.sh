@@ -4,11 +4,7 @@
 export True=1
 export False=0
 export LoadedShown=${LoadedShown:-1}
-
-bashmatic::-init-source() {
-  local source=${BASH_SOURCE[0]}
-  printf "%s" "${source}"
-}
+export BashMatic__Init="${BASH_SOURCE[0]}"
 
 bashmatic::source-dir() {
   local folder="${1}"
@@ -39,8 +35,7 @@ bashmatic::source-dir() {
 
 bashmatic.setup() {
   # Set this externally if your bashmatic is not installed in ~/.bashmatic
-  export BashMatic__Init=$(bashmatic::-init-source)
-  export BashMatic__Home="$(cd $(dirname "${BashMatic__Init}"); pwd)"
+  export BashMatic__Home="$(cd $(dirname "${BashMatic__Init}"); pwd)" 
   export BashMatic__LibDir="${BashMatic__Home}/lib"
 
   [[ -z ${BashMatic__Downloader} && -n $(which curl) ]] && \
@@ -48,6 +43,11 @@ bashmatic.setup() {
 
   [[ -z ${BashMatic__Downloader} && -n $(which wget) ]] && \
     export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
+
+  if [[ ! -d "${BashMatic__LibDir}" ]] ; then
+    printf "\e[1;31mUnable to establish BashMatic's library source folder.\e[0m\n"
+    return 1
+  fi
 
   source "${BashMatic__LibDir}/util.sh"
   source "${BashMatic__LibDir}/git.sh"
