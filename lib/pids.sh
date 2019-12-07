@@ -228,7 +228,7 @@ EXAMPLES:
   fi
 
   while true; do
-    local -a pids=($(pids::matchin "${pattern}"))
+    local -a pids=($(pids::matching "${pattern}"))
 
     [[ ${#pids[@]} == 0 ]] && break
 
