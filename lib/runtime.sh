@@ -156,6 +156,7 @@ __lib::run::exec() {
     printf "         ${clr}❯ ${bldpur}%s " "${command:0:${w}}"
     lib::output::color::on
   }
+  
 
   set +e
 
