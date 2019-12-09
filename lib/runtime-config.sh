@@ -41,7 +41,10 @@ run::inspect() {
   lib::run::inspect
 }
 
-### ———————————————————————————————————————————— PRIVATE METHODS ——————————————
+##############################################################################
+# Command control for all invocations of the run() method.
+# These come in two flavors: run:set-next... and run:set-all....
+##############################################################################
 
 ### NEXT COMMAND
 ____run::set::next::show-detail-on() {
@@ -50,12 +53,27 @@ ____run::set::next::show-detail-on() {
 ____run::set::next::show-detail-off() {
   export LibRun__Detail=${False}
 }
+
+### show details
+
 ____run::set::next::show-output-on() {
   export LibRun__ShowCommandOutput=${True}
 }
 ____run::set::next::show-output-off() {
   export LibRun__ShowCommandOutput=${False}
 }
+
+### show command itself
+
+____run::set::next::show-command-on() {
+  export LibRun__ShowCommand=${True}
+}
+____run::set::next::show-command-off() {
+  export LibRun__ShowCommand=${False}
+}
+
+### Reactions to error conditions
+
 ____run::set::next::abort-on-error() {
   export LibRun__AbortOnError=${True}
   export LibRun__AskOnError=${False}
@@ -68,12 +86,18 @@ ____run::set::next::continue-on-error() {
   export LibRun__AskOnError=${False}
   export LibRun__AbortOnError=${False}
 }
+
+### Turns on DRY-RUN when comamnds are printed but not executed.
+
 ____run::set::all::dry-run-on() {
   export LibRun__DryRun=${True}
 }
 ____run::set::all::dry-run-off() {
   export LibRun__DryRun=${False}
 }
+
+### Prints some additional verbose shit.
+
 ____run::set::all::verbose-on() {
   export LibRun__Verbose=${True}
 }
@@ -90,6 +114,17 @@ ____run::set::all::show-output-off() {
   ____run::set::next::show-output-off
   export LibRun__ShowCommandOutput__Default=${False}
 }
+
+____run::set::all::show-command-on() {
+  ____run::set::all::show-command-on
+  export LibRun__ShowCommandOutput__Default=${True}
+}
+____run::set::all::show-command-off() {
+  ____run::set::all::show-command-off
+  export LibRun__ShowCommandOutput__Default=${False}
+}
+
+# Error Handling
 ____run::set::all::abort-on-error() {
   ____run::set::next::abort-on-error
   export LibRun__AbortOnError__Default=${True}

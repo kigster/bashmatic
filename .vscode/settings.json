@@ -12,9 +12,10 @@
    "editor.formatOnType": true,
    "editor.minimap.scale": 2,
    "editor.minimap.showSlider": "always",
-   "editor.wordWrapColumn": 120,
+   "editor.wordWrapColumn": 100,
    "editor.glyphMargin": false,
    "editor.highlightActiveIndentGuide": false,
    "editor.letterSpacing": -0.2,
-   "editor.renderControlCharacters": true
+   "editor.renderControlCharacters": true,
+   "html.format.wrapLineLength": 100
 }

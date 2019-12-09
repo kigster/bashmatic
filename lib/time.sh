@@ -12,7 +12,7 @@ export AppCurrentOS=${AppCurrentOS:-$(uname -s)}
 # Install necessary dependencies on OSX
 __lib::time::osx::coreutils() {
   # install gdate quietly
-  brew install coreutils 2>&1 |cat > /dev/null
+  brew install coreutils 2>&1 | cat >/dev/null
   code=$?
   if [[ ${code} != 0 || -z $(which gdate) ]]; then
     error "Can not install coreutils brew package, exit code ${code}"
@@ -23,19 +23,20 @@ __lib::time::osx::coreutils() {
 
 # milliseconds
 __lib::run::millis() {
-  if [[ "${AppCurrentOS}" == "Darwin" ]] ; then
-    [[ -z $(which gdate) ]] && __lib::time::osx::coreutils
-    printf $(($(gdate +%s%N)/1000000 - 1000000000000))
-  else
-    printf $(($(date +%s%N)/1000000 - 1000000000000))
+  local date_runnable
+  date_runnable='date'
+  if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+    [[ -z $(command -v gdate) ]] && __lib::time::osx::coreutils
+    [[ -n $(command -v gdate) ]] && date_runnable='gdate'
   fi
+  ${date_runnable} '+%s%3N'
 }
 
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on Linux vs OSX.
 lib::time::date-from-epoch() {
   local epoch_ts="$1"
-  if [[ "${AppCurrentOS}" == "Darwin" ]] ; then
+  if [[ "${AppCurrentOS}" == "Darwin" ]]; then
     printf "date -r ${epoch_ts}"
   else
     printf "date --date='@${epoch_ts}'"
@@ -56,20 +57,26 @@ lib::time::epoch::minutes-ago() {
   local mins=${1}
 
   [[ -z ${mins} ]] && mins=1
-  local seconds=$(( ${mins} * 60 ))
+  local seconds=$((${mins} * 60))
   local epoch=$(epoch)
-  echo $(( ${epoch} - ${seconds} ))
+  echo $((${epoch} - ${seconds}))
 }
 
 lib::time::duration::humanize() {
   local seconds=${1}
-  local hours=$(( ${seconds} / 3600 ))
-  local remainder=$(( ${seconds} - ${hours} * 3600 ))
-  local mins=$(( ${remainder} / 60 ))
-  local secs=$(( ${seconds} - ${hours} * 3600 - ${mins} * 60 ))
+  local hours=$((${seconds} / 3600))
+  local remainder=$((${seconds} - ${hours} * 3600))
+  local mins=$((${remainder} / 60))
+  local secs=$((${seconds} - ${hours} * 3600 - ${mins} * 60))
   local prefixed=0
-  [[ ${hours} -gt 0 ]] && { printf "%02dh:" ${hours}; prefixed=1; }
-  [[ ${mins} -gt 0 || ${prefixed} == 1 ]] && { printf "%02dm:" ${mins}; prefixed=1; }
+  [[ ${hours} -gt 0 ]] && {
+    printf "%02dh:" ${hours}
+    prefixed=1
+  }
+  [[ ${mins} -gt 0 || ${prefixed} == 1 ]] && {
+    printf "%02dm:" ${mins}
+    prefixed=1
+  }
   { printf "%02ds" ${secs}; }
 }
 
