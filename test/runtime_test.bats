@@ -15,6 +15,18 @@ source lib/runtime.sh
   [[ ${clean_output} =~ 'ls -al' ]]
 }
 
+@test "run() with a successful hidden command" {
+  set +e
+  run::set-next show-output-off show-command-off
+  output=$(lib::run "/bin/ls -al")
+  clean_output=$(ascii-clean $(printf "${output}"))
+  code=$?
+  set -e
+  [[ "${code}" -eq 0 ]]
+  [[ "${LibRun__LastExitCode}" -eq 0 ]]
+  [[ -z ${clean_output} ]]
+}
+
 @test "run() with an unsuccessful command and defaults" {
   set +e
   lib::run lssdf

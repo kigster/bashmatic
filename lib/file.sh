@@ -23,25 +23,30 @@ __lib::file::remote_size() {
 
 __lib::file::size_bytes() {
   local file=$1
-  printf $(($(wc -c < $file) + 0))
+  printf $(($(wc -c <$file) + 0))
 }
 
 # Replaces a given regex with a string
-lib::file::gsub() { 
+lib::file::gsub() {
   local file="$1"
-  local find="$2"
-  local replace="$3"
+  shift
+  local find="$1"
+  shift
+  local replace="$1"
+  shift
+  local runtime_options="$*"
 
   [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && {
     error "Invalid usage of lib::file::sub — " \
-          "USAGE: lib::file::gsub <file>    <find-regex>        <replace-regex>" \
-          "EG:    lib::file::gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'"
+      "USAGE: lib::file::gsub <file>    <find-regex>        <replace-regex>" \
+      "EG:    lib::file::gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'"
     return 1
-  }  
+  }
 
   # fix any EDITOR assignments in ~/.bashrc
   egrep -q "${find}" "${file}" || return 0
 
+  [[ -z "${runtime_options}" ]] || run::set-next ${runtime_options}
   # replace
   run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
 }
@@ -49,9 +54,11 @@ lib::file::gsub() {
 # Usage:
 #   (( $(lib::file::exists_and_newer_than "/tmp/file.txt" 30) )) && echo "Yes!"
 lib::file::exists_and_newer_than() {
-  local file="${1}"; shift
-  local minutes="${1}"; shift
-  if [[ -n "$(find ${file} -mmin -${minutes} -print 2>/dev/null)" ]] ; then
+  local file="${1}"
+  shift
+  local minutes="${1}"
+  shift
+  if [[ -n "$(find ${file} -mmin -${minutes} -print 2>/dev/null)" ]]; then
     return 0
   else
     return 1
@@ -71,7 +78,7 @@ lib::file::install_with_backup() {
       info: "${dest} is up to date"
       return 0
     else
-      (( ${LibFile__ForceOverwrite} )) || {
+      ((${LibFile__ForceOverwrite})) || {
         info "file ${dest} already exists, skipping (use -f to overwrite)"
         return 0
       }
@@ -102,7 +109,7 @@ file::stat() {
     info "eg: ${bldylw}file::stat README.md st_size"
     return 1
   }
-  
+
   [[ -n ${field} ]] || {
     error "Second argument field is required."
     info "eg: ${bldylw}file::stat README.md st_size"
@@ -115,7 +122,7 @@ file::stat() {
 }
 
 file::size() {
-  AppCurrentOS=${AppCurrentOS:-`uname -s`}
+  AppCurrentOS=${AppCurrentOS:-$(uname -s)}
   if [[ "Linux" == ${AppCurrentOS} ]]; then
     stat -c %s "$1"
   else
@@ -124,7 +131,8 @@ file::size() {
 }
 
 file::size::mb() {
-  local file="$1"; shift
+  local file="$1"
+  shift
   local s=$(file::size ${file})
   local mb=$(echo $(($s / 10000)) | hbsed 's/([0-9][0-9])$/.\1/g')
   printf "%.2f MB" ${mb}
@@ -148,4 +156,3 @@ file::source-if-exists() {
     [[ -f "${file}" ]] && source "${file}"
   done
 }
-

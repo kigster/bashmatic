@@ -14,8 +14,8 @@ lib::vim::gvim-off() {
   local regex_to='export EDITOR=vim'
 
   # fix any EDITOR assignments in ~/.bashrc
-  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
-  lib::file::gsub "${LibVim__initFile}" '^gvim.on$' 'gvim.off'
+  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}" show-command-off
+  lib::file::gsub "${LibVim__initFile}" '^gvim.on$'     'gvim.off'    show-command-off
 
   # append to ~/.bashrc
   egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
@@ -23,11 +23,10 @@ lib::vim::gvim-off() {
 
   # import into the current shell
   eval "
-    set -x
+    [[ -n '${DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOff}
     unalias ${LibVim__editorVi} 2>/dev/null
     unalias ${LibVim__editorGvimOff} 2>/dev/null
-    set +x
   "
 }
 
@@ -46,11 +45,10 @@ lib::vim::gvim-on() {
 
   # import into the current shell
   eval "
-    set -x
+    [[ -n '${DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOn}
     alias ${LibVim__editorVi}=${LibVim__editorGvimOn}
     alias ${LibVim__editorGvimOff}=${LibVim__editorGvimOn}
-    set +x
   "
 }
 
