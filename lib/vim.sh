@@ -36,8 +36,8 @@ lib::vim::gvim-on() {
   local regex_from='^export EDITOR=.*$'
   local regex_to='export EDITOR=gvim'
 
-  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
-  lib::file::gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'
+  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}" show-command-off
+  lib::file::gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'        show-command-off
 
   # append to ~/.bashrc
   egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
