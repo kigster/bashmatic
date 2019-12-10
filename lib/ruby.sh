@@ -180,13 +180,18 @@ function ruby.kigs-gems() {
   done
 }
 
+function ruby.install-upgrade-bundler() {
+  lib::gem::install bundler
+  run "bundle --update bundler || true"   
+}
+
 ##——————————————————————————————————————————————————————————————————————————————————
 # initialize current ruby installation by installing required gems
 function ruby.init() {
   h1 "Installing Critical Gems for Your Glove, Thanos..."
 
   ruby.rubygems-update
-  lib::gem::install bundler
+  ruby.install-upgrade-bundler
   ruby.gems.install
   ruby.kigs-gems
 }
