@@ -4,7 +4,7 @@
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modifications, © 2017 PioneerWorks, Inc. All rights reserved.
+# Any modi  fications, © 2017 PioneerWorks, Inc. All rights reserved.
 #——————————————————————————————————————————————————————————————————————————————
 
 # The following "global" variables define how the run framework executes
@@ -153,10 +153,10 @@ __lib::run::exec() {
   [[ -n ${CI} ]] && w=10000
 
   [[ "${LibRun__ShowCommand}" == ${True} ]] && {
-    printf "         ${clr}❯ ${bldpur}%s " "${command:0:${w}}"
+    printf "         ${clr}❯ ${bldylw}%s " "${command:0:${w}}"
     lib::output::color::on
   }
-  
+
 
   set +e
 

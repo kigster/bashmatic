@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-#———————————————————————————————————————————————————————————————————————————————
 # © 2016 — 2017 Author: Konstantin Gredeskoul
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
 # Any modifications, © 2017 Konstantin Gredeskoul, Inc. All rights reserved.
-#———————————————————————————————————————————————————————————————————————————————
+
+function reset_last_color() {
+  echo -en "${clr}"
+}
 
 lib::color::enable() {
   if [[ -z "${AppColorsLoaded}" ]]; then
@@ -47,8 +49,8 @@ lib::color::enable() {
     export bakwht='\e[47m'   # White
 
     export txtrst='\e[0m'    # Text Reset
-    export clr='\e[0m'       # Text Reset
     export rst='\e[0m'       # Text Reset
+    export clr='\e[0m'       # Text Reset
 
     export bold='\e[1m'
     export italic='\e[3m'
@@ -66,6 +68,8 @@ lib::color::enable() {
   else
     [[ -n ${DEBUG} ]] && echo "colors already loaded..."
   fi
+
+  trap reset_last_color EXIT
 }
 
 txt-info()      { printf "${clr}${txtblu}"; }
@@ -81,51 +85,50 @@ red()           { ansi 31 "$@"; }
 ansi()          { echo -e "\e[${1}m${*:2}\e[0m"; }
 
 lib::color::disable() {
-    unset txtblk
-    unset txtred
-    unset txtgrn
-    unset txtylw
-    unset txtblu
-    unset txtpur
-    unset txtcyn
-    unset txtwht
+    export clr='\e[0m'       # Text Reset
 
-    unset bldblk
-    unset bldred
-    unset bldgrn
-    unset bldylw
-    unset bldblu
-    unset bldpur
-    unset bldcyn
-    unset bldwht
+    export txtblk="${clr}"
+    export txtred="${clr}"
+    export txtgrn="${clr}"
+    export txtylw="${clr}"
+    export txtblu="${clr}"
+    export txtpur="${clr}"
+    export txtcyn="${clr}"
+    export txtwht="${clr}"
+    export bldblk="${clr}"
+    export bldred="${clr}"
+    export bldgrn="${clr}"
+    export bldylw="${clr}"
+    export bldblu="${clr}"
+    export bldpur="${clr}"
+    export bldcyn="${clr}"
+    export bldwht="${clr}"
+    export unkblk="${clr}"
+    export undred="${clr}"
+    export undgrn="${clr}"
+    export undylw="${clr}"
+    export undblu="${clr}"
+    export undpur="${clr}"
+    export undcyn="${clr}"
+    export undwht="${clr}"
+    export bakblk="${clr}"
+    export bakred="${clr}"
+    export bakgrn="${clr}"
+    export bakylw="${clr}"
+    export bakblu="${clr}"
+    export bakpur="${clr}"
+    export bakcyn="${clr}"
+    export bakwht="${clr}"
+    export txtrst="${clr}"
+    export italic="${clr}"
+    export bold="${clr}"
+    export strikethrough="${clr}"
+    export underlined="${clr}"
 
-    unset unkblk
-    unset undred
-    unset undgrn
-    unset undylw
-    unset undblu
-    unset undpur
-    unset undcyn
-    unset undwht
+    export AppColorsLoaded=1
 
-    unset bakblk
-    unset bakred
-    unset bakgrn
-    unset bakylw
-    unset bakblu
-    unset bakpur
-    unset bakcyn
-    unset bakwht
-
-    unset txtrst
-    unset clr
-
-    unset italic
-    unset bold
-    unset strikethrough
-    unset underlined
-
-    unset AppColorsLoaded
+    trap reset_last_color EXIT
 }
 
 (( ${AppColorsLoaded} )) || lib::color::enable
+
