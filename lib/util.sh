@@ -190,3 +190,13 @@ pause() { sleep "${1:-1}"; }
 shortish-pause() { sleep "${1:-0.3}"; }
 short-pause() { sleep "${1:-0.1}"; }
 long-pause() { sleep "${1:-10}"; }
+
+save-set-x() {
+  export SetX__IsSet=${-//[^x]/}
+}
+
+restore-set-x() {
+  if [[ -n "${SetX__IsSet}" ]]; then set -x; else set +x; fi
+}
+
+

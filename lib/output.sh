@@ -215,6 +215,10 @@ __lib::output::boxed-text() {
 # Usage: __lib::output::box border-color text-color "line 1" "line 2" ....
 #
 __lib::output::box() {
+
+  save-set-x
+  set +x
+
   local border_color=${1}
   shift
   local text_color=${1}
@@ -246,6 +250,7 @@ __lib::output::box() {
   printf "${border_color}"
   __lib::output::box-bottom
   reset-color:
+  restore-set-x
 }
 
 __lib::output::center() {
@@ -316,12 +321,6 @@ screen.width() {
 
 screen.height() {
   __lib::output::screen-height
-}
-
-lib::output::supports-cursor() {
-  [[ -n ${CI} ]] && return 1
-  lib::output::is_terminal && return 0
-  return 1
 }
 
 lib::output::is_terminal() {

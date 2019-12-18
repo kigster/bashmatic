@@ -154,7 +154,7 @@ __lib::run::exec() {
   local w
   w=$(($(__lib::output::screen-width) - 20))
   [[ ${w} -gt ${max_width} ]] && w=${max_width}
-  [[ -n ${CI} ]] && { max_width=75; w=${max_width}; }
+  [[ -n ${CI} ]] && { max_width=100; w=${max_width}; }
 
   export LibRun__AssignedWidth=${w}
 
