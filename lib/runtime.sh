@@ -154,14 +154,16 @@ __lib::run::exec() {
   local w
   w=$(($(__lib::output::screen-width) - 20))
   [[ ${w} -gt ${max_width} ]] && w=${max_width}
-  [[ -n ${CI} ]] && { max_width=100; w=${max_width}; }
 
   export LibRun__AssignedWidth=${w}
 
   local prefix="${LibOutput__LeftPrefix}${clr}"
   local ascii_cmd
+  local command_prompt="${prefix}❯ "
+  local command_width=$((w - 30))
+
   # record length of the command
-  ascii_cmd="$(printf "${prefix}❯ %s " "${command:0:${w}}")"
+  ascii_cmd="$(printf "${command_prompt}%-.${command_width}s " "${command:0:${command_width}}")"
 
   # if printing command output don't show dots leading to duration
   export LibRun__CommandLength=${#ascii_cmd}
@@ -172,9 +174,9 @@ __lib::run::exec() {
   }
 
   if [[ "${LibRun__ShowCommand}" -eq ${False} ]] ; then
-    printf "${prefix}❯ ${bldylw}%s " "$(__lib::output::replicate-to "●" 40)"
+    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(__lib::output::replicate-to "●" 40)"
   else
-    printf "${prefix}❯ ${bldylw}%s " "${command:0:${w}}"
+    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}"
   fi
 
   local __Previous__ShowCommandOutput=${LibRun__ShowCommandOutput}

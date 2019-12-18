@@ -70,6 +70,11 @@ lib::output::color::off() {
 }
 
 __lib::output::screen-width() {
+  if [[ -n ${CI} ]]; then
+    printf -- "120"
+    return 0
+  fi
+
   if [[ -n "${AppCurrentScreenWidth}" && $(( $(millis) - ${AppCurrentScreenMillis} )) -lt 20000 ]]; then
     printf -- "${AppCurrentScreenWidth}"
     return
@@ -272,6 +277,7 @@ __lib::output::center() {
   __lib::output::repeat-char " " $(( ${remaining_space_len} + ${offset} - 1 ))
   reset-color
   cursor.at.x 0
+  echo
 }
 
 __lib::output::left-justify() {
@@ -280,16 +286,14 @@ __lib::output::left-justify() {
   local text="$*"
   echo
   printf "${color}"
-  ( lib::output::is_terminal ) && {
+  if lib::output::is_terminal ; then
     local width=$(( 2 * $(__lib::output::screen-width) / 3 ))
     [[ ${width} -lt 70 ]] && width="70"
     printf -- "  %-${width}.${width}s${clr}\n\n" "« ${text} »"
-  }
-
-  ( lib::output::is_terminal ) || {
+  else
     printf -- "  « ${text} »"
     printf -- "  ${clr}\n\n"
-  }
+  fi
 }
 
 ################################################################################

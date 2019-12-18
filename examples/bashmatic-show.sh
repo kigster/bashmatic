@@ -7,6 +7,11 @@ bashmatic::validate-subshell || return 1
 h1  "Welcome to My Awesome Script" "${bldylw}Version 1.0.1" \
     "We hope you'll enjoy your demo!"
 
+info "First — look at how many helper files there are!"
+run "echo 'This is a very long line of text that will be wrapped to the length of command output'"
+run::set-next show-output-on
+run "ls -alF lib; "
+
 press-any-key-to-continue
 
 info "info() prints an information message in blue. You can use other"
@@ -83,11 +88,10 @@ run "cp -v ../test/Gemfile.lock ."
 press-any-key-to-continue
 
 info "Here is the top 10 lines of this file:"
-hr
+
 run::set-next show-output-on
 run 'head -10 Gemfile.lock'
 
-hr::colored "${bldred}"; br
 info "We are going to demo a function that detects Ruby Gem version"
 info "from the Gemfile.lock!"
 
@@ -99,7 +103,7 @@ hl::subtle "BTW, did you notice that commands are printed with their execution t
 
 shortish-pause
 
-hr; br
+br
 success "This demonstration was a remarkable success!"; br
 h1 "Thanks for checking this library out, and happy bashing!"; br
 okay "You Rock!"; br
