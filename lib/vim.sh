@@ -10,12 +10,14 @@ lib::vim::setup() {
 lib::vim::gvim-off() {
   lib::vim::setup
 
+  [[ "${EDITOR}" == "vim" ]] && return 0
+
   local regex_from='^export EDITOR=.*$'
   local regex_to='export EDITOR=vim'
 
   # fix any EDITOR assignments in ~/.bashrc
-  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}" show-command-off
-  lib::file::gsub "${LibVim__initFile}" '^gvim.on$'     'gvim.off'    show-command-off
+  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
+  lib::file::gsub "${LibVim__initFile}" '^gvim.on$'     'gvim.off'
 
   # append to ~/.bashrc
   egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
@@ -33,11 +35,13 @@ lib::vim::gvim-off() {
 lib::vim::gvim-on() {
   lib::vim::setup
 
+  [[ "${EDITOR}" == "gvim" ]] && return 0
+
   local regex_from='^export EDITOR=.*$'
   local regex_to='export EDITOR=gvim'
 
-  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}" show-command-off
-  lib::file::gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'        show-command-off
+  lib::file::gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
+  lib::file::gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'
 
   # append to ~/.bashrc
   egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
