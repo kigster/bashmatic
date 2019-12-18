@@ -54,6 +54,8 @@ bashmatic.setup() {
 
   bashmatic::source-dir "${BashMatic__LibDir}"
   bashmatic.auto-update
+
+  export BashMatic__Version="$(cat "${BashMatic__Home}"/.version | head -1)"
 }
 
 bashmatic.setup
