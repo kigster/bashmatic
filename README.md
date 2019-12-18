@@ -3,35 +3,57 @@
 
 # BashMatic
 
-<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+> BashMatic is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled
+> functions for every occasion, from drawing boxes and yelling at the user, to running complicated setup flows.
+> Start exploring by installing it, and then running `bashmatic.functions` function, to see all available
+> BASH functions added to your Shell by the framework.
 
-- [Quick Install](#quick-install)
-- [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
-	- [Whats Included?](#whats-included)
-		- [Runtime Framework](#runtime-framework)
-		- [Examples of Runtime Framework](#examples-of-runtime-framework)
-		- [UI Drawing / Output functions](#ui-drawing-output-functions)
-		- [Other Utilities](#other-utilities)
-- [Usage](#usage)
-	- [Integrating With Your Project](#integrating-with-your-project)
-	- [Installation](#installation)
-	- [Detecting If Your Script is "Sourced In" or "Ran"](#detecting-if-your-script-is-sourced-in-or-ran)
-	- [The List of Available Functions](#the-list-of-available-functions)
-	- [Naming Conventions](#naming-conventions)
-- [Unit Testing](#unit-testing)
-- [How To?](#how-to)
-	- [How To Change Underscan or Overscan for Old Monitors](#how-to-change-underscan-or-overscan-for-old-monitors)
-	- [Contributing](#contributing)
+<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+* [Bootstrap Install](#bootstrap-install)
+* [Manual Install](#manual-install)
+* [Reusable BASH Components for UI, Runtime, Ruby, Database and More](#reusable-bash-components-for-ui-runtime-ruby-database-and-more)
+	* [Whats Included?](#whats-included)
+		* [Runtime Framework](#runtime-framework)
+		* [Examples of Runtime Framework](#examples-of-runtime-framework)
+		* [UI Drawing / Output functions](#ui-drawing--output-functions)
+		* [Other Utilities](#other-utilities)
+* [Usage](#usage)
+	* [Integrating With Your Project](#integrating-with-your-project)
+	* [Installation](#installation)
+	* [Detecting If Your Script is &quot;Sourced In&quot; or &quot;Ran&quot;](#detecting-if-your-script-is-quotsourced-inquot-or-quotranquot)
+	* [The List of Available Functions](#the-list-of-available-functions)
+	* [Naming Conventions](#naming-conventions)
+* [Unit Testing](#unit-testing)
+* [How To?](#how-to)
+	* [How To Change Underscan or Overscan for Old Monitors](#how-to-change-underscan-or-overscan-for-old-monitors)
+	* [Contributing](#contributing)
 
 <!-- /TOC -->
 
-## Quick Install
+## Bootstrap Install
+
+Perhaps the easiest way to install BashMatic is using this bootstrapper:
+
+First, make sure you have Curl installed. Then:
+
+```bash
+eval "$(curl -fsSL http://bit.ly/bashmatic-v0-1-0)"
+```
+
+This not only will check out bashmatic into ~/.bashmatic, but will also add the enabling hook to your ~/.bashrc file.
+
+After running the above, run `bashmatic.functions` function to see all available functions.
+
+
+## Manual Install
 
 For the impatient, here is how to install BashMatic very quickly and easily:
 
 ```bash
-cd ~/ && git clone https://github.com/kigster/bashmatic .bashmatic
-source ~/.bashmatic/init.sh && bashmatic.load-at-login
+cd ~/
+git clone https://github.com/kigster/bashmatic .bashmatic
+source ~/.bashmatic/init.sh
+bashmatic.load-at-login
 ```
 
 When you run the `bashmatic.load-at-login` function, it will add a bashmatic hook to one of your BASH initialization files, so all of its functions are available in your shell.
@@ -39,9 +61,9 @@ When you run the `bashmatic.load-at-login` function, it will add a bashmatic hoo
 The output of this function may look like this:
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────
 │ Adding BashMatic auto-loader to /Users/<your-username>/.bashrc...  │
-└────────────────────────────────────────────────────────────────────┘
+└──────────────────────────────────
 ```
 
 You can always reload BashMatic with `bashmatic.reload` function.
