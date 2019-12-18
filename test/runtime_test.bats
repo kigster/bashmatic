@@ -24,7 +24,7 @@ source lib/runtime.sh
   set -e
   [[ "${code}" -eq 0 ]]
   [[ "${LibRun__LastExitCode}" -eq 0 ]]
-  [[ -z ${clean_output} ]]
+  [[ ${clean_output/\/bin\/ls/} == "${clean_output}" ]]
 }
 
 @test "run() with an unsuccessful command and defaults" {

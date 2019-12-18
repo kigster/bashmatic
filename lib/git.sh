@@ -52,6 +52,10 @@ function lib::git::update-repo-if-needed() {
   fi
 }
 
+function lib::git::save-last-update-at() {
+  echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
+}
+
 function lib::git::sync-remote() {
   if lib::git::quiet; then
     ( git remote update && git fetch ) 2>&1 >/dev/null
@@ -64,13 +68,14 @@ function lib::git::sync-remote() {
   if [[ ${status} == "behind" ]]; then
     lib::git::quiet || run "git pull --rebase"
     lib::git::quiet && git pull --rebase 2>&1 > /dev/null
+  elif [[ ${status} != "ahead" ]]; then
+    lib::git::save-last-update-at
   elif [[ ${status} != "ok" ]]; then
     error "Report $(pwd) is ${status} compared to the remote." \
             "Please fix manually to continue."
     return 1
   fi
-
-  echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
+  lib::git::save-last-update-at
   return 0
 }
 
@@ -131,7 +136,7 @@ function bashmatic.auto-update() {
 
   lib::git::repo-is-clean || {
     h1 "${BashMatic__Home} has locally modified changes." \
-      "Will wait with git sync until it's cleaned up."
+      "Will wait with auto-update until it's sync'd up."
     return 1
   }
 

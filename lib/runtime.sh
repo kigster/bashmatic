@@ -12,7 +12,7 @@
 # This variable is set by each call to #run()
 export LibRun__LastExitCode=${False}
 export LibRun__Detail=${False}
-
+export LibRun__CommandLength=0
 # You can globally set these constants below to alternatives, and they will be
 # used after each #run() call as the basis for the library variables that
 # control the next call to #run().
@@ -67,9 +67,10 @@ __lib::run::cleanup() {
 # To print and not run, set ${LibRun__DryRun}
 __lib::run() {
   local cmd="$*"
+  export LibRun__CommandLength=0
   __lib::run::env
 
-  if [[ ${LibRun__DryRun} == ${True} ]]; then
+  if [[ ${LibRun__DryRun} -eq ${True} ]]; then
     info "${clr}[dry run] ${bldgrn}${cmd}"
     return 0
   else
@@ -91,7 +92,7 @@ __lib::run::bundle::exec() {
   local cmd="$*"
   __lib::run::env
   local w=$(($(__lib::output::screen-width) - 10))
-  if [[ ${LibRun__DryRun} == ${True} ]]; then
+  if [[ ${LibRun__DryRun} -eq ${True} ]]; then
     local line="${clr}[dry run] bundle exec ${bldgrn}${cmd}"
     info "${line:0:${w}}..."
     return 0
@@ -106,7 +107,7 @@ __lib::run::retry::enforce-max() {
 }
 
 __lib::run::retry::only-codes() {
-  export LibRun__RetryExitCodes=($@)
+  export LibRun__RetryExitCodes=("$@")
 }
 
 __lib::run::should-retry-exit-code() {
@@ -119,20 +120,20 @@ __lib::run::should-retry-exit-code() {
 }
 
 __lib::run::eval() {
-  local stdout=$1
+  local stdout="$1"
   shift
-  local stderr=$1
+  local stderr="$1"
   shift
   local command="$*"
 
   if [[ ${LibRun__ShowCommandOutput} -eq ${True} ]]; then
-    echo
+    printf "${clr}\n"
     eval "${command}"
+    export LibRun__LastExitCode=$?
   else
     eval "${command}" 2>${stderr} 1>${stdout}
+    export LibRun__LastExitCode=$?
   fi
-
-  export LibRun__LastExitCode=$?
 }
 #
 # This is the workhorse of the entire BASH library.
@@ -149,99 +150,116 @@ __lib::run::exec() {
     lib::run::inspect
   fi
 
-  [[ -z ${CI} ]] && w=$(($(__lib::output::screen-width) - 15))
-  [[ -n ${CI} ]] && w=10000
+  local max_width=100
+  local w
+  w=$(($(__lib::output::screen-width) - 20))
+  [[ ${w} -gt ${max_width} ]] && w=${max_width}
+  [[ -n ${CI} ]] && { max_width=75; w=${max_width}; }
 
-  [[ "${LibRun__ShowCommand}" == ${True} ]] && {
-    printf "         ${clr}❯ ${bldylw}%s " "${command:0:${w}}"
-    lib::output::color::on
+  export LibRun__AssignedWidth=${w}
+
+  local prefix="${LibOutput__LeftPrefix}${clr}"
+  local ascii_cmd
+  # record length of the command
+  ascii_cmd="$(printf "${prefix}❯ %s " "${command:0:${w}}")"
+
+  # if printing command output don't show dots leading to duration
+  export LibRun__CommandLength=${#ascii_cmd}
+  [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && {
+    #export LibRun__AssignedWidth=17
+    export LibRun__CommandLength=4
+    echo
   }
 
+  if [[ "${LibRun__ShowCommand}" -eq ${False} ]] ; then
+    printf "${prefix}❯ ${bldylw}%s " "$(__lib::output::replicate-to "●" 40)"
+  else
+    printf "${prefix}❯ ${bldylw}%s " "${command:0:${w}}"
+  fi
 
+  local __Previous__ShowCommandOutput=${LibRun__ShowCommandOutput}
   set +e
-
-  local tries=0
-
   start=$(millis)
+
+  local tries=1
 
   __lib::run::eval "${run_stdout}" "${run_stderr}" "${command}"
 
   while [[ -n ${LibRun__LastExitCode} && ${LibRun__LastExitCode} -ne 0 ]] &&
     [[ -n ${LibRun__RetryCount} && ${LibRun__RetryCount} -gt 0 ]]; do
 
-    tries=$((${tries} + 1))
-
+    [[ ${tries} -gt 1 && ${__Previous__ShowCommandOutput} -eq ${True} ]] && {
+      export LibRun__ShowCommandOutput=${False}
+    }
     __lib::run::retry::enforce-max
 
     export LibRun__RetryCount="$((LibRun__RetryCount - 1))"
     [[ -n ${LibRun__RetrySleep} ]] && sleep ${LibRun__RetrySleep}
 
-    [[ ${tries} -eq 1 ]] && {
-      [[ ${LibRun__ShowCommand} == ${True} ]] && {
-        not_ok
-        echo
-      }
-    }
-
-    info "last command failed with exit code ${bldred}${LibRun__LastExitCode} " \
-      "${txtblu} and ${bldylw}${LibRun__RetryCount} retries left."
+    info "Warning: command exited with code ${bldred}${LibRun__LastExitCode}" \
+      "$(txt-info)and ${LibRun__RetryCount} retries left."
 
     __lib::run::eval "${run_stdout}" "${run_stderr}" "${command}"
+
+    tries=$((tries + 1))
   done
 
-  duration=$(($(millis) - ${start}))
+  duration=$(($(millis) - start))
+
+  export LibRun__ShowCommandOutput=${__Previous__ShowCommandOutput}
+
+  [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && { echo ; }
 
   if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
-    if [[ ${LibRun__ShowCommand} == ${True} ]]; then
-      ok
-      duration ${duration}
-      echo
+    if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
+      command-spacer
+      duration ${duration} ${LibRun__LastExitCode}
     fi
-    commands_completed=$((${commands_completed} + 1))
+    ok
+    commands_completed=$((commands_completed + 1))
+    echo
   else
-    if [[ ${LibRun__ShowCommand} == ${True} ]]; then
-      not_ok
-      duration ${duration}
-      echo
+    if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
+      command-spacer
+      duration ${duration} ${LibRun__LastExitCode}
     fi
-
-    [[ ${LibRun__ShowCommand} == ${True} ]] &&
-      warn " ${txtblk}${bakylw}[ exit code = ${LibRun__LastExitCode} ]${clr}"
-
+    not_ok
+    echo
+    local stderr_printed=false
     # Print stderr generated during command execution.
-    [[ ${LibRun__ShowCommandOutput} -eq ${False} && -s ${run_stderr} ]] &&
+    [[ ${LibRun__ShowCommandOutput} -eq ${False} && -s ${run_stderr} ]] && {
+      stderr_printed=true
       echo && stderr ${run_stderr}
+    }
 
-    if [[ ${LibRun__AskOnError} == ${True} ]]; then
+    if [[ ${LibRun__AskOnError} -eq ${True} ]]; then
       lib::run::ask 'Ignore this error and continue?'
 
-    elif [[ ${LibRun__AbortOnError} == ${True} ]]; then
-      export commands_failed=$(($commands_failed + 1))
+    elif [[ ${LibRun__AbortOnError} -eq ${True} ]]; then
+      export commands_failed=$((commands_failed + 1))
       error "Aborting, due to 'abort on error' being set to true."
       info "Failed command: ${bldylw}${command}"
       echo
 
       [[ -s ${run_stdout} ]] && {
-        hr
-        printf "${clr}Standard Output:${bldgrn}\n"
-        cat ${run_stdout}
+        echo && stdout ${run_stdout}
       }
 
-      [[ -s ${run_stderr} ]] && {
-        hr
-        printf "${clr}Standard Error:${bldred}\n"
-        cat ${run_stderr}
+      ${stderr_printed} || [[ -s ${run_stderr} ]] && {
+        echo && stderr ${run_stderr}
       }
 
+      printf "${clr}\n"
       exit ${LibRun__LastExitCode}
     else
-      export commands_ignored=$(($commands_ignored + 1))
+      export commands_ignored=$((commands_ignored + 1))
     fi
   fi
 
   __lib::run::initializer
   __lib::run::cleanup
-  printf ${clr}
+
+  printf "${clr}"
   return ${LibRun__LastExitCode}
 }
 
@@ -423,11 +441,12 @@ lib::run::inspect-variables-that-are() {
   local pattern_type="${1}" # starting-with or ending-with
   local pattern="${2}"      # actual pattern
   lib::run::inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" \
-    $(lib::run::variables-${pattern_type} ${pattern} | tr '\n' ' ')
+    "$(lib::run::variables-${pattern_type} ${pattern} | tr '\n' ' ')"
 }
 
+# shellcheck disable=SC2120
 lib::run::inspect() {
-  if [[ ${#@} -eq 0 || $(array-contains-element config "$@") == "true" ]]; then
+  if [[ ${#@} -eq 0 || $(array-contains-element "config" "$@") == "true" ]]; then
     lib::run::inspect-variables-that-are starting-with LibRun
   fi
 
@@ -447,7 +466,7 @@ lib::run::inspect() {
 }
 
 lib::run() {
-  __lib::run $@
+  __lib::run "$@"
   return ${LibRun__LastExitCode}
 }
 

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Private functions
+
+export LibOutput__CommandPrefixLen=7
+export LibOutput__LeftPrefix="       "
+
 __lib::output::cursor-right-by()  {
   lib::output::is_terminal && printf "\e[${1}C"
 }
@@ -114,6 +118,13 @@ __lib::output::hr()  {
   reset-color
 }
 
+__lib::output::replicate-to() {
+  local char="$1"
+  local len="$2"
+
+  __lib::output::repeat-char "${char}" "${len}"
+}
+
 __lib::output::sep() {
   __lib::output::hr
   printf "\n"
@@ -185,7 +196,7 @@ __lib::output::boxed-text() {
   shift
   local text="$*"
 
-  [[ lib::output::is_terminal ]] || {
+  lib::output::is_terminal || {
     printf ">>> %80.80s <<< \n" ${text}
     return
   }
@@ -210,7 +221,7 @@ __lib::output::box() {
   shift
   local line
 
-  [[ lib::output::is_terminal ]] || {
+  lib::output::is_terminal || {
     for line in "$@"; do
       printf ">>> %80.80s <<< \n" ${line}
     done
@@ -305,6 +316,12 @@ screen.width() {
 
 screen.height() {
   __lib::output::screen-height
+}
+
+lib::output::supports-cursor() {
+  [[ -n ${CI} ]] && return 1
+  lib::output::is_terminal && return 0
+  return 1
 }
 
 lib::output::is_terminal() {
@@ -483,7 +500,6 @@ hdr() {
   h1 "$@"
 }
 
-
 screen-width() {
   __lib::output::screen-width
 }
@@ -501,41 +517,69 @@ function hr() {
 
 stdout() {
   local file=$1
-  printf "\n${txtgrn}"
+  hl::subtle STDOUT
+  printf "${clr}"
   [[ -s ${file} ]] && cat ${file}
-  [[ -n ${file} ]] && reset-color
+  reset-color
 }
 
 stderr() {
   local file=$1
-  printf "\n${txtred}"
+  hl::subtle STDERR
+  printf "${txtred}"
   [[ -s ${file} ]] && cat ${file}
-  [[ -n ${file} ]] && reset-color
+  reset-color
+}
+
+command-spacer() {
+  [[  -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
+  printf " ${bldblk}"
+  # shellcheck disable=SC2154
+  local w
+  w=$(( LibRun__AssignedWidth - LibRun__CommandLength - 10))
+  # shellcheck disable=SC2154
+  [[ ${w} -gt 0 ]] && __lib::output::replicate-to "⎯" "${w}"
 }
 
 duration() {
-  local millis=$1
+  local millis="$1"
+  local exit_code="$2"
   [[ -n $(which bc) ]] || return
-  if [[ -n $millis && $millis -gt 0 ]] ; then
-    cursor.at.x 3
-    printf "${bldblu}%4.1fs " $(echo "scale=1;${millis}/1000" | bc)
+  if [[ -n ${millis} && ${millis} -ge 0 ]] ; then
+    local pattern
+    pattern="%6.6s ms"
+    pattern="${txtblu}〔${txtpur}${pattern}${txtblu}〕"
+    printf "${txtblu}${pattern}" "${millis}"
+  fi
+
+  if [[ -n ${exit_code} ]]; then
+    [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" ${exit_code}
+    [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" ${exit_code}
   fi
 }
 
 ok() {
   __lib::output::cursor-left-by 1000
-  printf " ${bldgrn}✔︎ ${clr}"
+  printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
 }
 
 not_ok() {
   __lib::output::cursor-left-by 1000
-  printf " ${bldred}✘ ${clr}"
+  printf " ${bakred}${bldwht} ✘ ${clr} "
 }
 
 kind_of_ok() {
   __lib::output::cursor-left-by 1000
-  printf " ${bldylw}⚠ ${clr}"
+  printf " ${bakylw}${bldwht} ❖ ${clr} "
 }
+
+left-prefix() {
+  [[ -z ${LibOutput__LeftPrefix} ]] && {
+     export LibOutput__LeftPrefix=$(__lib::output::replicate-to " " "${LibOutput__LeftPrefixLen}")
+  }
+  printf "${LibOutput__LeftPrefix}"
+}
+
 
 ok:() {
   ok $@
@@ -562,30 +606,32 @@ okay() {
 }
 
 success() {
-  printf -- "    ${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  echo
+  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  echo
   echo
 }
 
 abort() {
-  printf -- "    ${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
   echo
 }
 
 err() {
-  printf -- "    ${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
+  printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
 }
 
 inf() {
-  printf -- "    ${txtblu}${clr}${txtblu}$*${clr}"
+  printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
 }
 
 debug() {
   [[ -z ${DEBUG} ]] && return
-  printf -- "    ${txtblk}${bakwht}[ debug ] $*  ${clr}\n"
+  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakwht}[ debug ] $*  ${clr}\n"
 }
 
 warn() {
-  printf -- "    ${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
+  printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
 }
 
 warning() {

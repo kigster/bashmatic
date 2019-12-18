@@ -97,7 +97,6 @@ ____run::set::all::dry-run-off() {
 }
 
 ### Prints some additional verbose shit.
-
 ____run::set::all::verbose-on() {
   export LibRun__Verbose=${True}
 }
@@ -116,12 +115,12 @@ ____run::set::all::show-output-off() {
 }
 
 ____run::set::all::show-command-on() {
-  ____run::set::all::show-command-on
-  export LibRun__ShowCommandOutput__Default=${True}
+  ____run::set::next::show-command-on
+  export LibRun__ShowCommand__Default=${True}
 }
 ____run::set::all::show-command-off() {
-  ____run::set::all::show-command-off
-  export LibRun__ShowCommandOutput__Default=${False}
+  ____run::set::next::show-command-off
+  export LibRun__ShowCommand__Default=${False}
 }
 
 # Error Handling
