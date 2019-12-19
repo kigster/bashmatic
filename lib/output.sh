@@ -328,7 +328,7 @@ screen.height() {
 }
 
 lib::output::is_terminal() {
-  lib::output::is_tty || lib::output::is_redirect || lib::output::is_pipe
+  lib::output::is_tty || lib::output::is_redirect || lib::output::is_pipe || lib::output::is_ssh
 }
 
 lib::output::is_ssh() {
