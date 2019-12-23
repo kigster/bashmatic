@@ -152,7 +152,8 @@ __lib::run::exec() {
 
   local max_width=100
   local w
-  w=$(($(__lib::output::screen-width) - 20))
+  w=$(($(__lib::output::screen-width) - 10))
+
   [[ ${w} -gt ${max_width} ]] && w=${max_width}
 
   export LibRun__AssignedWidth=${w}
@@ -167,17 +168,20 @@ __lib::run::exec() {
 
   # if printing command output don't show dots leading to duration
   export LibRun__CommandLength=${#ascii_cmd}
+
   [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && {
-    #export LibRun__AssignedWidth=17
-    export LibRun__CommandLength=4
-    echo
+    export LibRun__AssignedWidth=$(( w - 3))
+    export LibRun__CommandLength=1
+    printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"
   }
 
   if [[ "${LibRun__ShowCommand}" -eq ${False} ]] ; then
-    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(__lib::output::replicate-to "●" 40)"
+    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(__lib::output::replicate-to "*" 40)"
   else
     printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}"
   fi
+
+  sleep 1
 
   local __Previous__ShowCommandOutput=${LibRun__ShowCommandOutput}
   set +e

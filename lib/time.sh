@@ -62,6 +62,14 @@ lib::time::epoch::minutes-ago() {
   echo $((${epoch} - ${seconds}))
 }
 
+lib::time::duration::millis-to-secs() {
+  local duration="$1"
+  local format="${2:-"%d.%d"}"
+  local seconds=$(( duration / 1000 ))
+  local leftover=$(( duration - 1000 * seconds ))
+  printf "${format}" ${seconds} ${leftover}
+}
+
 lib::time::duration::humanize() {
   local seconds=${1}
   local hours=$((${seconds} / 3600))

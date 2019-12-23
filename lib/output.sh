@@ -550,8 +550,8 @@ duration() {
   [[ -n $(which bc) ]] || return
   if [[ -n ${millis} && ${millis} -ge 0 ]] ; then
     local pattern
-    pattern="%6.6s ms"
-    pattern="${txtblu}〔${txtpur}${pattern}${txtblu}〕"
+    pattern=" %6.6s ms "
+    pattern="${txtblu}〔${pattern}〕"
     printf "${txtblu}${pattern}" "${millis}"
   fi
 
