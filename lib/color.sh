@@ -87,43 +87,50 @@ ansi()          { echo -e "\e[${1}m${*:2}\e[0m"; }
 lib::color::disable() {
     export clr='\e[0m'       # Text Reset
 
-    export txtblk="${clr}"
-    export txtred="${clr}"
-    export txtgrn="${clr}"
-    export txtylw="${clr}"
-    export txtblu="${clr}"
-    export txtpur="${clr}"
-    export txtcyn="${clr}"
-    export txtwht="${clr}"
-    export bldblk="${clr}"
-    export bldred="${clr}"
-    export bldgrn="${clr}"
-    export bldylw="${clr}"
-    export bldblu="${clr}"
-    export bldpur="${clr}"
-    export bldcyn="${clr}"
-    export bldwht="${clr}"
-    export unkblk="${clr}"
-    export undred="${clr}"
-    export undgrn="${clr}"
-    export undylw="${clr}"
-    export undblu="${clr}"
-    export undpur="${clr}"
-    export undcyn="${clr}"
-    export undwht="${clr}"
-    export bakblk="${clr}"
-    export bakred="${clr}"
-    export bakgrn="${clr}"
-    export bakylw="${clr}"
-    export bakblu="${clr}"
-    export bakpur="${clr}"
-    export bakcyn="${clr}"
-    export bakwht="${clr}"
-    export txtrst="${clr}"
-    export italic="${clr}"
-    export bold="${clr}"
-    export strikethrough="${clr}"
-    export underlined="${clr}"
+    unset txtblk
+    unset txtred
+    unset txtgrn
+    unset txtylw
+    unset txtblu
+    unset txtpur
+    unset txtcyn
+    unset txtwht
+    unset bldblk
+    unset bldred
+    unset bldgrn
+    unset bldylw
+    unset bldblu
+    unset bldpur
+    unset bldcyn
+    unset bldwht
+    unset unkblk
+    unset undred
+    unset undgrn
+    unset undylw
+    unset undblu
+    unset undpur
+    unset undcyn
+    unset undwht
+    unset bakblk
+    unset bakred
+    unset bakgrn
+    unset bakylw
+    unset bakblu
+    unset bakpur
+    unset bakcyn
+    unset bakwht
+    unset txtrst
+    unset italic
+    unset bold
+    unset strikethrough
+    unset underlined
+
+    unset white_on_orange
+    unset white_on_yellow
+    unset white_on_red
+    unset white_on_pink
+    unset white_on_salmon
+    unset yellow_on_gray
 
     export AppColorsLoaded=1
 

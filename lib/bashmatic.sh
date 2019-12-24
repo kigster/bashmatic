@@ -8,6 +8,10 @@ bashmatic.reload() {
   source "${BashMatic__Init}"
 }
 
+bashmatic.version() {
+  cat $(dirname "${BashMatic__Init}")/.version
+}
+
 bashmatic.load-at-login() {
   local init_file="${1}"
   local -a init_files=(~/.bashrc ~/.bash_profile ~/.profile)

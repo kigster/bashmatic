@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Bashmatic Utilities
+# © 2017-2020 Konstantin Gredeskoul, All rights reserved.
+# Distributed under the MIT LICENSE.
 
 export TERM=${TERM:-xterm-256color}
 
@@ -63,7 +66,7 @@ specs::run-file() {
     error "File ${file} is not found."
     return 1
   fi
-  hl::white-on-salmon "${file}"
+  test-group "${file}"
   set -e
   /usr/local/bin/bats -p "${file}"
   set +e
@@ -117,4 +120,5 @@ while :; do
   esac
 done
 
+[[ -n ${CI} ]] && lib::color::disable
 specs::main "$@"
