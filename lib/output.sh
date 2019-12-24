@@ -407,6 +407,11 @@ hl::white-on-orange() {
   left "${white_on_orange}" "$@"
 }
 
+test-group() {
+ [[ -z ${white_on_salmon} ]] && hr
+ hl::white-on-salmon "$@"
+}
+  
 hl::white-on-salmon() {
   left "${white_on_salmon}" "$@"
 }
