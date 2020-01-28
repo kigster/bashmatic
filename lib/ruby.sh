@@ -1,6 +1,29 @@
 #!/usr/bin/env bash
 # vi: ft=sh
 
+# This function can be used to generate a YAML array of the latest minor ruby versions
+# against each major version. The output should be compatible with .travis.yml format
+function ruby.top-versions-as-yaml() {
+  ruby.top-versions | \
+     sed 's/^/ - /g'
+}
+function ruby.top-versions() {
+  rbenv install --list | \
+    egrep "^2\." | \
+    ruby -e '
+      last_v = nil; 
+      last_m = nil; 
+      ARGF.each do |line| 
+        v = line.split(".")[0..1].join(".")
+        if last_v != v
+          puts last_m if last_m
+          last_v = v; 
+        end; 
+        last_m = line
+      end
+      puts last_m if last_m'
+} 
+
 function ruby.default-gems() {
   declare -a DEFAULT_RUBY_GEMS=(
     rubocop
