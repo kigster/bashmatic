@@ -7,9 +7,15 @@ function ruby.top-versions-as-yaml() {
   ruby.top-versions | \
      sed 's/^/ - /g'
 }
+
+# Usage: ruby.top-versions [ platform ] 
+#    eg: ruby.top-versions
+#    eg: ruby.top-versions jruby
+#    eg: ruby.top-versions rbx
 function ruby.top-versions() {
+  local platform="${1:-"2\."}"
   rbenv install --list | \
-    egrep "^2\." | \
+    egrep "^${platform}" | \
     ruby -e '
       last_v = nil; 
       last_m = nil; 
