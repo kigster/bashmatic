@@ -60,7 +60,7 @@ function lib::git::sync-remote() {
   if lib::git::quiet; then
     ( git remote update && git fetch ) 2>&1 >/dev/null
   else
-     run "git remote update && git fetch"
+    run "git remote update && git fetch"
   fi
 
   local status=$(lib::git::local-vs-remote)

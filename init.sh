@@ -5,6 +5,7 @@ export True=1
 export False=0
 export LoadedShown=${LoadedShown:-1}
 export BashMatic__Init="${BASH_SOURCE[0]}"
+export LibGit__QuietUpdate=1
 
 bashmatic::source-dir() {
   local folder="${1}"
