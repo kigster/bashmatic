@@ -334,8 +334,8 @@ array-csv                                         lib::file::last-modified-date
 array-join                                        lib::file::last-modified-year
 array-piped                                       lib::gem::cache-installed
 ascii-clean                                       lib::gem::cache-refresh
-aws::rds::hostname                                lib::gem::configure-cache
-aws::s3::upload                                   lib::gem::ensure-gem-version
+aws.rds::hostname                                 lib::gem::configure-cache
+aws.s3.upload                                     lib::gem::ensure-gem-version
 bashmatic-set-fqdn                                lib::gem::gemfile::version
 bashmatic-term                                    lib::gem::global::latest-version
 bashmatic-term-program                            lib::gem::global::versions

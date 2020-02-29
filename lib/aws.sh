@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # Usage:
-#   aws::rds::hostname 'database-name'
+#   aws.rds.hostname 'database-name'
 # Eg:
-#   aws::rds::hostname
-aws::rds::hostname() {
+#   aws.rds.hostname
+aws.rds.hostname() {
   local name=${1}
   [[ -z $(which jq) ]] && out=$(lib::brew::install::package jq 2>/dev/null 1>/dev/null)
   [[ -z $(which aws) ]] && out=$(lib::brew::install::package awscli 2>/dev/null 1>/dev/null)
@@ -18,7 +18,7 @@ export LibAws__DefaultUploadBucket=${LibAws__DefaultUploadBucket:-""}
 export LibAws__DefaultUploadFolder=${LibAws__DefaultUploadFolder:-""}
 export LibAws__DefaultRegion=${LibAws__DefaultRegion:-"us-west-2"}
 
-aws::s3::upload() {
+aws.s3.upload() {
   local pathname="$1"; shift
   local skip_file_modification="$1"
   [[ -n ${skip_file_modification} ]] && skip_file_modification=true
@@ -73,3 +73,24 @@ aws::s3::upload() {
   fi
   return ${LibRun__LastExitCode}
 }
+
+__utf_table() {
+  echo -n "$@" | sed -e "s/-/—/g;s/+/•/g;s/—|—/─┬─/g;s/—/─/g;s/[|•]/│/g"
+}
+
+aws.ec2() {
+  local cmd="$1"
+  local command="$cmd"
+
+  case $command in
+    list|show|ls)
+      __utf_table "$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{name: Name, instance_id: InstanceId, ip_address: PrivateIpAddress, state: State.Name}' --output table 2>/dev/null)"
+      return $?
+      ;;
+  *)
+    error "Invalid Command: ${cmd}"
+    return 1
+    ;;
+  esac
+}
+
