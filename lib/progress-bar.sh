@@ -50,14 +50,14 @@ __lib::progress::bar() {
   local loops=${1:-"1"}
   local full_cycle_seconds=${2:-"10"}
   local width=$3
-  [[ -z ${width} ]] && width=$(( $(__lib::output::screen-width) - 5 ))
+  [[ -z ${width} ]] && width=$(($(__lib::output::screen-width) - 5))
 
-  local delay_seconds=$( ruby -e "printf('%.3f', ${full_cycle_seconds}.0 / ${width}.0)" )
+  local delay_seconds=$(ruby -e "printf('%.3f', ${full_cycle_seconds}.0 / ${width}.0)")
 
   trap "__lib::progress::abort" INT STOP
 
   [[ -z "${LibProgress__BarColor}" ]] && LibProgress__BarColor=${LibProgress__BarColor__Default}
-  [[ -z "${LibProgress__BarChar}"  ]] && LibProgress__BarChar=${LibProgress__BarChar__Default}
+  [[ -z "${LibProgress__BarChar}" ]] && LibProgress__BarChar=${LibProgress__BarChar__Default}
 
   cursor.rewind
 

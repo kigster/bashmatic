@@ -15,7 +15,7 @@ lib::db::psql::args::() {
 }
 
 lib::db::psql-args() {
-  lib::db::psql::args::  "$@"
+  lib::db::psql::args:: "$@"
 }
 
 lib::db::psql::args::default() {
@@ -30,7 +30,7 @@ lib::db::wait-until-db-online() {
   local db=${1}
   inf 'waiting for the database to come up...'
   while true; do
-    out=$(psql -c "select count(*) from accounts" $(lib::db::psql::args::  ${db}) 2>&1)
+    out=$(psql -c "select count(*) from accounts" $(lib::db::psql::args:: ${db}) 2>&1)
     code=$?
     [[ ${code} == 0 ]] && break # can connect and all is good
     [[ ${code} == 1 ]] && break # db is there, but no database/table is found
@@ -60,28 +60,30 @@ __lib::db::backup-filename() {
 }
 
 __lib::db::top::page() {
-  local tof=$1; shift
-  local dbtype=$1; shift
+  local tof=$1
+  shift
+  local dbtype=$1
+  shift
   local db="$*"
 
-  printf "${bldcyn}[${dbtype}] ${bldpur}${db} ${clr}\n\n" >> ${tof}
+  printf "${bldcyn}[${dbtype}] ${bldpur}${db} ${clr}\n\n" >>${tof}
 
-  printf "${bldblu}" >> ${tof}
+  printf "${bldblu}" >>${tof}
   if [[ "${dbtype}" == 'master' ]]; then
-    psql -X -P pager ${db} -c "select * from hb_stat_replication" >> ${tof}
+    psql -X -P pager ${db} -c "select * from hb_stat_replication" >>${tof}
   else
-    psql -X -P pager ${db} -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >> ${tof}
+    psql -X -P pager ${db} -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>${tof}
   fi
 
-  local query_width=$(( $(__lib::output::screen-width) - 78 ))
+  local query_width=$(($(__lib::output::screen-width) - 78))
 
-  printf "${bldcyn}[${dbtype}] ${bldpur}Above: Replication Status / Below: Active Queries:${clr}\n\n${bldylw}" >> ${tof}
+  printf "${bldcyn}[${dbtype}] ${bldpur}Above: Replication Status / Below: Active Queries:${clr}\n\n${bldylw}" >>${tof}
 
   psql -X -P pager ${db} -c \
-      "select pid, client_addr || ':' || client_port as Client, substring(state for 10) as State, now() - query_start " \
-      "as Duration, waiting as Wait, substring(query for ${query_width}) as Query from pg_stat_activity where state != 'idle' " \
-      "order by Duration desc" | \
-      egrep -v 'select.*client_addr' 2>&1 >> ${tof}
+    "select pid, client_addr || ':' || client_port as Client, substring(state for 10) as State, now() - query_start " \
+    "as Duration, waiting as Wait, substring(query for ${query_width}) as Query from pg_stat_activity where state != 'idle' " \
+    "order by Duration desc" |
+    egrep -v 'select.*client_addr' 2>&1 >>${tof}
 }
 
 #===============================================================================
@@ -124,7 +126,7 @@ lib::db::top() {
   local width=$(__lib::output::screen-width)
   local height=$(__lib::output::screen-height)
 
-  if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]] ; then
+  if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
     error "Your screen is too small for db.top."
     info "Minimum required screen dimensions are ${width_min} columns, ${height_min} rows."
     info "Your screen is ${bldred}${width}x${height}."
@@ -135,12 +137,11 @@ lib::db::top() {
   declare -a connection_names=()
   local i=0
 
-
   for dbname in $dbnames; do
-    declare -a results=( $(__lib::db::by_shortname $dbname) )
+    declare -a results=($(__lib::db::by_shortname $dbname))
     if [[ ${#results[@]} ]]; then
       dbtype="${results[0]}"
-      i=$(( $i + 1 ))
+      i=$(($i + 1))
       db="${results[@]:1}"
       if [[ -n ${dbtype} ]]; then
         [[ ${dbtype} == "master" ]] && dbname="master"
@@ -151,10 +152,10 @@ lib::db::top() {
     fi
   done
 
-  if [[ ${#connections[@]} == 0 ]] ; then
+  if [[ ${#connections[@]} == 0 ]]; then
     error "usage: $0 db1, db2, ... "
-    info  "eg: lib::db::top m r2 "
-    (( ${BASH_IN_SUBSHELL} )) && exit 1 || return 1
+    info "eg: lib::db::top m r2 "
+    ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
   fi
 
   trap "clear" TERM
@@ -173,7 +174,7 @@ lib::db::top() {
     local screen_height=$(screen.height)
 
     for __dbtype in "${connection_names[@]}"; do
-      index=$(( ${index} + 1 ))
+      index=$((${index} + 1))
 
       local percent_total_height=0
 
@@ -189,18 +190,18 @@ lib::db::top() {
         [[ ${index} -eq 3 ]] && percent_total_height=60
         [[ ${index} -eq 4 ]] && percent_total_height=80
       fi
-      
-      local vertical_shift=$(( ${percent_total_height} * ${screen_height} / 100 ))
 
-      cursor.at.y ${vertical_shift} >> ${tof}
-      [[ -n ${DEBUG} ]] && h::blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >> ${tof}
-      hr::colored ${bldpur} >> ${tof}
+      local vertical_shift=$((${percent_total_height} * ${screen_height} / 100))
+
+      cursor.at.y ${vertical_shift} >>${tof}
+      [[ -n ${DEBUG} ]] && h::blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >>${tof}
+      hr::colored ${bldpur} >>${tof}
       __lib::db::top::page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
     done
     clear
     h::yellow " «   DB-TOP V0.1.2 © 2018-2019 Konstantin Gredeskoul, ReinventONE Inc. » "
     cat ${tof}
-    cursor.at.y $(( $(__lib::output::screen-height) + 1 ))
+    cursor.at.y $(($(__lib::output::screen-height) + 1))
     printf "${bldwht}Press Ctrl-C to quit.${clr}"
     cp /dev/null ${tof}
     sleep ${interval}
@@ -208,7 +209,8 @@ lib::db::top() {
 }
 
 lib::db::dump() {
-  local dbname=${1}; shift
+  local dbname=${1}
+  shift
   local psql_args="$*"
 
   [[ -z "${psql_args}" ]] && psql_args="-U postgres -h localhost"
@@ -235,16 +237,22 @@ lib::db::dump() {
 }
 
 lib::db::restore() {
-  local dbname="$1"; shift
-  local filename="$1"; [[ -n ${filename} ]] && shift
+  local dbname="$1"
+  shift
+  local filename="$1"
+  [[ -n ${filename} ]] && shift
 
   [[ -z ${filename} ]] && filename=$(__lib::db::backup-filename ${dbname})
 
   [[ dbname =~ 'production' ]] && {
-    error 'This script is not meant for production'; return 1; }
+    error 'This script is not meant for production'
+    return 1
+  }
 
   [[ -s ${filename} ]] || {
-    error "can't find valid backup file in ${bldylw}${filename}"; return 2; }
+    error "can't find valid backup file in ${bldylw}${filename}"
+    return 2
+  }
 
   psql_args=$(lib::db::psql::args::default)
   maint_args=$(lib::db::psql::args::maint)

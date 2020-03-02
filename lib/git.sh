@@ -16,17 +16,17 @@ function lib::git::sync() {
   cd "${BashMatic__Home}" >/dev/null
   lib::git::repo-is-clean || {
     warning "${bldylw}${BashMatic__Home} has locally modified files." \
-          "Please commit or stash them to allow auto-upgrade to function as designed." >&2
-    cd "${dir}" > /dev/null
+      "Please commit or stash them to allow auto-upgrade to function as designed." >&2
+    cd "${dir}" >/dev/null
     return 1
   }
 
   lib::git::update-repo-if-needed
-  cd "${dir}" > /dev/null
+  cd "${dir}" >/dev/null
   return 0
 }
 
-function lib::git::last-update-at {
+function lib::git::last-update-at() {
   lib::git::configure-auto-updates
 
   local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
@@ -38,27 +38,27 @@ function lib::git::last-update-at {
 function lib::git::seconds-since-last-pull() {
   local last_update="$1"
   local now=$(epoch)
-  printf $(( now - last_update ))
+  printf $((now - last_update))
 }
 
 function lib::git::update-repo-if-needed() {
   local last_update_at=$(lib::git::last-update-at)
   local second_since_update=$(lib::git::seconds-since-last-pull ${last_update_at})
-  local update_period_seconds=$(( LibGit__StaleAfterThisManyHours * 60 * 60 ))
+  local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
   if [[ ${second_since_update} -gt ${update_period_seconds} ]]; then
     lib::git::sync-remote
   elif [[ -n ${DEBUG} ]]; then
-    lib::git::quiet || info "${BashMatic__Home} will update in $(( update_period_seconds - second_since_update )) seconds..."
+    lib::git::quiet || info "${BashMatic__Home} will update in $((update_period_seconds - second_since_update)) seconds..."
   fi
 }
 
 function lib::git::save-last-update-at() {
-  echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
+  echo $(epoch) >${LibGit__LastUpdateTimestampFile}
 }
 
 function lib::git::sync-remote() {
   if lib::git::quiet; then
-    ( git remote update && git fetch ) 2>&1 >/dev/null
+    (git remote update && git fetch) 2>&1 >/dev/null
   else
     run "git remote update && git fetch"
   fi
@@ -67,12 +67,12 @@ function lib::git::sync-remote() {
 
   if [[ ${status} == "behind" ]]; then
     lib::git::quiet || run "git pull --rebase"
-    lib::git::quiet && git pull --rebase 2>&1 > /dev/null
+    lib::git::quiet && git pull --rebase 2>&1 >/dev/null
   elif [[ ${status} != "ahead" ]]; then
     lib::git::save-last-update-at
   elif [[ ${status} != "ok" ]]; then
     error "Report $(pwd) is ${status} compared to the remote." \
-            "Please fix manually to continue."
+      "Please fix manually to continue."
     return 1
   fi
   lib::git::save-last-update-at
@@ -114,8 +114,7 @@ function lib::git::local-vs-remote() {
 
 lib::git::repo-is-clean() {
   local repo="${1:-${BashMatic__Home}}"
-  local cwd="${PWD}"
-  cd ${repo} >/dev/null
+  cd "${repo}" >/dev/null
   if [[ -z $(git status -s) ]]; then
     cd - >/dev/null
     return 0
