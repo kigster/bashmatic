@@ -508,10 +508,6 @@ odie() {
   exit 1
 }
 
-safe_cd() {
-  cd "$@" >/dev/null || odie "Error: failed to cd to $*!"
-}
-
 is_verbose() {
   [[ ${LibRun__Verbose} -eq ${True} ]]
 }

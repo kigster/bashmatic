@@ -69,31 +69,41 @@ lib::output::color::off() {
   reset-color: >&1
 }
 
+__lib::output::current-screen-width() {
+  local w
+  local os=$(uname -s)
+
+  if [[ $os == 'Darwin' ]]; then
+    w=$(stty -a 2>/dev/null | grep columns | awk '{print $6}')
+  elif [[ $os == 'Linux' ]]; then
+    w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | hbsed 's/;//g')
+  fi
+
+  MIN_WIDTH=${MIN_WIDTH:-80}
+  [[ -z ${w} ]] && w=${MIN_WIDTH}
+
+  [[ ${w} -lt ${MIN_WIDTH} ]] && w=${MIN_WIDTH}
+
+  printf -- "%d" $w
+}
+
 __lib::output::screen-width() {
   if [[ -n ${CI} ]]; then
     printf -- "120"
     return 0
   fi
 
-  if [[ -n "${AppCurrentScreenWidth}" && $(( $(millis) - ${AppCurrentScreenMillis} )) -lt 20000 ]]; then
+  if [[ -n "${AppCurrentScreenWidth}" && $(( $(millis) - ${AppCurrentScreenMillis} )) -lt 1000 ]]; then
     printf -- "${AppCurrentScreenWidth}"
     return
   fi
 
-  if [[ ${AppCurrentOS:-$(uname -s)} == 'Darwin' ]]; then
-    w=$(stty -a 2>/dev/null | grep columns | awk '{print $6}')
-  elif [[ ${AppCurrentOS} == 'Linux' ]]; then
-    w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | hbsed 's/;//g')
-  fi
-
-  MIN_WIDTH=${MIN_WIDTH:-80}
-  w=${w:-${MIN_WIDTH}}
-  [[ "${w}" -lt "${MIN_WIDTH}" ]] && w=${MIN_WIDTH}
+  local w=$(__lib::output::current-screen-width)
 
   export AppCurrentScreenWidth=${w}
   export AppCurrentScreenMillis=$(millis)
 
-  printf -- "${w}"
+  printf -- "%d" ${w}
 }
 
 __lib::output::screen-height() {
@@ -688,4 +698,16 @@ reset-color:() {
 
 ascii-clean() {
   __lib::output::clean "$@"
+}
+
+columnize() {
+  local columns="${1:-2}"
+
+  local sw=${SCREEN_WIDTH:-120}
+  [[ -z ${sw} ]] && sw=$(screen-width)
+
+  pr -l 10000 -${columns} -e4 -w ${sw}             | \
+    expand -8                                      | \
+    sed -E '/^ *$/d'                               | \
+    grep -v 'Page '
 }

@@ -5,7 +5,7 @@
 #
 # Any modifications, © 2017 Konstantin Gredeskoul, Inc. All rights reserved.
 
-function reset_last_color() {
+function reset-color() {
   echo -en "${clr}"
 }
 
@@ -69,7 +69,7 @@ lib::color::enable() {
     [[ -n ${DEBUG} ]] && echo "colors already loaded..."
   fi
 
-  trap reset_last_color EXIT
+  trap reset-color EXIT
 }
 
 txt-info()      { printf "${clr}${txtblu}"; }
@@ -134,7 +134,7 @@ lib::color::disable() {
 
     export AppColorsLoaded=1
 
-    trap reset_last_color EXIT
+    trap reset-color EXIT
 }
 
 (( ${AppColorsLoaded} )) || lib::color::enable
