@@ -4,19 +4,19 @@
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
-__lib::output::cursor-right-by()  {
+__lib::output::cursor-right-by() {
   lib::output::is_terminal && printf "\e[${1}C"
 }
 
-__lib::output::cursor-left-by()  {
+__lib::output::cursor-left-by() {
   lib::output::is_terminal && printf "\e[${1}D"
 }
 
-__lib::output::cursor-up-by()  {
+__lib::output::cursor-up-by() {
   lib::output::is_terminal && printf "\e[${1}A"
 }
 
-__lib::output::cursor-down-by()  {
+__lib::output::cursor-down-by() {
   lib::output::is_terminal && printf "\e[${1}B"
 }
 
@@ -52,7 +52,6 @@ cursor.down() {
 cursor.right() {
   __lib::output::cursor-right-by "$@"
 }
-
 
 __lib::ver-to-i() {
   version=${1}
@@ -93,7 +92,7 @@ __lib::output::screen-width() {
     return 0
   fi
 
-  if [[ -n "${AppCurrentScreenWidth}" && $(( $(millis) - ${AppCurrentScreenMillis} )) -lt 1000 ]]; then
+  if [[ -n "${AppCurrentScreenWidth}" && $(($(millis) - ${AppCurrentScreenMillis})) -lt 1000 ]]; then
     printf -- "${AppCurrentScreenWidth}"
     return
   fi
@@ -116,14 +115,14 @@ __lib::output::screen-height() {
   MIN_HEIGHT=${MIN_HEIGHT:-30}
   h=${h:-${MIN_HEIGHT}}
   [[ "${h}" -lt "${MIN_HEIGHT}" ]] && h=${MIN_HEIGHT}
-  printf -- $(( $h - 2 ))
+  printf -- $(($h - 2))
 }
 
 __lib::output::line() {
-  __lib::output::repeat-char "─" $(( $(__lib::output::screen-width) - 2 ))
+  __lib::output::repeat-char "─" $(($(__lib::output::screen-width) - 2))
 }
 
-__lib::output::hr()  {
+__lib::output::hr() {
   local cols=${1:-$(__lib::output::screen-width)}
   local char=${2:-"—"}
   local color=${3:-${txtylw}}
@@ -192,7 +191,7 @@ __lib::output::which-ruby() {
     rbenv which ruby
   elif [[ -x /usr/bin/ruby ]]; then
     printf /usr/bin/ruby
-  elif [[ -x /usr/local/bin/ruby ]] ; then
+  elif [[ -x /usr/local/bin/ruby ]]; then
     printf /usr/local/bin/ruby
   else
     which ruby
@@ -217,7 +216,7 @@ __lib::output::boxed-text() {
   }
 
   local clean_text=$(__lib::output::clean "${text}")
-  local width=$(( $(__lib::output::screen-width) - 2 ))
+  local width=$(($(__lib::output::screen-width) - 2))
   local remaining_space_len=$(($width - ${#clean_text} - 1))
   printf "${border_color}│ ${text_color}"
   printf -- "${text}"
@@ -255,7 +254,7 @@ __lib::output::box() {
       __lib::output::box-separator
     }
     __lib::output::boxed-text "${border_color}" "${text_color}" "${line}"
-    __i=$(( $__i + 1 ))
+    __i=$(($__i + 1))
   done
 
   printf "${border_color}"
@@ -268,17 +267,17 @@ __lib::output::center() {
   local text="$*"
 
   local clean_text=$(__lib::output::clean "${text}")
-  local width=$(( $(__lib::output::screen-width) - 2 ))
-  local remaining_space_len=$(( 1 + ($width - ${#clean_text}) / 2 ))
+  local width=$(($(__lib::output::screen-width) - 2))
+  local remaining_space_len=$((1 + ($width - ${#clean_text}) / 2))
 
   local offset=0
-  [[ $(( ( ${width} - ${#clean_text} ) % 2 )) == 1 ]] && offset=1
+  [[ $(((${width} - ${#clean_text}) % 2)) == 1 ]] && offset=1
 
   printf "${color}"
   cursor.at.x 0
   __lib::output::repeat-char " " ${remaining_space_len}
   printf "%s" "${text}"
-  __lib::output::repeat-char " " $(( ${remaining_space_len} + ${offset} - 1 ))
+  __lib::output::repeat-char " " $((${remaining_space_len} + ${offset} - 1))
   reset-color
   cursor.at.x 0
   echo
@@ -290,8 +289,8 @@ __lib::output::left-justify() {
   local text="$*"
   echo
   printf "${color}"
-  if lib::output::is_terminal ; then
-    local width=$(( 2 * $(__lib::output::screen-width) / 3 ))
+  if lib::output::is_terminal; then
+    local width=$((2 * $(__lib::output::screen-width) / 3))
     [[ ${width} -lt 70 ]] && width="70"
     printf -- "  %-${width}.${width}s${clr}\n\n" "« ${text} »"
   else
@@ -391,11 +390,11 @@ box::green-in-green() {
   __lib::output::box "${bldgrn}" "${bldgrn}" "$@"
 }
 
-box::green-in-yellow(){
+box::green-in-yellow() {
   __lib::output::box "${bldgrn}" "${bldylw}" "$@"
 }
 
-box::green-in-cyan(){
+box::green-in-cyan() {
   __lib::output::box "${bldgrn}" "${bldcyn}" "$@"
 }
 
@@ -412,10 +411,10 @@ hl::white-on-orange() {
 }
 
 test-group() {
- [[ -z ${white_on_salmon} ]] && hr
- hl::white-on-salmon "$@"
+  [[ -z ${white_on_salmon} ]] && hr
+  hl::white-on-salmon "$@"
 }
-  
+
 hl::white-on-salmon() {
   left "${white_on_salmon}" "$@"
 }
@@ -544,20 +543,25 @@ stderr() {
 }
 
 command-spacer() {
-  [[  -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
-  printf " ${bldblk}"
+  local color="${txtgrn}"
+  [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"
+
+  [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
+
+  printf "%s${color}" ""
+
   # shellcheck disable=SC2154
-  local w
-  w=$(( LibRun__AssignedWidth - LibRun__CommandLength - 10))
+  local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10))
   # shellcheck disable=SC2154
-  [[ ${w} -gt 0 ]] && __lib::output::replicate-to "⎯" "${w}"
+
+  [[ ${__width} -gt 0 ]] && __lib::output::replicate-to "▪" "${__width}"
 }
 
 duration() {
   local millis="$1"
   local exit_code="$2"
   [[ -n $(which bc) ]] || return
-  if [[ -n ${millis} && ${millis} -ge 0 ]] ; then
+  if [[ -n ${millis} && ${millis} -ge 0 ]]; then
     local pattern
     pattern=" %6.6s ms "
     pattern="${txtblu}〔${pattern}〕"
@@ -587,11 +591,10 @@ kind_of_ok() {
 
 left-prefix() {
   [[ -z ${LibOutput__LeftPrefix} ]] && {
-     export LibOutput__LeftPrefix=$(__lib::output::replicate-to " " "${LibOutput__LeftPrefixLen}")
+    export LibOutput__LeftPrefix=$(__lib::output::replicate-to " " "${LibOutput__LeftPrefixLen}")
   }
   printf "${LibOutput__LeftPrefix}"
 }
-
 
 ok:() {
   ok $@
@@ -706,8 +709,8 @@ columnize() {
   local sw=${SCREEN_WIDTH:-120}
   [[ -z ${sw} ]] && sw=$(screen-width)
 
-  pr -l 10000 -${columns} -e4 -w ${sw}             | \
-    expand -8                                      | \
-    sed -E '/^ *$/d'                               | \
+  pr -l 10000 -${columns} -e4 -w ${sw} |
+    expand -8 |
+    sed -E '/^ *$/d' |
     grep -v 'Page '
 }
