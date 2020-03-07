@@ -1,4 +1,4 @@
-#r/usr/bin/env bash
+#/usr/bin/env bash
 # Private functions
 
 export LibOutput__CommandPrefixLen=7
@@ -607,6 +607,9 @@ ui.closer.not-ok:() {
   echo
 }
 
+not-ok() { ui.closer.not-ok "$@"; }
+not-ok:() { ui.closer.not-ok: "$@"; }
+
 ui.closer.kind-of-ok() {
   .output.cursor-left-by 1000
   printf " ${bakylw}${bldwht} ❖ ${clr} "
@@ -642,6 +645,11 @@ abort() {
 
 err() {
   printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
+}
+
+ask() {
+  printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}"
+  printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
 }
 
 inf() {

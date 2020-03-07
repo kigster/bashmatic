@@ -26,11 +26,14 @@
 			* [Output Components](#output-components)
 			* [Output Helpers](#output-helpers)
 		* [3. Package management: Brew and RubyGems](#3-package-management-brew-and-rubygems)
-		* [4. Shortening URLs](#4-shortening-urls)
+		* [4. Shortening URLs and Github Access](#4-shortening-urls-and-github-access)
+			* [Github Access](#github-access)
 		* [5. File Helpers](#5-file-helpers)
 		* [6. Array Helpers](#6-array-helpers)
 		* [7. Utilities](#7-utilities)
-		* [8. Additional Helpers](#8-additional-helpers)
+		* [8. Ruby and Ruby Gems](#8-ruby-and-ruby-gems)
+			* [Gem Helpers](#gem-helpers)
+		* [9. Additional Helpers](#9-additional-helpers)
 * [How To ... Guide.](#how-to--guide)
 	* [How to integrate Bashmatic with an existing project?](#how-to-integrate-bashmatic-with-an-existing-project)
 	* [How can I test if the function was ran as part of a script, or "sourced-in"?](#how-can-i-test-if-the-function-was-ran-as-part-of-a-script-or-sourced-in)
@@ -198,17 +201,19 @@ These collectively offer the following functions:
 ```bash
 ❯ bashmatic.functions-from 'run*'
 
-run                                         run.set-all
-run.config.detail-is-enabled                run.set-all.list
-run.config.verbose-is-enabled               run.set-next
-run.inspect                                 run.set-next.list
-run.inspect-variable                        run.ui.ask
-run.inspect-variables                       run.ui.press-any-key
-run.inspect-variables-that-are              run.variables-ending-with
-run.inspect.set-skip-false-or-blank         run.variables-starting-with
-run.on-error.ask-is-enabled                 run.with.minimum-duration
-run.print-variable                          run.with.ruby-bundle
-run.print-variables                         run.with.ruby-bundle-and-output
+run                                            run.set-next
+run.config.detail-is-enabled                   run.set-next.list
+run.config.verbose-is-enabled                  run.ui.ask
+run.inspect                                    run.ui.ask-user-value
+run.inspect-variable                           run.ui.get-user-value
+run.inspect-variables                          run.ui.press-any-key
+run.inspect-variables-that-are                 run.ui.retry-command
+run.inspect.set-skip-false-or-blank            run.variables-ending-with
+run.on-error.ask-is-enabled                    run.variables-starting-with
+run.print-variable                             run.with.minimum-duration
+run.print-variables                            run.with.ruby-bundle
+run.set-all                                    run.with.ruby-bundle-and-output
+run.set-all.list
 ```
 
 Using these functions you can write powerful shell scripts that display each command they run, it's status, duration, and can abort on various conditions. You can ask the user to confirm, and you can show a user message and wait for any key pressed to continue.
@@ -385,7 +390,7 @@ When you run the above script, you shyould seee the following output:
 
 ![example](.bashmatic-example.png)
 
-#### 4. Shortening URLs
+#### 4. Shortening URLs and Github Access
 
 You can shorten URLs on the command line using Bitly, but for this to work, you must set the following environment variables in your shell init:
 
@@ -401,16 +406,45 @@ Then you can run it like so:
 # http://bit.ly/2IIPNE1
 ```
 
+##### Github Access
+
+There are a couple of Github-specific helpers:
+
+```bash
+github.clone                                   github.setup
+github.org                                     github.validate
+```
+
+For instance:
+
+```bash
+❯ github.clone sym
+  ✘    Validating Github Configuration...
+
+       Please enter the name of your Github Organization:
+       ❯ kigster
+
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│ Your github organization was saved in your ~/.gitconfig file.                            │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│ To change it in the future, run: github.org new-organization                             │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+
+  ✔︎    ❯ git clone git@github.com:kigster/sym ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔    931 ms 〕    0
+```
+
+
 #### 5. File Helpers
 
 ```bash
 ❯ bashmatic.functions-from file
-file.list.filter-existing                  file.exists_and_newer_than
-file.list.filter-non-empty                 file.gsub
-file.size                                   file.install_with_backup
-file.size.mb                               file.last-modified-date
-file.source-if-exists                       file.last-modified-year
-file.stat
+
+file.exists_and_newer_than                    file.list.filter-non-empty
+file.gsub                                     file.size
+file.install_with_backup                      file.size.mb
+file.last-modified-date                       file.source-if-exists
+file.last-modified-year                       file.stat
+file.list.filter-existing
 ```
 
 For instance, `file.stat` offers access to the `fstat()` C-function:
@@ -424,11 +458,12 @@ For instance, `file.stat` offers access to the `fstat()` C-function:
 
 ```bash
 ❯ bashmatic.functions-from array
-array-bullet-list                            array.contains-element
-array-contains-element                       array.exit-unless-includes
-array-csv                                    array.from-command-output
-array-join                                   array.join
-array-piped                                  array.piped
+
+array-bullet-list                             array.contains-element
+array-contains-element                        array.exit-unless-includes
+array-csv                                     array.from-command-output
+array-join                                    array.join
+array-piped                                   array.piped
 array.complain-unless-includes
 ```
 
@@ -453,18 +488,18 @@ The utilities module has the following functions:
 
 ```bash
 ❯ bashmatic.functions-from util
-is-func                                      util.is-variable-defined
-util.append-to-init-files              util.lines-in-folder
-util.arch                              util.remove-from-init-files
-util.call-if-function                  util.shell-init-files
-util.checksum.files                   util.shell-name
-util.checksum.stdin                   util.ver-to-i
-util.functions-matching                util.whats-installed
-util.generate-password                 long-pause
-util.i-to-ver                          pause
-util.install-direnv                    short-pause
-util.is-a-function                     shortish-pause
-util.is-numeric                        watch-ls-al
+
+long-pause                                    util.install-direnv
+pause                                         util.is-a-function
+short-pause                                   util.is-numeric
+shortish-pause                                util.is-variable-defined
+util.append-to-init-files                     util.lines-in-folder
+util.arch                                     util.remove-from-init-files
+util.call-if-function                         util.shell-init-files
+util.checksum.files                           util.shell-name
+util.checksum.stdin                           util.ver-to-i
+util.functions-matching                       util.whats-installed
+util.generate-password                        watch-ls-al
 ```
 
 For example, version helpers can be very handy in automated version detection, sorting and identifying the latest or the oldest versions:
@@ -477,7 +512,88 @@ For example, version helpers can be very handy in automated version detection, s
 
 ```
 
-#### 8. Additional Helpers
+#### 8. Ruby and Ruby Gems
+
+Ruby helpers abound:
+
+```bash
+❯ bashmatic.functions-from ruby
+
+bundle.gems-with-c-extensions                 ruby.install-ruby-with-deps
+interrupted                                   ruby.install-upgrade-bundler
+ruby.bundler-version                          ruby.installed-gems
+ruby.compiled-with                            ruby.kigs-gems
+ruby.default-gems                             ruby.linked-libs
+ruby.full-version                             ruby.numeric-version
+ruby.gemfile-lock-version                     ruby.rbenv
+ruby.gems                                     ruby.rubygems-update
+ruby.gems.install                             ruby.stop
+ruby.gems.uninstall                           ruby.top-versions
+ruby.init                                     ruby.top-versions-as-yaml
+ruby.install                                  ruby.validate-version
+ruby.install-ruby
+```
+
+From the obvious `ruby.install-ruby <version>` to incredibly useful `ruby.top-versions <platform>` — which, using rbenv and ruby_build plugin, returns the most recent minor version of each major version upgrade, as well as the YAML version that allows you to pipe the output into your `.travis.yml` to test against each major version of Ruby, locked to the very latest update in each.
+
+```bash
+❯ ruby.top-versions
+2.0.0-p648
+2.1.10
+2.2.10
+2.3.8
+2.4.9
+2.5.7
+2.6.5
+2.7.0
+2.8.0-dev
+
+❯ ruby.top-versions jruby
+jruby-1.5.6
+jruby-1.6.8
+jruby-1.7.27
+jruby-9.0.5.0
+jruby-9.1.17.0
+jruby-9.2.10.0
+
+❯ ruby.top-versions mruby
+mruby-dev
+mruby-1.0.0
+mruby-1.1.0
+mruby-1.2.0
+mruby-1.3.0
+mruby-1.4.1
+mruby-2.0.1
+mruby-2.1.0
+```
+
+##### Gem Helpers
+
+These are fun helpers to assist in scripting gem management.
+
+```bash
+❯ bashmatic.functions-from gem
+
+g-i                                           gem.gemfile.version
+g-u                                           gem.global.latest-version
+gem.cache-installed                           gem.global.versions
+gem.cache-refresh                             gem.install
+gem.clear-cache                               gem.is-installed
+gem.configure-cache                           gem.uninstall
+gem.ensure-gem-version                        gem.version
+```
+
+For instance
+
+```bash
+❯ g-i awesome_print
+  ✔︎    gem awesome_print (1.8.0) is already installed
+❯ gem.version awesome_print
+1.8.0
+```
+
+
+#### 9. Additional Helpers
 
 There are plenty more modules, that help with:
 
