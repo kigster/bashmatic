@@ -1,4 +1,4 @@
-## BashMatic Functions Index
+# BashMatic Functions Index & Implementations
 
   * [`abort`](#abort)
   * [`ansi`](#ansi)
@@ -423,11 +423,11 @@
   * [`æ-wav2mp3`](#æ-wav2mp3)
   * [`æ-wavfreq`](#æ-wavfreq)
 
-## Function Definitions
+## BashMatic Functions Implementations
 
 ### `abort`
 
-```
+```bash
 abort ()
 {
     printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2;
@@ -435,27 +435,30 @@ abort ()
 }
 
 ```
+
 ### `ansi`
 
-```
+```bash
 ansi ()
 {
     echo -e "\e[${1}m${*:2}\e[0m"
 }
 
 ```
+
 ### `array-bullet-list`
 
-```
+```bash
 array-bullet-list ()
 {
     lib::array::join ' • ' true "$@"
 }
 
 ```
+
 ### `array-contains-element`
 
-```
+```bash
 array-contains-element ()
 {
     local search="$1";
@@ -476,45 +479,50 @@ array-contains-element ()
 }
 
 ```
+
 ### `array-csv`
 
-```
+```bash
 array-csv ()
 {
     lib::array::join ', ' false "$@"
 }
 
 ```
+
 ### `array-join`
 
-```
+```bash
 array-join ()
 {
     lib::array::join "$@"
 }
 
 ```
+
 ### `array-piped`
 
-```
+```bash
 array-piped ()
 {
     lib::array::piped "$@"
 }
 
 ```
+
 ### `ascii-clean`
 
-```
+```bash
 ascii-clean ()
 {
     __lib::output::clean "$@"
 }
 
 ```
+
 ### `aws.ec2`
 
-```
+```bash
 aws.ec2 ()
 {
     local cmd="$1";
@@ -532,9 +540,10 @@ aws.ec2 ()
 }
 
 ```
+
 ### `aws.rds.hostname`
 
-```
+```bash
 aws.rds.hostname ()
 {
     local name=${1};
@@ -545,9 +554,10 @@ aws.rds.hostname ()
 }
 
 ```
+
 ### `aws.s3.upload`
 
-```
+```bash
 aws.s3.upload ()
 {
     local pathname="$1";
@@ -591,27 +601,30 @@ aws.s3.upload ()
 }
 
 ```
+
 ### `bashmatic-set-fqdn`
 
-```
+```bash
 bashmatic-set-fqdn ()
 {
     lib::osx::set-fqdn "$@"
 }
 
 ```
+
 ### `bashmatic-term`
 
-```
+```bash
 bashmatic-term ()
 {
     open $(bashmatic-term-program)
 }
 
 ```
+
 ### `bashmatic-term-program`
 
-```
+```bash
 bashmatic-term-program ()
 {
     if [[ -d /Applications/iTerm.app ]]; then
@@ -626,9 +639,10 @@ bashmatic-term-program ()
 }
 
 ```
+
 ### `bashmatic.auto-update`
 
-```
+```bash
 bashmatic.auto-update ()
 {
     [[ ${Bashmatic__Test} -eq 1 ]] && return 0;
@@ -641,18 +655,20 @@ bashmatic.auto-update ()
 }
 
 ```
+
 ### `bashmatic.functions`
 
-```
+```bash
 bashmatic.functions ()
 {
     bashmatic.functions-from '*.sh' "$@"
 }
 
 ```
+
 ### `bashmatic.functions-from`
 
-```
+```bash
 bashmatic.functions-from ()
 {
     local pattern="${1}";
@@ -668,27 +684,30 @@ bashmatic.functions-from ()
 }
 
 ```
+
 ### `bashmatic.functions.output`
 
-```
+```bash
 bashmatic.functions.output ()
 {
     bashmatic.functions-from 'output.sh' "$@"
 }
 
 ```
+
 ### `bashmatic.functions.runtime`
 
-```
+```bash
 bashmatic.functions.runtime ()
 {
     bashmatic.functions-from 'run*.sh' "$@"
 }
 
 ```
+
 ### `bashmatic.load-at-login`
 
-```
+```bash
 bashmatic.load-at-login ()
 {
     local init_file="${1}";
@@ -712,27 +731,30 @@ bashmatic.load-at-login ()
 }
 
 ```
+
 ### `bashmatic.reload`
 
-```
+```bash
 bashmatic.reload ()
 {
     source "${BashMatic__Init}"
 }
 
 ```
+
 ### `bashmatic.version`
 
-```
+```bash
 bashmatic.version ()
 {
     cat $(dirname "${BashMatic__Init}")/.version
 }
 
 ```
+
 ### `bashmatic::detect-subshell`
 
-```
+```bash
 bashmatic::detect-subshell ()
 {
     bashmatic::subshell-init;
@@ -755,18 +777,20 @@ bashmatic::detect-subshell ()
 }
 
 ```
+
 ### `bashmatic::subshell-init`
 
-```
+```bash
 bashmatic::subshell-init ()
 {
     export BASH_SUBSHELL_DETECTED=
 }
 
 ```
+
 ### `bashmatic::validate-sourced-in`
 
-```
+```bash
 bashmatic::validate-sourced-in ()
 {
     bashmatic::detect-subshell;
@@ -778,9 +802,10 @@ bashmatic::validate-sourced-in ()
 }
 
 ```
+
 ### `bashmatic::validate-subshell`
 
-```
+```bash
 bashmatic::validate-subshell ()
 {
     bashmatic::detect-subshell;
@@ -792,153 +817,170 @@ bashmatic::validate-subshell ()
 }
 
 ```
+
 ### `bold`
 
-```
+```bash
 bold ()
 {
     ansi 1 "$@"
 }
 
 ```
+
 ### `box::blue-in-green`
 
-```
+```bash
 box::blue-in-green ()
 {
     __lib::output::box "${bldblu}" "${bldgrn}" "$@"
 }
 
 ```
+
 ### `box::blue-in-yellow`
 
-```
+```bash
 box::blue-in-yellow ()
 {
     __lib::output::box "${bldylw}" "${bldblu}" "$@"
 }
 
 ```
+
 ### `box::green-in-cyan`
 
-```
+```bash
 box::green-in-cyan ()
 {
     __lib::output::box "${bldgrn}" "${bldcyn}" "$@"
 }
 
 ```
+
 ### `box::green-in-green`
 
-```
+```bash
 box::green-in-green ()
 {
     __lib::output::box "${bldgrn}" "${bldgrn}" "$@"
 }
 
 ```
+
 ### `box::green-in-magenta`
 
-```
+```bash
 box::green-in-magenta ()
 {
     __lib::output::box "${bldgrn}" "${bldpur}" "$@"
 }
 
 ```
+
 ### `box::green-in-yellow`
 
-```
+```bash
 box::green-in-yellow ()
 {
     __lib::output::box "${bldgrn}" "${bldylw}" "$@"
 }
 
 ```
+
 ### `box::magenta-in-blue`
 
-```
+```bash
 box::magenta-in-blue ()
 {
     __lib::output::box "${bldblu}" "${bldpur}" "$@"
 }
 
 ```
+
 ### `box::magenta-in-green`
 
-```
+```bash
 box::magenta-in-green ()
 {
     __lib::output::box "${bldpur}" "${bldgrn}" "$@"
 }
 
 ```
+
 ### `box::red-in-magenta`
 
-```
+```bash
 box::red-in-magenta ()
 {
     __lib::output::box "${bldred}" "${bldpur}" "$@"
 }
 
 ```
+
 ### `box::red-in-red`
 
-```
+```bash
 box::red-in-red ()
 {
     __lib::output::box "${bldred}" "${txtred}" "$@"
 }
 
 ```
+
 ### `box::red-in-yellow`
 
-```
+```bash
 box::red-in-yellow ()
 {
     __lib::output::box "${bldred}" "${bldylw}" "$@"
 }
 
 ```
+
 ### `box::yellow-in-blue`
 
-```
+```bash
 box::yellow-in-blue ()
 {
     __lib::output::box "${bldylw}" "${bldblu}" "$@"
 }
 
 ```
+
 ### `box::yellow-in-red`
 
-```
+```bash
 box::yellow-in-red ()
 {
     __lib::output::box "${bldred}" "${bldylw}" "$@"
 }
 
 ```
+
 ### `box::yellow-in-yellow`
 
-```
+```bash
 box::yellow-in-yellow ()
 {
     __lib::output::box "${bldylw}" "${txtylw}" "$@"
 }
 
 ```
+
 ### `br`
 
-```
+```bash
 br ()
 {
     echo
 }
 
 ```
+
 ### `bundle.gems-with-c-extensions`
 
-```
+```bash
 bundle.gems-with-c-extensions ()
 {
     run::set-next show-output-on;
@@ -946,18 +988,20 @@ bundle.gems-with-c-extensions ()
 }
 
 ```
+
 ### `center`
 
-```
+```bash
 center ()
 {
     __lib::output::center "$@"
 }
 
 ```
+
 ### `change-underscan`
 
-```
+```bash
 change-underscan ()
 {
     set +e;
@@ -1027,9 +1071,10 @@ change-underscan ()
 }
 
 ```
+
 ### `columnize`
 
-```
+```bash
 columnize ()
 {
     local columns="${1:-2}";
@@ -1039,9 +1084,10 @@ columnize ()
 }
 
 ```
+
 ### `command-spacer`
 
-```
+```bash
 command-spacer ()
 {
     [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return;
@@ -1052,54 +1098,60 @@ command-spacer ()
 }
 
 ```
+
 ### `cookie-dump`
 
-```
+```bash
 cookie-dump ()
 {
     lib::osx::cookie-dump "$@"
 }
 
 ```
+
 ### `cursor.at.x`
 
-```
+```bash
 cursor.at.x ()
 {
     __lib::output::cursor-move-to-x "$@"
 }
 
 ```
+
 ### `cursor.at.y`
 
-```
+```bash
 cursor.at.y ()
 {
     __lib::output::cursor-move-to-y "$@"
 }
 
 ```
+
 ### `cursor.down`
 
-```
+```bash
 cursor.down ()
 {
     __lib::output::cursor-down-by "$@"
 }
 
 ```
+
 ### `cursor.left`
 
-```
+```bash
 cursor.left ()
 {
     __lib::output::cursor-left-by "$@"
 }
 
 ```
+
 ### `cursor.rewind`
 
-```
+```bash
 cursor.rewind ()
 {
     local x=${1:-0};
@@ -1107,27 +1159,30 @@ cursor.rewind ()
 }
 
 ```
+
 ### `cursor.right`
 
-```
+```bash
 cursor.right ()
 {
     __lib::output::cursor-right-by "$@"
 }
 
 ```
+
 ### `cursor.up`
 
-```
+```bash
 cursor.up ()
 {
     __lib::output::cursor-up-by "$@"
 }
 
 ```
+
 ### `debug`
 
-```
+```bash
 debug ()
 {
     [[ -z ${DEBUG} ]] && return;
@@ -1135,9 +1190,10 @@ debug ()
 }
 
 ```
+
 ### `decrypt.secrets`
 
-```
+```bash
 decrypt.secrets ()
 {
     ./bin/decrypt;
@@ -1150,9 +1206,10 @@ decrypt.secrets ()
 }
 
 ```
+
 ### `duration`
 
-```
+```bash
 duration ()
 {
     local millis="$1";
@@ -1171,27 +1228,30 @@ duration ()
 }
 
 ```
+
 ### `epoch`
 
-```
+```bash
 epoch ()
 {
     date +%s
 }
 
 ```
+
 ### `err`
 
-```
+```bash
 err ()
 {
     printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" 1>&2
 }
 
 ```
+
 ### `error`
 
-```
+```bash
 error ()
 {
     header=$(printf -- "${txtblk}${bakred} « ERROR » ${clr}");
@@ -1199,18 +1259,20 @@ error ()
 }
 
 ```
+
 ### `error-text`
 
-```
+```bash
 error-text ()
 {
     printf "${txtred}"
 }
 
 ```
+
 ### `error:`
 
-```
+```bash
 error: ()
 {
     err $*;
@@ -1218,9 +1280,10 @@ error: ()
 }
 
 ```
+
 ### `file::list::filter-existing`
 
-```
+```bash
 file::list::filter-existing ()
 {
     for file in $@;
@@ -1230,9 +1293,10 @@ file::list::filter-existing ()
 }
 
 ```
+
 ### `file::list::filter-non-empty`
 
-```
+```bash
 file::list::filter-non-empty ()
 {
     for file in $@;
@@ -1242,9 +1306,10 @@ file::list::filter-non-empty ()
 }
 
 ```
+
 ### `file::size`
 
-```
+```bash
 file::size ()
 {
     AppCurrentOS=${AppCurrentOS:-$(uname -s)};
@@ -1256,9 +1321,10 @@ file::size ()
 }
 
 ```
+
 ### `file::size::mb`
 
-```
+```bash
 file::size::mb ()
 {
     local file="$1";
@@ -1269,9 +1335,10 @@ file::size::mb ()
 }
 
 ```
+
 ### `file::source-if-exists`
 
-```
+```bash
 file::source-if-exists ()
 {
     local file;
@@ -1282,9 +1349,10 @@ file::source-if-exists ()
 }
 
 ```
+
 ### `file::stat`
 
-```
+```bash
 file::stat ()
 {
     local file="$1";
@@ -1304,9 +1372,10 @@ file::stat ()
 }
 
 ```
+
 ### `ftrace-in`
 
-```
+```bash
 ftrace-in ()
 {
     local func=$1;
@@ -1318,27 +1387,30 @@ ftrace-in ()
 }
 
 ```
+
 ### `ftrace-off`
 
-```
+```bash
 ftrace-off ()
 {
     unset TraceON
 }
 
 ```
+
 ### `ftrace-on`
 
-```
+```bash
 ftrace-on ()
 {
     export TraceON=true
 }
 
 ```
+
 ### `ftrace-out`
 
-```
+```bash
 ftrace-out ()
 {
     local func=$1;
@@ -1354,189 +1426,210 @@ ftrace-out ()
 }
 
 ```
+
 ### `g-i`
 
-```
+```bash
 g-i ()
 {
     lib::gem::install "$@"
 }
 
 ```
+
 ### `g-u`
 
-```
+```bash
 g-u ()
 {
     lib::gem::uninstall "$@"
 }
 
 ```
+
 ### `gem.clear-cache`
 
-```
+```bash
 gem.clear-cache ()
 {
     rm -f ${LibGem__GemListCache}
 }
 
 ```
+
 ### `gvim.off`
 
-```
+```bash
 gvim.off ()
 {
     lib::vim::gvim-off
 }
 
 ```
+
 ### `gvim.on`
 
-```
+```bash
 gvim.on ()
 {
     lib::vim::gvim-on
 }
 
 ```
+
 ### `h1`
 
-```
+```bash
 h1 ()
 {
     box::blue-in-yellow "$@"
 }
 
 ```
+
 ### `h1::blue`
 
-```
+```bash
 h1::blue ()
 {
     box::magenta-in-blue "$@"
 }
 
 ```
+
 ### `h1::green`
 
-```
+```bash
 h1::green ()
 {
     box::green-in-magenta "$@"
 }
 
 ```
+
 ### `h1::purple`
 
-```
+```bash
 h1::purple ()
 {
     box::magenta-in-green "$@"
 }
 
 ```
+
 ### `h1::red`
 
-```
+```bash
 h1::red ()
 {
     box::red-in-red "$@"
 }
 
 ```
+
 ### `h1::yellow`
 
-```
+```bash
 h1::yellow ()
 {
     box::yellow-in-red "$@"
 }
 
 ```
+
 ### `h2`
 
-```
+```bash
 h2 ()
 {
     box::blue-in-green "$@"
 }
 
 ```
+
 ### `h2::green`
 
-```
+```bash
 h2::green ()
 {
     box::green-in-cyan "$@"
 }
 
 ```
+
 ### `h3`
 
-```
+```bash
 h3 ()
 {
     hl::subtle "$@"
 }
 
 ```
+
 ### `h::black`
 
-```
+```bash
 h::black ()
 {
     center "${bldylw}${bakblk}" "$@"
 }
 
 ```
+
 ### `h::blue`
 
-```
+```bash
 h::blue ()
 {
     center "${txtblk}${bakblu}" "$@"
 }
 
 ```
+
 ### `h::green`
 
-```
+```bash
 h::green ()
 {
     center "${txtblk}${bakgrn}" "$@"
 }
 
 ```
+
 ### `h::red`
 
-```
+```bash
 h::red ()
 {
     center "${txtblk}${bakred}" "$@"
 }
 
 ```
+
 ### `h::yellow`
 
-```
+```bash
 h::yellow ()
 {
     center "${txtblk}${bakylw}" "$@"
 }
 
 ```
+
 ### `hb::crypt::chef`
 
-```
+```bash
 hb::crypt::chef ()
 {
     sym -ck APP_CHEF_SYM_KEY $*
 }
 
 ```
+
 ### `hb::decrypt::file`
 
-```
+```bash
 hb::decrypt::file ()
 {
     [[ -f ${1} ]] || {
@@ -1547,9 +1640,10 @@ hb::decrypt::file ()
 }
 
 ```
+
 ### `hb::decrypt::str`
 
-```
+```bash
 hb::decrypt::str ()
 {
     [[ -z ${1} ]] && {
@@ -1560,9 +1654,10 @@ hb::decrypt::str ()
 }
 
 ```
+
 ### `hb::edit::file`
 
-```
+```bash
 hb::edit::file ()
 {
     [[ -f ${1} ]] || {
@@ -1573,9 +1668,10 @@ hb::edit::file ()
 }
 
 ```
+
 ### `hb::encrypt::file`
 
-```
+```bash
 hb::encrypt::file ()
 {
     [[ -f ${1} ]] || {
@@ -1586,9 +1682,10 @@ hb::encrypt::file ()
 }
 
 ```
+
 ### `hb::encrypt::str`
 
-```
+```bash
 hb::encrypt::str ()
 {
     [[ -z "${1}" ]] && {
@@ -1599,18 +1696,20 @@ hb::encrypt::str ()
 }
 
 ```
+
 ### `hb::sym`
 
-```
+```bash
 hb::sym ()
 {
     sym -cqk APP_SYM_KEY $*
 }
 
 ```
+
 ### `hbsed`
 
-```
+```bash
 hbsed ()
 {
     local current=$(which sed);
@@ -1632,99 +1731,110 @@ hbsed ()
 }
 
 ```
+
 ### `hdr`
 
-```
+```bash
 hdr ()
 {
     h1 "$@"
 }
 
 ```
+
 ### `hl::blue`
 
-```
+```bash
 hl::blue ()
 {
     left "${bldwht}${bakpur}" "$@"
 }
 
 ```
+
 ### `hl::desc`
 
-```
+```bash
 hl::desc ()
 {
     left "${bakylw}${txtblk}${bakylw}" "$@"
 }
 
 ```
+
 ### `hl::green`
 
-```
+```bash
 hl::green ()
 {
     left "${txtblk}${bakgrn}" "$@"
 }
 
 ```
+
 ### `hl::orange`
 
-```
+```bash
 hl::orange ()
 {
     left "${white_on_orange}" "$@"
 }
 
 ```
+
 ### `hl::subtle`
 
-```
+```bash
 hl::subtle ()
 {
     left "${bldwht}${bakblk}${underlined}" "$@"
 }
 
 ```
+
 ### `hl::white-on-orange`
 
-```
+```bash
 hl::white-on-orange ()
 {
     left "${white_on_orange}" "$@"
 }
 
 ```
+
 ### `hl::white-on-salmon`
 
-```
+```bash
 hl::white-on-salmon ()
 {
     left "${white_on_salmon}" "$@"
 }
 
 ```
+
 ### `hl::yellow`
 
-```
+```bash
 hl::yellow ()
 {
     left "${bakylw}${txtblk}" "$@"
 }
 
 ```
+
 ### `hl::yellow-on-gray`
 
-```
+```bash
 hl::yellow-on-gray ()
 {
     left "${yellow_on_gray}" "$@s"
 }
 
 ```
+
 ### `hr`
 
-```
+```bash
 hr ()
 {
     [[ -z "$*" ]] || printf $*;
@@ -1732,9 +1842,10 @@ hr ()
 }
 
 ```
+
 ### `hr::colored`
 
-```
+```bash
 hr::colored ()
 {
     local color="$*";
@@ -1743,18 +1854,20 @@ hr::colored ()
 }
 
 ```
+
 ### `inf`
 
-```
+```bash
 inf ()
 {
     printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
 }
 
 ```
+
 ### `info`
 
-```
+```bash
 info ()
 {
     inf $@;
@@ -1762,9 +1875,10 @@ info ()
 }
 
 ```
+
 ### `info:`
 
-```
+```bash
 info: ()
 {
     inf $*;
@@ -1772,63 +1886,70 @@ info: ()
 }
 
 ```
+
 ### `interrupted`
 
-```
+```bash
 interrupted ()
 {
     export BashMatic__Interrupted=true
 }
 
 ```
+
 ### `is-func`
 
-```
+```bash
 is-func ()
 {
     lib::util::is-a-function "$@"
 }
 
 ```
+
 ### `is_ask_on_error`
 
-```
+```bash
 is_ask_on_error ()
 {
     [[ ${LibRun__AskOnError} -eq ${True} ]]
 }
 
 ```
+
 ### `is_detail`
 
-```
+```bash
 is_detail ()
 {
     [[ ${LibRun__Detail} -eq ${True} ]]
 }
 
 ```
+
 ### `is_verbose`
 
-```
+```bash
 is_verbose ()
 {
     [[ ${LibRun__Verbose} -eq ${True} ]]
 }
 
 ```
+
 ### `italic`
 
-```
+```bash
 italic ()
 {
     ansi 3 "$@"
 }
 
 ```
+
 ### `jm::check`
 
-```
+```bash
 jm::check ()
 {
     local JM_Quiet=false;
@@ -1880,9 +2001,10 @@ jm::check ()
 }
 
 ```
+
 ### `jm::jemalloc::detect-loud`
 
-```
+```bash
 jm::jemalloc::detect-loud ()
 {
     jm::jemalloc::detect-quiet;
@@ -1899,9 +2021,10 @@ jm::jemalloc::detect-loud ()
 }
 
 ```
+
 ### `jm::jemalloc::detect-quiet`
 
-```
+```bash
 jm::jemalloc::detect-quiet ()
 {
     MALLOC_CONF=stats_print:true ruby -e "exit" 2>&1 | grep -q "jemalloc statistics";
@@ -1909,9 +2032,10 @@ jm::jemalloc::detect-quiet ()
 }
 
 ```
+
 ### `jm::jemalloc::stats`
 
-```
+```bash
 jm::jemalloc::stats ()
 {
     jm::jemalloc::detect-quiet || {
@@ -1922,9 +2046,10 @@ jm::jemalloc::stats ()
 }
 
 ```
+
 ### `jm::ruby::detect`
 
-```
+```bash
 jm::ruby::detect ()
 {
     local ruby_loc;
@@ -1938,18 +2063,20 @@ jm::ruby::detect ()
 }
 
 ```
+
 ### `jm::ruby::report`
 
-```
+```bash
 jm::ruby::report ()
 {
     printf "Ruby version being tested:\n  →  ${ColorBlue}$(which ruby) ${ColorYellow}$(jm::ruby::detect)${ColorReset}\n"
 }
 
 ```
+
 ### `jm::usage`
 
-```
+```bash
 jm::usage ()
 {
     printf "
@@ -1973,9 +2100,10 @@ ${ColorBlue}OPTIONS${ColorReset}
 }
 
 ```
+
 ### `kind_of_ok`
 
-```
+```bash
 kind_of_ok ()
 {
     __lib::output::cursor-left-by 1000;
@@ -1983,9 +2111,10 @@ kind_of_ok ()
 }
 
 ```
+
 ### `kind_of_ok:`
 
-```
+```bash
 kind_of_ok: ()
 {
     kind_of_ok $@;
@@ -1993,18 +2122,20 @@ kind_of_ok: ()
 }
 
 ```
+
 ### `left`
 
-```
+```bash
 left ()
 {
     __lib::output::left-justify "$@"
 }
 
 ```
+
 ### `left-prefix`
 
-```
+```bash
 left-prefix ()
 {
     [[ -z ${LibOutput__LeftPrefix} ]] && {
@@ -2014,9 +2145,10 @@ left-prefix ()
 }
 
 ```
+
 ### `lib::7z::install`
 
-```
+```bash
 lib::7z::install ()
 {
     [[ -n $(which 7z) ]] || run "brew install p7zip";
@@ -2028,9 +2160,10 @@ lib::7z::install ()
 }
 
 ```
+
 ### `lib::7z::unzip`
 
-```
+```bash
 lib::7z::unzip ()
 {
     lib::7z::install;
@@ -2042,9 +2175,10 @@ lib::7z::unzip ()
 }
 
 ```
+
 ### `lib::7z::zip`
 
-```
+```bash
 lib::7z::zip ()
 {
     lib::7z::install;
@@ -2056,9 +2190,10 @@ lib::7z::zip ()
 }
 
 ```
+
 ### `lib::array::complain-unless-includes`
 
-```
+```bash
 lib::array::complain-unless-includes ()
 {
     lib::array::contains-element "$@" || {
@@ -2086,9 +2221,10 @@ lib::array::complain-unless-includes ()
 }
 
 ```
+
 ### `lib::array::contains-element`
 
-```
+```bash
 lib::array::contains-element ()
 {
     local search="$1";
@@ -2104,18 +2240,20 @@ lib::array::contains-element ()
 }
 
 ```
+
 ### `lib::array::exit-unless-includes`
 
-```
+```bash
 lib::array::exit-unless-includes ()
 {
     lib::array::complain-unless-includes "$@" || exit 1
 }
 
 ```
+
 ### `lib::array::from-command-output`
 
-```
+```bash
 lib::array::from-command-output ()
 {
     local array_name=$1;
@@ -2125,9 +2263,10 @@ lib::array::from-command-output ()
 }
 
 ```
+
 ### `lib::array::join`
 
-```
+```bash
 lib::array::join ()
 {
     local sep="$1";
@@ -2155,18 +2294,20 @@ lib::array::join ()
 }
 
 ```
+
 ### `lib::array::piped`
 
-```
+```bash
 lib::array::piped ()
 {
     lib::array::join ' | ' false "$@"
 }
 
 ```
+
 ### `lib::audio::wav-to-mp3`
 
-```
+```bash
 lib::audio::wav-to-mp3 ()
 {
     local file="$1";
@@ -2188,9 +2329,10 @@ lib::audio::wav-to-mp3 ()
 }
 
 ```
+
 ### `lib::audio::wave-file-frequency`
 
-```
+```bash
 lib::audio::wave-file-frequency ()
 {
     local file="$1";
@@ -2201,18 +2343,20 @@ lib::audio::wave-file-frequency ()
 }
 
 ```
+
 ### `lib::brew::cache-reset`
 
-```
+```bash
 lib::brew::cache-reset ()
 {
     rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}
 }
 
 ```
+
 ### `lib::brew::cache-reset::delayed`
 
-```
+```bash
 lib::brew::cache-reset::delayed ()
 {
     (( ${BASH_IN_SUBSHELL} )) || lib::brew::cache-reset;
@@ -2220,9 +2364,10 @@ lib::brew::cache-reset::delayed ()
 }
 
 ```
+
 ### `lib::brew::cask::is-installed`
 
-```
+```bash
 lib::brew::cask::is-installed ()
 {
     local cask="${1}";
@@ -2231,27 +2376,30 @@ lib::brew::cask::is-installed ()
 }
 
 ```
+
 ### `lib::brew::cask::list`
 
-```
+```bash
 lib::brew::cask::list ()
 {
     lib::cache-or-command "${LibBrew__CaskCacheList}" 30 "brew cask ls -1"
 }
 
 ```
+
 ### `lib::brew::cask::tap`
 
-```
+```bash
 lib::brew::cask::tap ()
 {
     run "brew tap homebrew/cask-cask"
 }
 
 ```
+
 ### `lib::brew::install`
 
-```
+```bash
 lib::brew::install ()
 {
     declare -a brew_packages=$@;
@@ -2266,9 +2414,10 @@ lib::brew::install ()
 }
 
 ```
+
 ### `lib::brew::install::cask`
 
-```
+```bash
 lib::brew::install::cask ()
 {
     local cask=$1;
@@ -2292,9 +2441,10 @@ lib::brew::install::cask ()
 }
 
 ```
+
 ### `lib::brew::install::package`
 
-```
+```bash
 lib::brew::install::package ()
 {
     local package=$1;
@@ -2317,9 +2467,10 @@ lib::brew::install::package ()
 }
 
 ```
+
 ### `lib::brew::install::packages`
 
-```
+```bash
 lib::brew::install::packages ()
 {
     local force=;
@@ -2331,9 +2482,10 @@ lib::brew::install::packages ()
 }
 
 ```
+
 ### `lib::brew::package::is-installed`
 
-```
+```bash
 lib::brew::package::is-installed ()
 {
     local package="${1}";
@@ -2342,18 +2494,20 @@ lib::brew::package::is-installed ()
 }
 
 ```
+
 ### `lib::brew::package::list`
 
-```
+```bash
 lib::brew::package::list ()
 {
     lib::cache-or-command "${LibBrew__PackageCacheList}" 30 "brew ls -1"
 }
 
 ```
+
 ### `lib::brew::reinstall::package`
 
-```
+```bash
 lib::brew::reinstall::package ()
 {
     local package="${1}";
@@ -2369,9 +2523,10 @@ lib::brew::reinstall::package ()
 }
 
 ```
+
 ### `lib::brew::reinstall::packages`
 
-```
+```bash
 lib::brew::reinstall::packages ()
 {
     local force=;
@@ -2384,9 +2539,10 @@ lib::brew::reinstall::packages ()
 }
 
 ```
+
 ### `lib::brew::relink`
 
-```
+```bash
 lib::brew::relink ()
 {
     local package=${1};
@@ -2396,18 +2552,20 @@ lib::brew::relink ()
 }
 
 ```
+
 ### `lib::brew::setup`
 
-```
+```bash
 lib::brew::setup ()
 {
     lib::brew::upgrade
 }
 
 ```
+
 ### `lib::brew::uninstall::package`
 
-```
+```bash
 lib::brew::uninstall::package ()
 {
     local package=$1;
@@ -2423,9 +2581,10 @@ lib::brew::uninstall::package ()
 }
 
 ```
+
 ### `lib::brew::uninstall::packages`
 
-```
+```bash
 lib::brew::uninstall::packages ()
 {
     local force=;
@@ -2437,9 +2596,10 @@ lib::brew::uninstall::packages ()
 }
 
 ```
+
 ### `lib::brew::upgrade`
 
-```
+```bash
 lib::brew::upgrade ()
 {
     lib::brew::install;
@@ -2453,9 +2613,10 @@ lib::brew::upgrade ()
 }
 
 ```
+
 ### `lib::cache-or-command`
 
-```
+```bash
 lib::cache-or-command ()
 {
     local file="$1";
@@ -2472,9 +2633,10 @@ lib::cache-or-command ()
 }
 
 ```
+
 ### `lib::caller::stack`
 
-```
+```bash
 lib::caller::stack ()
 {
     local index=${1:-"-1"};
@@ -2487,9 +2649,10 @@ lib::caller::stack ()
 }
 
 ```
+
 ### `lib::color::disable`
 
-```
+```bash
 lib::color::disable ()
 {
     export clr='\e[0m';
@@ -2541,9 +2704,10 @@ lib::color::disable ()
 }
 
 ```
+
 ### `lib::color::enable`
 
-```
+```bash
 lib::color::enable ()
 {
     if [[ -z "${AppColorsLoaded}" ]]; then
@@ -2600,18 +2764,20 @@ lib::color::enable ()
 }
 
 ```
+
 ### `lib::db::datetime`
 
-```
+```bash
 lib::db::datetime ()
 {
     date '+%Y%m%d-%H%M%S'
 }
 
 ```
+
 ### `lib::db::dump`
 
-```
+```bash
 lib::db::dump ()
 {
     local dbname=${1};
@@ -2638,54 +2804,60 @@ lib::db::dump ()
 }
 
 ```
+
 ### `lib::db::num_procs`
 
-```
+```bash
 lib::db::num_procs ()
 {
     ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
 }
 
 ```
+
 ### `lib::db::psql-args`
 
-```
+```bash
 lib::db::psql-args ()
 {
     lib::db::psql::args:: "$@"
 }
 
 ```
+
 ### `lib::db::psql::args::`
 
-```
+```bash
 lib::db::psql::args:: ()
 {
     printf -- "-U ${AppPostgresUsername} -h ${AppPostgresHostname} $*"
 }
 
 ```
+
 ### `lib::db::psql::args::default`
 
-```
+```bash
 lib::db::psql::args::default ()
 {
     printf -- "-U postgres -h localhost $*"
 }
 
 ```
+
 ### `lib::db::psql::args::maint`
 
-```
+```bash
 lib::db::psql::args::maint ()
 {
     printf -- "-U postgres -h localhost --maintenance-db=postgres $*"
 }
 
 ```
+
 ### `lib::db::rails::schema::checksum`
 
-```
+```bash
 lib::db::rails::schema::checksum ()
 {
     if [[ -d db/migrate ]]; then
@@ -2698,9 +2870,10 @@ lib::db::rails::schema::checksum ()
 }
 
 ```
+
 ### `lib::db::rails::schema::file`
 
-```
+```bash
 lib::db::rails::schema::file ()
 {
     if [[ -f "${RAILS_SCHEMA_RB}" && -f "${RAILS_SCHEMA_SQL}" ]]; then
@@ -2721,9 +2894,10 @@ lib::db::rails::schema::file ()
 }
 
 ```
+
 ### `lib::db::restore`
 
-```
+```bash
 lib::db::restore ()
 {
     local dbname="$1";
@@ -2758,9 +2932,10 @@ lib::db::restore ()
 }
 
 ```
+
 ### `lib::db::top`
 
-```
+```bash
 lib::db::top ()
 {
     local dbnames=$@;
@@ -2846,9 +3021,10 @@ lib::db::top ()
 }
 
 ```
+
 ### `lib::db::wait-until-db-online`
 
-```
+```bash
 lib::db::wait-until-db-online ()
 {
     local db=${1};
@@ -2866,9 +3042,10 @@ lib::db::wait-until-db-online ()
 }
 
 ```
+
 ### `lib::deploy::slack`
 
-```
+```bash
 lib::deploy::slack ()
 {
     local original_text="$*";
@@ -2892,27 +3069,30 @@ lib::deploy::slack ()
 }
 
 ```
+
 ### `lib::deploy::slack-ding`
 
-```
+```bash
 lib::deploy::slack-ding ()
 {
     lib::deploy::slack "<!here> $@"
 }
 
 ```
+
 ### `lib::deploy::validate-vpn`
 
-```
+```bash
 lib::deploy::validate-vpn ()
 {
     __lib::deploy::check-vpn "$@" || __lib::deploy::vpn-error "$@"
 }
 
 ```
+
 ### `lib::dir::count-slashes`
 
-```
+```bash
 lib::dir::count-slashes ()
 {
     local dir="${1}";
@@ -2920,9 +3100,10 @@ lib::dir::count-slashes ()
 }
 
 ```
+
 ### `lib::dir::expand-dir`
 
-```
+```bash
 lib::dir::expand-dir ()
 {
     local dir="${1}";
@@ -2937,9 +3118,10 @@ lib::dir::expand-dir ()
 }
 
 ```
+
 ### `lib::dir::is-a-dir`
 
-```
+```bash
 lib::dir::is-a-dir ()
 {
     local dir="${1}";
@@ -2947,9 +3129,10 @@ lib::dir::is-a-dir ()
 }
 
 ```
+
 ### `lib::docker::abort-if-down`
 
-```
+```bash
 lib::docker::abort-if-down ()
 {
     local should_exit="${1:-true}";
@@ -2967,27 +3150,30 @@ lib::docker::abort-if-down ()
 }
 
 ```
+
 ### `lib::docker::actions::build`
 
-```
+```bash
 lib::docker::actions::build ()
 {
     lib::docker::build::container "$@"
 }
 
 ```
+
 ### `lib::docker::actions::clean`
 
-```
+```bash
 lib::docker::actions::clean ()
 {
     __lib::docker::exec "docker-compose rm"
 }
 
 ```
+
 ### `lib::docker::actions::pull`
 
-```
+```bash
 lib::docker::actions::pull ()
 {
     local tag=${1:-'latest'};
@@ -2996,9 +3182,10 @@ lib::docker::actions::pull ()
 }
 
 ```
+
 ### `lib::docker::actions::push`
 
-```
+```bash
 lib::docker::actions::push ()
 {
     local tag=${1:-$(__lib::docker::next-version)};
@@ -3011,9 +3198,10 @@ lib::docker::actions::push ()
 }
 
 ```
+
 ### `lib::docker::actions::setup`
 
-```
+```bash
 lib::docker::actions::setup ()
 {
     lib::setup::docker;
@@ -3022,27 +3210,30 @@ lib::docker::actions::setup ()
 }
 
 ```
+
 ### `lib::docker::actions::start`
 
-```
+```bash
 lib::docker::actions::start ()
 {
     __lib::docker::exec "docker-compose start"
 }
 
 ```
+
 ### `lib::docker::actions::stop`
 
-```
+```bash
 lib::docker::actions::stop ()
 {
     __lib::docker::exec "docker-compose stop"
 }
 
 ```
+
 ### `lib::docker::actions::tag`
 
-```
+```bash
 lib::docker::actions::tag ()
 {
     local tag=${1};
@@ -3052,18 +3243,20 @@ lib::docker::actions::tag ()
 }
 
 ```
+
 ### `lib::docker::actions::up`
 
-```
+```bash
 lib::docker::actions::up ()
 {
     __lib::docker::exec "docker-compose up"
 }
 
 ```
+
 ### `lib::docker::actions::update`
 
-```
+```bash
 lib::docker::actions::update ()
 {
     lib::docker::build;
@@ -3071,9 +3264,10 @@ lib::docker::actions::update ()
 }
 
 ```
+
 ### `lib::docker::build::container`
 
-```
+```bash
 lib::docker::build::container ()
 {
     __lib::docker::check-repo "${1}" || return 1;
@@ -3082,9 +3276,10 @@ lib::docker::build::container ()
 }
 
 ```
+
 ### `lib::docker::containers::clean`
 
-```
+```bash
 lib::docker::containers::clean ()
 {
     local -a args=("$@");
@@ -3092,9 +3287,10 @@ lib::docker::containers::clean ()
 }
 
 ```
+
 ### `lib::docker::image::inspect`
 
-```
+```bash
 lib::docker::image::inspect ()
 {
     run::set-next show-output-on;
@@ -3104,18 +3300,20 @@ lib::docker::image::inspect ()
 }
 
 ```
+
 ### `lib::docker::image::rm`
 
-```
+```bash
 lib::docker::image::rm ()
 {
     run "docker image rm ${*}"
 }
 
 ```
+
 ### `lib::docker::images-named`
 
-```
+```bash
 lib::docker::images-named ()
 {
     local name="${1}";
@@ -3127,9 +3325,10 @@ lib::docker::images-named ()
 }
 
 ```
+
 ### `lib::docker::images::clean`
 
-```
+```bash
 lib::docker::images::clean ()
 {
     local name=${1:-"<none>"};
@@ -3137,9 +3336,10 @@ lib::docker::images::clean ()
 }
 
 ```
+
 ### `lib::docker::images::inspect`
 
-```
+```bash
 lib::docker::images::inspect ()
 {
     local name=${1:-"<none>"};
@@ -3147,9 +3347,10 @@ lib::docker::images::inspect ()
 }
 
 ```
+
 ### `lib::docker::last-version`
 
-```
+```bash
 lib::docker::last-version ()
 {
     __lib::docker::check-repo "${1}" || return 1;
@@ -3161,9 +3362,10 @@ lib::docker::last-version ()
 }
 
 ```
+
 ### `lib::docker::next-version`
 
-```
+```bash
 lib::docker::next-version ()
 {
     __lib::docker::check-repo "${1}" || return 1;
@@ -3175,18 +3377,20 @@ lib::docker::next-version ()
 }
 
 ```
+
 ### `lib::docker::set-repo`
 
-```
+```bash
 lib::docker::set-repo ()
 {
     [[ -n "$1" ]] && export AppDockerRepo="$1"
 }
 
 ```
+
 ### `lib::file::exists_and_newer_than`
 
-```
+```bash
 lib::file::exists_and_newer_than ()
 {
     local file="${1}";
@@ -3201,9 +3405,10 @@ lib::file::exists_and_newer_than ()
 }
 
 ```
+
 ### `lib::file::gsub`
 
-```
+```bash
 lib::file::gsub ()
 {
     local file="$1";
@@ -3223,9 +3428,10 @@ lib::file::gsub ()
 }
 
 ```
+
 ### `lib::file::install_with_backup`
 
-```
+```bash
 lib::file::install_with_backup ()
 {
     local source=$1;
@@ -3252,27 +3458,30 @@ lib::file::install_with_backup ()
 }
 
 ```
+
 ### `lib::file::last-modified-date`
 
-```
+```bash
 lib::file::last-modified-date ()
 {
     stat -f "%Sm" -t "%Y-%m-%d" "$1"
 }
 
 ```
+
 ### `lib::file::last-modified-year`
 
-```
+```bash
 lib::file::last-modified-year ()
 {
     stat -f "%Sm" -t "%Y" "$1"
 }
 
 ```
+
 ### `lib::gem::cache-installed`
 
-```
+```bash
 lib::gem::cache-installed ()
 {
     lib::gem::configure-cache;
@@ -3282,9 +3491,10 @@ lib::gem::cache-installed ()
 }
 
 ```
+
 ### `lib::gem::cache-refresh`
 
-```
+```bash
 lib::gem::cache-refresh ()
 {
     lib::gem::configure-cache;
@@ -3293,9 +3503,10 @@ lib::gem::cache-refresh ()
 }
 
 ```
+
 ### `lib::gem::configure-cache`
 
-```
+```bash
 lib::gem::configure-cache ()
 {
     export LibGem__GemListCacheBase=/tmp/.bashmatic/.gem/gem.list;
@@ -3308,9 +3519,10 @@ lib::gem::configure-cache ()
 }
 
 ```
+
 ### `lib::gem::ensure-gem-version`
 
-```
+```bash
 lib::gem::ensure-gem-version ()
 {
     local gem=$1;
@@ -3326,9 +3538,10 @@ lib::gem::ensure-gem-version ()
 }
 
 ```
+
 ### `lib::gem::gemfile::version`
 
-```
+```bash
 lib::gem::gemfile::version ()
 {
     local gem=$1;
@@ -3339,9 +3552,10 @@ lib::gem::gemfile::version ()
 }
 
 ```
+
 ### `lib::gem::global::latest-version`
 
-```
+```bash
 lib::gem::global::latest-version ()
 {
     local gem=$1;
@@ -3361,9 +3575,10 @@ lib::gem::global::latest-version ()
 }
 
 ```
+
 ### `lib::gem::global::versions`
 
-```
+```bash
 lib::gem::global::versions ()
 {
     local gem=$1;
@@ -3373,9 +3588,10 @@ lib::gem::global::versions ()
 }
 
 ```
+
 ### `lib::gem::install`
 
-```
+```bash
 lib::gem::install ()
 {
     local gem_name=$1;
@@ -3406,9 +3622,10 @@ lib::gem::install ()
 }
 
 ```
+
 ### `lib::gem::is-installed`
 
-```
+```bash
 lib::gem::is-installed ()
 {
     local gem=$1;
@@ -3422,9 +3639,10 @@ lib::gem::is-installed ()
 }
 
 ```
+
 ### `lib::gem::uninstall`
 
-```
+```bash
 lib::gem::uninstall ()
 {
     local gem_name=$1;
@@ -3444,9 +3662,10 @@ lib::gem::uninstall ()
 }
 
 ```
+
 ### `lib::gem::version`
 
-```
+```bash
 lib::gem::version ()
 {
     local gem=$1;
@@ -3460,9 +3679,10 @@ lib::gem::version ()
 }
 
 ```
+
 ### `lib::git::configure-auto-updates`
 
-```
+```bash
 lib::git::configure-auto-updates ()
 {
     export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}";
@@ -3471,9 +3691,10 @@ lib::git::configure-auto-updates ()
 }
 
 ```
+
 ### `lib::git::last-update-at`
 
-```
+```bash
 lib::git::last-update-at ()
 {
     lib::git::configure-auto-updates;
@@ -3484,9 +3705,10 @@ lib::git::last-update-at ()
 }
 
 ```
+
 ### `lib::git::local-vs-remote`
 
-```
+```bash
 lib::git::local-vs-remote ()
 {
     local upstream=${1:-'@{u}'};
@@ -3523,27 +3745,30 @@ lib::git::local-vs-remote ()
 }
 
 ```
+
 ### `lib::git::quiet`
 
-```
+```bash
 lib::git::quiet ()
 {
     [[ -n ${LibGit__QuietUpdate} ]]
 }
 
 ```
+
 ### `lib::git::remotes`
 
-```
+```bash
 lib::git::remotes ()
 {
     git remote -v | awk '{print $2}' | uniq
 }
 
 ```
+
 ### `lib::git::repo-is-clean`
 
-```
+```bash
 lib::git::repo-is-clean ()
 {
     local repo="${1:-${BashMatic__Home}}";
@@ -3558,18 +3783,20 @@ lib::git::repo-is-clean ()
 }
 
 ```
+
 ### `lib::git::save-last-update-at`
 
-```
+```bash
 lib::git::save-last-update-at ()
 {
     echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
 }
 
 ```
+
 ### `lib::git::seconds-since-last-pull`
 
-```
+```bash
 lib::git::seconds-since-last-pull ()
 {
     local last_update="$1";
@@ -3578,9 +3805,10 @@ lib::git::seconds-since-last-pull ()
 }
 
 ```
+
 ### `lib::git::sync`
 
-```
+```bash
 lib::git::sync ()
 {
     local dir="$(pwd)";
@@ -3596,9 +3824,10 @@ lib::git::sync ()
 }
 
 ```
+
 ### `lib::git::sync-remote`
 
-```
+```bash
 lib::git::sync-remote ()
 {
     if lib::git::quiet; then
@@ -3625,9 +3854,10 @@ lib::git::sync-remote ()
 }
 
 ```
+
 ### `lib::git::update-repo-if-needed`
 
-```
+```bash
 lib::git::update-repo-if-needed ()
 {
     local last_update_at=$(lib::git::last-update-at);
@@ -3643,9 +3873,10 @@ lib::git::update-repo-if-needed ()
 }
 
 ```
+
 ### `lib::json::begin-array`
 
-```
+```bash
 lib::json::begin-array ()
 {
     [[ -n "$1" ]] && lib::json::begin-key "$1";
@@ -3653,9 +3884,10 @@ lib::json::begin-array ()
 }
 
 ```
+
 ### `lib::json::begin-hash`
 
-```
+```bash
 lib::json::begin-hash ()
 {
     [[ -n "$1" ]] && lib::json::begin-key "$1";
@@ -3663,9 +3895,10 @@ lib::json::begin-hash ()
 }
 
 ```
+
 ### `lib::json::begin-key`
 
-```
+```bash
 lib::json::begin-key ()
 {
     if [[ -n "$1" ]]; then
@@ -3674,9 +3907,10 @@ lib::json::begin-key ()
 }
 
 ```
+
 ### `lib::json::end-array`
 
-```
+```bash
 lib::json::end-array ()
 {
     printf "]";
@@ -3685,9 +3919,10 @@ lib::json::end-array ()
 }
 
 ```
+
 ### `lib::json::end-hash`
 
-```
+```bash
 lib::json::end-hash ()
 {
     printf "}";
@@ -3696,9 +3931,10 @@ lib::json::end-hash ()
 }
 
 ```
+
 ### `lib::json::file-to-array`
 
-```
+```bash
 lib::json::file-to-array ()
 {
     lib::json::begin-array "$1";
@@ -3707,9 +3943,10 @@ lib::json::file-to-array ()
 }
 
 ```
+
 ### `lib::osx::cookie-dump`
 
-```
+```bash
 lib::osx::cookie-dump ()
 {
     local file="$1";
@@ -3736,9 +3973,10 @@ lib::osx::cookie-dump ()
 }
 
 ```
+
 ### `lib::osx::env-print`
 
-```
+```bash
 lib::osx::env-print ()
 {
     local var="$1";
@@ -3746,9 +3984,10 @@ lib::osx::env-print ()
 }
 
 ```
+
 ### `lib::osx::local-servers`
 
-```
+```bash
 lib::osx::local-servers ()
 {
     local protocol="${1:-"ssh"}";
@@ -3757,9 +3996,10 @@ lib::osx::local-servers ()
 }
 
 ```
+
 ### `lib::osx::ramdisk::mount`
 
-```
+```bash
 lib::osx::ramdisk::mount ()
 {
     [[ $(uname -s) != "Darwin" ]] && {
@@ -3772,9 +4012,10 @@ lib::osx::ramdisk::mount ()
 }
 
 ```
+
 ### `lib::osx::ramdisk::unmount`
 
-```
+```bash
 lib::osx::ramdisk::unmount ()
 {
     [[ $(uname -s) != "Darwin" ]] && {
@@ -3787,9 +4028,10 @@ lib::osx::ramdisk::unmount ()
 }
 
 ```
+
 ### `lib::osx::scutil-print`
 
-```
+```bash
 lib::osx::scutil-print ()
 {
     local var="$1";
@@ -3797,9 +4039,10 @@ lib::osx::scutil-print ()
 }
 
 ```
+
 ### `lib::osx::set-fqdn`
 
-```
+```bash
 lib::osx::set-fqdn ()
 {
     local fqdn="$1";
@@ -3835,9 +4078,10 @@ lib::osx::set-fqdn ()
 }
 
 ```
+
 ### `lib::output::color::off`
 
-```
+```bash
 lib::output::color::off ()
 {
     reset-color: 1>&2;
@@ -3845,9 +4089,10 @@ lib::output::color::off ()
 }
 
 ```
+
 ### `lib::output::color::on`
 
-```
+```bash
 lib::output::color::on ()
 {
     printf "${bldred}" 1>&2;
@@ -3855,54 +4100,60 @@ lib::output::color::on ()
 }
 
 ```
+
 ### `lib::output::is_pipe`
 
-```
+```bash
 lib::output::is_pipe ()
 {
     [[ -p /dev/stdout ]]
 }
 
 ```
+
 ### `lib::output::is_redirect`
 
-```
+```bash
 lib::output::is_redirect ()
 {
     [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 
 ```
+
 ### `lib::output::is_ssh`
 
-```
+```bash
 lib::output::is_ssh ()
 {
     [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]
 }
 
 ```
+
 ### `lib::output::is_terminal`
 
-```
+```bash
 lib::output::is_terminal ()
 {
     lib::output::is_tty || lib::output::is_redirect || lib::output::is_pipe || lib::output::is_ssh
 }
 
 ```
+
 ### `lib::output::is_tty`
 
-```
+```bash
 lib::output::is_tty ()
 {
     [[ -t 1 ]]
 }
 
 ```
+
 ### `lib::progress::bar`
 
-```
+```bash
 lib::progress::bar ()
 {
     __lib::progress::reset;
@@ -3916,27 +4167,30 @@ lib::progress::bar ()
 }
 
 ```
+
 ### `lib::psql::db-settings`
 
-```
+```bash
 lib::psql::db-settings ()
 {
     psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
 ```
+
 ### `lib::repo::rebase`
 
-```
+```bash
 lib::repo::rebase ()
 {
     run "git pull origin master --rebase"
 }
 
 ```
+
 ### `lib::repo::stash-and-rebase`
 
-```
+```bash
 lib::repo::stash-and-rebase ()
 {
     run "git stash >/dev/null";
@@ -3945,9 +4199,10 @@ lib::repo::stash-and-rebase ()
 }
 
 ```
+
 ### `lib::repo::update`
 
-```
+```bash
 lib::repo::update ()
 {
     local folder="$1";
@@ -3965,18 +4220,20 @@ lib::repo::update ()
 }
 
 ```
+
 ### `lib::repos::catch-interrupt`
 
-```
+```bash
 lib::repos::catch-interrupt ()
 {
     export LibRepo__Interrupted=true
 }
 
 ```
+
 ### `lib::repos::init-interrupt`
 
-```
+```bash
 lib::repos::init-interrupt ()
 {
     export LibRepo__Interrupted=false;
@@ -3984,9 +4241,10 @@ lib::repos::init-interrupt ()
 }
 
 ```
+
 ### `lib::repos::recursive-update`
 
-```
+```bash
 lib::repos::recursive-update ()
 {
     local repo="${1}";
@@ -4016,18 +4274,20 @@ lib::repos::recursive-update ()
 }
 
 ```
+
 ### `lib::repos::was-interrupted`
 
-```
+```bash
 lib::repos::was-interrupted ()
 {
     [[ ${LibRepo__Interrupted} == true ]]
 }
 
 ```
+
 ### `lib::ruby::bundler-version`
 
-```
+```bash
 lib::ruby::bundler-version ()
 {
     if [[ ! -f Gemfile.lock ]]; then
@@ -4038,9 +4298,10 @@ lib::ruby::bundler-version ()
 }
 
 ```
+
 ### `lib::ruby::gemfile-lock-version`
 
-```
+```bash
 lib::ruby::gemfile-lock-version ()
 {
     local gem=${1};
@@ -4052,9 +4313,10 @@ lib::ruby::gemfile-lock-version ()
 }
 
 ```
+
 ### `lib::ruby::install-ruby`
 
-```
+```bash
 lib::ruby::install-ruby ()
 {
     local version="$1";
@@ -4076,9 +4338,10 @@ lib::ruby::install-ruby ()
 }
 
 ```
+
 ### `lib::ruby::install-ruby-with-deps`
 
-```
+```bash
 lib::ruby::install-ruby-with-deps ()
 {
     local version="$1";
@@ -4088,9 +4351,10 @@ lib::ruby::install-ruby-with-deps ()
 }
 
 ```
+
 ### `lib::ruby::validate-version`
 
-```
+```bash
 lib::ruby::validate-version ()
 {
     local version="$1";
@@ -4108,9 +4372,10 @@ lib::ruby::validate-version ()
 }
 
 ```
+
 ### `lib::run`
 
-```
+```bash
 lib::run ()
 {
     __lib::run "$@";
@@ -4118,9 +4383,10 @@ lib::run ()
 }
 
 ```
+
 ### `lib::run::ask`
 
-```
+```bash
 lib::run::ask ()
 {
     local question=$*;
@@ -4147,9 +4413,10 @@ lib::run::ask ()
 }
 
 ```
+
 ### `lib::run::inspect`
 
-```
+```bash
 lib::run::inspect ()
 {
     if [[ ${#@} -eq 0 || $(array-contains-element "config" "$@") == "true" ]]; then
@@ -4169,9 +4436,10 @@ lib::run::inspect ()
 }
 
 ```
+
 ### `lib::run::inspect-variable`
 
-```
+```bash
 lib::run::inspect-variable ()
 {
     local var_name=${1};
@@ -4238,9 +4506,10 @@ lib::run::inspect-variable ()
 }
 
 ```
+
 ### `lib::run::inspect-variables`
 
-```
+```bash
 lib::run::inspect-variables ()
 {
     local title=${1};
@@ -4253,9 +4522,10 @@ lib::run::inspect-variables ()
 }
 
 ```
+
 ### `lib::run::inspect-variables-that-are`
 
-```
+```bash
 lib::run::inspect-variables-that-are ()
 {
     local pattern_type="${1}";
@@ -4264,9 +4534,10 @@ lib::run::inspect-variables-that-are ()
 }
 
 ```
+
 ### `lib::run::inspect::set-skip-false-or-blank`
 
-```
+```bash
 lib::run::inspect::set-skip-false-or-blank ()
 {
     local value="${1}";
@@ -4275,18 +4546,20 @@ lib::run::inspect::set-skip-false-or-blank ()
 }
 
 ```
+
 ### `lib::run::print-variable`
 
-```
+```bash
 lib::run::print-variable ()
 {
     lib::run::inspect-variable $1
 }
 
 ```
+
 ### `lib::run::print-variables`
 
-```
+```bash
 lib::run::print-variables ()
 {
     local title=${1};
@@ -4299,9 +4572,10 @@ lib::run::print-variables ()
 }
 
 ```
+
 ### `lib::run::variables-ending-with`
 
-```
+```bash
 lib::run::variables-ending-with ()
 {
     local suffix="${1}";
@@ -4309,9 +4583,10 @@ lib::run::variables-ending-with ()
 }
 
 ```
+
 ### `lib::run::variables-starting-with`
 
-```
+```bash
 lib::run::variables-starting-with ()
 {
     local prefix="${1}";
@@ -4319,9 +4594,10 @@ lib::run::variables-starting-with ()
 }
 
 ```
+
 ### `lib::run::with-min-duration`
 
-```
+```bash
 lib::run::with-min-duration ()
 {
     local min_duration=$1;
@@ -4345,9 +4621,10 @@ lib::run::with-min-duration ()
 }
 
 ```
+
 ### `lib::ssh::load-keys`
 
-```
+```bash
 lib::ssh::load-keys ()
 {
     local pattern="$1";
@@ -4355,9 +4632,10 @@ lib::ssh::load-keys ()
 }
 
 ```
+
 ### `lib::time::date-from-epoch`
 
-```
+```bash
 lib::time::date-from-epoch ()
 {
     local epoch_ts="$1";
@@ -4369,9 +4647,10 @@ lib::time::date-from-epoch ()
 }
 
 ```
+
 ### `lib::time::duration::humanize`
 
-```
+```bash
 lib::time::duration::humanize ()
 {
     local seconds=${1};
@@ -4394,9 +4673,10 @@ lib::time::duration::humanize ()
 }
 
 ```
+
 ### `lib::time::duration::millis-to-secs`
 
-```
+```bash
 lib::time::duration::millis-to-secs ()
 {
     local duration="$1";
@@ -4407,9 +4687,10 @@ lib::time::duration::millis-to-secs ()
 }
 
 ```
+
 ### `lib::time::epoch-to-iso`
 
-```
+```bash
 lib::time::epoch-to-iso ()
 {
     local epoch_ts=$1;
@@ -4417,9 +4698,10 @@ lib::time::epoch-to-iso ()
 }
 
 ```
+
 ### `lib::time::epoch-to-local`
 
-```
+```bash
 lib::time::epoch-to-local ()
 {
     local epoch_ts=$1;
@@ -4428,9 +4710,10 @@ lib::time::epoch-to-local ()
 }
 
 ```
+
 ### `lib::time::epoch::minutes-ago`
 
-```
+```bash
 lib::time::epoch::minutes-ago ()
 {
     local mins=${1};
@@ -4441,9 +4724,10 @@ lib::time::epoch::minutes-ago ()
 }
 
 ```
+
 ### `lib::trap-setup`
 
-```
+```bash
 lib::trap-setup ()
 {
     __lib::trap-remove;
@@ -4453,9 +4737,10 @@ lib::trap-setup ()
 }
 
 ```
+
 ### `lib::trap-was-fired`
 
-```
+```bash
 lib::trap-was-fired ()
 {
     if [[ -f ${__int_marker__} ]]; then
@@ -4466,9 +4751,10 @@ lib::trap-was-fired ()
 }
 
 ```
+
 ### `lib::trapped`
 
-```
+```bash
 lib::trapped ()
 {
     if [[ ${__int_flag__} -eq 1 ]]; then
@@ -4479,9 +4765,10 @@ lib::trapped ()
 }
 
 ```
+
 ### `lib::url::downloader`
 
-```
+```bash
 lib::url::downloader ()
 {
     local downloader=;
@@ -4498,9 +4785,10 @@ lib::url::downloader ()
 }
 
 ```
+
 ### `lib::url::http-code`
 
-```
+```bash
 lib::url::http-code ()
 {
     local url="$1";
@@ -4531,9 +4819,10 @@ lib::url::http-code ()
 }
 
 ```
+
 ### `lib::url::is-valid`
 
-```
+```bash
 lib::url::is-valid ()
 {
     local url="$1";
@@ -4545,9 +4834,10 @@ lib::url::is-valid ()
 }
 
 ```
+
 ### `lib::url::shorten`
 
-```
+```bash
 lib::url::shorten ()
 {
     local longUrl="$1";
@@ -4565,9 +4855,10 @@ lib::url::shorten ()
 }
 
 ```
+
 ### `lib::url::valid-status`
 
-```
+```bash
 lib::url::valid-status ()
 {
     local url="$1";
@@ -4582,9 +4873,10 @@ lib::url::valid-status ()
 }
 
 ```
+
 ### `lib::user`
 
-```
+```bash
 lib::user ()
 {
     local user;
@@ -4596,27 +4888,30 @@ lib::user ()
 }
 
 ```
+
 ### `lib::user::finger::name`
 
-```
+```bash
 lib::user::finger::name ()
 {
     [[ -n $(which finge) ]] && finger ${USER} | head -1 | hbsed 's/.*Name: //g'
 }
 
 ```
+
 ### `lib::user::first`
 
-```
+```bash
 lib::user::first ()
 {
     lib::user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'
 }
 
 ```
+
 ### `lib::user::gitconfig::email`
 
-```
+```bash
 lib::user::gitconfig::email ()
 {
     if [[ -s ${HOME}/.gitconfig ]]; then
@@ -4625,9 +4920,10 @@ lib::user::gitconfig::email ()
 }
 
 ```
+
 ### `lib::user::gitconfig::name`
 
-```
+```bash
 lib::user::gitconfig::name ()
 {
     if [[ -s ${HOME}/.gitconfig ]]; then
@@ -4636,9 +4932,10 @@ lib::user::gitconfig::name ()
 }
 
 ```
+
 ### `lib::user::host`
 
-```
+```bash
 lib::user::host ()
 {
     local host=;
@@ -4648,36 +4945,40 @@ lib::user::host ()
 }
 
 ```
+
 ### `lib::user::my::ip`
 
-```
+```bash
 lib::user::my::ip ()
 {
     dig +short myip.opendns.com @resolver1.opendns.com
 }
 
 ```
+
 ### `lib::user::my::reverse-ip`
 
-```
+```bash
 lib::user::my::reverse-ip ()
 {
     nslookup $(lib::user::my::ip) | grep 'name =' | hbsed 's/.*name = //g'
 }
 
 ```
+
 ### `lib::user::username`
 
-```
+```bash
 lib::user::username ()
 {
     echo ${USER:-$(whoami)}
 }
 
 ```
+
 ### `lib::util::append-to-init-files`
 
-```
+```bash
 lib::util::append-to-init-files ()
 {
     local string="$1";
@@ -4707,18 +5008,20 @@ lib::util::append-to-init-files ()
 }
 
 ```
+
 ### `lib::util::arch`
 
-```
+```bash
 lib::util::arch ()
 {
     echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'
 }
 
 ```
+
 ### `lib::util::call-if-function`
 
-```
+```bash
 lib::util::call-if-function ()
 {
     local func="$1";
@@ -4729,27 +5032,30 @@ lib::util::call-if-function ()
 }
 
 ```
+
 ### `lib::util::checksum::files`
 
-```
+```bash
 lib::util::checksum::files ()
 {
     cat $* | shasum | awk '{print $1}'
 }
 
 ```
+
 ### `lib::util::checksum::stdin`
 
-```
+```bash
 lib::util::checksum::stdin ()
 {
     shasum | awk '{print $1}'
 }
 
 ```
+
 ### `lib::util::functions-matching`
 
-```
+```bash
 lib::util::functions-matching ()
 {
     local prefix=${1};
@@ -4758,9 +5064,10 @@ lib::util::functions-matching ()
 }
 
 ```
+
 ### `lib::util::generate-password`
 
-```
+```bash
 lib::util::generate-password ()
 {
     local len=${1:-32};
@@ -4770,9 +5077,10 @@ lib::util::generate-password ()
 }
 
 ```
+
 ### `lib::util::i-to-ver`
 
-```
+```bash
 lib::util::i-to-ver ()
 {
     version=${1};
@@ -4780,9 +5088,10 @@ lib::util::i-to-ver ()
 }
 
 ```
+
 ### `lib::util::install-direnv`
 
-```
+```bash
 lib::util::install-direnv ()
 {
     [[ -n $(which direnv) ]] || lib::brew::install::package direnv;
@@ -4797,27 +5106,30 @@ lib::util::install-direnv ()
 }
 
 ```
+
 ### `lib::util::is-a-function`
 
-```
+```bash
 lib::util::is-a-function ()
 {
     type "$1" 2> /dev/null | head -1 | grep -q 'is a function'
 }
 
 ```
+
 ### `lib::util::is-numeric`
 
-```
+```bash
 lib::util::is-numeric ()
 {
     [[ -z $(echo ${1} | sed -E 's/^[0-9]+$//g') ]]
 }
 
 ```
+
 ### `lib::util::is-variable-defined`
 
-```
+```bash
 lib::util::is-variable-defined ()
 {
     local var_name="$1";
@@ -4825,9 +5137,10 @@ lib::util::is-variable-defined ()
 }
 
 ```
+
 ### `lib::util::lines-in-folder`
 
-```
+```bash
 lib::util::lines-in-folder ()
 {
     local folder=${1:-'.'};
@@ -4835,9 +5148,10 @@ lib::util::lines-in-folder ()
 }
 
 ```
+
 ### `lib::util::remove-from-init-files`
 
-```
+```bash
 lib::util::remove-from-init-files ()
 {
     local search="${1}";
@@ -4869,9 +5183,10 @@ lib::util::remove-from-init-files ()
 }
 
 ```
+
 ### `lib::util::shell-init-files`
 
-```
+```bash
 lib::util::shell-init-files ()
 {
     shell_name=$(lib::util::shell-name);
@@ -4885,18 +5200,20 @@ lib::util::shell-init-files ()
 }
 
 ```
+
 ### `lib::util::shell-name`
 
-```
+```bash
 lib::util::shell-name ()
 {
     echo $(basename $(printf $SHELL))
 }
 
 ```
+
 ### `lib::util::ver-to-i`
 
-```
+```bash
 lib::util::ver-to-i ()
 {
     version=${1};
@@ -4904,9 +5221,10 @@ lib::util::ver-to-i ()
 }
 
 ```
+
 ### `lib::util::whats-installed`
 
-```
+```bash
 lib::util::whats-installed ()
 {
     declare -a hb_aliases=($(alias | grep -E 'hb\..*=' | hbsed 's/alias//g; s/=.*$//g'));
@@ -4917,9 +5235,10 @@ lib::util::whats-installed ()
 }
 
 ```
+
 ### `lib::vim::gvim-off`
 
-```
+```bash
 lib::vim::gvim-off ()
 {
     lib::vim::setup;
@@ -4939,9 +5258,10 @@ lib::vim::gvim-off ()
 }
 
 ```
+
 ### `lib::vim::gvim-on`
 
-```
+```bash
 lib::vim::gvim-on ()
 {
     lib::vim::setup;
@@ -4961,9 +5281,10 @@ lib::vim::gvim-on ()
 }
 
 ```
+
 ### `lib::vim::setup`
 
-```
+```bash
 lib::vim::setup ()
 {
     export LibVim__initFile="${HOME}/.bash_profile";
@@ -4973,9 +5294,10 @@ lib::vim::setup ()
 }
 
 ```
+
 ### `lib::yaml::diff`
 
-```
+```bash
 lib::yaml::diff ()
 {
     local f1="$1";
@@ -4999,9 +5321,10 @@ lib::yaml::diff ()
 }
 
 ```
+
 ### `lib::yaml::dump`
 
-```
+```bash
 lib::yaml::dump ()
 {
     local f1="$1";
@@ -5018,36 +5341,40 @@ lib::yaml::dump ()
 }
 
 ```
+
 ### `lib::yaml::expand-aliases`
 
-```
+```bash
 lib::yaml::expand-aliases ()
 {
     ruby -e "require 'yaml'; require 'json'; puts YAML.dump(JSON.parse(JSON.pretty_generate(YAML.load(File.read('${1}')))))"
 }
 
 ```
+
 ### `long-pause`
 
-```
+```bash
 long-pause ()
 {
     sleep "${1:-10}"
 }
 
 ```
+
 ### `millis`
 
-```
+```bash
 millis ()
 {
     __lib::run::millis
 }
 
 ```
+
 ### `not_ok`
 
-```
+```bash
 not_ok ()
 {
     __lib::output::cursor-left-by 1000;
@@ -5055,9 +5382,10 @@ not_ok ()
 }
 
 ```
+
 ### `not_ok:`
 
-```
+```bash
 not_ok: ()
 {
     not_ok $@;
@@ -5065,9 +5393,10 @@ not_ok: ()
 }
 
 ```
+
 ### `odie`
 
-```
+```bash
 odie ()
 {
     onoe "$@";
@@ -5075,9 +5404,10 @@ odie ()
 }
 
 ```
+
 ### `ok`
 
-```
+```bash
 ok ()
 {
     __lib::output::cursor-left-by 1000;
@@ -5085,9 +5415,10 @@ ok ()
 }
 
 ```
+
 ### `ok:`
 
-```
+```bash
 ok: ()
 {
     ok $@;
@@ -5095,9 +5426,10 @@ ok: ()
 }
 
 ```
+
 ### `okay`
 
-```
+```bash
 okay ()
 {
     printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" 1>&2;
@@ -5105,9 +5437,10 @@ okay ()
 }
 
 ```
+
 ### `onoe`
 
-```
+```bash
 onoe ()
 {
     if [[ -t 2 ]]; then
@@ -5123,27 +5456,30 @@ onoe ()
 }
 
 ```
+
 ### `pall`
 
-```
+```bash
 pall ()
 {
     pids::all "$@"
 }
 
 ```
+
 ### `pause`
 
-```
+```bash
 pause ()
 {
     sleep "${1:-1}"
 }
 
 ```
+
 ### `pid::alive`
 
-```
+```bash
 pid::alive ()
 {
     local pid="$1";
@@ -5155,9 +5491,10 @@ pid::alive ()
 }
 
 ```
+
 ### `pid::sig`
 
-```
+```bash
 pid::sig ()
 {
     local pid="${1}";
@@ -5189,9 +5526,10 @@ USAGE:
 }
 
 ```
+
 ### `pid::stop`
 
-```
+```bash
 pid::stop ()
 {
     local pid=${1};
@@ -5218,9 +5556,10 @@ EXAMPLES:
 }
 
 ```
+
 ### `pids-with-args`
 
-```
+```bash
 pids-with-args ()
 {
     local -a permitted=("%cpu" "%mem" acflag acflg args blocked caught comm command cpu cputime etime f flags gid group ignored inblk inblock jobc ktrace ktracep lim login logname lstart majflt minflt msgrcv msgsnd ni nice nivcsw nsignals nsigs nswap nvcsw nwchan oublk oublock p_ru paddr pagein pcpu pending pgid pid pmem ppid pri pstime putime re rgid rgroup rss ruid ruser sess sig sigmask sl start stat state stime svgid svuid tdev time tpgid tsess tsiz tt tty ucomm uid upr user usrpri utime vsize vsz wchan wq wqb wql wqr xstat);
@@ -5239,9 +5578,10 @@ pids-with-args ()
 }
 
 ```
+
 ### `pids::all`
 
-```
+```bash
 pids::all ()
 {
     if [[ -z "${1}" ]]; then
@@ -5263,9 +5603,10 @@ EXAMPLES:
 }
 
 ```
+
 ### `pids::for-each`
 
-```
+```bash
 pids::for-each ()
 {
     if [[ -z "${1}" || -z "${2}" ]]; then
@@ -5298,9 +5639,10 @@ EXAMPLES:
 }
 
 ```
+
 ### `pids::matching`
 
-```
+```bash
 pids::matching ()
 {
     local pattern="${1}";
@@ -5322,9 +5664,10 @@ EXAMPLES:
 }
 
 ```
+
 ### `pids::matching::regexp`
 
-```
+```bash
 pids::matching::regexp ()
 {
     local pattern="${1}";
@@ -5345,9 +5688,10 @@ EXAMPLES:
 }
 
 ```
+
 ### `pids::normalize::search-string`
 
-```
+```bash
 pids::normalize::search-string ()
 {
     local pattern="$*";
@@ -5356,9 +5700,10 @@ pids::normalize::search-string ()
 }
 
 ```
+
 ### `pids::stop`
 
-```
+```bash
 pids::stop ()
 {
     if [[ -z "${1}" ]]; then
@@ -5378,9 +5723,10 @@ EXAMPLES:
 }
 
 ```
+
 ### `press-any-key-to-continue`
 
-```
+```bash
 press-any-key-to-continue ()
 {
     local prompt="$*";
@@ -5396,36 +5742,40 @@ press-any-key-to-continue ()
 }
 
 ```
+
 ### `pstop`
 
-```
+```bash
 pstop ()
 {
     pids::stop "$@"
 }
 
 ```
+
 ### `puts`
 
-```
+```bash
 puts ()
 {
     printf "  ⇨ ${txtwht}$*${clr}"
 }
 
 ```
+
 ### `red`
 
-```
+```bash
 red ()
 {
     ansi 31 "$@"
 }
 
 ```
+
 ### `repos.update`
 
-```
+```bash
 repos.update ()
 {
     export root_folder="$(pwd)";
@@ -5441,27 +5791,30 @@ repos.update ()
 }
 
 ```
+
 ### `reset-color`
 
-```
+```bash
 reset-color ()
 {
     printf "${clr}\n"
 }
 
 ```
+
 ### `reset-color:`
 
-```
+```bash
 reset-color: ()
 {
     printf "${clr}"
 }
 
 ```
+
 ### `ruby.compiled-with`
 
-```
+```bash
 ruby.compiled-with ()
 {
     if [[ -z "$*" ]]; then
@@ -5472,9 +5825,10 @@ ruby.compiled-with ()
 }
 
 ```
+
 ### `ruby.default-gems`
 
-```
+```bash
 ruby.default-gems ()
 {
     declare -a DEFAULT_RUBY_GEMS=(rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pg pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools);
@@ -5483,27 +5837,30 @@ ruby.default-gems ()
 }
 
 ```
+
 ### `ruby.full-version`
 
-```
+```bash
 ruby.full-version ()
 {
     /usr/bin/env ruby --version
 }
 
 ```
+
 ### `ruby.gems`
 
-```
+```bash
 ruby.gems ()
 {
     ruby.gems.install "$@"
 }
 
 ```
+
 ### `ruby.gems.install`
 
-```
+```bash
 ruby.gems.install ()
 {
     local -a gems=($@);
@@ -5548,9 +5905,10 @@ ruby.gems.install ()
 }
 
 ```
+
 ### `ruby.gems.uninstall`
 
-```
+```bash
 ruby.gems.uninstall ()
 {
     local -a gems=($@);
@@ -5581,9 +5939,10 @@ ruby.gems.uninstall ()
 }
 
 ```
+
 ### `ruby.init`
 
-```
+```bash
 ruby.init ()
 {
     h1 "Installing Critical Gems for Your Glove, Thanos...";
@@ -5594,18 +5953,20 @@ ruby.init ()
 }
 
 ```
+
 ### `ruby.install`
 
-```
+```bash
 ruby.install ()
 {
     lib::ruby::install-ruby "$@"
 }
 
 ```
+
 ### `ruby.install-upgrade-bundler`
 
-```
+```bash
 ruby.install-upgrade-bundler ()
 {
     lib::gem::install bundler;
@@ -5613,18 +5974,20 @@ ruby.install-upgrade-bundler ()
 }
 
 ```
+
 ### `ruby.installed-gems`
 
-```
+```bash
 ruby.installed-gems ()
 {
     gem list | cut -d ' ' -f 1 | uniq
 }
 
 ```
+
 ### `ruby.kigs-gems`
 
-```
+```bash
 ruby.kigs-gems ()
 {
     if [[ -z $(type wd 2>/dev/null) ]]; then
@@ -5641,27 +6004,30 @@ ruby.kigs-gems ()
 }
 
 ```
+
 ### `ruby.linked-libs`
 
-```
+```bash
 ruby.linked-libs ()
 {
     ruby -r rbconfig -e "puts RbConfig::CONFIG['LIBS']"
 }
 
 ```
+
 ### `ruby.numeric-version`
 
-```
+```bash
 ruby.numeric-version ()
 {
     /usr/bin/env ruby --version | sed 's/^ruby //g; s/ (.*//g'
 }
 
 ```
+
 ### `ruby.rbenv`
 
-```
+```bash
 ruby.rbenv ()
 {
     if [[ -n "$*" ]]; then
@@ -5673,9 +6039,10 @@ ruby.rbenv ()
 }
 
 ```
+
 ### `ruby.rubygems-update`
 
-```
+```bash
 ruby.rubygems-update ()
 {
     info "This might take a little white, darling. Smoke a spliff, would you?";
@@ -5683,9 +6050,10 @@ ruby.rubygems-update ()
 }
 
 ```
+
 ### `ruby.stop`
 
-```
+```bash
 ruby.stop ()
 {
     local regex='/[r]uby| [p]uma| [i]rb| [r]ails | [b]undle| [u]nicorn| [r]ake';
@@ -5706,9 +6074,10 @@ ruby.stop ()
 }
 
 ```
+
 ### `ruby.top-versions`
 
-```
+```bash
 ruby.top-versions ()
 {
     local platform="${1:-"2\."}";
@@ -5727,18 +6096,20 @@ ruby.top-versions ()
 }
 
 ```
+
 ### `ruby.top-versions-as-yaml`
 
-```
+```bash
 ruby.top-versions-as-yaml ()
 {
     ruby.top-versions | sed 's/^/ - /g'
 }
 
 ```
+
 ### `run`
 
-```
+```bash
 run ()
 {
     __lib::run $@;
@@ -5746,99 +6117,110 @@ run ()
 }
 
 ```
+
 ### `run::inspect`
 
-```
+```bash
 run::inspect ()
 {
     lib::run::inspect
 }
 
 ```
+
 ### `run::set-all`
 
-```
+```bash
 run::set-all ()
 {
     ____run::configure all "$@"
 }
 
 ```
+
 ### `run::set-all::list`
 
-```
+```bash
 run::set-all::list ()
 {
     set | egrep '^____run::set::all' | awk 'BEGIN{FS="::"}{print $4}' | hbsed 's/[() ]//g'
 }
 
 ```
+
 ### `run::set-next`
 
-```
+```bash
 run::set-next ()
 {
     ____run::configure next "$@"
 }
 
 ```
+
 ### `run::set-next::list`
 
-```
+```bash
 run::set-next::list ()
 {
     set | egrep '^____run::set::next' | awk 'BEGIN{FS="::"}{print $4}' | hbsed 's/[() ]//g'
 }
 
 ```
+
 ### `save-restore-x`
 
-```
+```bash
 save-restore-x ()
 {
     shell-set::pop-stack x
 }
 
 ```
+
 ### `save-set-x`
 
-```
+```bash
 save-set-x ()
 {
     shell-set::push-stack x
 }
 
 ```
+
 ### `screen-width`
 
-```
+```bash
 screen-width ()
 {
     __lib::output::screen-width
 }
 
 ```
+
 ### `screen.height`
 
-```
+```bash
 screen.height ()
 {
     __lib::output::screen-height
 }
 
 ```
+
 ### `screen.width`
 
-```
+```bash
 screen.width ()
 {
     __lib::output::screen-width
 }
 
 ```
+
 ### `set-e-restore`
 
-```
+```bash
 set-e-restore ()
 {
     [[ -f ${__bash_set_errexit_status} ]] && {
@@ -5855,9 +6237,10 @@ set-e-restore ()
 }
 
 ```
+
 ### `set-e-save`
 
-```
+```bash
 set-e-save ()
 {
     export __bash_set_errexit_status=$(mktemp -t 'errexit');
@@ -5866,18 +6249,20 @@ set-e-save ()
 }
 
 ```
+
 ### `set-e-status`
 
-```
+```bash
 set-e-status ()
 {
     set -o | grep errexit | awk '{print $2}'
 }
 
 ```
+
 ### `shell-set::init-stack`
 
-```
+```bash
 shell-set::init-stack ()
 {
     unset SetOptsStack;
@@ -5886,9 +6271,10 @@ shell-set::init-stack ()
 }
 
 ```
+
 ### `shell-set::is-set`
 
-```
+```bash
 shell-set::is-set ()
 {
     local v="$1";
@@ -5901,9 +6287,10 @@ shell-set::is-set ()
 }
 
 ```
+
 ### `shell-set::pop-stack`
 
-```
+```bash
 shell-set::pop-stack ()
 {
     local value="$1";
@@ -5921,9 +6308,10 @@ shell-set::pop-stack ()
 }
 
 ```
+
 ### `shell-set::push-stack`
 
-```
+```bash
 shell-set::push-stack ()
 {
     local value="$1";
@@ -5934,36 +6322,40 @@ shell-set::push-stack ()
 }
 
 ```
+
 ### `shell-set::show-stack`
 
-```
+```bash
 shell-set::show-stack ()
 {
     info "Current Shell Set Stack: ${bldylw}[${SetOptsStack[*]}]"
 }
 
 ```
+
 ### `short-pause`
 
-```
+```bash
 short-pause ()
 {
     sleep "${1:-0.1}"
 }
 
 ```
+
 ### `shortish-pause`
 
-```
+```bash
 shortish-pause ()
 {
     sleep "${1:-0.3}"
 }
 
 ```
+
 ### `shutdown`
 
-```
+```bash
 shutdown ()
 {
     local message=${1:-"Shutting down..."};
@@ -5974,27 +6366,30 @@ shutdown ()
 }
 
 ```
+
 ### `sig::is-valid`
 
-```
+```bash
 sig::is-valid ()
 {
     [[ -n $(kill -l ${1} 2>/dev/null) ]]
 }
 
 ```
+
 ### `sig::list`
 
-```
+```bash
 sig::list ()
 {
     /bin/kill -l | sed -E 's/([ 0-9][0-9]\) SIG)//g; s/\s+/\n/g' | tr 'a-z' 'A-Z' | sort
 }
 
 ```
+
 ### `stderr`
 
-```
+```bash
 stderr ()
 {
     local file=$1;
@@ -6005,9 +6400,10 @@ stderr ()
 }
 
 ```
+
 ### `stdout`
 
-```
+```bash
 stdout ()
 {
     local file=$1;
@@ -6018,18 +6414,20 @@ stdout ()
 }
 
 ```
+
 ### `strikethrough`
 
-```
+```bash
 strikethrough ()
 {
     ansi 9 "$@"
 }
 
 ```
+
 ### `success`
 
-```
+```bash
 success ()
 {
     echo;
@@ -6039,27 +6437,30 @@ success ()
 }
 
 ```
+
 ### `sym::hb::configure`
 
-```
+```bash
 sym::hb::configure ()
 {
     export SYMIT__KEY="APP_SYM_KEY"
 }
 
 ```
+
 ### `sym::hb::files`
 
-```
+```bash
 sym::hb::files ()
 {
     find . -name '*.enc' -type f
 }
 
 ```
+
 ### `sym::hb::have_key`
 
-```
+```bash
 sym::hb::have_key ()
 {
     sym::hb::configure;
@@ -6071,9 +6472,10 @@ sym::hb::have_key ()
 }
 
 ```
+
 ### `sym::hb::import`
 
-```
+```bash
 sym::hb::import ()
 {
     local skip_instructions=${1:-0};
@@ -6136,9 +6538,10 @@ sym::hb::import ()
 }
 
 ```
+
 ### `sym::hb::install-shell-helpers`
 
-```
+```bash
 sym::hb::install-shell-helpers ()
 {
     local found=;
@@ -6167,9 +6570,10 @@ sym::hb::install-shell-helpers ()
 }
 
 ```
+
 ### `sym::install::symit`
 
-```
+```bash
 sym::install::symit ()
 {
     if [[ ! -f config.ru ]]; then
@@ -6194,9 +6598,10 @@ sym::install::symit ()
 }
 
 ```
+
 ### `test-group`
 
-```
+```bash
 test-group ()
 {
     [[ -z ${white_on_salmon} ]] && hr;
@@ -6204,63 +6609,70 @@ test-group ()
 }
 
 ```
+
 ### `today`
 
-```
+```bash
 today ()
 {
     date +'%Y-%m-%d'
 }
 
 ```
+
 ### `txt-err`
 
-```
+```bash
 txt-err ()
 {
     printf "${clr}${bldylw}${bakred}"
 }
 
 ```
+
 ### `txt-info`
 
-```
+```bash
 txt-info ()
 {
     printf "${clr}${txtblu}"
 }
 
 ```
+
 ### `txt-warn`
 
-```
+```bash
 txt-warn ()
 {
     printf "${clr}${bldylw}"
 }
 
 ```
+
 ### `underline`
 
-```
+```bash
 underline ()
 {
     ansi 4 "$@"
 }
 
 ```
+
 ### `warn`
 
-```
+```bash
 warn ()
 {
     printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" 1>&2
 }
 
 ```
+
 ### `warning`
 
-```
+```bash
 warning ()
 {
     header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}");
@@ -6268,9 +6680,10 @@ warning ()
 }
 
 ```
+
 ### `warning:`
 
-```
+```bash
 warning: ()
 {
     warn $*;
@@ -6278,9 +6691,10 @@ warning: ()
 }
 
 ```
+
 ### `watch-ls-al`
 
-```
+```bash
 watch-ls-al ()
 {
     while true; do
@@ -6291,63 +6705,70 @@ watch-ls-al ()
 }
 
 ```
+
 ### `with-bundle-exec`
 
-```
+```bash
 with-bundle-exec ()
 {
     __lib::run::bundle::exec "$@"
 }
 
 ```
+
 ### `with-bundle-exec-and-output`
 
-```
+```bash
 with-bundle-exec-and-output ()
 {
     __lib::run::bundle::exec::with-output "$@"
 }
 
 ```
+
 ### `with-min-duration`
 
-```
+```bash
 with-min-duration ()
 {
     lib::run::with-min-duration "$@"
 }
 
 ```
+
 ### `yaml-diff`
 
-```
+```bash
 yaml-diff ()
 {
     lib::yaml::diff "$@"
 }
 
 ```
+
 ### `yaml-dump`
 
-```
+```bash
 yaml-dump ()
 {
     lib::yaml::dump "$@"
 }
 
 ```
+
 ### `æ-wav2mp3`
 
-```
+```bash
 æ-wav2mp3 ()
 {
     lib::audio::wav-to-mp3 "$@"
 }
 
 ```
+
 ### `æ-wavfreq`
 
-```
+```bash
 æ-wavfreq ()
 {
     [[ -f ${1} ]] || {
@@ -6359,3 +6780,4 @@ yaml-dump ()
 }
 
 ```
+
