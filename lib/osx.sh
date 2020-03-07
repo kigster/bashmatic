@@ -3,16 +3,16 @@
 # Breaks up a file containing a pasted cookie into individual cookies sorted
 # by cookie size. To use, either pass a file name as an argument, or have
 # the cookie copied into the clipboard.
-lib::osx::cookie-dump() {
+osx.cookie-dump() {
   local file="$1"
   local tmp
 
   if [[ ! -s ${file} ]]; then
     tmp=$(mktemp)
     file=${tmp}
-    pbpaste > ${file}
-    local size=$(file::size ${file})
-    if [[ ${size} -lt 4 ]] ; then
+    pbpaste >${file}
+    local size=$(file.size ${file})
+    if [[ ${size} -lt 4 ]]; then
       error "Pasted data is too small to be a valid cookie?"
       info "Here is what we got in your clipboard:\n\n$(cat ${file})\n"
       return 1
@@ -20,10 +20,10 @@ lib::osx::cookie-dump() {
   fi
 
   if [[ -s ${file} ]]; then
-    cat "${file}" | \
-      tr '; ' '\n' | \
-      sed '/^$/d' | \
-      awk 'BEGIN{FS="="}{printf( "%10d = %s\n", length($2), $1) }' | \
+    cat "${file}" |
+      tr '; ' '\n' |
+      sed '/^$/d' |
+      awk 'BEGIN{FS="="}{printf( "%10d = %s\n", length($2), $1) }' |
       sort -n
   else
     info "File ${file} does not exist or is empty. "
@@ -36,16 +36,16 @@ lib::osx::cookie-dump() {
 }
 
 cookie-dump() {
-  lib::osx::cookie-dump "$@"
+  osx.cookie-dump "$@"
 }
 
 change-underscan() {
   set +e
   local amount_percentage="$1"
-  if [[ -z "${amount_percentage}" ]] ; then
-    printf "%s\n\n"  "USAGE: change-underscan percent"
-    printf "%s\n"    "   eg: change-underscan   5  # underscan by 5%"
-    printf "%s\n"    "   eg: change-underscan -10  # overscan by 10%"
+  if [[ -z "${amount_percentage}" ]]; then
+    printf "%s\n\n" "USAGE: change-underscan percent"
+    printf "%s\n" "   eg: change-underscan   5  # underscan by 5%"
+    printf "%s\n" "   eg: change-underscan -10  # overscan by 10%"
     return -1
   fi
 
@@ -56,13 +56,13 @@ change-underscan() {
   local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
 
   h1 'This utility allows you to change underscan/overscan' \
-     'on monitors that do not offer that option via GUI.'
+    'on monitors that do not offer that option via GUI.'
 
-  lib::run::ask "Continue?"
+  run.ui.ask "Continue?"
 
   info "Great! First we need to identify your monitor."
-  hl::yellow "Please make sure that the external monitor is plugged in."
-  lib::run::ask "Is it plugged in?"
+  hl.yellow "Please make sure that the external monitor is plugged in."
+  run.ui.ask "Is it plugged in?"
 
   info "Making a backup of your current graphics settings..."
   inf "Please enter your password, if asked: "
@@ -73,22 +73,22 @@ change-underscan() {
   export LibRun__AbortOnError=${True}
   run "sudo cp -v \"${file}\" \"${backup}\""
 
-  h2  "Now: please change the resolution ${bldylw}on the problem monitor." \
-      "NOTE: it's ${italic}not important what resolution you choose," \
-      "as long as it's different than what you had previously..." \
-      "Finally: exit Display Preferences once you changed resolution."
+  h2 "Now: please change the resolution ${bldylw}on the problem monitor." \
+    "NOTE: it's ${italic}not important what resolution you choose," \
+    "as long as it's different than what you had previously..." \
+    "Finally: exit Display Preferences once you changed resolution."
 
   run "open /System/Library/PreferencePanes/Displays.prefPane"
-  lib::run::ask "Have you changed the resolution and exited Display Prefs? "
+  run.ui.ask "Have you changed the resolution and exited Display Prefs? "
 
   local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')
   [[ -n $DEBUG ]] && info "diff line is at ${line}"
   value=
 
   if [[ "${line}" -gt 0 ]]; then
-    line_pscn_key=$(( $line - 4 ))
-    line_pscn_value=$(( $line - 3 ))
-    ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && {
+    line_pscn_key=$(($line - 4))
+    line_pscn_value=$(($line - 3))
+    (awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn) && {
       value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}')
       [[ -n $DEBUG ]] && info "current value is ${value}"
     }
@@ -98,7 +98,7 @@ change-underscan() {
   fi
 
   h2 "Now, please unplug the problem monitor temporarily..."
-  lib::run::ask "...and press Enter to continue "
+  run.ui.ask "...and press Enter to continue "
 
   if [[ -n ${value} && ${value} -ne ${new_value} ]]; then
     export LibRun__AbortOnError=${True}
@@ -111,7 +111,7 @@ change-underscan() {
     info "${bldylw}IMPORTANT!"
     info "You must restart your computer for the settings to take affect."
     echo
-    lib::run::ask "Should I reboot your computer now? "
+    run.ui.ask "Should I reboot your computer now? "
     info "Very well, rebooting!"
     run "sudo reboot"
   else
@@ -125,20 +125,19 @@ change-underscan() {
 
 # This function creates a tiny RAM disk on /var/ramdisk where the
 # decrypted settings will be stored until a reboot.
-lib::osx::ramdisk::mount() {
+osx.ramdisk.mount() {
   [[ $(uname -s) != "Darwin" ]] && {
     error "This function only works on OSX"
     return 1
   }
   if [[ -z $(df -h | grep ramdisk) ]]; then
-    diskutil erasevolume HFS+ 'ramdisk' `hdiutil attach -nomount ram://8192`
+    diskutil erasevolume HFS+ 'ramdisk' $(hdiutil attach -nomount ram://8192)
   fi
 }
 
-
 # This function creates a tiny RAM disk on /var/ramdisk where the
 # decrypted settings will be stored until a reboot.
-lib::osx::ramdisk::unmount() {
+osx.ramdisk.unmount() {
   [[ $(uname -s) != "Darwin" ]] && {
     error "This function only works on OSX"
     return 1
@@ -151,7 +150,7 @@ lib::osx::ramdisk::unmount() {
 # Pass a fully qualified domain name, such as "apollo.mydomain.me"
 # This function will set the computer name to "apollo", and HostName to the
 # full fqdn.
-lib::osx::set-fqdn() {
+osx.set-fqdn() {
   local fqdn="$1"
   local domain=$(echo ${fqdn} | sed -E 's/^[^.]*\.//g')
   local host=$(echo ${fqdn} | sed -E 's/\..*//g')
@@ -165,21 +164,20 @@ lib::osx::set-fqdn() {
   info "• Hostname will be set to: ${bldgrn}${host}"
   info "• Domain will also change: ${bldgrn}${domain}"
 
-
   echo
 
-  lib::run::ask "Does that look correct to you?"
+  run.ui.ask "Does that look correct to you?"
 
   echo
 
   inf "Now, please provide your SUDO password, if asked: "
 
   sudo printf '' || {
-    not_ok:
+    ui.closer.not-ok:
     exit 1
   }
 
-  ok:
+  ui.closer.ok:
 
   run "sudo scutil --set HostName ${fqdn}"
   run "sudo scutil --set LocalHostName ${host}.local 2>/dev/null|| true"
@@ -191,30 +189,30 @@ lib::osx::set-fqdn() {
 
   h2 "Result of the changes:"
 
-  lib::osx::scutil-print HostName
-  lib::osx::scutil-print LocalHostName
-  lib::osx::scutil-print ComputerName
-  lib::osx::env-print HOSTNAME
+  osx.scutil-print HostName
+  osx.scutil-print LocalHostName
+  osx.scutil-print ComputerName
+  osx.env-print HOSTNAME
   echo
   hr
 }
 
-lib::osx::scutil-print() {
+osx.scutil-print() {
   local var="$1"
   printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} $(sudo scutil --get ${var} | tr -d '\n')
 }
 
-lib::osx::env-print() {
+osx.env-print() {
   local var="$1"
   printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} ${!var}
 }
 
 bashmatic-set-fqdn() {
-  lib::osx::set-fqdn "$@"
+  osx.set-fqdn "$@"
 }
 
 bashmatic-term-program() {
-  if [[ -d /Applications/iTerm.app ]] ; then
+  if [[ -d /Applications/iTerm.app ]]; then
     printf '%s' /Applications/iTerm.app
   elif [[ -d /Applications/Utilities/Terminal.app ]]; then
     printf '%s' /Applications/Utilities/Terminal.app
@@ -227,13 +225,13 @@ bashmatic-term() {
   open $(bashmatic-term-program)
 }
 
-lib::osx::local-servers() {
+osx.local-servers() {
   local protocol="${1:-"ssh"}"
-  run::set-next show-output-on
+  run.set-next show-output-on
   run "timeout 20 dns-sd -B _${protocol}._tcp ."
 }
 
-...ssh.servers() { lib::osx::local-servers ssh; }
-...afp.servers() { lib::osx::local-servers afp; }
-...http.servers() { lib::osx::local-servers http; }
-...https.servers() { lib::osx::local-servers https; }
+ssh.servers() { osx.local-servers ssh; }
+afp.servers() { osx.local-servers afp; }
+http.servers() { osx.local-servers http; }
+https.servers() { osx.local-servers https; }

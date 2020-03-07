@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
-lib::dir::count-slashes() {
+dir.count-slashes() {
   local dir="${1}"
-  echo "${dir}" | \
-    sed 's/[^/]//g' | \
-    tr -d '\n' | \
-    wc -c | \
+  echo "${dir}" |
+    sed 's/[^/]//g' |
+    tr -d '\n' |
+    wc -c |
     tr -d ' '
 }
 
-lib::dir::is-a-dir() {
+dir.is-a-dir() {
   local dir="${1}"
   [[ -d "${dir}" ]]
 }
 
-lib::dir::expand-dir() {
+dir.expand-dir() {
   local dir="${1}"
   # Replace the ~
 

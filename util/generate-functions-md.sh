@@ -7,22 +7,25 @@ generate() {
   local temp=/tmp/FUNCTIONS.md
   run "rm -f ${temp} && touch ${temp}"
 
-  echo "## BashMatic Functions Implementations" >> ${temp}
-  echo >> ${temp}
+  printf "\n# BashMatic\n" >>${temp}
+  printf "\n## Function Listing\n\n\n" >>${temp}
+  printf "\n## Function Implementations\n" >>${temp}
 
   local code='```'
   printf "${bldgrn}"
-  for function in $(bashmatic.functions 1); do 
+  for function in $(bashmatic.functions 1); do
     printf "."
-    echo '### `'$function'`' >> $temp
-    printf "\n%sbash\n" ${code} >> ${temp}
-    type ${function} | tail +2 >> ${temp}
-    printf "\n%s\n\n" ${code} >> ${temp}
+    echo '### `'$function'`' >>$temp
+    printf "\n%sbash\n" ${code} >>${temp}
+    type ${function} | tail +2 >>${temp}
+    printf "\n%s\n\n" ${code} >>${temp}
   done
 
   printf "${clr}\n"
 
   run "mv ${temp} ${HOME}/.bashmatic"
+
+  eval "code ~/.bashmatic/FUNCTIONS.md"
 }
 
 generate

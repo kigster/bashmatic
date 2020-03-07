@@ -7,5 +7,4 @@ export Bashmatic__Test=1
 
 source init.sh
 
-[[ -n ${CI} ]] && lib::color::disable
-
+[[ -n ${CI} ]] && color.disable

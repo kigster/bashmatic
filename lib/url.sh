@@ -8,7 +8,6 @@ export BITLY_API_KEY
 export LibUrl__CurlDownloaderFlags="-fsSL --connect-timeout 5 --retry-delay 10 --retry-max-time 300 --retry 15 "
 export LibUrl__WgetDownloaderFlags="-q --connect-timeout=5 --retry-connrefused --tries 15 -O - "
 
-
 # Description:
 #      If BITLY_LOGIN and BITLY_API_KEY are set, shortens the URL using Bitly.
 #      Otherwise, prints the original URL.
@@ -19,12 +18,12 @@ export LibUrl__WgetDownloaderFlags="-q --connect-timeout=5 --retry-connrefused -
 #      export BITLY_API_KEY=F_09097907778FFFDFDFKFGLASKKLJ
 #      export long="https://s3-us-west-2.amazonaws.com/mybucket/long/very-long-url/2018-08-01.sweet.sweet.donut.right.about.now.html"
 #
-#      export short=$(lib::url::shorten ${long})
+#      export short=$(url.shorten ${long})
 #
 #      open ${short}  # opens in the browser
 #      # => http://bit.ly/d9f02
 #
-lib::url::shorten() {
+url.shorten() {
   local longUrl="$1"
 
   if [[ -z "${BITLY_LOGIN}" || -z "${BITLY_API_KEY}" ]]; then
@@ -35,7 +34,7 @@ lib::url::shorten() {
     export BITLY_API_KEY=$(printf '%s' "${BITLY_API_KEY}" | tr -d '\r' | tr -d '\n')
 
     if [[ -n $(which ruby) ]]; then
-      longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI::encode(str)")
+      longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI.encode(str)")
     fi
 
     #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_LOGIN}" | cat -vet
@@ -45,11 +44,11 @@ lib::url::shorten() {
 
     #[[ -n ${DEBUG} ]] && debug "BitlyAPI URL is:\n${bitlyUrl}\n"
 
-    $(lib::url::downloader) "${bitlyUrl}" | tr -d '\n' | tr -d ' '
+    $(url.downloader) "${bitlyUrl}" | tr -d '\n' | tr -d ' '
   fi
 }
 
-lib::url::downloader() {
+url.downloader() {
   local downloader=
 
   if [[ -z "${LibUrl__Downloader}" ]]; then
@@ -68,12 +67,12 @@ lib::url::downloader() {
 }
 
 # Returns 'ok' or 'invalid' based on the URL
-lib::url::valid-status() {
+url.valid-status() {
   local url="$1"
 
   echo "${url}" | ruby -ne '
     require "uri"
-    u = URI::parse("#{$_}".chomp)
+    u = URI.parse("#{$_}".chomp)
     if u && u.host && u.host&.include?(".") && u&.scheme =~ /^http/
       print "ok"
     else
@@ -82,9 +81,9 @@ lib::url::valid-status() {
 }
 
 # Returns function exit status 0 if the URL is valid.
-lib::url::is-valid() {
+url.is-valid() {
   local url="$1"
-  if [[ $(lib::url::valid-status "$url") = "ok" ]]; then
+  if [[ $(url.valid-status "$url") = "ok" ]]; then
     return 0
   else
     return 1
@@ -99,7 +98,7 @@ lib::url::is-valid() {
 #
 # If the second argument is +true+, intead of printing the code to
 # the STDOUT, function silently exits eith with 0 (200+) or 1 (other.)
-lib::url::http-code() {
+url.http-code() {
   local url="$1"
   local quiet="${2:-false}"
 
@@ -110,7 +109,7 @@ lib::url::http-code() {
     return 100
   }
 
-  lib::url::is-valid "$url" || {
+  url.is-valid "$url" || {
     echo >&2
     err "The URL provided is not a valid URL: ${bldylw}${url}\n" >&2
     echo >&2
@@ -124,10 +123,10 @@ lib::url::http-code() {
   if [[ ${quiet} == true ]]; then
     # if the return code between 200 and 209 we return success.
     if [[ ${result} -gt 199 && ${result} -lt 210 ]]; then
-       return 0
-     else
-       return 1
-     fi
+      return 0
+    else
+      return 1
+    fi
   else
     [[ -n "${result}" ]] && printf ${result} || printf "404"
   fi

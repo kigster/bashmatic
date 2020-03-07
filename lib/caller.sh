@@ -4,15 +4,15 @@
 # frame number, file name, and location, and function name.
 #
 # Example:
-#   0 [ t.bash:5                                 ]: lib::c
-#   1 [ /Users/kig/.bashmatic/lib/7z.sh:48       ]: lib::b
-#   2 [ t.bash:10                                ]: lib::a
+#   0 [ t.bash:5                                 ]: c
+#   1 [ /Users/kig/.bashmatic/lib/7z.sh:48       ]: b
+#   2 [ t.bash:10                                ]: a
 #   3 [ t.bash:13                                ]: main
 #
-lib::caller::stack() {
+caller.stack() {
   local index=${1:-"-1"}
   while true; do
-    index=$(( index + 1 ))
+    index=$((index + 1))
     caller ${index} 2>&1 1>/dev/null || break
 
     local -a frame=($(caller ${index} | tr ' ' '\n'))
@@ -21,6 +21,6 @@ lib::caller::stack() {
 }
 
 # Same thing, shorter.
-...stack.frame() {
-  lib::caller::stack 0
+stack.frame() {
+  caller.stack 0
 }

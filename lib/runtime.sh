@@ -28,7 +28,7 @@ export LibRun__ShowCommand__Default=${True}
 export LibRun__RetryCount__Default=${LibRun__RetryCount__Default:-0}
 export LibRun__RetryCountMax=3
 
-__lib::run::initializer() {
+.run.initializer() {
   export LibRun__AbortOnError=${LibRun__AbortOnError__Default}
   export LibRun__AskOnError=${LibRun__AskOnError__Default}
   export LibRun__ShowCommandOutput=${LibRun__ShowCommandOutput__Default}
@@ -48,9 +48,9 @@ export commands_failed=0
 export commands_completed=0
 
 # Run it while the library is loading.
-__lib::run::initializer
+.run.initializer
 
-__lib::run::env() {
+.run.env() {
   export run_stdout=/tmp/bash-run.$$.stdout
   export run_stderr=/tmp/bash-run.$$.stderr
 
@@ -59,67 +59,67 @@ __lib::run::env() {
   export commands_completed=${commands_completed:-0}
 }
 
-__lib::run::cleanup() {
+.run.cleanup() {
   rm -f ${run_stdout}
   rm -f ${run_stderr}
 }
 
 # To print and not run, set ${LibRun__DryRun}
-__lib::run() {
+.run() {
   local cmd="$*"
   export LibRun__CommandLength=0
-  __lib::run::env
+  .run.env
 
   if [[ ${LibRun__DryRun} -eq ${True} ]]; then
     info "${clr}[dry run] ${bldgrn}${cmd}"
     return 0
   else
     export LibRun__LastExitCode=
-    __lib::run::exec "$@"
+    .run.exec "$@"
 
     return ${LibRun__LastExitCode}
   fi
 }
 
-__lib::run::bundle::exec::with-output() {
+.run.bundle.exec.with-output() {
   export LibRun__ShowCommandOutput=${True}
-  __lib::run::bundle::exec "$@"
+  .run.bundle.exec "$@"
 }
 
 # Runs the command in the context of the "bundle exec",
 # and aborts on error.
-__lib::run::bundle::exec() {
+.run.bundle.exec() {
   local cmd="$*"
-  __lib::run::env
-  local w=$(($(__lib::output::screen-width) - 10))
+  .run.env
+  local w=$(($(.output.screen-width) - 10))
   if [[ ${LibRun__DryRun} -eq ${True} ]]; then
     local line="${clr}[dry run] bundle exec ${bldgrn}${cmd}"
     info "${line:0:${w}}..."
     return 0
   else
-    __lib::run::exec "bundle exec ${cmd}"
+    .run.exec "bundle exec ${cmd}"
   fi
 }
 
-__lib::run::retry::enforce-max() {
+.run.retry.enforce-max() {
   [[ -n ${LibRun__RetryCount} && ${LibRun__RetryCount} -gt ${LibRun__RetryCountMax} ]] &&
     export LibRun__RetryCount="${LibRun__RetryCountMax}"
 }
 
-__lib::run::retry::only-codes() {
+.run.retry.only-codes() {
   export LibRun__RetryExitCodes=("$@")
 }
 
-__lib::run::should-retry-exit-code() {
+.run.should-retry-exit-code() {
   local code=$1
   if [[ -n ${LibRun__RetryExitCodes[*]} ]]; then
-    lib::array::contains-element "${code}" "${array[@]}"
+    array.contains-element "${code}" "${array[@]}"
   else
     return 0
   fi
 }
 
-__lib::run::eval() {
+.run.eval() {
   local stdout="$1"
   shift
   local stderr="$1"
@@ -142,17 +142,17 @@ __lib::run::eval() {
 # These variables are reset back to defaults after each run. The defaults hide
 # both stdout and error, and do NOT abort on failure.
 #
-# See: #__lib::run::initializer for the list of global variables.
-__lib::run::exec() {
+# See: #.run.initializer for the list of global variables.
+.run.exec() {
   command="$*"
 
   if [[ -n ${DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
-    lib::run::inspect
+    run.inspect
   fi
 
   local max_width=100
   local w
-  w=$(($(__lib::output::screen-width) - 10))
+  w=$(($(.output.screen-width) - 10))
 
   [[ ${w} -gt ${max_width} ]] && w=${max_width}
 
@@ -170,13 +170,13 @@ __lib::run::exec() {
   export LibRun__CommandLength=${#ascii_cmd}
 
   [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && {
-    export LibRun__AssignedWidth=$(( w - 3))
+    export LibRun__AssignedWidth=$((w - 3))
     export LibRun__CommandLength=1
     printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"
   }
 
-  if [[ "${LibRun__ShowCommand}" -eq ${False} ]] ; then
-    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(__lib::output::replicate-to "*" 40)"
+  if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
+    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(.output.replicate-to "*" 40)"
   else
     printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}"
   fi
@@ -189,7 +189,7 @@ __lib::run::exec() {
 
   local tries=1
 
-  __lib::run::eval "${run_stdout}" "${run_stderr}" "${command}"
+  .run.eval "${run_stdout}" "${run_stderr}" "${command}"
 
   while [[ -n ${LibRun__LastExitCode} && ${LibRun__LastExitCode} -ne 0 ]] &&
     [[ -n ${LibRun__RetryCount} && ${LibRun__RetryCount} -gt 0 ]]; do
@@ -197,7 +197,7 @@ __lib::run::exec() {
     [[ ${tries} -gt 1 && ${__Previous__ShowCommandOutput} -eq ${True} ]] && {
       export LibRun__ShowCommandOutput=${False}
     }
-    __lib::run::retry::enforce-max
+    .run.retry.enforce-max
 
     export LibRun__RetryCount="$((LibRun__RetryCount - 1))"
     [[ -n ${LibRun__RetrySleep} ]] && sleep ${LibRun__RetrySleep}
@@ -205,7 +205,7 @@ __lib::run::exec() {
     info "Warning: command exited with code ${bldred}${LibRun__LastExitCode}" \
       "$(txt-info)and ${LibRun__RetryCount} retries left."
 
-    __lib::run::eval "${run_stdout}" "${run_stderr}" "${command}"
+    .run.eval "${run_stdout}" "${run_stderr}" "${command}"
 
     tries=$((tries + 1))
   done
@@ -214,7 +214,7 @@ __lib::run::exec() {
 
   export LibRun__ShowCommandOutput=${__Previous__ShowCommandOutput}
 
-  [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && { echo ; }
+  [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && { echo; }
 
   if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
     if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
@@ -229,7 +229,7 @@ __lib::run::exec() {
       command-spacer
       duration ${duration} ${LibRun__LastExitCode}
     fi
-    not_ok
+    ui.closer.not-ok
     echo
     local stderr_printed=false
     # Print stderr generated during command execution.
@@ -239,7 +239,7 @@ __lib::run::exec() {
     }
 
     if [[ ${LibRun__AskOnError} -eq ${True} ]]; then
-      lib::run::ask 'Ignore this error and continue?'
+      run.ui.ask 'Ignore this error and continue?'
 
     elif [[ ${LibRun__AbortOnError} -eq ${True} ]]; then
       export commands_failed=$((commands_failed + 1))
@@ -262,8 +262,8 @@ __lib::run::exec() {
     fi
   fi
 
-  __lib::run::initializer
-  __lib::run::cleanup
+  .run.initializer
+  .run.cleanup
 
   printf "${clr}"
   return ${LibRun__LastExitCode}
@@ -271,7 +271,7 @@ __lib::run::exec() {
 
 # This errors out if the command provided finishes successfully, but quicker than
 # expected. Expected duration is the first numeric argument, command is the rest.
-lib::run::with-min-duration() {
+run.with.minimum-duration() {
   local min_duration=$1
   shift
   local command="$*"
@@ -297,7 +297,7 @@ lib::run::with-min-duration() {
   return ${result}
 }
 
-press-any-key-to-continue() {
+run.ui.press-any-key() {
   local prompt="$*"
   [[ -z ${prompt} ]] && prompt="Press any key to continue..."
   br
@@ -312,7 +312,7 @@ press-any-key-to-continue() {
 
 # Ask the user if they want to proceed, defaulting to Yes.
 # Choosing no exits the program. The arguments are printed as a question.
-lib::run::ask() {
+run.ui.ask() {
   local question=$*
   echo
   inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}"
@@ -339,13 +339,13 @@ lib::run::ask() {
 
 export LibRun__Inspect__SkipFalseOrBlank=${False}
 
-lib::run::inspect::set-skip-false-or-blank() {
+run.inspect.set-skip-false-or-blank() {
   local value="${1}"
   [[ -n "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${value}
   [[ -z "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${True}
 }
 
-lib::run::inspect-variable() {
+run.inspect-variable() {
   local var_name=${1}
   local var_value=${!var_name}
   local value=""
@@ -393,7 +393,7 @@ lib::run::inspect-variable() {
   if [[ "${print_value}" -eq 1 ]]; then
     if [[ -n "${value}" ]]; then
       printf "%*.*s" ${avail_len} ${avail_len} "${value}"
-    elif $(lib::util::is-numeric "${var_value}"); then
+    elif $(util.is-numeric "${var_value}"); then
       avail_len=$((${avail_len} - 5))
       if [[ "${var_value}" =~ '.' ]]; then
         printf "%*.2f" ${avail_len} "${var_value}"
@@ -410,54 +410,54 @@ lib::run::inspect-variable() {
   echo
 }
 
-lib::run::print-variable() {
-  lib::run::inspect-variable $1
+run.print-variable() {
+  run.inspect-variable $1
 }
 
-lib::run::inspect-variables() {
+run.inspect-variables() {
   local title=${1}
   shift
-  hl::subtle "${title}"
+  hl.subtle "${title}"
   for var in $@; do
-    lib::run::inspect-variable "${var}"
+    run.inspect-variable "${var}"
   done
 }
 
-lib::run::print-variables() {
+run.print-variables() {
   local title=${1}
   shift
-  hl::yellow "${title}"
+  hl.yellow "${title}"
   for var in $@; do
-    lib::run::print-variable "${var}"
+    run.print-variable "${var}"
   done
 }
 
-lib::run::variables-starting-with() {
+run.variables-starting-with() {
   local prefix="${1}"
   env | egrep "^${prefix}" | grep '=' | hbsed 's/=.*//g' | sort
 }
 
-lib::run::variables-ending-with() {
+run.variables-ending-with() {
   local suffix="${1}"
   env | egrep ".*${suffix}=.*\$" | grep '=' | hbsed 's/=.*//g' | sort
 }
 
-# Usage: lib::run::inspect-variables-that-are starting-with LibRun
-lib::run::inspect-variables-that-are() {
+# Usage: run.inspect-variables-that-are starting-with LibRun
+run.inspect-variables-that-are() {
   local pattern_type="${1}" # starting-with or ending-with
   local pattern="${2}"      # actual pattern
-  lib::run::inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" \
-    "$(lib::run::variables-${pattern_type} ${pattern} | tr '\n' ' ')"
+  run.inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" \
+    "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"
 }
 
 # shellcheck disable=SC2120
-lib::run::inspect() {
+run.inspect() {
   if [[ ${#@} -eq 0 || $(array-contains-element "config" "$@") == "true" ]]; then
-    lib::run::inspect-variables-that-are starting-with LibRun
+    run.inspect-variables-that-are starting-with LibRun
   fi
 
   if [[ ${#@} -eq 0 || $(array-contains-element "totals" "$@") == "true" ]]; then
-    hl::subtle "TOTALS"
+    hl.subtle "TOTALS"
     info "${bldgrn}${commands_completed} commands completed successfully"
     [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed"
     [[ ${commands_ignored} -gt 0 ]] && info "${bldylw}${commands_ignored} commands failed, but were ignored."
@@ -465,57 +465,33 @@ lib::run::inspect() {
   fi
 
   if [[ ${#@} -eq 0 || $(array-contains-element "current" "$@") == "true" ]]; then
-    lib::run::inspect-variables-that-are ending-with __LastExitCode
+    run.inspect-variables-that-are ending-with __LastExitCode
   fi
 
   reset-color
 }
 
-lib::run() {
-  __lib::run "$@"
+run() {
+  .run "$@"
   return ${LibRun__LastExitCode}
 }
 
-with-min-duration() {
-  lib::run::with-min-duration "$@"
+run.with.ruby-bundle() {
+  .run.bundle.exec "$@"
 }
 
-with-bundle-exec() {
-  __lib::run::bundle::exec "$@"
+run.with.ruby-bundle-and-output() {
+  .run.bundle.exec.with-output "$@"
 }
 
-with-bundle-exec-and-output() {
-  __lib::run::bundle::exec::with-output "$@"
-}
-
-# These are borrowed from
-# /usr/local/Homebrew/Library/Homebrew/brew.sh
-onoe() {
-  if [[ -t 2 ]]; then # check whether stderr is a tty.
-    echo -ne "\033[4;31mError\033[0m: " >&2 # highlight Error with underline and red color
-  else
-    echo -n "Error: " >&2
-  fi
-  if [[ $# -eq 0 ]]; then
-    /bin/cat >&2
-  else
-    echo "$*" >&2
-  fi
-}
-
-odie() {
-  onoe "$@"
-  exit 1
-}
-
-is_verbose() {
+run.config.verbose-is-enabled() {
   [[ ${LibRun__Verbose} -eq ${True} ]]
 }
 
-is_detail() {
+run.config.detail-is-enabled() {
   [[ ${LibRun__Detail} -eq ${True} ]]
 }
 
-is_ask_on_error() {
+run.on-error.ask-is-enabled() {
   [[ ${LibRun__AskOnError} -eq ${True} ]]
 }

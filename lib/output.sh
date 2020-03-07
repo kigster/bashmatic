@@ -1,74 +1,74 @@
-#!/usr/bin/env bash
+#/usr/bin/env bash
 # Private functions
 
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
-__lib::output::cursor-right-by() {
-  lib::output::is_terminal && printf "\e[${1}C"
+.output.cursor-right-by() {
+  output.is_terminal && printf "\e[${1}C"
 }
 
-__lib::output::cursor-left-by() {
-  lib::output::is_terminal && printf "\e[${1}D"
+.output.cursor-left-by() {
+  output.is_terminal && printf "\e[${1}D"
 }
 
-__lib::output::cursor-up-by() {
-  lib::output::is_terminal && printf "\e[${1}A"
+.output.cursor-up-by() {
+  output.is_terminal && printf "\e[${1}A"
 }
 
-__lib::output::cursor-down-by() {
-  lib::output::is_terminal && printf "\e[${1}B"
+.output.cursor-down-by() {
+  output.is_terminal && printf "\e[${1}B"
 }
 
-__lib::output::cursor-move-to-y() {
-  lib::output::is_terminal || return
-  __lib::output::cursor-up-by 1000
-  __lib::output::cursor-down-by ${1:-0}
+.output.cursor-move-to-y() {
+  output.is_terminal || return
+  .output.cursor-up-by 1000
+  .output.cursor-down-by ${1:-0}
 }
 
-__lib::output::cursor-move-to-x() {
-  lib::output::is_terminal || return
-  __lib::output::cursor-left-by 1000
-  __lib::output::cursor-right-by ${1:-0}
+.output.cursor-move-to-x() {
+  output.is_terminal || return
+  .output.cursor-left-by 1000
+  .output.cursor-right-by ${1:-0}
 }
 
 cursor.rewind() {
   local x=${1:-0}
-  __lib::output::cursor-move-to-x ${x}
+  .output.cursor-move-to-x ${x}
 }
 
 cursor.left() {
-  __lib::output::cursor-left-by "$@"
+  .output.cursor-left-by "$@"
 }
 
 cursor.up() {
-  __lib::output::cursor-up-by "$@"
+  .output.cursor-up-by "$@"
 }
 
 cursor.down() {
-  __lib::output::cursor-down-by "$@"
+  .output.cursor-down-by "$@"
 }
 
 cursor.right() {
-  __lib::output::cursor-right-by "$@"
+  .output.cursor-right-by "$@"
 }
 
-__lib::ver-to-i() {
+.ver-to-i() {
   version=${1}
   echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
 }
 
-lib::output::color::on() {
+output.color.on() {
   printf "${bldred}" >&2
   printf "${bldblu}" >&1
 }
 
-lib::output::color::off() {
+output.color.off() {
   reset-color: >&2
   reset-color: >&1
 }
 
-__lib::output::current-screen-width() {
+.output.current-screen-width() {
   local w
   local os=$(uname -s)
 
@@ -86,7 +86,7 @@ __lib::output::current-screen-width() {
   printf -- "%d" $w
 }
 
-__lib::output::screen-width() {
+.output.screen-width() {
   if [[ -n ${CI} ]]; then
     printf -- "120"
     return 0
@@ -97,7 +97,7 @@ __lib::output::screen-width() {
     return
   fi
 
-  local w=$(__lib::output::current-screen-width)
+  local w=$(.output.current-screen-width)
 
   export AppCurrentScreenWidth=${w}
   export AppCurrentScreenMillis=$(millis)
@@ -105,7 +105,7 @@ __lib::output::screen-width() {
   printf -- "%d" ${w}
 }
 
-__lib::output::screen-height() {
+.output.screen-height() {
   if [[ ${AppCurrentOS:-$(uname -s)} == 'Darwin' ]]; then
     h=$(stty -a 2>/dev/null | grep rows | awk '{print $4}')
   elif [[ ${AppCurrentOS} == 'Linux' ]]; then
@@ -118,36 +118,36 @@ __lib::output::screen-height() {
   printf -- $(($h - 2))
 }
 
-__lib::output::line() {
-  __lib::output::repeat-char "─" $(($(__lib::output::screen-width) - 2))
+.output.line() {
+  .output.repeat-char "─" $(($(.output.screen-width) - 2))
 }
 
-__lib::output::hr() {
-  local cols=${1:-$(__lib::output::screen-width)}
+.output.hr() {
+  local cols=${1:-$(.output.screen-width)}
   local char=${2:-"—"}
   local color=${3:-${txtylw}}
 
   printf "${color}"
-  __lib::output::repeat-char "─"
+  .output.repeat-char "─"
   reset-color
 }
 
-__lib::output::replicate-to() {
+.output.replicate-to() {
   local char="$1"
   local len="$2"
 
-  __lib::output::repeat-char "${char}" "${len}"
+  .output.repeat-char "${char}" "${len}"
 }
 
-__lib::output::sep() {
-  __lib::output::hr
+.output.sep() {
+  .output.hr
   printf "\n"
 }
 
-__lib::output::repeat-char() {
+.output.repeat-char() {
   local char="${1}"
   local width=${2}
-  [[ -z "${width}" ]] && width=$(__lib::output::screen-width)
+  [[ -z "${width}" ]] && width=$(.output.screen-width)
   local line=""
   for i in {1..300}; do
     [[ $i -gt ${width} ]] && {
@@ -160,33 +160,33 @@ __lib::output::repeat-char() {
 }
 
 # set background color to something before calling this
-__lib::output::bar() {
-  __lib::output::repeat-char " "
+.output.bar() {
+  .output.repeat-char " "
   reset-color
 }
 
-__lib::output::box-separator() {
+.output.box-separator() {
   printf "├"
-  __lib::output::line
-  __lib::output::cursor-left-by 1
+  .output.line
+  .output.cursor-left-by 1
   printf "┤${clr}\n"
 }
 
-__lib::output::box-top() {
+.output.box-top() {
   printf "┌"
-  __lib::output::line
-  __lib::output::cursor-left-by 1
+  .output.line
+  .output.cursor-left-by 1
   printf "┐${clr}\n"
 }
 
-__lib::output::box-bottom() {
+.output.box-bottom() {
   printf "└"
-  __lib::output::line
-  __lib::output::cursor-left-by 1
+  .output.line
+  .output.cursor-left-by 1
   printf "┘${clr}\n"
 }
 
-__lib::output::which-ruby() {
+.output.which-ruby() {
   if [[ -n $(which rbenv) && -n $(rbenv which ruby) ]]; then
     rbenv which ruby
   elif [[ -x /usr/bin/ruby ]]; then
@@ -198,44 +198,44 @@ __lib::output::which-ruby() {
   fi
 }
 
-__lib::output::clean() {
+.output.clean() {
   local text="$*"
-  $(__lib::output::which-ruby) -e "input=\"${text}\"; " -e 'puts input.gsub(/\e\[[;m\d]+/, "")'
+  $(.output.which-ruby) -e "input=\"${text}\"; " -e 'puts input.gsub(/\e\[[;m\d]+/, "")'
 }
 
-__lib::output::boxed-text() {
+.output.boxed-text() {
   local border_color=${1}
   shift
   local text_color=${1}
   shift
   local text="$*"
 
-  lib::output::is_terminal || {
+  output.is_terminal || {
     printf ">>> %80.80s <<< \n" ${text}
     return
   }
 
-  local clean_text=$(__lib::output::clean "${text}")
-  local width=$(($(__lib::output::screen-width) - 2))
+  local clean_text=$(.output.clean "${text}")
+  local width=$(($(.output.screen-width) - 2))
   local remaining_space_len=$(($width - ${#clean_text} - 1))
   printf "${border_color}│ ${text_color}"
   printf -- "${text}"
-  [[ ${remaining_space_len} -gt 0 ]] && __lib::output::repeat-char " " "${remaining_space_len}"
-  __lib::output::cursor-left-by 1
+  [[ ${remaining_space_len} -gt 0 ]] && .output.repeat-char " " "${remaining_space_len}"
+  .output.cursor-left-by 1
   printf "${border_color}│${clr}\n"
 }
 
 #
-# Usage: __lib::output::box border-color text-color "line 1" "line 2" ....
+# Usage: .output.box border-color text-color "line 1" "line 2" ....
 #
-__lib::output::box() {
+.output.box() {
   local border_color=${1}
   shift
   local text_color=${1}
   shift
   local line
 
-  lib::output::is_terminal || {
+  output.is_terminal || {
     for line in "$@"; do
       printf ">>> %80.80s <<< \n" ${line}
     done
@@ -244,30 +244,30 @@ __lib::output::box() {
 
   [[ -n "${opts_suppress_headers}" ]] && return
 
-  printf "\n${border_color}"
-  __lib::output::box-top
+  printf "${border_color}"
+  .output.box-top
 
   local __i=0
   for line in "$@"; do
     [[ $__i == 1 ]] && {
       printf "${border_color}"
-      __lib::output::box-separator
+      .output.box-separator
     }
-    __lib::output::boxed-text "${border_color}" "${text_color}" "${line}"
+    .output.boxed-text "${border_color}" "${text_color}" "${line}"
     __i=$(($__i + 1))
   done
 
   printf "${border_color}"
-  __lib::output::box-bottom
+  .output.box-bottom
 }
 
-__lib::output::center() {
+.output.center() {
   local color="${1}"
   shift
   local text="$*"
 
-  local clean_text=$(__lib::output::clean "${text}")
-  local width=$(($(__lib::output::screen-width) - 2))
+  local clean_text=$(.output.clean "${text}")
+  local width=$(($(.output.screen-width) - 2))
   local remaining_space_len=$((1 + ($width - ${#clean_text}) / 2))
 
   local offset=0
@@ -275,22 +275,22 @@ __lib::output::center() {
 
   printf "${color}"
   cursor.at.x 0
-  __lib::output::repeat-char " " ${remaining_space_len}
+  .output.repeat-char " " ${remaining_space_len}
   printf "%s" "${text}"
-  __lib::output::repeat-char " " $((${remaining_space_len} + ${offset} - 1))
+  .output.repeat-char " " $((${remaining_space_len} + ${offset} - 1))
   reset-color
   cursor.at.x 0
   echo
 }
 
-__lib::output::left-justify() {
+.output.left-justify() {
   local color="${1}"
   shift
   local text="$*"
   echo
   printf "${color}"
-  if lib::output::is_terminal; then
-    local width=$((2 * $(__lib::output::screen-width) / 3))
+  if output.is_terminal; then
+    local width=$((2 * $(.output.screen-width) / 3))
     [[ ${width} -lt 70 ]] && width="70"
     printf -- "  %-${width}.${width}s${clr}\n\n" "« ${text} »"
   else
@@ -307,204 +307,204 @@ __lib::output::left-justify() {
 # Usage: center "colors/prefix" "text"
 #    eg: center "${bakred}${txtwht}" "Welcome Friends!"
 center() {
-  __lib::output::center "$@"
+  .output.center "$@"
 }
 
 left() {
-  __lib::output::left-justify "$@"
+  .output.left-justify "$@"
 }
 
 cursor.at.x() {
-  __lib::output::cursor-move-to-x "$@"
+  .output.cursor-move-to-x "$@"
 }
 
 cursor.at.y() {
-  __lib::output::cursor-move-to-y "$@"
+  .output.cursor-move-to-y "$@"
 }
 
 screen.width() {
-  __lib::output::screen-width
+  .output.screen-width
 }
 
 screen.height() {
-  __lib::output::screen-height
+  .output.screen-height
 }
 
-lib::output::is_terminal() {
-  lib::output::is_tty || lib::output::is_redirect || lib::output::is_pipe || lib::output::is_ssh
+output.is_terminal() {
+  output.is_tty || output.is_redirect || output.is_pipe || output.is_ssh
 }
 
-lib::output::is_ssh() {
+output.is_ssh() {
   [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]
 }
 
-lib::output::is_tty() {
+output.is_tty() {
   [[ -t 1 ]]
 }
 
-lib::output::is_pipe() {
+output.is_pipe() {
   [[ -p /dev/stdout ]]
 }
 
-lib::output::is_redirect() {
+output.is_redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 
-box::yellow-in-red() {
-  __lib::output::box "${bldred}" "${bldylw}" "$@"
+box.yellow-in-red() {
+  .output.box "${bldred}" "${bldylw}" "$@"
 }
 
-box::yellow-in-yellow() {
-  __lib::output::box "${bldylw}" "${txtylw}" "$@"
+box.yellow-in-yellow() {
+  .output.box "${bldylw}" "${txtylw}" "$@"
 }
 
-box::blue-in-yellow() {
-  __lib::output::box "${bldylw}" "${bldblu}" "$@"
+box.blue-in-yellow() {
+  .output.box "${bldylw}" "${bldblu}" "$@"
 }
 
-box::blue-in-green() {
-  __lib::output::box "${bldblu}" "${bldgrn}" "$@"
+box.blue-in-green() {
+  .output.box "${bldblu}" "${bldgrn}" "$@"
 }
 
-box::yellow-in-blue() {
-  __lib::output::box "${bldylw}" "${bldblu}" "$@"
+box.yellow-in-blue() {
+  .output.box "${bldylw}" "${bldblu}" "$@"
 }
 
-box::red-in-yellow() {
-  __lib::output::box "${bldred}" "${bldylw}" "$@"
+box.red-in-yellow() {
+  .output.box "${bldred}" "${bldylw}" "$@"
 }
 
-box::red-in-red() {
-  __lib::output::box "${bldred}" "${txtred}" "$@"
+box.red-in-red() {
+  .output.box "${bldred}" "${txtred}" "$@"
 }
 
-box::green-in-magenta() {
-  __lib::output::box "${bldgrn}" "${bldpur}" "$@"
+box.green-in-magenta() {
+  .output.box "${bldgrn}" "${bldpur}" "$@"
 }
 
-box::red-in-magenta() {
-  __lib::output::box "${bldred}" "${bldpur}" "$@"
+box.red-in-magenta() {
+  .output.box "${bldred}" "${bldpur}" "$@"
 }
 
-box::green-in-green() {
-  __lib::output::box "${bldgrn}" "${bldgrn}" "$@"
+box.green-in-green() {
+  .output.box "${bldgrn}" "${bldgrn}" "$@"
 }
 
-box::green-in-yellow() {
-  __lib::output::box "${bldgrn}" "${bldylw}" "$@"
+box.green-in-yellow() {
+  .output.box "${bldgrn}" "${bldylw}" "$@"
 }
 
-box::green-in-cyan() {
-  __lib::output::box "${bldgrn}" "${bldcyn}" "$@"
+box.green-in-cyan() {
+  .output.box "${bldgrn}" "${bldcyn}" "$@"
 }
 
-box::magenta-in-green() {
-  __lib::output::box "${bldpur}" "${bldgrn}" "$@"
+box.magenta-in-green() {
+  .output.box "${bldpur}" "${bldgrn}" "$@"
 }
 
-box::magenta-in-blue() {
-  __lib::output::box "${bldblu}" "${bldpur}" "$@"
+box.magenta-in-blue() {
+  .output.box "${bldblu}" "${bldpur}" "$@"
 }
 
-hl::white-on-orange() {
+hl.white-on-orange() {
   left "${white_on_orange}" "$@"
 }
 
 test-group() {
   [[ -z ${white_on_salmon} ]] && hr
-  hl::white-on-salmon "$@"
+  hl.white-on-salmon "$@"
 }
 
-hl::white-on-salmon() {
+hl.white-on-salmon() {
   left "${white_on_salmon}" "$@"
 }
 
-hl::orange() {
+hl.orange() {
   left "${white_on_orange}" "$@"
 }
 
-hl::yellow-on-gray() {
+hl.yellow-on-gray() {
   left "${yellow_on_gray}" "$@s"
 }
 
-hl::yellow-on-gray() {
+hl.yellow-on-gray() {
   left "${yellow_on_gray}" "$@s"
 }
 
-hl::blue() {
+hl.blue() {
   left "${bldwht}${bakpur}" "$@"
 }
 
-hl::green() {
+hl.green() {
   left "${txtblk}${bakgrn}" "$@"
 }
 
-hl::yellow() {
+hl.yellow() {
   left "${bakylw}${txtblk}" "$@"
 }
 
-hl::subtle() {
+hl.subtle() {
   left "${bldwht}${bakblk}${underlined}" "$@"
 }
 
-hl::desc() {
+hl.desc() {
   left "${bakylw}${txtblk}${bakylw}" "$@"
 }
 
-h::yellow() {
+h.yellow() {
   center "${txtblk}${bakylw}" "$@"
 }
 
-h::red() {
+h.red() {
   center "${txtblk}${bakred}" "$@"
 }
 
-h::green() {
+h.green() {
   center "${txtblk}${bakgrn}" "$@"
 }
 
-h::blue() {
+h.blue() {
   center "${txtblk}${bakblu}" "$@"
 }
 
-h::black() {
+h.black() {
   center "${bldylw}${bakblk}" "$@"
 }
 
-h2::green() {
-  box::green-in-cyan "$@"
+h2.green() {
+  box.green-in-cyan "$@"
 }
 
-h1::green() {
-  box::green-in-magenta "$@"
+h1.green() {
+  box.green-in-magenta "$@"
 }
 
-h1::purple() {
-  box::magenta-in-green "$@"
+h1.purple() {
+  box.magenta-in-green "$@"
 }
 
-h1::blue() {
-  box::magenta-in-blue "$@"
+h1.blue() {
+  box.magenta-in-blue "$@"
 }
 
-h1::red() {
-  box::red-in-red "$@"
+h1.red() {
+  box.red-in-red "$@"
 }
 
-h1::yellow() {
-  box::yellow-in-red "$@"
+h1.yellow() {
+  box.yellow-in-red "$@"
 }
 
 h1() {
-  box::blue-in-yellow "$@"
+  box.blue-in-yellow "$@"
 }
 
 h2() {
-  box::blue-in-green "$@"
+  box.blue-in-green "$@"
 }
 
 h3() {
-  hl::subtle "$@"
+  hl.subtle "$@"
 }
 
 hdr() {
@@ -512,23 +512,23 @@ hdr() {
 }
 
 screen-width() {
-  __lib::output::screen-width
+  .output.screen-width
 }
 
-hr::colored() {
+hr.colored() {
   local color="$*"
   [[ -z ${color} ]] && color="${bldred}"
-  __lib::output::hr "$(screen-width)" "—" "${*}"
+  .output.hr "$(screen-width)" "—" "${*}"
 }
 
-function hr() {
+hr() {
   [[ -z "$*" ]] || printf $*
-  __lib::output::hr
+  .output.hr
 }
 
 stdout() {
   local file=$1
-  hl::subtle STDOUT
+  hl.subtle STDOUT
   printf "${clr}"
   [[ -s ${file} ]] && cat ${file}
   reset-color
@@ -536,7 +536,7 @@ stdout() {
 
 stderr() {
   local file=$1
-  hl::subtle STDERR
+  hl.subtle STDERR
   printf "${txtred}"
   [[ -s ${file} ]] && cat ${file}
   reset-color
@@ -554,7 +554,7 @@ command-spacer() {
   local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10))
   # shellcheck disable=SC2154
 
-  [[ ${__width} -gt 0 ]] && __lib::output::replicate-to "▪" "${__width}"
+  [[ ${__width} -gt 0 ]] && .output.replicate-to "▪" "${__width}"
 }
 
 duration() {
@@ -574,42 +574,53 @@ duration() {
   fi
 }
 
-ok() {
-  __lib::output::cursor-left-by 1000
-  printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
-}
-
-not_ok() {
-  __lib::output::cursor-left-by 1000
-  printf " ${bakred}${bldwht} ✘ ${clr} "
-}
-
-kind_of_ok() {
-  __lib::output::cursor-left-by 1000
-  printf " ${bakylw}${bldwht} ❖ ${clr} "
-}
-
 left-prefix() {
   [[ -z ${LibOutput__LeftPrefix} ]] && {
-    export LibOutput__LeftPrefix=$(__lib::output::replicate-to " " "${LibOutput__LeftPrefixLen}")
+    export LibOutput__LeftPrefix=$(.output.replicate-to " " "${LibOutput__LeftPrefixLen}")
   }
   printf "${LibOutput__LeftPrefix}"
 }
 
-ok:() {
-  ok $@
+#—————————————————————————————————————————————————————————————————
+# Closers for open-ended statements like `inf`, `warn`, `debug`, `err`
+#—————————————————————————————————————————————————————————————————
+ui.closer.ok() {
+  .output.cursor-left-by 1000
+  printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
+}
+
+ui.closer.ok:() {
+  ui.closer.ok "$@"
   echo
 }
 
-not_ok:() {
-  not_ok $@
+ok() { ui.closer.ok "$@"; }
+ok:() { ui.closer.ok: "$@"; }
+
+ui.closer.not-ok() {
+  .output.cursor-left-by 1000
+  printf " ${bakred}${bldwht} ✘ ${clr} "
+}
+
+ui.closer.not-ok:() {
+  ui.closer.not-ok $@
   echo
 }
 
-kind_of_ok:() {
-  kind_of_ok $@
+not-ok() { ui.closer.not-ok "$@"; }
+not-ok:() { ui.closer.not-ok: "$@"; }
+
+ui.closer.kind-of-ok() {
+  .output.cursor-left-by 1000
+  printf " ${bakylw}${bldwht} ❖ ${clr} "
+}
+
+ui.closer.kind-of-ok:() {
+  ui.closer.kind-of-ok $@
   echo
 }
+
+#—————————————————————————————————————————————————————————————————
 
 puts() {
   printf "  ⇨ ${txtwht}$*${clr}"
@@ -636,6 +647,11 @@ err() {
   printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
 }
 
+ask() {
+  printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}"
+  printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
+}
+
 inf() {
   printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
 }
@@ -651,7 +667,7 @@ warn() {
 
 warning() {
   header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}")
-  box::yellow-in-yellow "${header} ${bldylw}$*" >&2
+  box.yellow-in-yellow "${header} ${bldylw}$*" >&2
 }
 
 br() {
@@ -665,28 +681,28 @@ info() {
 
 error() {
   header=$(printf -- "${txtblk}${bakred} « ERROR » ${clr}")
-  box::red-in-red "${header} ${bldylw}$@" >&2
+  box.red-in-red "${header} ${bldylw}$@" >&2
 }
 
 info:() {
   inf $*
-  ok:
+  ui.closer.ok:
 }
 
 error:() {
   err $*
-  not_ok:
+  ui.closer.not-ok:
 }
 
 warning:() {
   warn $*
-  kind_of_ok:
+  ui.closer.kind-of-ok:
 }
 
 shutdown() {
   local message=${1:-"Shutting down..."}
   echo
-  box::red-in-red "${message}"
+  box.red-in-red "${message}"
   echo
   exit 1
 }
@@ -700,7 +716,7 @@ reset-color:() {
 }
 
 ascii-clean() {
-  __lib::output::clean "$@"
+  .output.clean "$@"
 }
 
 columnize() {

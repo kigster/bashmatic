@@ -5,8 +5,8 @@ source lib/runtime.sh
 
 @test "run() with a successful command and defaults" {
   set +e
-  run::set-next show-output-off
-  output=$(lib::run "/bin/ls -al")
+  run.set-next show-output-off
+  output=$(run "/bin/ls -al")
   clean_output=$(ascii-clean $(printf "${output}"))
   code=$?
   set -e
@@ -17,8 +17,8 @@ source lib/runtime.sh
 
 @test "run() with a successful hidden command" {
   set +e
-  run::set-next show-output-off show-command-off
-  output=$(lib::run "/bin/ls -al")
+  run.set-next show-output-off show-command-off
+  output=$(run "/bin/ls -al")
   clean_output=$(ascii-clean $(printf "${output}"))
   code=$?
   set -e
@@ -29,7 +29,7 @@ source lib/runtime.sh
 
 @test "run() with an unsuccessful command and defaults" {
   set +e
-  lib::run lssdf
+  run lssdf
   code=$?
   set -e
   [[ "${code}" -eq 127 ]]
@@ -37,7 +37,7 @@ source lib/runtime.sh
 
 @test "inspect variables with names starting with LibRun" {
   set +e
-  output=$(lib::run::inspect-variables-that-are starting-with LibRun)
+  output=$(run.inspect-variables-that-are starting-with LibRun)
   code=$?
   set -e
   [[ "${code}" -eq 0 ]]

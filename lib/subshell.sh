@@ -9,29 +9,29 @@
 #
 #           #!/usr/bin/env bash
 #           source ~/.bashmatic/init.sh
-#           bashmatic::validate-subshell || return 1
+#           bashmatic.validate-subshell || return 1
 #
 #     2. Reject running as a script, but only support sourcing in:
 #
 #           #!/usr/bin/env bash
 #           source ~/.bashmatic/init.sh
-#           bashmatic::validate-sourced-in || exit 1
+#           bashmatic.validate-sourced-in || exit 1
 
-bashmatic::subshell-init() {
+bashmatic.subshell-init() {
   export BASH_SUBSHELL_DETECTED=
-} 
+}
 
-bashmatic::detect-subshell() {
-  bashmatic::subshell-init
+bashmatic.detect-subshell() {
+  bashmatic.subshell-init
 
-  [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && 
+  [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] &&
     return ${BASH_IN_SUBSHELL}
 
   unset BASH_IN_SUBSHELL
   export BASH_SUBSHELL_DETECTED=true
 
   local len="${#BASH_SOURCE[@]}"
-  local last_index=$(( len - 1 ))
+  local last_index=$((len - 1))
 
   [[ -n ${DEBUG} ]] && {
     echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" >&2
@@ -39,7 +39,7 @@ bashmatic::detect-subshell() {
     echo "\$0            = $0" >&2
   }
 
-  if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
+  if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
     [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
     export BASH_IN_SUBSHELL=0
   else
@@ -49,8 +49,8 @@ bashmatic::detect-subshell() {
   return ${BASH_IN_SUBSHELL}
 }
 
-bashmatic::validate-sourced-in() {
-  bashmatic::detect-subshell
+bashmatic.validate-sourced-in() {
+  bashmatic.detect-subshell
   [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || {
     echo "This script to be sourced in, not run in a subshell." >&2
     return 1
@@ -59,8 +59,8 @@ bashmatic::validate-sourced-in() {
   return 0
 }
 
-bashmatic::validate-subshell() {
-  bashmatic::detect-subshell
+bashmatic.validate-subshell() {
+  bashmatic.detect-subshell
   [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || {
     echo "This script to be run, not sourced-in" >&2
     return 1

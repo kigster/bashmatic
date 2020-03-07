@@ -6,60 +6,60 @@
 export RAILS_SCHEMA_RB="db/schema.rb"
 export RAILS_SCHEMA_SQL="db/structure.sql"
 
-lib::psql::db-settings() {
+psql.db-settings() {
   psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
-lib::db::psql::args::() {
+db.psql.args.() {
   printf -- "-U ${AppPostgresUsername} -h ${AppPostgresHostname} $*"
 }
 
-lib::db::psql-args() {
-  lib::db::psql::args:: "$@"
+db.psql-args() {
+  db.psql.args. "$@"
 }
 
-lib::db::psql::args::default() {
+db.psql.args.default() {
   printf -- "-U postgres -h localhost $*"
 }
 
-lib::db::psql::args::maint() {
+db.psql.args.maint() {
   printf -- "-U postgres -h localhost --maintenance-db=postgres $*"
 }
 
-lib::db::wait-until-db-online() {
+db.wait-until-db-online() {
   local db=${1}
   inf 'waiting for the database to come up...'
   while true; do
-    out=$(psql -c "select count(*) from accounts" $(lib::db::psql::args:: ${db}) 2>&1)
+    out=$(psql -c "select count(*) from accounts" $(db.psql.args. ${db}) 2>&1)
     code=$?
     [[ ${code} == 0 ]] && break # can connect and all is good
     [[ ${code} == 1 ]] && break # db is there, but no database/table is found
     sleep 1
     [[ ${out} =~ 'does not exist' ]] && break
   done
-  ok:
+  ui.closer.ok:
   return 0
 }
 
-lib::db::num_procs() {
+db.num_procs() {
   ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
 }
 
-lib::db::datetime() {
+db.datetime() {
   date '+%Y%m%d-%H%M%S'
 }
 
-__lib::db::backup-filename() {
+.db.backup-filename() {
   local dbname=${1:-"development"}
-  local checksum=$(lib::db::rails::schema::checksum)
+  local checksum=$(db.rails.schema.checksum)
   if [[ -z ${checksum} ]]; then
     error "Can not calculate DB checksum based on Rails DB structure"
   else
-    printf "${checksum}.$(lib::util::arch).${dbname}.dump"
+    printf "${checksum}.$(util.arch).${dbname}.dump"
   fi
 }
 
-__lib::db::top::page() {
+.db.top.page() {
   local tof=$1
   shift
   local dbtype=$1
@@ -75,7 +75,7 @@ __lib::db::top::page() {
     psql -X -P pager ${db} -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>${tof}
   fi
 
-  local query_width=$(($(__lib::output::screen-width) - 78))
+  local query_width=$(($(.output.screen-width) - 78))
 
   printf "${bldcyn}[${dbtype}] ${bldpur}Above: Replication Status / Below: Active Queries:${clr}\n\n${bldylw}" >>${tof}
 
@@ -90,7 +90,7 @@ __lib::db::top::page() {
 # Public Functions
 #===============================================================================
 
-lib::db::rails::schema::file() {
+db.rails.schema.file() {
   if [[ -f "${RAILS_SCHEMA_RB}" && -f "${RAILS_SCHEMA_SQL}" ]]; then
     if [[ "${RAILS_SCHEMA_RB}" -nt "${RAILS_SCHEMA_SQL}" ]]; then
       printf "${RAILS_SCHEMA_RB}"
@@ -104,17 +104,17 @@ lib::db::rails::schema::file() {
   fi
 }
 
-lib::db::rails::schema::checksum() {
+db.rails.schema.checksum() {
   if [[ -d db/migrate ]]; then
     find db/migrate -type f -ls | awk '{printf("%10d-%s\n",$7,$11)}' | sort | shasum | awk '{print $1}'
   else
-    local schema=$(lib::db::rails::schema::file)
+    local schema=$(db.rails.schema.file)
     [[ -s ${schema} ]] || error "can not find Rails schema in either ${RAILS_SCHEMA_RB} or ${RAILS_SCHEMA_SQL}"
-    [[ -s ${schema} ]] && lib::util::checksum::files "${schema}"
+    [[ -s ${schema} ]] && util.checksum.files "${schema}"
   fi
 }
 
-lib::db::top() {
+db.top() {
   local dbnames=$@
 
   h1 "Please wait while we resolve DB names using AWSCLI..."
@@ -123,8 +123,8 @@ lib::db::top() {
   local dbtype
   local width_min=90
   local height_min=50
-  local width=$(__lib::output::screen-width)
-  local height=$(__lib::output::screen-height)
+  local width=$(.output.screen-width)
+  local height=$(.output.screen-height)
 
   if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
     error "Your screen is too small for db.top."
@@ -138,7 +138,7 @@ lib::db::top() {
   local i=0
 
   for dbname in $dbnames; do
-    declare -a results=($(__lib::db::by_shortname $dbname))
+    declare -a results=($(.db.by_shortname $dbname))
     if [[ ${#results[@]} ]]; then
       dbtype="${results[0]}"
       i=$(($i + 1))
@@ -154,7 +154,7 @@ lib::db::top() {
 
   if [[ ${#connections[@]} == 0 ]]; then
     error "usage: $0 db1, db2, ... "
-    info "eg: lib::db::top m r2 "
+    info "eg: db.top m r2 "
     ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
   fi
 
@@ -194,27 +194,27 @@ lib::db::top() {
       local vertical_shift=$((${percent_total_height} * ${screen_height} / 100))
 
       cursor.at.y ${vertical_shift} >>${tof}
-      [[ -n ${DEBUG} ]] && h::blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >>${tof}
-      hr::colored ${bldpur} >>${tof}
-      __lib::db::top::page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
+      [[ -n ${DEBUG} ]] && h.blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >>${tof}
+      hr.colored ${bldpur} >>${tof}
+      .db.top.page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
     done
     clear
-    h::yellow " «   DB-TOP V0.1.2 © 2018-2019 Konstantin Gredeskoul, ReinventONE Inc. » "
+    h.yellow " «   DB-TOP V0.1.2 © 2018-2019 Konstantin Gredeskoul, ReinventONE Inc. » "
     cat ${tof}
-    cursor.at.y $(($(__lib::output::screen-height) + 1))
+    cursor.at.y $(($(.output.screen-height) + 1))
     printf "${bldwht}Press Ctrl-C to quit.${clr}"
     cp /dev/null ${tof}
     sleep ${interval}
   done
 }
 
-lib::db::dump() {
+db.dump() {
   local dbname=${1}
   shift
   local psql_args="$*"
 
   [[ -z "${psql_args}" ]] && psql_args="-U postgres -h localhost"
-  local filename=$(__lib::db::backup-filename ${dbname})
+  local filename=$(.db.backup-filename ${dbname})
   [[ $? != 0 ]] && return
 
   [[ ${LibRun__Verbose} -eq ${True} ]] && {
@@ -227,22 +227,22 @@ lib::db::dump() {
 
   code=${LibRun__LastExitCode}
   if [[ ${code} != 0 ]]; then
-    not_ok:
+    ui.closer.not-ok:
     error "pg_dump exited with code ${code}"
     return ${code}
   else
-    ok:
+    ui.closer.ok:
     return 0
   fi
 }
 
-lib::db::restore() {
+db.restore() {
   local dbname="$1"
   shift
   local filename="$1"
   [[ -n ${filename} ]] && shift
 
-  [[ -z ${filename} ]] && filename=$(__lib::db::backup-filename ${dbname})
+  [[ -z ${filename} ]] && filename=$(.db.backup-filename ${dbname})
 
   [[ dbname =~ 'production' ]] && {
     error 'This script is not meant for production'
@@ -254,8 +254,8 @@ lib::db::restore() {
     return 2
   }
 
-  psql_args=$(lib::db::psql::args::default)
-  maint_args=$(lib::db::psql::args::maint)
+  psql_args=$(db.psql.args.default)
+  maint_args=$(db.psql.args.maint)
 
   run "dropdb ${maint_args} ${dbname} 2>/dev/null; true"
 

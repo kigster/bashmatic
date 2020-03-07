@@ -14,7 +14,7 @@
 	* [Bootstrapping Bashmatic](#bootstrapping-bashmatic)
 	* [Installing Manually](#installing-manually)
 * [Usage](#usage)
-	* [Inspecting All Available Functions](#inspecting-all-available-functions)
+	* [Function Naming Convention Unpacked](#function-naming-convention-unpacked)
 	* [Seeing All Functions](#seeing-all-functions)
 	* [Seeing Specific Functions](#seeing-specific-functions)
 	* [Various Modules](#various-modules)
@@ -26,11 +26,14 @@
 			* [Output Components](#output-components)
 			* [Output Helpers](#output-helpers)
 		* [3. Package management: Brew and RubyGems](#3-package-management-brew-and-rubygems)
-		* [4. Shortening URLs](#4-shortening-urls)
+		* [4. Shortening URLs and Github Access](#4-shortening-urls-and-github-access)
+			* [Github Access](#github-access)
 		* [5. File Helpers](#5-file-helpers)
 		* [6. Array Helpers](#6-array-helpers)
 		* [7. Utilities](#7-utilities)
-		* [8. Additional Helpers](#8-additional-helpers)
+		* [8. Ruby and Ruby Gems](#8-ruby-and-ruby-gems)
+			* [Gem Helpers](#gem-helpers)
+		* [9. Additional Helpers](#9-additional-helpers)
 * [How To ... Guide.](#how-to--guide)
 	* [How to integrate Bashmatic with an existing project?](#how-to-integrate-bashmatic-with-an-existing-project)
 	* [How can I test if the function was ran as part of a script, or "sourced-in"?](#how-can-i-test-if-the-function-was-ran-as-part-of-a-script-or-sourced-in)
@@ -48,8 +51,8 @@ I mean, check this out — given this tiny four-line script:
 ```bash
 h2 "Installing ruby gem sym and brew package curl..." \
    "Please standby..."
-lib::gem::install "sym" && lib::brew::install::package "curl"
-success "installed sym ruby gem, version $(lib::gem::version sym)"
+gem.install "sym" && brew.install.package "curl"
+success "installed sym ruby gem, version $(gem.version sym)"
 ```
 
 yields this  functionality and the gorgeous output:
@@ -111,16 +114,35 @@ Welcome to **BashMatic** — an ever growing collection of scripts and mini-bash
 
 We have adopted the [Google Bash Style Guide](https://google.github.io/styleguide/shell.xml), and it's recommended that anyone committing to this repo reads the guides to understand the conventions, gotchas and anti-patterns.
 
-### Inspecting All Available Functions
+### Function Naming Convention Unpacked
 
 Bashmatic provides a large number of functions, which are all loaded in your current shell. The functions are split into two fundamental groups:
 
- * Functions with names beginning with a `__` are considered "private" functions
+ * Functions with names beginning with a `.` are considered "private" functions, for example `.run.env` and `.run.initializer`
  * All other functions are considered public.
 
-The naming convention we use stems from Google's Bash StyleGuide, which suggest using `::` to separate BASH function namespaces. This is why you see functions like `lib::docker::last-version`.
+The following conventions apply to all functions:
 
-However, more recent functions after often named using `.` as a separator, as well as `-` — dashes.
+ * We use the "dot" for separating namespaces, hence `git.sync` and `gem.install`.
+ * Function names should be self-explanatory and easy to read.
+ * DO NOT abbreviate words.
+ * All public functions must be written defensively: i.e. if the function is called from the Terminal without any arguments, and it requires arguments, the function *must print its usage info* and a meaningful error message.
+
+For instance:
+
+```bash
+❯ gem.install
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  « ERROR »  Error — gem name is required as an argument                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+❯ gem.install simple-feed
+       installing simple-feed (latest)...
+  ✔︎    ❯ gem install simple-feed   ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔   5685 ms 〕    0
+  ✔︎    ❯ gem list > /tmp/.bashmatic/.gem/gem.list ▪▪▪▪▪▪〔    503 ms 〕    0
+```
+
+
+The naming convention we use is a derivative of Google's Bash StyleGuide, using `.` to separate BASH function namespaces instead of much more verbose `::`.
 
 ### Seeing All Functions
 
@@ -137,10 +159,10 @@ For instance:
 
 ```bash
 ❯ bashmatic.functions-from docker 2
-lib::docker::abort-if-down                     lib::docker::build::container
-lib::docker::actions::build                    lib::docker::containers::clean
+docker.abort-if-down                    docker.build.container
+docker.actions.build                    docker.containers.clean
 .......
-lib::docker::actions::update
+docker.actions.update
 ```
 
 ### Various Modules
@@ -178,20 +200,20 @@ These collectively offer the following functions:
 
 ```bash
 ❯ bashmatic.functions-from 'run*'
-is_ask_on_error                                lib::run::with-min-duration
-is_detail                                      odie
-is_verbose                                     onoe
-lib::run                                       press-any-key-to-continue
-lib::run::ask                                  run
-lib::run::inspect                              run::inspect
-lib::run::inspect-variable                     run::set-all
-lib::run::inspect-variables                    run::set-all::list
-lib::run::inspect-variables-that-are           run::set-next
-lib::run::inspect::set-skip-false-or-blank     run::set-next::list
-lib::run::print-variable                       with-bundle-exec
-lib::run::print-variables                      with-bundle-exec-and-output
-lib::run::variables-ending-with                with-min-duration
-lib::run::variables-starting-with
+
+run                                            run.set-next
+run.config.detail-is-enabled                   run.set-next.list
+run.config.verbose-is-enabled                  run.ui.ask
+run.inspect                                    run.ui.ask-user-value
+run.inspect-variable                           run.ui.get-user-value
+run.inspect-variables                          run.ui.press-any-key
+run.inspect-variables-that-are                 run.ui.retry-command
+run.inspect.set-skip-false-or-blank            run.variables-ending-with
+run.on-error.ask-is-enabled                    run.variables-starting-with
+run.print-variable                             run.with.minimum-duration
+run.print-variables                            run.with.ruby-bundle
+run.set-all                                    run.with.ruby-bundle-and-output
+run.set-all.list
 ```
 
 Using these functions you can write powerful shell scripts that display each command they run, it's status, duration, and can abort on various conditions. You can ask the user to confirm, and you can show a user message and wait for any key pressed to continue.
@@ -224,7 +246,7 @@ Programming style used in this project lends itself nicely to using a DSL-like a
 source ~/.bashmatic/init.sh
 
 # configure global behavior of all run() invocations
-run::set-all abort-on-error show-output-off
+run.set-all abort-on-error show-output-off
 
 run "git clone https://gthub.com/user/rails-repo rails"
 run "cd rails"
@@ -232,7 +254,7 @@ run "bundle check || bundle install"
 
 # the following configuration only applies to the next invocation of `run()`
 # and then resets back to `off`
-run::set-next show-output-on
+run.set-next show-output-on
 run "bundle exec rspec"
 ```
 
@@ -246,40 +268,40 @@ Here is the list of functions in this module:
 
 ```bash
 ❯ bashmatic.functions-from output 3
-abort                         error:                        kind_of_ok:
-ascii-clean                   h1                            left
-box::blue-in-green            h1::blue                      left-prefix
-box::blue-in-yellow           h1::green                     lib::output::color::off
-box::green-in-cyan            h1::purple                    lib::output::color::on
-box::green-in-green           h1::red                       lib::output::is_pipe
-box::green-in-magenta         h1::yellow                    lib::output::is_redirect
-box::green-in-yellow          h2                            lib::output::is_ssh
-box::magenta-in-blue          h2::green                     lib::output::is_terminal
-box::magenta-in-green         h3                            lib::output::is_tty
-box::red-in-magenta           h::black                      not_ok
-box::red-in-red               h::blue                       not_ok:
-box::red-in-yellow            h::green                      ok
-box::yellow-in-blue           h::red                        ok:
-box::yellow-in-red            h::yellow                     okay
-box::yellow-in-yellow         hdr                           puts
-br                            hl::blue                      reset-color
-center                        hl::desc                      reset-color:
-columnize                     hl::green                     screen-width
-command-spacer                hl::orange                    screen.height
-cursor.at.x                   hl::subtle                    screen.width
-cursor.at.y                   hl::white-on-orange           shutdown
-cursor.down                   hl::white-on-salmon           stderr
-cursor.left                   hl::yellow                    stdout
-cursor.rewind                 hl::yellow-on-gray            success
-cursor.right                  hr                            test-group
-cursor.up                     hr::colored                   warn
-debug                         inf                           warning
-duration                      info                          warning:
-err                           info:
-error                         kind_of_ok
+abort                          error:                         left-prefix
+ascii-clean                    h.black                        ok
+box.blue-in-green              h.blue                         okay
+box.blue-in-yellow             h.green                        output.color.off
+box.green-in-cyan              h.red                          output.color.on
+box.green-in-green             h.yellow                       output.is_pipe
+box.green-in-magenta           h1                             output.is_redirect
+box.green-in-yellow            h1.blue                        output.is_ssh
+box.magenta-in-blue            h1.green                       output.is_terminal
+box.magenta-in-green           h1.purple                      output.is_tty
+box.red-in-magenta             h1.red                         puts
+box.red-in-red                 h1.yellow                      reset-color
+box.red-in-yellow              h2                             reset-color:
+box.yellow-in-blue             h2.green                       screen-width
+box.yellow-in-red              h3                             screen.height
+box.yellow-in-yellow           hdr                            screen.width
+br                             hl.blue                        shutdown
+center                         hl.desc                        stderr
+columnize                      hl.green                       stdout
+command-spacer                 hl.orange                      success
+cursor.at.x                    hl.subtle                      test-group
+cursor.at.y                    hl.white-on-orange             ui.closer.kind-of-ok
+cursor.down                    hl.white-on-salmon             ui.closer.kind-of-ok:
+cursor.left                    hl.yellow                      ui.closer.not-ok
+cursor.rewind                  hl.yellow-on-gray              ui.closer.not-ok:
+cursor.right                   hr                             ui.closer.ok:
+cursor.up                      hr.colored                     warn
+debug                          inf                            warning
+duration                       info                           warning:
+err                            info:
+error                          left
 ```
 
-Note that some function names end with `:` — this indicates that the function outputs a new-line in the end. These functions typically exist together with their non-`:`-terminated counter-parts.  If you use one, eg, `inf`, you are then supposed to finish the line by providing an additional output call, most commonly it will be one of `ok:`, `not_ok:` and `kind_of_ok:`.
+Note that some function names end with `:` — this indicates that the function outputs a new-line in the end. These functions typically exist together with their non-`:`-terminated counter-parts.  If you use one, eg, `inf`, you are then supposed to finish the line by providing an additional output call, most commonly it will be one of `ok:`, `ui.closer.not-ok:` and `ui.closer.kind-of-ok:`.
 
 Here is an example:
 
@@ -288,9 +310,9 @@ function valid-cask()  { sleep 1; return 0; }
 function verify-cask() {
   inf "verifying brew cask ${1}...."
   if valid-cask ${1}; then
-    ok:
+    ui.closer.ok:
   else
-    not_ok:
+    ui.closer.not-ok:
   fi
 }
 ```
@@ -319,7 +341,7 @@ Then this is what we'd see:
 
 ##### Output Components
 
-Components are BASH functions that draw something concrete on the screen. For instance, all functions starting with `box::` are components, as are `h1`, `h2`, `hr`, `br` and more.
+Components are BASH functions that draw something concrete on the screen. For instance, all functions starting with `box.` are components, as are `h1`, `h2`, `hr`, `br` and more.
 
 ```bash
 ❯ h1 Hello
@@ -336,7 +358,7 @@ These are often named after HTML elements, such as `hr`, `h1`, `h2`, etc.
 Here is another example where we are deciding whether to print something based on whether the output is a proper terminal (and not a pipe or redirect):
 
 ```
-lib::output::is_tty && h1 "Yay For Terminals!"
+output.is_tty && h1 "Yay For Terminals!"
 ```
 
 The above reads more like a high level language like Ruby or Python than Shell. That's because BASH is more powerful than most people think.
@@ -357,10 +379,10 @@ source ~/.bashmatic/init.sh
 h2 "Installing ruby gem sym and brew package curl..." \
    "Please standby..."
 
-lib::gem::install sym
-lib::brew::install::package curl
+gem.install sym
+brew.install.package curl
 
-success "installed Sym version $(lib::gem::version sym)"
+success "installed Sym version $(gem.version sym)"
 ```
 
 
@@ -368,7 +390,7 @@ When you run the above script, you shyould seee the following output:
 
 ![example](.bashmatic-example.png)
 
-#### 4. Shortening URLs
+#### 4. Shortening URLs and Github Access
 
 You can shorten URLs on the command line using Bitly, but for this to work, you must set the following environment variables in your shell init:
 
@@ -380,26 +402,55 @@ export BITLY_API_KEY="<your api key>"
 Then you can run it like so:
 
 ```bash
-❯ lib::url::shorten https://raw.githubusercontent.com/kigster/bashmatic/master/bin/install
+❯ url.shorten https://raw.githubusercontent.com/kigster/bashmatic/master/bin/install
 # http://bit.ly/2IIPNE1
 ```
+
+##### Github Access
+
+There are a couple of Github-specific helpers:
+
+```bash
+github.clone                                   github.setup
+github.org                                     github.validate
+```
+
+For instance:
+
+```bash
+❯ github.clone sym
+  ✘    Validating Github Configuration...
+
+       Please enter the name of your Github Organization:
+       ❯ kigster
+
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│ Your github organization was saved in your ~/.gitconfig file.                            │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│ To change it in the future, run: github.org new-organization                             │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+
+  ✔︎    ❯ git clone git@github.com:kigster/sym ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔    931 ms 〕    0
+```
+
 
 #### 5. File Helpers
 
 ```bash
 ❯ bashmatic.functions-from file
-file::list::filter-existing                  lib::file::exists_and_newer_than
-file::list::filter-non-empty                 lib::file::gsub
-file::size                                   lib::file::install_with_backup
-file::size::mb                               lib::file::last-modified-date
-file::source-if-exists                       lib::file::last-modified-year
-file::stat
+
+file.exists_and_newer_than                    file.list.filter-non-empty
+file.gsub                                     file.size
+file.install_with_backup                      file.size.mb
+file.last-modified-date                       file.source-if-exists
+file.last-modified-year                       file.stat
+file.list.filter-existing
 ```
 
-For instance, `file::stat` offers access to the `fstat()` C-function:
+For instance, `file.stat` offers access to the `fstat()` C-function:
 
 ```bash
- ❯ file::stat README.md st_size
+ ❯ file.stat README.md st_size
 22799
 ```
 
@@ -407,12 +458,13 @@ For instance, `file::stat` offers access to the `fstat()` C-function:
 
 ```bash
 ❯ bashmatic.functions-from array
-array-bullet-list                            lib::array::contains-element
-array-contains-element                       lib::array::exit-unless-includes
-array-csv                                    lib::array::from-command-output
-array-join                                   lib::array::join
-array-piped                                  lib::array::piped
-lib::array::complain-unless-includes
+
+array-bullet-list                             array.contains-element
+array-contains-element                        array.exit-unless-includes
+array-csv                                     array.from-command-output
+array-join                                    array.join
+array-piped                                   array.piped
+array.complain-unless-includes
 ```
 
 For instance:
@@ -424,9 +476,9 @@ For instance:
  • duck
  • rooster
  • pig
-❯ lib::array::contains-element "duck" "${farm_animals[@]}" && echo Yes || echo No
+❯ array.contains-element "duck" "${farm_animals[@]}" && echo Yes || echo No
 Yes
-❯ lib::array::contains-element  "cow" "${farm_animals[@]}" && echo Yes || echo No
+❯ array.contains-element  "cow" "${farm_animals[@]}" && echo Yes || echo No
 No
 ```
 
@@ -436,31 +488,112 @@ The utilities module has the following functions:
 
 ```bash
 ❯ bashmatic.functions-from util
-is-func                                      lib::util::is-variable-defined
-lib::util::append-to-init-files              lib::util::lines-in-folder
-lib::util::arch                              lib::util::remove-from-init-files
-lib::util::call-if-function                  lib::util::shell-init-files
-lib::util::checksum::files                   lib::util::shell-name
-lib::util::checksum::stdin                   lib::util::ver-to-i
-lib::util::functions-matching                lib::util::whats-installed
-lib::util::generate-password                 long-pause
-lib::util::i-to-ver                          pause
-lib::util::install-direnv                    short-pause
-lib::util::is-a-function                     shortish-pause
-lib::util::is-numeric                        watch-ls-al
+
+long-pause                                    util.install-direnv
+pause                                         util.is-a-function
+short-pause                                   util.is-numeric
+shortish-pause                                util.is-variable-defined
+util.append-to-init-files                     util.lines-in-folder
+util.arch                                     util.remove-from-init-files
+util.call-if-function                         util.shell-init-files
+util.checksum.files                           util.shell-name
+util.checksum.stdin                           util.ver-to-i
+util.functions-matching                       util.whats-installed
+util.generate-password                        watch-ls-al
 ```
 
 For example, version helpers can be very handy in automated version detection, sorting and identifying the latest or the oldest versions:
 
 ```bash
-❯ lib::util::ver-to-i '12.4.9'
+❯ util.ver-to-i '12.4.9'
 112004009
-❯ lib::util::i-to-ver $(lib::util::ver-to-i '12.4.9')
+❯ util.i-to-ver $(util.ver-to-i '12.4.9')
 12.4.9
 
 ```
 
-#### 8. Additional Helpers
+#### 8. Ruby and Ruby Gems
+
+Ruby helpers abound:
+
+```bash
+❯ bashmatic.functions-from ruby
+
+bundle.gems-with-c-extensions                 ruby.install-ruby-with-deps
+interrupted                                   ruby.install-upgrade-bundler
+ruby.bundler-version                          ruby.installed-gems
+ruby.compiled-with                            ruby.kigs-gems
+ruby.default-gems                             ruby.linked-libs
+ruby.full-version                             ruby.numeric-version
+ruby.gemfile-lock-version                     ruby.rbenv
+ruby.gems                                     ruby.rubygems-update
+ruby.gems.install                             ruby.stop
+ruby.gems.uninstall                           ruby.top-versions
+ruby.init                                     ruby.top-versions-as-yaml
+ruby.install                                  ruby.validate-version
+ruby.install-ruby
+```
+
+From the obvious `ruby.install-ruby <version>` to incredibly useful `ruby.top-versions <platform>` — which, using rbenv and ruby_build plugin, returns the most recent minor version of each major version upgrade, as well as the YAML version that allows you to pipe the output into your `.travis.yml` to test against each major version of Ruby, locked to the very latest update in each.
+
+```bash
+❯ ruby.top-versions
+2.0.0-p648
+2.1.10
+2.2.10
+2.3.8
+2.4.9
+2.5.7
+2.6.5
+2.7.0
+2.8.0-dev
+
+❯ ruby.top-versions jruby
+jruby-1.5.6
+jruby-1.6.8
+jruby-1.7.27
+jruby-9.0.5.0
+jruby-9.1.17.0
+jruby-9.2.10.0
+
+❯ ruby.top-versions mruby
+mruby-dev
+mruby-1.0.0
+mruby-1.1.0
+mruby-1.2.0
+mruby-1.3.0
+mruby-1.4.1
+mruby-2.0.1
+mruby-2.1.0
+```
+
+##### Gem Helpers
+
+These are fun helpers to assist in scripting gem management.
+
+```bash
+❯ bashmatic.functions-from gem
+
+g-i                                           gem.gemfile.version
+g-u                                           gem.global.latest-version
+gem.cache-installed                           gem.global.versions
+gem.cache-refresh                             gem.install
+gem.clear-cache                               gem.is-installed
+gem.configure-cache                           gem.uninstall
+gem.ensure-gem-version                        gem.version
+```
+
+For instance
+
+```bash
+❯ g-i awesome_print
+  ✔︎    gem awesome_print (1.8.0) is already installed
+❯ gem.version awesome_print
+1.8.0
+```
+
+
+#### 9. Additional Helpers
 
 There are plenty more modules, that help with:
 
@@ -514,7 +647,7 @@ BashMatic offers a reliable way to test this:
 #!/usr/bin/env bash
 # load library
 if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
-bashmatic::validate-subshell || return 1
+bashmatic.validate-subshell || return 1
 ```
 
 If you'd rather require a library to be sourced in, but not run, use the code as follows:
@@ -523,7 +656,7 @@ If you'd rather require a library to be sourced in, but not run, use the code as
 #!/usr/bin/env bash
 # load library
 if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
-bashmatic::validate-sourced-in || exit 1
+bashmatic.validate-sourced-in || exit 1
 ```
 
 ### How do I run unit tests for BashMatic?

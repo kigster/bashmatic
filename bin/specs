@@ -17,7 +17,7 @@ export Bashmatic__Test=${True}
 
 source "$(pwd)/init.sh"
 
-specs::test-filename() {
+specs.test-filename() {
   file=$1
   for f in ${file} "test/${file}" "test/${file}_tests.bats"; do
     if [[ -s ${f} ]]; then
@@ -27,7 +27,7 @@ specs::test-filename() {
   done
 }
 
-specs::usage() {
+specs.usage() {
   echo
   printf "USAGE\n    ${bldgrn}bin/specs [ test1 test2 ... ]${clr}\n\n"
   printf "    ${txtblu}where test1 can be a full filename, or a partial, eg.\n"
@@ -42,21 +42,21 @@ specs::usage() {
   exit 0
 }
 
-specs::install-bats() {
+specs.install-bats() {
   [[ -n $(which bats) ]] && return 0
   [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
   [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
 
-  if [[ -d ${BatsRoot} && ! -x /usr/local/bin/bats ]] ; then
+  if [[ -d ${BatsRoot} && ! -x /usr/local/bin/bats ]]; then
     run "cd ${BatsRoot} && git pull --rebase 2>/dev/null"
-    run::set-next show-output-on abort-on-error
+    run.set-next show-output-on abort-on-error
     run "./install.sh /usr/local"
     run "cd ${ProjectRoot}"
     run 'hash -r'
   fi
 }
 
-specs::run-file() {
+specs.run-file() {
   local file="$1"
   if [[ -z "${file}" ]]; then
     error "No argument provided"
@@ -72,7 +72,7 @@ specs::run-file() {
   set +e
 }
 
-specs::select-files() {
+specs.select-files() {
   export os=$(uname -s | tr [A-Z] [a-z])
   if [[ -z ${TestFiles[*]} ]]; then
     TestFiles=($(ls -1 test/*_test.*))
@@ -81,17 +81,17 @@ specs::select-files() {
   export TestFiles
 }
 
-specs::run-all() {
+specs.run-all() {
   for file in ${TestFiles[@]}; do
     set +e
-    specs::run-file "${file}"
+    specs.run-file "${file}"
   done
 }
 
-specs::main() {
-  specs::install-bats
-  specs::select-files
-  specs::run-all
+specs.main() {
+  specs.install-bats
+  specs.select-files
+  specs.run-all
 }
 
 trap 'printf "\n\n\n${bldred}BOOOOM! Ctrl-C will set you free...${clr}\n\n"; exit 1' SIGINT
@@ -99,26 +99,28 @@ trap 'printf "\n\n\n${bldred}BOOOOM! Ctrl-C will set you free...${clr}\n\n"; exi
 # Parse additional flags
 while :; do
   case $1 in
-    -h|-\?|--help)
-      shift
-      specs::usage
-      exit 0
-      ;;
-    --) # End of all options; anything after will be passed to the action function
-      shift
-      break
-      ;;
-    -?*)
-      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-      exit 127
-      shift
-      ;;
-    *)  # Default case: If no more options then break out of the loop.
-      [[ -z ${1} ]] && break
-      file=$(specs::test-filename $1)
-      [[ -n "${file}" ]] && TestFiles=(${TestFiles[@]} ${file}); shift
+  -h | -\? | --help)
+    shift
+    specs.usage
+    exit 0
+    ;;
+  --) # End of all options; anything after will be passed to the action function
+    shift
+    break
+    ;;
+  -?*)
+    printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+    exit 127
+    shift
+    ;;
+  *) # Default case: If no more options then break out of the loop.
+    [[ -z ${1} ]] && break
+    file=$(specs.test-filename $1)
+    [[ -n "${file}" ]] && TestFiles=(${TestFiles[@]} ${file})
+    shift
+    ;;
   esac
 done
 
-[[ -n ${CI} ]] && lib::color::disable
-specs::main "$@"
+[[ -n ${CI} ]] && color.disable
+specs.main "$@"
