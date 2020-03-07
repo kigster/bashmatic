@@ -1,33 +1,33 @@
 #!/usr/bin/env bash
 
-function lib::git::configure-auto-updates() {
+git.configure-auto-updates() {
   # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-  export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | lib::util::checksum::stdin)"
+  export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | util.checksum.stdin)"
   mkdir -p $(dirname ${LibGit__LastUpdateTimestampFile})
 }
 
-function lib::git::quiet() {
+git.quiet() {
   [[ -n ${LibGit__QuietUpdate} ]]
 }
 
-function lib::git::sync() {
+git.sync() {
   local dir="$(pwd)"
   cd "${BashMatic__Home}" >/dev/null
-  lib::git::repo-is-clean || {
+  git.repo-is-clean || {
     warning "${bldylw}${BashMatic__Home} has locally modified files." \
       "Please commit or stash them to allow auto-upgrade to function as designed." >&2
     cd "${dir}" >/dev/null
     return 1
   }
 
-  lib::git::update-repo-if-needed
+  git.update-repo-if-needed
   cd "${dir}" >/dev/null
   return 0
 }
 
-function lib::git::last-update-at() {
-  lib::git::configure-auto-updates
+git.last-update-at() {
+  git.configure-auto-updates
 
   local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
   local last_update=0
@@ -35,51 +35,51 @@ function lib::git::last-update-at() {
   printf "%d" ${last_update}
 }
 
-function lib::git::seconds-since-last-pull() {
+git.seconds-since-last-pull() {
   local last_update="$1"
   local now=$(epoch)
   printf $((now - last_update))
 }
 
-function lib::git::update-repo-if-needed() {
-  local last_update_at=$(lib::git::last-update-at)
-  local second_since_update=$(lib::git::seconds-since-last-pull ${last_update_at})
+git.update-repo-if-needed() {
+  local last_update_at=$(git.last-update-at)
+  local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
   local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
   if [[ ${second_since_update} -gt ${update_period_seconds} ]]; then
-    lib::git::sync-remote
+    git.sync-remote
   elif [[ -n ${DEBUG} ]]; then
-    lib::git::quiet || info "${BashMatic__Home} will update in $((update_period_seconds - second_since_update)) seconds..."
+    git.quiet || info "${BashMatic__Home} will update in $((update_period_seconds - second_since_update)) seconds..."
   fi
 }
 
-function lib::git::save-last-update-at() {
+git.save-last-update-at() {
   echo $(epoch) >${LibGit__LastUpdateTimestampFile}
 }
 
-function lib::git::sync-remote() {
-  if lib::git::quiet; then
+git.sync-remote() {
+  if git.quiet; then
     (git remote update && git fetch) 2>&1 >/dev/null
   else
     run "git remote update && git fetch"
   fi
 
-  local status=$(lib::git::local-vs-remote)
+  local status=$(git.local-vs-remote)
 
   if [[ ${status} == "behind" ]]; then
-    lib::git::quiet || run "git pull --rebase"
-    lib::git::quiet && git pull --rebase 2>&1 >/dev/null
+    git.quiet || run "git pull --rebase"
+    git.quiet && git pull --rebase 2>&1 >/dev/null
   elif [[ ${status} != "ahead" ]]; then
-    lib::git::save-last-update-at
+    git.save-last-update-at
   elif [[ ${status} != "ok" ]]; then
     error "Report $(pwd) is ${status} compared to the remote." \
       "Please fix manually to continue."
     return 1
   fi
-  lib::git::save-last-update-at
+  git.save-last-update-at
   return 0
 }
 
-function lib::git::local-vs-remote() {
+git.local-vs-remote() {
   local upstream=${1:-'@{u}'}
   local local_repo=$(git rev-parse @)
   local remote_repo=$(git rev-parse "$upstream")
@@ -88,7 +88,7 @@ function lib::git::local-vs-remote() {
   if [[ -n ${DEBUG} ]]; then
     printf "
       pwd         = $(pwd)
-      remote      = $(lib::git::remotes)
+      remote      = $(git.remotes)
       base        = ${base}
       upstream    = ${upstream}
       local_repo  = ${local_repo}
@@ -112,7 +112,7 @@ function lib::git::local-vs-remote() {
   return 1
 }
 
-lib::git::repo-is-clean() {
+git.repo-is-clean() {
   local repo="${1:-${BashMatic__Home}}"
   cd "${repo}" >/dev/null
   if [[ -z $(git status -s) ]]; then
@@ -124,20 +124,20 @@ lib::git::repo-is-clean() {
   fi
 }
 
-lib::git::remotes() {
+git.remotes() {
   git remote -v | awk '{print $2}' | uniq
 }
 
-function bashmatic.auto-update() {
+bashmatic.auto-update() {
   [[ ${Bashmatic__Test} -eq 1 ]] && return 0
 
-  lib::git::configure-auto-updates
+  git.configure-auto-updates
 
-  lib::git::repo-is-clean || {
+  git.repo-is-clean || {
     h1 "${BashMatic__Home} has locally modified changes." \
       "Will wait with auto-update until it's sync'd up."
     return 1
   }
 
-  lib::git::sync
+  git.sync
 }

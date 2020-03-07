@@ -2,7 +2,7 @@
 
 source lib/hbsed.sh
 
-function moo() {
+moo() {
   echo "config/moo.enc" | hbsed 's/\.(sym|enc)$//g'
 }
 

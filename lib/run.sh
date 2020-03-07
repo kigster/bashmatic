@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 run() {
-  __lib::run $@
+  .run $@
   return ${LibRun__LastExitCode}
 }

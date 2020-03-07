@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-sym::hb::install-shell-helpers() {
+sym.hb.install-shell-helpers() {
   local found=
-  declare -a init_files=($(lib::util::shell-init-files))
+  declare -a init_files=($(util.shell-init-files))
 
   for file in ${init_files[@]}; do
     f=${HOME}/${file}
@@ -26,9 +26,9 @@ sym::hb::install-shell-helpers() {
   fi
 }
 
-sym::install::symit() {
+sym.install.symit() {
 
-  if [[ ! -f config.ru ]] ; then
+  if [[ ! -f config.ru ]]; then
     error "Please run this command from the RAILS_ROOT folder"
     return 1
   fi
@@ -54,15 +54,15 @@ sym::install::symit() {
   # This ensures we are on the latest version of Sym
   run "symit install"
   # This next line ensures we have Sym bash helpers installed.
-  sym::hb::install-shell-helpers
+  sym.hb.install-shell-helpers
 }
 
-sym::hb::configure() {
+sym.hb.configure() {
   export SYMIT__KEY="APP_SYM_KEY"
 }
 
-sym::hb::have_key() {
-  sym::hb::configure
+sym.hb.have_key() {
+  sym.hb.configure
 
   if [[ -z ${CI} ]]; then
     [[ -z "$(keychain ${SYMIT__KEY} find 2>/dev/null)" ]] || printf "yes"
@@ -74,19 +74,19 @@ sym::hb::have_key() {
 __pause() {
   local skip_sleep=${1:-0}
   local sleep_duration=${2:-2}
-  (( ${skip_sleep} )) || sleep ${sleep_duration}
+  ((${skip_sleep})) || sleep ${sleep_duration}
 }
 
-sym::hb::import() {
+sym.hb.import() {
   local skip_instructions=${1:-0}
 
-  if [[ ${AppCurrentOS} != 'Darwin' ]] ; then
+  if [[ ${AppCurrentOS} != 'Darwin' ]]; then
     error 'This is only meant to run on Mac OS-X'
     return
   fi
 
-  sym::hb::configure
-  sym::install::symit
+  sym.hb.configure
+  sym.install.symit
 
   [[ -f ~/.sym.symit.bash ]] && source ~/.sym.symit.bash
 
@@ -94,9 +94,9 @@ sym::hb::import() {
 
   info "Checking for the existence of the current key..."
 
-  if [[ -n "$(sym::hb::have_key)" ]]; then
+  if [[ -n "$(sym.hb.have_key)" ]]; then
     info: "Key ${SYMIT_KEY} is already in you your OS-X Key Chain."
-    lib::run::ask "Would you like to re-import it?"
+    run.ui.ask "Would you like to re-import it?"
     [[ $? != 0 ]] && return
   fi
 
@@ -117,7 +117,7 @@ sym::hb::import() {
     echo
     echo
 
-    lib::run::ask "Ready?"
+    run.ui.ask "Ready?"
     [[ $? != 0 ]] && return
   fi
 
@@ -136,76 +136,75 @@ sym::hb::import() {
   info "Key import was successful, great job! ${bldylw}☺ "
   info "You can test that it works by encrypting, and decrypting a string,"
   echo
-  info "\$ ${bldylw}source bin/lib.bash"
-  info "\$ ${bldylw}hb::encrypt::str hello"
-  info "\$ ${bldylw}hb::decrypt::str \$(hb::encrypt::str hello )"
+  info "\$ ${bldylw}source bin/bash"
+  info "\$ ${bldylw}hb.encrypt.str hello"
+  info "\$ ${bldylw}hb.decrypt.str \$(hb.encrypt.str hello )"
   echo
   info "Or a file:"
-  info "\$ ${bldylw}hb::decrypt::file config/application.dev.yml.enc"
+  info "\$ ${bldylw}hb.decrypt.file config/application.dev.yml.enc"
   echo
   info "You can edit the file as if it wasn't encrypted:"
-  info "\$ ${bldylw}hb::edit::file config/application.dev.yml.enc"
+  info "\$ ${bldylw}hb.edit.file config/application.dev.yml.enc"
   echo
 }
 
-sym::hb::files() {
+sym.hb.files() {
   find . -name '*.enc' -type f
 }
 
 # Runs sym and prepends the key name for Chef
-hb::crypt::chef() {
+hb.crypt.chef() {
   sym -ck APP_CHEF_SYM_KEY $*
 }
 
 # Runs sym and prepends the key name for the App
 # To use: eg, to encrypt a file:
 #
-#     sym::sym -e -f file.txt -o file.enc
+#     sym.sym -e -f file.txt -o file.enc
 #
-hb::sym() {
+hb.sym() {
   sym -cqk APP_SYM_KEY $*
 }
 
-hb::encrypt::str() {
+hb.encrypt.str() {
   [[ -z "${1}" ]] && {
-    error 'usage: hb::encrypt::str "string to encrypt"'
+    error 'usage: hb.encrypt.str "string to encrypt"'
     return
   }
   sym -ck APP_SYM_KEY -e -s "$*"
 }
 
-hb::decrypt::str() {
+hb.decrypt.str() {
   [[ -z ${1} ]] && {
-    error 'usage: hb::decrypt::str "string to decrypt"'
+    error 'usage: hb.decrypt.str "string to decrypt"'
     return
   }
   sym -ck APP_SYM_KEY -d -s "$*"
 }
 
-hb::encrypt::file() {
+hb.encrypt.file() {
   [[ -f ${1} ]] || {
-    error 'usage: hb::encrypt::file <filename>'
+    error 'usage: hb.encrypt.file <filename>'
     return
   }
   sym -ck APP_SYM_KEY -e -f "${1}" -o "${1}.enc"
 }
 
-hb::edit::file() {
+hb.edit.file() {
   [[ -f ${1} ]] || {
-    error 'usage: hb::edit::file <filename>'
+    error 'usage: hb.edit.file <filename>'
     return
   }
   sym -ck APP_SYM_KEY -t "${1}"
 }
 
-hb::decrypt::file() {
+hb.decrypt.file() {
   [[ -f ${1} ]] || {
-    error 'usage: hb::decrypt::file <filename.enc>'
+    error 'usage: hb.decrypt.file <filename.enc>'
     return
   }
   sym -ck APP_SYM_KEY -n "${1}"
 }
-
 
 decrypt.secrets() {
   ./bin/decrypt

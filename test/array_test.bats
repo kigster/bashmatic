@@ -1,46 +1,46 @@
-#!/usr/bin/env bats 
+#!/usr/bin/env bats
 
 load test_helper
 
-@test "lib::array::join with a pipe" {
+@test "array.join with a pipe" {
   declare -a array=("a string" "test2000" "hello" "one")
-  result=$(lib::array::join '|' "${array[@]}")
+  result=$(array.join '|' "${array[@]}")
   echo ${result}
   [[ "${result}" == "a string|test2000|hello|one" ]]
 }
 
-@test "lib::array::join with comma" {
+@test "array.join with comma" {
   unset result array code status
   declare -a array=(uno dos tres quatro cinco seis)
   set -e
-  result=$(lib::array::join ', ' "${array[@]}")
+  result=$(array.join ', ' "${array[@]}")
   [[ ${result} == "uno, dos, tres, quatro, cinco, seis" ]]
   [[ $status -eq 0 ]]
 }
 
-@test "lib::array::piped" {
+@test "array.piped" {
   declare -a array=(orange yellow red)
-  [[ $(lib::array::piped "${array[@]}") == "orange | yellow | red" ]]
+  [[ $(array.piped "${array[@]}") == "orange | yellow | red" ]]
   [[ $status -eq 0 ]]
 }
 
-@test "lib::array::contains-element() when one element exists" {
+@test "array.contains-element() when one element exists" {
   declare -a array=("a string" "test2000" "hello" "one")
-  lib::array::contains-element test2000 "${array[@]}" && true
+  array.contains-element test2000 "${array[@]}" && true
 }
 
-@test "lib::array::contains-element() when another element exists" {
+@test "array.contains-element() when another element exists" {
   declare -a array=("a string" "test2000" "hello" "one")
   set +e
-  lib::array::contains-element "one" "${array[@]}"; code=$?
+  array.contains-element "one" "${array[@]}"; code=$?
   set -e
   [[ ${code} -eq 0 ]]
 }
 
-@test "lib::array::contains-element() when element does not exist" {
+@test "array.contains-element() when element does not exist" {
   declare -a array=("a string" "test2000" "hello" "one")
   set +e
-  lib::array::contains-element "two" "${array[@]}"; local code=$?
+  array.contains-element "two" "${array[@]}"; local code=$?
   set -e
   [[ ${code} -eq 1 ]]
 }
@@ -87,7 +87,7 @@ load test_helper
   declare -a array=(kig pig)
   tmp=$(mktemp)
   array-bullet-list "${array[@]}" > ${tmp}
-  
+
   lines=$(cat "${tmp}" | wc -l | tr -d ' ')
   echo "${tmp}"
 

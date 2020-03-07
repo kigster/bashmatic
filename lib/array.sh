@@ -15,8 +15,8 @@
 # Simplest case:
 #
 #     $ declare -a array=("a string" test2000 moo)
-#     $ lib::array::contains-element moo "${array[@]}" || echo "no luck!"
-#     $ lib::array::complain-unless-includes haha "${array[@]}" || echo "no luck!"
+#     $ array.contains-element moo "${array[@]}" || echo "no luck!"
+#     $ array.complain-unless-includes haha "${array[@]}" || echo "no luck!"
 
 #     if [[ $(array-contains-element "a string" "${array[@]}") == "true" ]]; then
 #       ...
@@ -45,7 +45,7 @@ array-contains-element() {
   return 0
 }
 
-lib::array::contains-element() {
+array.contains-element() {
   local search="$1"; shift
   [[ "$*" =~ ${search} ]] || return 1
   for e in "${@}"; do
@@ -56,8 +56,8 @@ lib::array::contains-element() {
   return 1
 }
 
-lib::array::complain-unless-includes() {
-  lib::array::contains-element "$@" || {
+array.complain-unless-includes() {
+  array.contains-element "$@" || {
     element="$1"; shift
     local -a output=()
     while true; do
@@ -73,20 +73,20 @@ lib::array::complain-unless-includes() {
     if [[ ${#output[@]} -gt 10 ]]; then
       error "Value ${element} must be one of the supplied values."
     else
-      error "Value ${element} must be one of the supplied values:" \
-        "${output[@:0:10]}"
+      error "Value ${element} must be one of the supplied values:" "${output[@:0:10]}"
     fi
     echo
     return 0
   }
+
   return 1
 }
 
-lib::array::exit-unless-includes() {
-  lib::array::complain-unless-includes "$@" || exit 1
+array.exit-unless-includes() {
+  array.complain-unless-includes "$@" || exit 1
 }
 
-lib::array::join() {
+array.join() {
   local sep="$1"; shift
   local lines="$1"
 
@@ -112,26 +112,26 @@ lib::array::join() {
   done
 }
 
-array-join() { lib::array::join "$@"; }
+array-join() { array.join "$@"; }
 
 array-csv() {
-  lib::array::join ', ' false "$@"
+  array.join ', ' false "$@"
 }
 
 array-bullet-list() {
-  lib::array::join ' • ' true "$@"
+  array.join ' • ' true "$@"
 }
 
-lib::array::piped() {
-  lib::array::join ' | ' false "$@"
+array.piped() {
+  array.join ' | ' false "$@"
 }
 
-lib::array::from-command-output() {
+array.from-command-output() {
   local array_name=$1; shift
   local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)"
   eval "${script}"
 }
 
 array-piped() {
-  lib::array::piped "$@";
+  array.piped "$@";
 }

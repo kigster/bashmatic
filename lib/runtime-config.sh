@@ -16,29 +16,29 @@
 #
 # Well, now the equivalent is this command:
 #
-#     $ run::set-next show-output-on abort-on-error
+#     $ run.set-next show-output-on abort-on-error
 #
 # To set the "default" values that affect all subasequent comands,
-# use run::set-all.
+# use run.set-all.
 
-run::set-next() {
-  ____run::configure next "$@"
+run.set-next() {
+  ____run.configure next "$@"
 }
 
-run::set-all() {
-  ____run::configure all "$@"
+run.set-all() {
+  ____run.configure all "$@"
 }
 
-run::set-next::list() {
-  set | egrep '^____run::set::next' | awk 'BEGIN{FS="::"}{print $4}' | hbsed 's/[() ]//g'
+run.set-next.list() {
+  set | egrep '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | hbsed 's/[() ]//g'
 }
 
-run::set-all::list() {
-  set | egrep '^____run::set::all' | awk 'BEGIN{FS="::"}{print $4}' | hbsed 's/[() ]//g'
+run.set-all.list() {
+  set | egrep '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | hbsed 's/[() ]//g'
 }
 
-run::inspect() {
-  lib::run::inspect
+run.inspect() {
+  run.inspect
 }
 
 ##############################################################################
@@ -47,100 +47,100 @@ run::inspect() {
 ##############################################################################
 
 ### NEXT COMMAND
-____run::set::next::show-detail-on() {
+____run.set.next.show-detail-on() {
   export LibRun__Detail=${True}
 }
-____run::set::next::show-detail-off() {
+____run.set.next.show-detail-off() {
   export LibRun__Detail=${False}
 }
 
 ### show details
 
-____run::set::next::show-output-on() {
+____run.set.next.show-output-on() {
   export LibRun__ShowCommandOutput=${True}
 }
-____run::set::next::show-output-off() {
+____run.set.next.show-output-off() {
   export LibRun__ShowCommandOutput=${False}
 }
 
 ### show command itself
 
-____run::set::next::show-command-on() {
+____run.set.next.show-command-on() {
   export LibRun__ShowCommand=${True}
 }
-____run::set::next::show-command-off() {
+____run.set.next.show-command-off() {
   export LibRun__ShowCommand=${False}
 }
 
 ### Reactions to error conditions
 
-____run::set::next::abort-on-error() {
+____run.set.next.abort-on-error() {
   export LibRun__AbortOnError=${True}
   export LibRun__AskOnError=${False}
 }
-____run::set::next::ask-on-error() {
+____run.set.next.ask-on-error() {
   export LibRun__AskOnError=${True}
   export LibRun__AbortOnError=${False}
 }
-____run::set::next::continue-on-error() {
+____run.set.next.continue-on-error() {
   export LibRun__AskOnError=${False}
   export LibRun__AbortOnError=${False}
 }
 
 ### Turns on DRY-RUN when comamnds are printed but not executed.
 
-____run::set::all::dry-run-on() {
+____run.set.all.dry-run-on() {
   export LibRun__DryRun=${True}
 }
-____run::set::all::dry-run-off() {
+____run.set.all.dry-run-off() {
   export LibRun__DryRun=${False}
 }
 
 ### Prints some additional verbose shit.
-____run::set::all::verbose-on() {
+____run.set.all.verbose-on() {
   export LibRun__Verbose=${True}
 }
-____run::set::all::verbose-off() {
+____run.set.all.verbose-off() {
   export LibRun__Verbose=${False}
 }
 
 ### ALL COMMANDS ###
-____run::set::all::show-output-on() {
-  ____run::set::next::show-output-on
+____run.set.all.show-output-on() {
+  ____run.set.next.show-output-on
   export LibRun__ShowCommandOutput__Default=${True}
 }
-____run::set::all::show-output-off() {
-  ____run::set::next::show-output-off
+____run.set.all.show-output-off() {
+  ____run.set.next.show-output-off
   export LibRun__ShowCommandOutput__Default=${False}
 }
 
-____run::set::all::show-command-on() {
-  ____run::set::next::show-command-on
+____run.set.all.show-command-on() {
+  ____run.set.next.show-command-on
   export LibRun__ShowCommand__Default=${True}
 }
-____run::set::all::show-command-off() {
-  ____run::set::next::show-command-off
+____run.set.all.show-command-off() {
+  ____run.set.next.show-command-off
   export LibRun__ShowCommand__Default=${False}
 }
 
 # Error Handling
-____run::set::all::abort-on-error() {
-  ____run::set::next::abort-on-error
+____run.set.all.abort-on-error() {
+  ____run.set.next.abort-on-error
   export LibRun__AbortOnError__Default=${True}
   export LibRun__AskOnError__Default=${False}
 }
-____run::set::all::ask-on-error() {
-  ____run::set::next::ask-on-error
+____run.set.all.ask-on-error() {
+  ____run.set.next.ask-on-error
   export LibRun__AskOnError__Default=${True}
   export LibRun__AbortOnError__Default=${False}
 }
-____run::set::all::continue-on-error() {
-  ____run::set::next::continue-on-error
+____run.set.all.continue-on-error() {
+  ____run.set.next.continue-on-error
   export LibRun__AskOnError__Default=${False}
   export LibRun__AbortOnError__Default=${False}
 }
 
-____run::configure() {
+____run.configure() {
   local type=$1
   [[ ${type} == "all" || ${type} == "next" ]] || {
     error "invalid setting type ${type} — expected 'all' or 'next'"
@@ -150,23 +150,23 @@ ____run::configure() {
   shift
 
   [[ -z "$*" ]] && {
-    ____run::list-options ${type}
+    ____run.list-options ${type}
     return
   }
 
   for feature in $@; do
-    local func="____run::set::${type}::${feature}"
+    local func="____run.set.${type}.${feature}"
     if [[ -z $(type ${func} 2>/dev/null) ]]; then
       error "LibRun feature was not recognized:" "${feature}"
-      ____run::list-options ${type}
+      ____run.list-options ${type}
       return 1
     fi
     ${func}
   done
 }
-____run::list-options() {
+____run.list-options() {
   local type=$1
-  local func="run::set-${type}::list"
+  local func="run.set-${type}.list"
   local prefix="    • "
   info "List of available configuration features for ${type} command(s):\n"
   printf "${prefix}"

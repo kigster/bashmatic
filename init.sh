@@ -7,7 +7,7 @@ export LoadedShown=${LoadedShown:-1}
 export BashMatic__Init="${BASH_SOURCE[0]}"
 export LibGit__QuietUpdate=1
 
-bashmatic::source-dir() {
+bashmatic.source-dir() {
   local folder="${1}"
 
   # Let's list all lib files
@@ -36,16 +36,19 @@ bashmatic::source-dir() {
 
 bashmatic.setup() {
   # Set this externally if your bashmatic is not installed in ~/.bashmatic
-  export BashMatic__Home="$(cd $(dirname "${BashMatic__Init}"); pwd)" 
+  export BashMatic__Home="$(
+    cd $(dirname "${BashMatic__Init}")
+    pwd
+  )"
   export BashMatic__LibDir="${BashMatic__Home}/lib"
 
-  [[ -z ${BashMatic__Downloader} && -n $(which curl) ]] && \
+  [[ -z ${BashMatic__Downloader} && -n $(which curl) ]] &&
     export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
 
-  [[ -z ${BashMatic__Downloader} && -n $(which wget) ]] && \
+  [[ -z ${BashMatic__Downloader} && -n $(which wget) ]] &&
     export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
 
-  if [[ ! -d "${BashMatic__LibDir}" ]] ; then
+  if [[ ! -d "${BashMatic__LibDir}" ]]; then
     printf "\e[1;31mUnable to establish BashMatic's library source folder.\e[0m\n"
     return 1
   fi
@@ -53,7 +56,7 @@ bashmatic.setup() {
   source "${BashMatic__LibDir}/util.sh"
   source "${BashMatic__LibDir}/git.sh"
 
-  bashmatic::source-dir "${BashMatic__LibDir}"
+  bashmatic.source-dir "${BashMatic__LibDir}"
   bashmatic.auto-update
 
   export BashMatic__Version="$(cat "${BashMatic__Home}"/.version | head -1)"

@@ -2,7 +2,7 @@
 
 load test_helper
 
-function moo() {
+moo() {
   echo "config/moo.enc" | hbsed 's/\.(sym|enc)$//g'
 }
 

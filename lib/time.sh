@@ -10,7 +10,7 @@
 export AppCurrentOS=${AppCurrentOS:-$(uname -s)}
 
 # Install necessary dependencies on OSX
-__lib::time::osx::coreutils() {
+.time.osx.coreutils() {
   # install gdate quietly
   brew install coreutils 2>&1 | cat >/dev/null
   code=$?
@@ -22,11 +22,11 @@ __lib::time::osx::coreutils() {
 }
 
 # milliseconds
-__lib::run::millis() {
+.run.millis() {
   local date_runnable
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "Darwin" ]]; then
-    [[ -z $(command -v gdate) ]] && __lib::time::osx::coreutils
+    [[ -z $(command -v gdate) ]] && .time.osx.coreutils
     [[ -n $(command -v gdate) ]] && date_runnable='gdate'
   fi
   ${date_runnable} '+%s%3N'
@@ -34,7 +34,7 @@ __lib::run::millis() {
 
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on Linux vs OSX.
-lib::time::date-from-epoch() {
+time.date-from-epoch() {
   local epoch_ts="$1"
   if [[ "${AppCurrentOS}" == "Darwin" ]]; then
     printf "date -r ${epoch_ts}"
@@ -42,18 +42,18 @@ lib::time::date-from-epoch() {
     printf "date --date='@${epoch_ts}'"
   fi
 }
-lib::time::epoch-to-iso() {
+time.epoch-to-iso() {
   local epoch_ts=$1
-  eval "$(lib::time::date-from-epoch ${epoch_ts}) -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
+  eval "$(time.date-from-epoch ${epoch_ts}) -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
 }
 
-lib::time::epoch-to-local() {
+time.epoch-to-local() {
   local epoch_ts=$1
   [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch)
-  eval "$(lib::time::date-from-epoch ${epoch_ts}) \"+%m/%d/%Y, %r\""
+  eval "$(time.date-from-epoch ${epoch_ts}) \"+%m/%d/%Y, %r\""
 }
 
-lib::time::epoch::minutes-ago() {
+time.epoch.minutes-ago() {
   local mins=${1}
 
   [[ -z ${mins} ]] && mins=1
@@ -62,15 +62,15 @@ lib::time::epoch::minutes-ago() {
   echo $((${epoch} - ${seconds}))
 }
 
-lib::time::duration::millis-to-secs() {
+time.duration.millis-to-secs() {
   local duration="$1"
   local format="${2:-"%d.%d"}"
-  local seconds=$(( duration / 1000 ))
-  local leftover=$(( duration - 1000 * seconds ))
+  local seconds=$((duration / 1000))
+  local leftover=$((duration - 1000 * seconds))
   printf "${format}" ${seconds} ${leftover}
 }
 
-lib::time::duration::humanize() {
+time.duration.humanize() {
   local seconds=${1}
   local hours=$((${seconds} / 3600))
   local remainder=$((${seconds} - ${hours} * 3600))
@@ -93,7 +93,7 @@ epoch() {
 }
 
 millis() {
-  __lib::run::millis
+  .run.millis
 }
 
 today() {

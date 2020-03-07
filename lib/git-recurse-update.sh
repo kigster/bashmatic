@@ -3,18 +3,18 @@
 export LibRepo__Interrupted=false
 source "${BASH_SOURCE%/*}/color.sh"
 
-lib::repo::rebase() {
+repo.rebase() {
   run "git pull origin master --rebase"
 }
 
-function lib::repo::stash-and-rebase() {
+repo.stash-and-rebase() {
   run "git stash >/dev/null"
   run "git reset --hard"
 
-  lib::repo::rebase
+  repo.rebase
 }
 
-function lib::repo::update() {
+repo.update() {
   local folder="$1"
 
   h2 "Entering repo ► ${bldgren}${folder}"
@@ -27,16 +27,16 @@ function lib::repo::update() {
   }
 
   if [[ -z "$(git status -s)" ]]; then
-    lib::repo::rebase
+    repo.rebase
   else
-    lib::repo::stash-and-rebase
+    repo.stash-and-rebase
   fi
 }
 
-function lib::repos::recursive-update() {
+repos.recursive-update() {
   local repo="${1}"
 
-  run::set-all show-output-off
+  run.set-all show-output-off
 
   if [[ ${LibRepo__Interrupted} == true ]]; then
     warn "Detected SINGINT, exiting..."
@@ -44,12 +44,12 @@ function lib::repos::recursive-update() {
   fi
 
   if [[ -n "$repo" ]]; then
-    lib::repo::update "$repo"
+    repo.update "$repo"
   else
     for dir in $(find . -type d -name '.git'); do
       local subdir=$(dirname "$dir")
       [[ -n "${DEBUG}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
-      lib::repos::recursive-update "${subdir}"
+      repos.recursive-update "${subdir}"
       if [[ $? -eq 2 ]]; then
         error "folder ${bldylw}${subdir}${bldred} return error!"
         return 2
@@ -63,7 +63,7 @@ function lib::repos::recursive-update() {
   fi
 }
 
-function repos.update() {
+repos.update() {
   export root_folder="$(pwd)"
   bash -c "
     [[ -d ~/.bashmatic ]] || {
@@ -71,20 +71,20 @@ function repos.update() {
       return
     }
     source ~/.bashmatic/init.sh
-    lib::repos::init-interrupt
-    lib::repos::recursive-update '$*'
+    repos.init-interrupt
+    repos.recursive-update '$*'
   "
 }
 
-function lib::repos::catch-interrupt() {
+repos.catch-interrupt() {
   export LibRepo__Interrupted=true
 }
 
-function lib::repos::init-interrupt() {
+repos.init-interrupt() {
   export LibRepo__Interrupted=false
-  trap 'lib::repos::catch-interrupt' SIGINT
+  trap 'repos.catch-interrupt' SIGINT
 }
 
-function lib::repos::was-interrupted() {
+repos.was-interrupted() {
   [[ ${LibRepo__Interrupted} == true ]]
 }

@@ -19,19 +19,19 @@ export LibDeploy__NoSlack=false
 # VPN Commands
 ################################################################################
 
-__lib::deploy::check-vpn() {
+.deploy.check-vpn() {
   netstat -rn | egrep "${LibDeploy__VpnSubnet}" >/dev/null
 }
 
-__lib::deploy::vpn-error() {
+.deploy.vpn-error() {
   local env=${1:-"appropriate"}
 
   error "No VPN connection detected matching ${LibDeploy__VpnSubnet}! " \
     "Please make sure you are connected to the ${env} VPN Connection."
 
-  if  [[ -n "${LibDeploy__VpnInfoUrl}" ]]; then
+  if [[ -n "${LibDeploy__VpnInfoUrl}" ]]; then
     h1 "For instructions on how to configure VPN, pl0ease ⌘ -click below: " \
-       "${undblu}${LibDeploy__VpnInfoUrl}${clr}"
+      "${undblu}${LibDeploy__VpnInfoUrl}${clr}"
   fi
 
   if [[ -n "$(netstat -rn | grep utun)" ]]; then
@@ -44,15 +44,15 @@ __lib::deploy::vpn-error() {
   return 1
 }
 
-lib::deploy::validate-vpn() {
-  __lib::deploy::check-vpn "$@" || __lib::deploy::vpn-error "$@"
+deploy.validate-vpn() {
+  .deploy.check-vpn "$@" || .deploy.vpn-error "$@"
 }
 
 ################################################################################
 # Slack Commands
 ################################################################################
 
-lib::deploy::slack() {
+deploy.slack() {
   local original_text="$*"
   [[ -z ${LibDeploy__SlackHookUrl} ]] && return 1
 
@@ -62,7 +62,7 @@ lib::deploy::slack() {
 
   [[ ${LibRun__DryRun} -eq ${False} ]] && {
     if ${LibDeploy__NoSlack}; then
-      hl::green "${original_text}"
+      hl.green "${original_text}"
     else
       curl -s -d "payload=$json" "${slack_url}" 1>/dev/null
       if [[ $? -eq 0 ]]; then
@@ -75,8 +75,8 @@ lib::deploy::slack() {
   [[ ${LibRun__DryRun} -eq ${True} ]] && run "send to slack [${text}]"
 }
 
-lib::deploy::slack-ding() {
-  lib::deploy::slack "<!here> $@"
+deploy.slack-ding() {
+  deploy.slack "<!here> $@"
 }
 
 ################################################################################
