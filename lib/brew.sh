@@ -73,7 +73,7 @@ cache-or-command() {
   shift
   local command="$*"
 
-  file.exists_and_newer_than "${file}" ${stale_minutes} && {
+  file.exists-and-newer-than "${file}" ${stale_minutes} && {
     cat "${file}"
     return 0
   }

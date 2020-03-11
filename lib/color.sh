@@ -69,7 +69,7 @@ color.enable() {
     [[ -n ${DEBUG} ]] && echo "colors already loaded..."
   fi
 
-  trap reset-color EXIT
+  #trap reset-color EXIT
 }
 
 txt-info() { printf "${clr}${txtblu}"; }
@@ -134,7 +134,7 @@ color.disable() {
 
   export AppColorsLoaded=1
 
-  trap reset-color EXIT
+  #trap reset-color EXIT
 }
 
 ((${AppColorsLoaded})) || color.enable

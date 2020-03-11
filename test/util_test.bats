@@ -3,6 +3,8 @@
 
 load test_helper
 
+source lib/util.sh
+
 set -e
 
 @test "util.generate-password() generates correct length" {

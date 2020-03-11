@@ -3,6 +3,8 @@
 
 load test_helper
 
+source lib/git.sh
+
 @test "git.repo-is-clean() when dirty" {
   pwd=$(pwd)
   dir="/tmp/clean/repo"

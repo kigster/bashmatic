@@ -10,6 +10,8 @@ export BatsRoot=${ProjectRoot}/.bats
 
 declare -a TestFiles=()
 
+export PATH="$PATH:/usr/local/bin:/usr/local/libexec"
+
 export True=1
 export False=0
 
@@ -45,10 +47,10 @@ specs.usage() {
 specs.install-bats() {
   [[ -n $(which bats) ]] && return 0
   [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
-  [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/kigster/bats.git ${BatsRoot}"
+  [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/sstephenson/bats.git ${BatsRoot}"
 
   if [[ -d ${BatsRoot} && ! -x /usr/local/bin/bats ]]; then
-    run "cd ${BatsRoot} && git pull --rebase 2>/dev/null"
+    run "cd ${BatsRoot} && git reset --hard && git pull --rebase 2>/dev/null"
     run.set-next show-output-on abort-on-error
     run "./install.sh /usr/local"
     run "cd ${ProjectRoot}"

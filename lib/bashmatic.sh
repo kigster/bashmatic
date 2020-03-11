@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # vi: ft=sh
 #
-# Public Functions 
+# Public Functions
 #
 
 bashmatic.reload() {
-  source "${BashMatic__Init}"
+  source "${BASHMATIC_INIT}"
 }
 
 bashmatic.version() {
-  cat $(dirname "${BashMatic__Init}")/.version
+  cat $(dirname "${BASHMATIC_INIT}")/.version
 }
 
 bashmatic.load-at-login() {
@@ -19,14 +19,14 @@ bashmatic.load-at-login() {
   [[ -n "${init_file}" && -f "${init_file}" ]] && init_files=("${init_file}")
 
   for file in "${init_files[@]}"; do
-    if [[ -f "${file}" ]] ; then
+    if [[ -f "${file}" ]]; then
       grep -q bashmatic "${file}" && {
         success "BashMatic is already loaded from ${bldblu}${file}"
         return 0
       }
       grep -q bashmatic "${file}" || {
         h2 "Adding BashMatic auto-loader to ${bldgrn}${file}..."
-        echo "source ${BashMatic__Home}/init.sh" >> "${file}"
+        echo "source ${BASHMATIC_HOME}/init.sh" >>"${file}"
       }
       source "${file}"
       break
@@ -40,7 +40,7 @@ bashmatic.functions-from() {
   [[ -n ${pattern} ]] && shift
   [[ -z ${pattern} ]] && pattern="*.sh"
 
-  cd ${BashMatic__Home} >/dev/null
+  cd "${BASHMATIC_HOME}" >/dev/null || return 1
 
   export SCREEN_WIDTH=$(screen-width)
 
@@ -48,17 +48,18 @@ bashmatic.functions-from() {
     pattern="${pattern}.sh"
   fi
 
-  egrep -e '^[_a-zA-Z]+.*\(\)' lib/${pattern} | \
-    sed -E 's/^lib\/.*\.sh://g' | \
-    sed -E 's/^function //g' | \
-    sed -E 's/\(\) *{.*$//g' | \
-    sed -E '/^ *$/d' | \
-    grep -v '^_' | \
-    sort | \
-    uniq | \
+  egrep -e '^[_a-zA-Z]+.*\(\)' lib/${pattern} |
+    sed -e 's/^lib\/.*\.sh://g' |
+    sed -e 's/^function //g' |
+    sed -e 's/\(\) *{.*$//g' |
+    tr -d '()' |
+    sed -e '/^ *$/d' |
+    grep -v '^_' |
+    sort |
+    uniq |
     columnize "$@"
 
-  cd - > /dev/null
+  cd - >/dev/null || return 1
 }
 
 # pass number of columns to print, default is 2
@@ -74,3 +75,117 @@ bashmatic.functions.runtime() {
   bashmatic.functions-from 'run*.sh' "$@"
 }
 
+# Setup
+
+bashmatic.bash.version() {
+  echo "${BASH_VERSION}" | cut -d '.' -f 1
+}
+
+bashmatic.bash.version-four-or-later() {
+  export BASH_MAJOR_VERSION=${BASH_MAJOR_VERSION:-$(bashmatic.bash.version)}
+  test "${BASH_MAJOR_VERSION}" -gt 3
+}
+
+#——————————————————————————————————————————————————————
+# CACHING
+#——————————————————————————————————————————————————————
+
+bashmatic.cache.has-file() {
+  local file="$1"
+  bashmatic.bash.version-four-or-later || return 1
+  test -z "$file" && return 1
+  if [[ -n "$1" && -n "${BashMatic__LoadCache["${file}"]}" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+bashmatic.cache.add-file() {
+  bashmatic.bash.version-four-or-later || return 1
+  [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
+}
+
+bashmatic.cache.list() {
+  bashmatic.bash.version-four-or-later || return 1
+  for f in "${!BashMatic__LoadCache[@]}"; do echo $f; done
+}
+
+bashmatic.source() {
+  local path="${BASHMATIC_LIBDIR}"
+  for file in "${@}"; do
+    [[ "${file}" =~ "/" ]] || file="${path}/${file}"
+    [[ -s "${file}" ]] || {
+      echo "Can't source file ${file} — fils is invalid."
+      return 1
+    }
+    # avoid sourcing the same file twice
+    if ! bashmatic.cache.has-file "${file}"; then
+      [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" >&2
+      set +e
+      # shellcheck disable=SC1090
+      source "${file}"
+      bashmatic.cache.add-file "${file}"
+    else
+      [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" >&2
+    fi
+  done
+  return 0
+}
+
+#——————————————————————————————————————————————————————
+
+.err() {
+  printf "${bldred}  ERROR:\n${txtred}  $*%s\n" ""
+}
+
+bashmatic.source-dir() {
+  local folder="${1}"
+  local loaded=false
+  local file
+
+  # Let's list all lib files
+  unset files
+  declare -a files
+  eval "$(files.map.shell-scripts "${folder}" files)"
+  if [[ ${#files[@]} -eq 0 ]]; then
+    .err "No files were returned from files.map in " "\n  ${bldylw}${folder}"
+    return 1
+  fi
+
+  for file in "${files[@]}"; do
+    bashmatic.source "${file}" && loaded=true
+  done
+
+  unset files
+
+  ${loaded} || {
+    .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIBDIR}"
+    return 1
+  }
+
+  if [[ ${LoadedShown} -eq 0 ]]; then
+    hr
+    success "BashMatic was loaded! Happy Bashing :) "
+    hr
+    export LoadedShown=1
+  fi
+}
+
+bashmatic.setup() {
+
+  [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] &&
+    export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
+
+  [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] &&
+    export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
+
+  if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
+    printf "\e[1;31mUnable to establish BashMatic's library source folder.\e[0m\n"
+    return 1
+  fi
+
+  bashmatic.source util.sh git.sh file.sh color.sh
+  bashmatic.source-dir "${BASHMATIC_LIBDIR}"
+  bashmatic.auto-update
+}

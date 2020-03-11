@@ -146,7 +146,7 @@
   * [`error`](#error)
   * [`error-text`](#error-text)
   * [`error:`](#error-1)
-  * [`file.exists_and_newer_than`](#fileexists_and_newer_than)
+  * [`file.exists-and-newer-than`](#fileexists-and-newer-than)
   * [`file.gsub`](#filegsub)
   * [`file.install_with_backup`](#fileinstall_with_backup)
   * [`file.last-modified-date`](#filelast-modified-date)
@@ -835,7 +835,7 @@ bashmatic.auto-update ()
     [[ ${Bashmatic__Test} -eq 1 ]] && return 0;
     git.configure-auto-updates;
     git.repo-is-clean || {
-        h1 "${BashMatic__Home} has locally modified changes." "Will wait with auto-update until it's sync'd up.";
+        h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up.";
         return 1
     };
     git.sync
@@ -887,7 +887,7 @@ bashmatic.functions-from ()
     local pattern="${1}";
     [[ -n ${pattern} ]] && shift;
     [[ -z ${pattern} ]] && pattern="*.sh";
-    cd ${BashMatic__Home} > /dev/null;
+    cd ${BASHMATIC_HOME} > /dev/null;
     export SCREEN_WIDTH=$(screen-width);
     if [[ ! ${pattern} =~ "*" && ! ${pattern} =~ ".sh" ]]; then
         pattern="${pattern}.sh";
@@ -935,7 +935,7 @@ bashmatic.load-at-login ()
             };
             grep -q bashmatic "${file}" || {
                 h2 "Adding BashMatic auto-loader to ${bldgrn}${file}...";
-                echo "source ${BashMatic__Home}/init.sh" >> "${file}"
+                echo "source ${BASHMATIC_HOME}/init.sh" >> "${file}"
             };
             source "${file}";
             break;
@@ -950,7 +950,7 @@ bashmatic.load-at-login ()
 ```bash
 bashmatic.reload ()
 {
-    source "${BashMatic__Init}"
+    source "${BASHMATIC_INIT}"
 }
 
 ```
@@ -1000,7 +1000,7 @@ bashmatic.validate-subshell ()
 ```bash
 bashmatic.version ()
 {
-    cat $(dirname "${BashMatic__Init}")/.version
+    cat $(dirname "${BASHMATIC_INIT}")/.version
 }
 
 ```
@@ -1456,7 +1456,7 @@ cache-or-command ()
     local stale_minutes="$1";
     shift;
     local command="$*";
-    file.exists_and_newer_than "${file}" ${stale_minutes} && {
+    file.exists-and-newer-than "${file}" ${stale_minutes} && {
         cat "${file}";
         return 0
     };
@@ -2603,10 +2603,10 @@ error: ()
 
 ```
 
-### `file.exists_and_newer_than`
+### `file.exists-and-newer-than`
 
 ```bash
-file.exists_and_newer_than ()
+file.exists-and-newer-than ()
 {
     local file="${1}";
     shift;
@@ -3164,7 +3164,7 @@ git.remotes ()
 ```bash
 git.repo-is-clean ()
 {
-    local repo="${1:-${BashMatic__Home}}";
+    local repo="${1:-${BASHMATIC_HOME}}";
     cd "${repo}" > /dev/null;
     if [[ -z $(git status -s) ]]; then
         cd - > /dev/null;
@@ -3205,9 +3205,9 @@ git.seconds-since-last-pull ()
 git.sync ()
 {
     local dir="$(pwd)";
-    cd "${BashMatic__Home}" > /dev/null;
+    cd "${BASHMATIC_HOME}" > /dev/null;
     git.repo-is-clean || {
-        warning "${bldylw}${BashMatic__Home} has locally modified files." "Please commit or stash them to allow auto-upgrade to function as designed." 1>&2;
+        warning "${bldylw}${BASHMATIC_HOME} has locally modified files." "Please commit or stash them to allow auto-upgrade to function as designed." 1>&2;
         cd "${dir}" > /dev/null;
         return 1
     };
@@ -3260,7 +3260,7 @@ git.update-repo-if-needed ()
         git.sync-remote;
     else
         if [[ -n ${DEBUG} ]]; then
-            git.quiet || info "${BashMatic__Home} will update in $((update_period_seconds - second_since_update)) seconds...";
+            git.quiet || info "${BASHMATIC_HOME} will update in $((update_period_seconds - second_since_update)) seconds...";
         fi;
     fi
 }

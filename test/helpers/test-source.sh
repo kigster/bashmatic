@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-source "${BashMatic__Init}"
+source "${BASHMATIC_INIT}"
 bashmatic.validate-sourced-in

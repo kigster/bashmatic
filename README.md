@@ -9,40 +9,39 @@
 > BASH functions added to your Shell by the framework.
 
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
-* [DAFAQ is BashMatic?](#dafaq-is-bashmatic)
 * [Installing](#installing)
-	* [Bootstrapping Bashmatic](#bootstrapping-bashmatic)
-	* [Installing Manually](#installing-manually)
+  * [Bootstrapping Bashmatic using `curl`](#bootstrapping-bashmatic-using-curl)
+  * [Installing Manually](#installing-manually)
 * [Usage](#usage)
-	* [Function Naming Convention Unpacked](#function-naming-convention-unpacked)
-	* [Seeing All Functions](#seeing-all-functions)
-	* [Seeing Specific Functions](#seeing-specific-functions)
-	* [Various Modules](#various-modules)
-	* [Key Modules Explained](#key-modules-explained)
-		* [1. Runtime](#1-runtime)
-			* [Runtime Framework in Depth](#runtime-framework-in-depth)
-			* [Examples of Runtime Framework](#examples-of-runtime-framework)
-		* [2. Output Modules](#2-output-modules)
-			* [Output Components](#output-components)
-			* [Output Helpers](#output-helpers)
-		* [3. Package management: Brew and RubyGems](#3-package-management-brew-and-rubygems)
-		* [4. Shortening URLs and Github Access](#4-shortening-urls-and-github-access)
-			* [Github Access](#github-access)
-		* [5. File Helpers](#5-file-helpers)
-		* [6. Array Helpers](#6-array-helpers)
-		* [7. Utilities](#7-utilities)
-		* [8. Ruby and Ruby Gems](#8-ruby-and-ruby-gems)
-			* [Gem Helpers](#gem-helpers)
-		* [9. Additional Helpers](#9-additional-helpers)
-* [How To ... Guide.](#how-to--guide)
-	* [How to integrate Bashmatic with an existing project?](#how-to-integrate-bashmatic-with-an-existing-project)
-	* [How can I test if the function was ran as part of a script, or "sourced-in"?](#how-can-i-test-if-the-function-was-ran-as-part-of-a-script-or-sourced-in)
-	* [How do I run unit tests for BashMatic?](#how-do-i-run-unit-tests-for-bashmatic)
-	* [How can I change the underscan or overscan for an old monitor?](#how-can-i-change-the-underscan-or-overscan-for-an-old-monitor)
-	* [Contributing](#contributing)
+  * [Function Naming Convention Unpacked](#function-naming-convention-unpacked)
+  * [Seeing All Functions](#seeing-all-functions)
+  * [Seeing Specific Functions](#seeing-specific-functions)
+  * [Various Modules](#various-modules)
+  * [Key Modules Explained](#key-modules-explained)
+    * [1. Runtime](#1-runtime)
+      * [Runtime Framework in Depth](#runtime-framework-in-depth)
+      * [Examples of Runtime Framework](#examples-of-runtime-framework)
+    * [2. Output Modules](#2-output-modules)
+      * [Output Components](#output-components)
+      * [Output Helpers](#output-helpers)
+    * [3. Package management: Brew and RubyGems](#3-package-management-brew-and-rubygems)
+    * [4. Shortening URLs and Github Access](#4-shortening-urls-and-github-access)
+      * [Github Access](#github-access)
+    * [5. File Helpers](#5-file-helpers)
+    * [6. Array Helpers](#6-array-helpers)
+    * [7. Utilities](#7-utilities)
+    * [8. Ruby and Ruby Gems](#8-ruby-and-ruby-gems)
+      * [Gem Helpers](#gem-helpers)
+    * [9. Additional Helpers](#9-additional-helpers)
+* [How To...](#how-to)
+  * [Write new DSL in the Bashmatic Style](#write-new-dsl-in-the-bashmatic-style)
+  * [How can I test if the function was ran as part of a script, or "sourced-in"?](#how-can-i-test-if-the-function-was-ran-as-part-of-a-script-or-sourced-in)
+  * [How do I run unit tests for BashMatic?](#how-do-i-run-unit-tests-for-bashmatic)
+  * [How can I change the underscan or overscan for an old monitor?](#how-can-i-change-the-underscan-or-overscan-for-an-old-monitor)
+  * [Contributing](#contributing)
 <!-- /TOC -->
 
-## DAFAQ is BashMatic?
+# Bashmatic — Sane DSL for BASH scripts
 
 BashMatic is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
 
@@ -63,16 +62,26 @@ Tell me you are not at all excited to start writing complex installation flows i
 
 Not only you get pretty output, but you can each executed command, it's exit status, whether it's been successful (green/red), as well each command's bloody duration in milliseconds. What's not to like?!? 😂
 
+### Motivation
+
+This project was born out of a simple realization made by several very senior and highly experienced engineers, that:
+
+ 1. It is often easier to use BASH for writing things like universal **installers**, a.k.a. **setup scripts**, **uploaders**, wrappers for all sorts of functionality, such as **NPM**, **rbenv**, installing gems, rubies, using AWS, deploying code, etc.
+
+ 2. A lot of tasks are easy and compact to automate in BASH, and BASH function's return values lend themselves nicely to a compact DSL ([domain specific language](https://en.wikipedia.org/wiki/Domain-specific_language)) where multiple functions can be chained by logical AND `&&` and OR `||` to provide a very compact execution logic. Most importantly, we think that this logic is **extremely easy to read and understand.**
+
+ 3. By using a consistent programming style and descriptive method names we can create installers and uploaders that are easy to read, maintain and debug. Did we mention about the most awesome **runtime** framework? See below!
+
 ## Installing
 
 Perhaps the easiest way to install BashMatic is using this boot-strapping script.
 
-### Bootstrapping Bashmatic
+### Bootstrapping Bashmatic using `curl`
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal:
 
 ```bash
-❯ eval "$(curl -fsSL http://bit.ly/bashmatic-v0-1-0)"
+❯ eval "$(curl -fsSL http://bit.ly/bashmatic-1.0.0)"
 ```
 
 This not only will check out bashmatic into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
@@ -81,32 +90,32 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 
 ```bash
 ❯ bashmatic.version
-0.2.0
+1.0.0
 ```
 
 If you get an error, perhaps Bashmatic did not properly install.
 
 ### Installing Manually
 
-For the impatient, here is how to install BashMatic very quickly and easily:
+For the impatient, here is how to install BashMatic very quickly and easily. You can add the following script to your `~/.bashrc`  or any other script:
 
 ```bash
-❯ git clone git@//github.com:kigster/bashmatic ~/.bashmatic
-❯ source ~/.bashmatic/init.sh
-❯ bashmatic.load-at-login
+
+[[ -d ${HOME}/.bashmatic ]] || {
+  git clone https://github.com/kigster/bashmatic.git ~/.bashmatic
+}
+source ~/.bashmatic/init.sh
+```
+
+Finally, to ensure Bashmatic loads every time you login, run the following command:
+
+```bash
+bashmatic.load-at-login
 ```
 
 When you run the `bashmatic.load-at-login` function, it will add a bashmatic hook to one of your BASH initialization files, so all of its functions are available in your shell.
 
-The output of this function may look like this:
-
-```
-┌──────────────────────────────────
-│ Adding BashMatic auto-loader to /Users/<your-username>/.bashrc...  │
-└──────────────────────────────────
-```
-
-You can always reload BashMatic with `bashmatic.reload` function.
+Note — you can always reload BashMatic with `bashmatic.reload` function.
 
 ## Usage
 
@@ -132,9 +141,14 @@ For instance:
 
 ```bash
 ❯ gem.install
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  « ERROR »  Error — gem name is required as an argument                     │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  « ERROR »  Error — gem name is required as an argument          │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+Now let's run it properly:
+
+```bash
 ❯ gem.install simple-feed
        installing simple-feed (latest)...
   ✔︎    ❯ gem install simple-feed   ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔   5685 ms 〕    0
@@ -424,11 +438,11 @@ For instance:
        Please enter the name of your Github Organization:
        ❯ kigster
 
-┌──────────────────────────────────────────────────────────────────────────────────────────┐
-│ Your github organization was saved in your ~/.gitconfig file.                            │
-├──────────────────────────────────────────────────────────────────────────────────────────┤
-│ To change it in the future, run: github.org new-organization                             │
-└──────────────────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│ Your github organization was saved in your ~/.gitconfig file.                     │
+├───────────────────────────────────────────────────────────────────────────────────┤
+│ To change it in the future, run: github.org new-organization                      │
+└───────────────────────────────────────────────────────────────────────────────────┘
 
   ✔︎    ❯ git clone git@github.com:kigster/sym ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔    931 ms 〕    0
 ```
@@ -609,31 +623,56 @@ See the full function index with the function implementation body in the [FUNCTI
 
 ----
 
-## How To ... Guide.
+## How To...
 
-There are a couple of ways that you can install and use this library.
+### Write new DSL in the Bashmatic Style
 
-   1. The simplest way is to use the online bootstrap script.  This method is often used to integrate **BashMatic** with your other projects, so that they can be built upon their own internal BASH tooling using all the goodies in this library.
-
-   1. One is doing a simple manual `git clone`, and then "sourcing" the main `init.sh` file from one of your "dotfiles".
-
-### How to integrate Bashmatic with an existing project?
-
-The standard location of Bashmatic is in your home folder — `~/.bashmatic`
-
-Therefore the manual installation is as follows:
+The following example is the actual code from a soon to be integrated AWS credentials install script. This code below checks that a user has a local `~/.aws/credentials` file needed by the `awscli`, and in the right INI format. If it doesn't find it, it checks for the access key CSV file in the `~/Downloads` folder, and converts that if found. Now, if even that is not found, it prompts the user with instructions on how to generate a new key pair on AWS IAM website, and download it locally, thereby quickly converting and installing it as a proper credentials file. Not bad, for a compact BASH script, right? (of course, you are not seeing all of the involved functions, only the public ones).
 
 ```bash
-cd ${HOME} && git clone http://github.com/kigster/bashmatic ~/.bashmatic
+# define a new function in AWS namespace, related to credentials.
+# name of the function is self-explanatory: it validates credentials
+# and exits if they are invalid.
+aws.credentials.validate-or-exit() {
+  aws.credentials.are-valid || {
+    aws.credentials.install-if-missing || bashmatic.exit-or-return 1
+  }
+}
+
+aws.credentials.install-if-missing() {
+  aws.credentials.are-present || { # if not present
+    aws.access-key.is-present || aws.access-key.download # attempt to download the key
+    aws.access-key.is-present && aws.credentials.check-downloads-folder # attempt to find it in ~/Downloads
+  }
+
+  aws.credentials.are-present || { # final check after all attempts to install credentials
+    error "Unable to find AWS credentials. Please try again." && bashmatic.exit-or-return 1
+  }
+
+   bashmatic.exit-or-return 0
+}
 ```
 
-If you want to automatically load all functions during your shell initialization, you could run the following command to auto-load Bashmatic from your `~/.bashrc`:
+Now, **how would you use it in a script?** Let's say you need a script to upload
+something to AWS S3. But before you begin, wouldn't it be nice to verify
+that the credentials exist, and if not — help the user install it? Yes it would.
 
+And that is exactly what the code above does, but it looks like a DSL. because
+it *is* a DSL.
+
+> This script could be your `bin/s3-uploader`
 ```bash
-[[ -f ~/.bashrc ]] && \
-  ( grep -q bashmatic ~/.bashrc || \
-     echo 'source ~/.bashmatic/init.sh' >> ~/.bashrc )
+  #!/usr/bin/env bash
+  # Initialize BashMatic in this subshell
+
+  # call the function. It will exit if the user fails to follow instructions
+  # and install a proper file.
+  aws.credentials.validate-or-exit
+  # if we are here, that means that AWS credentials have been found.
+  # and we can continue with our script.
 ```
+
+
 
 ### How can I test if the function was ran as part of a script, or "sourced-in"?
 

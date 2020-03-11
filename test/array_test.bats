@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 load test_helper
+source lib/array.sh
 
 @test "array.join with a pipe" {
   declare -a array=("a string" "test2000" "hello" "one")
