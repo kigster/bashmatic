@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
+if [[ -f "${BASHMATIC_INIT}" ]]; then source "${BASHMATIC_INIT}"; else source ~/.bashmatic/init.sh; fi
 
 bashmatic.validate-subshell || return 1
 

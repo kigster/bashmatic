@@ -52,8 +52,8 @@ file.gsub() {
 }
 
 # Usage:
-#   (( $(file.exists_and_newer_than "/tmp/file.txt" 30) )) && echo "Yes!"
-file.exists_and_newer_than() {
+#   (( $(file.exists-and-newer-than "/tmp/file.txt" 30) )) && echo "Yes!"
+file.exists-and-newer-than() {
   local file="${1}"
   shift
   local minutes="${1}"
@@ -155,4 +155,58 @@ file.source-if-exists() {
   for file in "$@"; do
     [[ -f "${file}" ]] && source "${file}"
   done
+}
+
+files.find() {
+  local folder="$1"
+  local pattern="${2}"
+
+  [[ -z ${folder} || -z ${pattern} ]] && {
+    echo "usage: files.find <folder> <pattern>" >&2
+    return 1
+  }
+
+  find "$1" -name "${pattern}"
+}
+
+# Function:
+#   files.map
+#
+# Arguments:
+#   folder:   directory to search for files recursively
+#   pattern:  value to pass to find, eg "find . -name 'pattern'"
+#   array:    name of an array to assign the results to (optional)
+#
+# If an array name is provided, this function will print a mini BASH script
+# that should be evaluated to store the result of the recurse in
+# a local array, eg:
+#
+# declare -a FILES
+# eval "files.map ${HOME} '.bash*' FILES"
+#
+# echo ${FILES[0]} # => "~/.bashrc"
+#
+files.map() {
+  local folder="${1}"
+  local pattern="${2}"
+  local array="${3}"
+
+  local -a files
+  if bashmatic.bash.version-four-or-later; then
+    mapfile -t files < <(files.find "${folder}" "${pattern}")
+  else
+    files=()
+    while IFS='' read -r line; do files+=("$line"); done < <(files.find "${folder}" "${pattern}")
+  fi
+
+  if [[ -n ${array} ]]; then
+    # shellcheck disable=SC2124
+    printf "%s" "unset ${array}; declare -a ${array}; ${array}=(${files[*]}); export ${array}"
+  else
+    printf "%s" "${files[*]}"
+  fi
+}
+
+files.map.shell-scripts() {
+  files.map "$1" '*.sh' "$2"
 }

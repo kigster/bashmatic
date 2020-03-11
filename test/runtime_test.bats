@@ -1,5 +1,9 @@
 load test_helper
 
+source lib/hbsed.sh
+source lib/time.sh
+source lib/run.sh
+source lib/runtime-config.sh
 source lib/output.sh
 source lib/runtime.sh
 

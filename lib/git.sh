@@ -13,9 +13,9 @@ git.quiet() {
 
 git.sync() {
   local dir="$(pwd)"
-  cd "${BashMatic__Home}" >/dev/null
+  cd "${BASHMATIC_HOME}" >/dev/null
   git.repo-is-clean || {
-    warning "${bldylw}${BashMatic__Home} has locally modified files." \
+    warning "${bldylw}${BASHMATIC_HOME} has locally modified files." \
       "Please commit or stash them to allow auto-upgrade to function as designed." >&2
     cd "${dir}" >/dev/null
     return 1
@@ -48,7 +48,7 @@ git.update-repo-if-needed() {
   if [[ ${second_since_update} -gt ${update_period_seconds} ]]; then
     git.sync-remote
   elif [[ -n ${DEBUG} ]]; then
-    git.quiet || info "${BashMatic__Home} will update in $((update_period_seconds - second_since_update)) seconds..."
+    git.quiet || info "${BASHMATIC_HOME} will update in $((update_period_seconds - second_since_update)) seconds..."
   fi
 }
 
@@ -113,7 +113,7 @@ git.local-vs-remote() {
 }
 
 git.repo-is-clean() {
-  local repo="${1:-${BashMatic__Home}}"
+  local repo="${1:-${BASHMATIC_HOME}}"
   cd "${repo}" >/dev/null
   if [[ -z $(git status -s) ]]; then
     cd - >/dev/null
@@ -134,7 +134,7 @@ bashmatic.auto-update() {
   git.configure-auto-updates
 
   git.repo-is-clean || {
-    h1 "${BashMatic__Home} has locally modified changes." \
+    h1 "${BASHMATIC_HOME} has locally modified changes." \
       "Will wait with auto-update until it's sync'd up."
     return 1
   }

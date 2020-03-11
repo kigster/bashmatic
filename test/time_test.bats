@@ -1,6 +1,10 @@
 #!/usr/bin/env bats
 #
+
 load test_helper
+
+source lib/time.sh
+source lib/util.sh
 
 set -e
 
