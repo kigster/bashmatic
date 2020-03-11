@@ -78,10 +78,10 @@ Perhaps the easiest way to install BashMatic is using this boot-strapping script
 
 ### Bootstrapping Bashmatic using `curl`
 
-First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal:
+First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-0-0 to a version you'd like to install):
 
 ```bash
-❯ eval "$(curl -fsSL http://bit.ly/bashmatic-1.0.0)"
+❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-0)"
 ```
 
 This not only will check out bashmatic into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
