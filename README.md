@@ -1,5 +1,6 @@
 
 [![Build Status](https://travis-ci.org/kigster/bashmatic.svg?branch=master)](https://travis-ci.org/kigster/bashmatic)
+![CI](https://github.com/kigster/bashmatic/workflows/CI/badge.svg)
 
 # BashMatic
 

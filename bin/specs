@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
+# vim: ft=sh
 # Bashmatic Utilities
 # © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
 export TERM=${TERM:-xterm-256color}
+export MIN_WIDTH=${MIN_WIDTH:-"100"}
 
 export ProjectRoot=$(pwd)
 export BatsRoot=${ProjectRoot}/.bats
 
 declare -a TestFiles=()
 
-export PATH="$PATH:/usr/local/bin:/usr/local/libexec"
-
 export True=1
 export False=0
 
 export Bashmatic__Test=${True}
+
+export BatsPrefix="/usr/local"
+[[ -n $CI ]] && export BatsPrefix="./bats-install"
+
+(mkdir -p ${BatsPrefix}            2>/dev/null) || true 
+(mkdir -p ${BatsPrefix}/bin           2>/dev/null)  || true 
+(mkdir -p ${BatsPrefix}/libexec           2>/dev/null)  || true 
+
+export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
 
 source "$(pwd)/init.sh"
 
@@ -49,10 +58,10 @@ specs.install-bats() {
   [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
   [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/sstephenson/bats.git ${BatsRoot}"
 
-  if [[ -d ${BatsRoot} && ! -x /usr/local/bin/bats ]]; then
+  if [[ -d ${BatsRoot} && ! -x ${BatsPrefix}/bin/bats ]]; then
     run "cd ${BatsRoot} && git reset --hard && git pull --rebase 2>/dev/null"
     run.set-next show-output-on abort-on-error
-    run "./install.sh /usr/local"
+    run "./install.sh ${BatsPrefix}"
     run "cd ${ProjectRoot}"
     run 'hash -r'
   fi
@@ -70,7 +79,7 @@ specs.run-file() {
   fi
   test-group "${file}"
   set -e
-  /usr/local/bin/bats -p "${file}"
+  ${BatsPrefix}/bin/bats -p "${file}"
   set +e
 }
 
