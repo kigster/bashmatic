@@ -1,15 +1,19 @@
-
 [![Build Status](https://travis-ci.org/kigster/bashmatic.svg?branch=master)](https://travis-ci.org/kigster/bashmatic)
 ![CI](https://github.com/kigster/bashmatic/workflows/CI/badge.svg)
 
 # BashMatic
 
-> BashMatic is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled
-> functions for every occasion, from drawing boxes and yelling at the user, to running complicated setup flows.
-> Start exploring by installing it, and then running `bashmatic.functions` function, to see all available
-> BASH functions added to your Shell by the framework.
+BashMatic is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
 
-<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+Start exploring Bashmatic below with our [examples section](#usage-examples-for-the-impatient). When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the [functions index page](FUNCTIONS.md).
+
+## Table of Contents
+
+* [Table of Contents](#table-of-contents)
+* [Project Motivation](#project-motivation)
+* [Usage examples for the impatient](#usage-examples-for-the-impatient)
+  * [Installing Brew packages and Ruby Gems](#installing-brew-packages-and-ruby-gems)
+  * [Installing `kubectl` and `minikube` into `/usr/local/bin`](#installing-kubectl-and-minikube-into-usrlocalbin)
 * [Installing](#installing)
   * [Bootstrapping Bashmatic using `curl`](#bootstrapping-bashmatic-using-curl)
   * [Installing Manually](#installing-manually)
@@ -40,30 +44,10 @@
   * [How do I run unit tests for BashMatic?](#how-do-i-run-unit-tests-for-bashmatic)
   * [How can I change the underscan or overscan for an old monitor?](#how-can-i-change-the-underscan-or-overscan-for-an-old-monitor)
   * [Contributing](#contributing)
-<!-- /TOC -->
-
-# Bashmatic — Sane DSL for BASH scripts
 
 BashMatic is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
 
-I mean, check this out — given this tiny four-line script:
-
-```bash
-h2 "Installing ruby gem sym and brew package curl..." \
-   "Please standby..."
-gem.install "sym" && brew.install.package "curl"
-success "installed sym ruby gem, version $(gem.version sym)"
-```
-
-yields this  functionality and the gorgeous output:
-
-![example](.bashmatic-example.png)
-
-Tell me you are not at all excited to start writing complex installation flows in BASH right away?
-
-Not only you get pretty output, but you can each executed command, it's exit status, whether it's been successful (green/red), as well each command's bloody duration in milliseconds. What's not to like?!? 😂
-
-### Motivation
+## Project Motivation
 
 This project was born out of a simple realization made by several very senior and highly experienced engineers, that:
 
@@ -72,6 +56,55 @@ This project was born out of a simple realization made by several very senior an
  2. A lot of tasks are easy and compact to automate in BASH, and BASH function's return values lend themselves nicely to a compact DSL ([domain specific language](https://en.wikipedia.org/wiki/Domain-specific_language)) where multiple functions can be chained by logical AND `&&` and OR `||` to provide a very compact execution logic. Most importantly, we think that this logic is **extremely easy to read and understand.**
 
  3. By using a consistent programming style and descriptive method names we can create installers and uploaders that are easy to read, maintain and debug. Did we mention about the most awesome **runtime** framework? See below!
+
+## Usage examples for the impatient
+
+### Installing Brew packages and Ruby Gems
+
+Given this tiny four-line script:
+
+```bash
+
+h2 "Installing ruby gem sym and brew package curl..." \
+   "Please standby..."
+gem.install "sym" && brew.install.package "curl"
+success "installed sym ruby gem, version $(gem.version sym)"
+```
+
+Results in this detailed and, let's be honest, *gorgeous* ASCII output:
+
+![example](.bashmatic-example.png)
+
+Tell me you are not at all excited to start writing complex installation flows in BASH right away?
+
+Not only you get pretty output, but you can each executed command, it's exit status, whether it's been successful (green/red), as well each command's bloody duration in milliseconds. What's not to like?!? 😂
+
+Still not convinced?
+
+Take a look at a more comprehensive example next.
+
+### Installing `kubectl` and `minikube` into `/usr/local/bin`
+
+We provided an example script in [`examples/k8s-installer.sh`](examples/k8s-installer.sh). Please click and take a look at the source.
+
+Here is the output of running this script:
+
+![.k8installer.png](.k8installer.png)
+
+Why do we think this type of installer is pretty awesome, compared to a silent but deadly shell script that "Jim-in-the-corner" wrote and now nobody understands?
+
+Because:
+
+1. The script goes out of its way to over-communicate what it does to the user.
+2. It allows and reminds about a clean getaway (Ctrl-C)
+3. It shares the exact command it runs and its timings so that you can eyeball issues like network congestions or network addresses, etc.
+4. It shows in green exit code '0' of each command. Should any of the commands fail, you'll see it in red.
+5. It's source code is terse, explicit, and easy to read. There is no magic. Just BASH functions.
+
+> If you need to create a BASH installer, Bashmatic offers some incredible time savers.
+
+Let's get back to the Earth, and talk about how to install Bashmatic, and how to use it in more detail right after.
+
 
 ## Installing
 

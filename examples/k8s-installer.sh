@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 # vim ft=sh
-# 
+#
 # BASHMATIC EXAMPLES
-# 
+#
 # Kuberneties & Minikube downloader and installer.
 
-[[ -d ${HOME}/.bashmatic ]]         || bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-0)"
-[[ -f ${HOME}/.bashmatic/init.sh ]] || { echo "Can't find or install Bashmatic. Exiting.";  exit 1; }
-
-source ${HOME}/.bashmatic/init.sh
-
-bashmatic.bash.version-four-or-later || {
-  error "This script requires BASH version 4+ due to its use of Associative Arrays."
+[[ -d ${HOME}/.bashmatic ]] || bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-1)"
+[[ -f ${HOME}/.bashmatic/init.sh ]] || {
+  echo "Can't find or install Bashmatic. Exiting."
   exit 1
 }
+
+source ${HOME}/.bashmatic/init.sh
+source ${HOME}/.bashmatic/bashmatic.sh
+
+bashmatic.bash.exit-unless-version-four-or-later
 
 k8s.ensure-no-brew() {
   local package="$1"
@@ -79,4 +80,3 @@ main() {
 }
 
 main "$@"
-

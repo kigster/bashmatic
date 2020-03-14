@@ -82,8 +82,14 @@ bashmatic.bash.version() {
 }
 
 bashmatic.bash.version-four-or-later() {
-  export BASH_MAJOR_VERSION=${BASH_MAJOR_VERSION:-$(bashmatic.bash.version)}
-  test "${BASH_MAJOR_VERSION}" -gt 3
+  [[ $(bashmatic.bash.version) -gt 3 ]]
+}
+
+bashmatic.bash.exit-unless-version-four-or-later() {
+  bashmatic.bash.version-four-or-later || {
+    error "Sorry, this functionality requires BASH version 4 or later."
+    exit 1 >/dev/null
+  }
 }
 
 #——————————————————————————————————————————————————————

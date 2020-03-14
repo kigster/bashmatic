@@ -1,6 +1,7 @@
 
 # BashMatic
 
+
 ## Table of Contents
 
 * [Table of Contents](#table-of-contents)
@@ -30,6 +31,7 @@
     * [`aws.rds.hostname`](#awsrdshostname)
     * [`aws.s3.upload`](#awss3upload)
   * [Module `bashmatic`](#module-bashmatic)
+    * [`bashmatic.bash.exit-unless-version-four-or-later`](#bashmaticbashexit-unless-version-four-or-later)
     * [`bashmatic.bash.version`](#bashmaticbashversion)
     * [`bashmatic.bash.version-four-or-later`](#bashmaticbashversion-four-or-later)
     * [`bashmatic.cache.add-file`](#bashmaticcacheadd-file)
@@ -327,7 +329,16 @@
     * [`sig.is-valid`](#sigis-valid)
     * [`sig.list`](#siglist)
   * [Module `progress-bar`](#module-progress-bar)
-    * [`progress.bar`](#progressbar)
+    * [`progress.bar.auto-run`](#progressbarauto-run)
+    * [`progress.bar.config`](#progressbarconfig)
+    * [`progress.bar.configure.color-green`](#progressbarconfigurecolor-green)
+    * [`progress.bar.configure.color-red`](#progressbarconfigurecolor-red)
+    * [`progress.bar.configure.color-yellow`](#progressbarconfigurecolor-yellow)
+    * [`progress.bar.configure.symbol-arrow`](#progressbarconfiguresymbol-arrow)
+    * [`progress.bar.configure.symbol-bar`](#progressbarconfiguresymbol-bar)
+    * [`progress.bar.configure.symbol-block`](#progressbarconfiguresymbol-block)
+    * [`progress.bar.configure.symbol-square`](#progressbarconfiguresymbol-square)
+    * [`progress.bar.launch-and-wait`](#progressbarlaunch-and-wait)
   * [Module `repositories`](#module-repositories)
     * [`repo.rebase`](#reporebase)
     * [`repo.stash-and-rebase`](#repostash-and-rebase)
@@ -384,6 +395,7 @@
     * [`run.inspect-variables-that-are`](#runinspect-variables-that-are)
     * [`run.inspect.set-skip-false-or-blank`](#runinspectset-skip-false-or-blank)
     * [`run.on-error.ask-is-enabled`](#runon-errorask-is-enabled)
+    * [`run.print-command`](#runprint-command)
     * [`run.print-variable`](#runprint-variable)
     * [`run.print-variables`](#runprint-variables)
     * [`run.ui.ask`](#runuiask)
@@ -499,7 +511,6 @@
     * [`yaml.dump`](#yamldump)
     * [`yaml.expand-aliases`](#yamlexpand-aliases)
 * [Copyright](#copyright)
-
 ## List of Bashmatic Modules
 
 * [7z](#module-7z)
@@ -919,6 +930,19 @@ aws.s3.upload ()
 
 ### Module `bashmatic`
 
+#### `bashmatic.bash.exit-unless-version-four-or-later`
+
+```bash
+bashmatic.bash.exit-unless-version-four-or-later ()
+{
+    bashmatic.bash.version-four-or-later || {
+        error "Sorry, this functionality requires BASH version 4 or later.";
+        exit 1 > /dev/null
+    }
+}
+
+```
+
 #### `bashmatic.bash.version`
 
 ```bash
@@ -934,8 +958,7 @@ bashmatic.bash.version ()
 ```bash
 bashmatic.bash.version-four-or-later ()
 {
-    export BASH_MAJOR_VERSION=${BASH_MAJOR_VERSION:-$(bashmatic.bash.version)};
-    test "${BASH_MAJOR_VERSION}" -gt 3
+    [[ $(bashmatic.bash.version) -gt 3 ]]
 }
 
 ```
@@ -5103,10 +5126,10 @@ sig.list ()
 
 ### Module `progress-bar`
 
-#### `progress.bar`
+#### `progress.bar.auto-run`
 
 ```bash
-progress.bar ()
+progress.bar.auto-run ()
 {
     .progress.reset;
     .progress.bar "$@";
@@ -5115,6 +5138,112 @@ progress.bar ()
         .progress.reset;
         return 1;
     fi;
+    return 0
+}
+
+```
+
+#### `progress.bar.config`
+
+```bash
+progress.bar.config ()
+{
+    while true; do
+        local setting="$1";
+        shift;
+        [[ -z ${setting} ]] && break;
+        local key=${setting/=*/};
+        local value=${setting/*=/};
+        eval "export LibProgress__${key}=\"${value}\"";
+    done
+}
+
+```
+
+#### `progress.bar.configure.color-green`
+
+```bash
+progress.bar.configure.color-green ()
+{
+    progress.bar.config BarColor=${bldgrn}
+}
+
+```
+
+#### `progress.bar.configure.color-red`
+
+```bash
+progress.bar.configure.color-red ()
+{
+    progress.bar.config BarColor=${bldred}
+}
+
+```
+
+#### `progress.bar.configure.color-yellow`
+
+```bash
+progress.bar.configure.color-yellow ()
+{
+    progress.bar.config BarColor=${bldylw}
+}
+
+```
+
+#### `progress.bar.configure.symbol-arrow`
+
+```bash
+progress.bar.configure.symbol-arrow ()
+{
+    progress.bar.config BarChar="❯"
+}
+
+```
+
+#### `progress.bar.configure.symbol-bar`
+
+```bash
+progress.bar.configure.symbol-bar ()
+{
+    progress.bar.config BarChar="█"
+}
+
+```
+
+#### `progress.bar.configure.symbol-block`
+
+```bash
+progress.bar.configure.symbol-block ()
+{
+    progress.bar.config BarChar="${LibProgress__BarChar__Default}"
+}
+
+```
+
+#### `progress.bar.configure.symbol-square`
+
+```bash
+progress.bar.configure.symbol-square ()
+{
+    progress.bar.config BarChar="◼︎"
+}
+
+```
+
+#### `progress.bar.launch-and-wait`
+
+```bash
+progress.bar.launch-and-wait ()
+{
+    local command="$*";
+    run.print-command "${command}\n";
+    ${command} > /dev/null 2>&1 & local pid=$!;
+    info "Waiting for background process to finish; PID=${bldylw}${pid}";
+    set -e;
+    while .progress.bar.check-pid-alive $pid; do
+        progress.bar.auto-run 0.5 10;
+    done;
+    set +e;
     return 0
 }
 
@@ -5975,6 +6104,37 @@ run.inspect.set-skip-false-or-blank ()
 run.on-error.ask-is-enabled ()
 {
     [[ ${LibRun__AskOnError} -eq ${True} ]]
+}
+
+```
+
+#### `run.print-command`
+
+```bash
+run.print-command ()
+{
+    local command="$1";
+    local max_width=100;
+    local w;
+    w=$(($(.output.screen-width) - 10));
+    [[ ${w} -gt ${max_width} ]] && w=${max_width};
+    export LibRun__AssignedWidth=${w};
+    local prefix="${LibOutput__LeftPrefix}${clr}";
+    local ascii_cmd;
+    local command_prompt="${prefix}❯ ";
+    local command_width=$((w - 30));
+    ascii_cmd="$(printf "${command_prompt}%-.${command_width}s " "${command:0:${command_width}}")";
+    export LibRun__CommandLength=${#ascii_cmd};
+    [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && {
+        export LibRun__AssignedWidth=$((w - 3));
+        export LibRun__CommandLength=1;
+        printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"
+    };
+    if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
+        printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(.output.replicate-to "*" 40)";
+    else
+        printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}";
+    fi
 }
 
 ```

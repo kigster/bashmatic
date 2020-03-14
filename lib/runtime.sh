@@ -135,21 +135,9 @@ export commands_completed=0
     export LibRun__LastExitCode=$?
   fi
 }
-#
-# This is the workhorse of the entire BASH library.
-# It basically executes a statement, while processing it's output, error output,
-# and status code in a consistent way, controllable via several global variables.
-# These variables are reset back to defaults after each run. The defaults hide
-# both stdout and error, and do NOT abort on failure.
-#
-# See: #.run.initializer for the list of global variables.
-.run.exec() {
-  command="$*"
 
-  if [[ -n ${DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
-    run.inspect
-  fi
-
+run.print-command() {
+  local command="$1"
   local max_width=100
   local w
   w=$(($(.output.screen-width) - 10))
@@ -180,8 +168,24 @@ export commands_completed=0
   else
     printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}"
   fi
+}
 
-  sleep 1
+#
+# This is the workhorse of the entire BASH library.
+# It basically executes a statement, while processing it's output, error output,
+# and status code in a consistent way, controllable via several global variables.
+# These variables are reset back to defaults after each run. The defaults hide
+# both stdout and error, and do NOT abort on failure.
+#
+# See: #.run.initializer for the list of global variables.
+.run.exec() {
+  local command="$*"
+
+  if [[ -n ${DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
+    run.inspect
+  fi
+
+  run.print-command "${command}"
 
   local __Previous__ShowCommandOutput=${LibRun__ShowCommandOutput}
   set +e
@@ -194,15 +198,16 @@ export commands_completed=0
   while [[ -n ${LibRun__LastExitCode} && ${LibRun__LastExitCode} -ne 0 ]] &&
     [[ -n ${LibRun__RetryCount} && ${LibRun__RetryCount} -gt 0 ]]; do
 
-    [[ ${tries} -gt 1 && ${__Previous__ShowCommandOutput} -eq ${True} ]] && {
+    [[ ${tries} -gt 1 && ${__Previous__ShowCommandOutput} -eq ${True} ]] && \
       export LibRun__ShowCommandOutput=${False}
-    }
+    
     .run.retry.enforce-max
 
     export LibRun__RetryCount="$((LibRun__RetryCount - 1))"
+
     [[ -n ${LibRun__RetrySleep} ]] && sleep ${LibRun__RetrySleep}
 
-    info "Warning: command exited with code ${bldred}${LibRun__LastExitCode}" \
+    info "warning: command exited with code ${bldred}${LibRun__LastExitCode}" \
       "$(txt-info)and ${LibRun__RetryCount} retries left."
 
     .run.eval "${run_stdout}" "${run_stderr}" "${command}"
@@ -221,7 +226,7 @@ export commands_completed=0
       command-spacer
       duration ${duration} ${LibRun__LastExitCode}
     fi
-    ok
+    ui.closer.ok
     commands_completed=$((commands_completed + 1))
     echo
   else

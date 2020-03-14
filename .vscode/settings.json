@@ -1,12 +1,10 @@
 {
    "terminal.integrated.cursorBlinking": true,
-   "editor.fontFamily": "Lekton, Roboto Mono Medium for Powerline",
-   "editor.fontSize": 14,
+   "editor.fontFamily": "JetBrains Mono",
    "editor.tabSize": 2,
    "editor.cursorStyle": "block",
    "files.autoSave": "afterDelay",
    "editor.find.autoFindInSelection": "always",
-   "editor.fontWeight": "600",
    "editor.formatOnPaste": true,
    "editor.formatOnSave": true,
    "editor.formatOnType": true,
@@ -17,5 +15,11 @@
    "editor.highlightActiveIndentGuide": false,
    "editor.letterSpacing": -0.2,
    "editor.renderControlCharacters": true,
-   "html.format.wrapLineLength": 100
+   "html.format.wrapLineLength": 100,
+   "editor.lineHeight": 15,
+   "editor.find.addExtraSpaceOnTop": false,
+   "editor.fontSize": 11,
+   "command-runner.commands": {
+      "Run Bats Unit Tests": "cd ${workspaceFolder} && bin/specs ${file}",
+   },
 }
