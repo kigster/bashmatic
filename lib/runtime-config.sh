@@ -30,11 +30,11 @@ run.set-all() {
 }
 
 run.set-next.list() {
-  set | egrep '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | hbsed 's/[() ]//g'
+  set | egrep '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 run.set-all.list() {
-  set | egrep '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | hbsed 's/[() ]//g'
+  set | egrep '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 run.inspect() {
@@ -171,6 +171,6 @@ ____run.list-options() {
   info "List of available configuration features for ${type} command(s):\n"
   printf "${prefix}"
 
-  eval ${func} | tr '\n' ',' | hbsed 's/,$//g' | hbsed "s/,/\\n${prefix}/g"
+  eval ${func} | tr '\n' ',' | sedx 's/,$//g' | sedx "s/,/\\n${prefix}/g"
   echo
 }

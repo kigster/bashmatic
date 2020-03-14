@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #——————————————————————————————————————————————————————————————————————————————
-# © 2016-2017 Author: Konstantin Gredeskoul
+# © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modifications, © 2017 Konstantin Gredeskoul, Inc. All rights reserved.
+# Any modifications, © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
 export AppCurrentOS=${AppCurrentOS:-$(uname -s)}

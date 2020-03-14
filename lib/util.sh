@@ -122,7 +122,7 @@ util.remove-from-init-files() {
 }
 
 util.whats-installed() {
-  declare -a hb_aliases=($(alias | grep -E 'hb\..*=' | hbsed 's/alias//g; s/=.*$//g'))
+  declare -a hb_aliases=($(alias | grep -E 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
   h2 "Installed app aliases:" ' ' "${hb_aliases[@]}"
 
   h2 "Installed DB Functions:"
@@ -179,15 +179,63 @@ util.install-direnv() {
   eval "$(direnv hook bash)"
 }
 
-watch-ls-al() {
+export LibSed__latestVersion=
+
+sedx() {
+  #———————————————————————————————————————————————————————
+  # SedX is a functional enhancement to the regular sed. It basically
+  # will install the more powerful GNU sed if it finds the super old sed.
+  # You can use sedx as you would use sed normally.
+
+  local current=$(which sed)
+  local latest=${LibSed__latestVersion:-'/usr/local/bin/gsed'}
+  local os=$(uname -s)
+
+  if [[ ! -x "${latest}" ]]; then
+    if [[ "${os}" == "Darwin" ]]; then
+      [[ -n $(which brew) ]] || return 1
+      brew install gnu-sed 1>/dev/null 2>&1
+      [[ -x "${latest}" ]] || latest="${current}"
+    elif [[ "${os}" == "Linux" ]]; then
+      latest="${current}"
+    fi
+  fi
+
+  latest=${latest:-${current}}
+
+  ${latest} -E "$@"
+}
+
+export LibUtil__WatchRefreshSeconds="0.5"
+
+watch.set-refresh() {
+  export LibUtil__WatchRefreshSeconds="${1:-"0.5"}"
+}
+
+watch.ls-al() {
   while true; do
     ls -al
-    sleep 0.3
+    sleep ${LibUtil__WatchRefreshSeconds}
     clear
   done
 }
-pause() { sleep "${1:-1}"; }
 
-shortish-pause() { sleep "${1:-0.3}"; }
-short-pause() { sleep "${1:-0.1}"; }
-long-pause() { sleep "${1:-10}"; }
+watch.command() {
+  [[ -z "$1" ]] && return 1
+  trap "return 1" SIGINT
+  while true; do
+    clear
+    hr.colored "${txtblu}"
+    printf " ❯ Command: ${bldgrn}$*${clr}  •  ${txtblu}$(date)${clr}  •  Refresh: ${bldcyn}${LibUtil__WatchRefreshSeconds}${clr}\n"
+    hr.colored "${txtblu}"
+    eval "$*"
+    hr.colored "${txtblu}"
+    printf "To change refresh rate run ${bldylw}watch.set-refresh <seconds>${clr}\n\n\n"
+    sleep "${LibUtil__WatchRefreshSeconds}"
+  done
+}
+
+pause() { sleep "${1:-1}"; }
+pause.medium() { sleep "${1:-0.3}"; }
+pause.short() { sleep "${1:-0.1}"; }
+pause.long() { sleep "${1:-10}"; }

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #——————————————————————————————————————————————————————————————————————————————
-# © 2016-2017 Author: Konstantin Gredeskoul
+# © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modi  fications, © 2017 PioneerWorks, Inc. All rights reserved.
+# Any modi  fications, © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
 # The following "global" variables define how the run framework executes
@@ -113,7 +113,7 @@ export commands_completed=0
 .run.should-retry-exit-code() {
   local code=$1
   if [[ -n ${LibRun__RetryExitCodes[*]} ]]; then
-    array.contains-element "${code}" "${array[@]}"
+    array.includes "${code}" "${array[@]}"
   else
     return 0
   fi
@@ -284,7 +284,7 @@ run.with.minimum-duration() {
   local duration=$((($(millis) - ${started}) / 1000))
 
   if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
-    local cmd="$(echo ${command} | hbsed 's/\"//g')"
+    local cmd="$(echo ${command} | sedx 's/\"//g')"
     error "An operation finished too quickly. The threshold was set to ${bldylw}${min_duration} sec." \
       "The command took ${bldylw}${duration}${txtred} secs." \
       "${bldylw}${cmd}${txtred}"
@@ -434,12 +434,12 @@ run.print-variables() {
 
 run.variables-starting-with() {
   local prefix="${1}"
-  env | egrep "^${prefix}" | grep '=' | hbsed 's/=.*//g' | sort
+  env | egrep "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 run.variables-ending-with() {
   local suffix="${1}"
-  env | egrep ".*${suffix}=.*\$" | grep '=' | hbsed 's/=.*//g' | sort
+  env | egrep ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 # Usage: run.inspect-variables-that-are starting-with LibRun
@@ -452,11 +452,11 @@ run.inspect-variables-that-are() {
 
 # shellcheck disable=SC2120
 run.inspect() {
-  if [[ ${#@} -eq 0 || $(array-contains-element "config" "$@") == "true" ]]; then
+  if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
     run.inspect-variables-that-are starting-with LibRun
   fi
 
-  if [[ ${#@} -eq 0 || $(array-contains-element "totals" "$@") == "true" ]]; then
+  if [[ ${#@} -eq 0 || $(array.has-element "totals" "$@") == "true" ]]; then
     hl.subtle "TOTALS"
     info "${bldgrn}${commands_completed} commands completed successfully"
     [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed"
@@ -464,7 +464,7 @@ run.inspect() {
     echo
   fi
 
-  if [[ ${#@} -eq 0 || $(array-contains-element "current" "$@") == "true" ]]; then
+  if [[ ${#@} -eq 0 || $(array.has-element "current" "$@") == "true" ]]; then
     run.inspect-variables-that-are ending-with __LastExitCode
   fi
 

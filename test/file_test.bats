@@ -4,7 +4,7 @@ load test_helper
 
 # file.exists-and-newer-than
 # file.gsub
-# file.install_with_backup
+# file.install-with-backup
 # file.last-modified-date
 # file.last-modified-year
 # file.list.filter-existing
@@ -15,7 +15,7 @@ load test_helper
 # file.stat
 # files.find
 # files.map
-# files.map.shell-scripts 
+# files.map.shell-scripts
 
 source lib/file.sh
 
@@ -29,7 +29,7 @@ set -e
 
 @test "file.map.shell-scripts()" {
   set -e
-  
+
   declare -a files_array
   eval "$(files.map.shell-scripts test/fixtures files_array)"
   [[ ${#files_array[@]} -eq 2 ]]

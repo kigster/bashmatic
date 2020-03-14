@@ -19,75 +19,75 @@ source lib/array.sh
   [[ $status -eq 0 ]]
 }
 
-@test "array.piped" {
+@test "array.to.piped-list" {
   declare -a array=(orange yellow red)
-  [[ $(array.piped "${array[@]}") == "orange | yellow | red" ]]
+  [[ $(array.to.piped-list "${array[@]}") == "orange | yellow | red" ]]
   [[ $status -eq 0 ]]
 }
 
-@test "array.contains-element() when one element exists" {
+@test "array.includes() when one element exists" {
   declare -a array=("a string" "test2000" "hello" "one")
-  array.contains-element test2000 "${array[@]}" && true
+  array.includes test2000 "${array[@]}" && true
 }
 
-@test "array.contains-element() when another element exists" {
+@test "array.includes() when another element exists" {
   declare -a array=("a string" "test2000" "hello" "one")
   set +e
-  array.contains-element "one" "${array[@]}"; code=$?
+  array.includes "one" "${array[@]}"; code=$?
   set -e
   [[ ${code} -eq 0 ]]
 }
 
-@test "array.contains-element() when element does not exist" {
+@test "array.includes() when element does not exist" {
   declare -a array=("a string" "test2000" "hello" "one")
   set +e
-  array.contains-element "two" "${array[@]}"; local code=$?
+  array.includes "two" "${array[@]}"; local code=$?
   set -e
   [[ ${code} -eq 1 ]]
 }
 
-@test "array-contains-element() when element exists" {
+@test "array.has-element() when element exists" {
   declare -a array=("a string" "test2000" "hello" "one")
-  array-contains-element test2000 "${array[@]}" && true
+  array.has-element test2000 "${array[@]}" && true
 }
 
-@test "array-contains-element() when element exists and has a space" {
+@test "array.has-element() when element exists and has a space" {
   declare -a array=("a string" "test2000" "hello" "one")
-  array-contains-element "a string" "${array[@]}" && true
+  array.has-element "a string" "${array[@]}" && true
 }
 
-@test "array-contains-element() when element exists, using return value" {
+@test "array.has-element() when element exists, using return value" {
   declare -a array=("a string" "test2000" "hello" "one")
   set +e
-  array-contains-element test2000 "${array[@]}"; code=$?
+  array.has-element test2000 "${array[@]}"; code=$?
   set -e
   [[ ${code} -eq 0 ]]
 }
 
-@test "array-contains-element() when element exists" {
+@test "array.has-element() when element exists" {
   declare -a array=("a string" "test2000" "hello" "one")
-  [[ $(array-contains-element hello "${array[@]}") == "true" ]]
+  [[ $(array.has-element hello "${array[@]}") == "true" ]]
 }
 
-@test "array-contains-element() when element is a substring of an existing element" {
+@test "array.has-element() when element is a substring of an existing element" {
   declare -a array=("a string" "test2000" "hello" "one")
-  [[ $(array-contains-element hell "${array[@]}") == "false" ]]
+  [[ $(array.has-element hell "${array[@]}") == "false" ]]
 }
 
-@test "array-contains-element when element does not exist" {
+@test "array.has-element when element does not exist" {
   declare -a array=("a string" "test2000" "hello" "one")
-  [[ $(array-contains-element 123 "${array[@]}")  == "false" ]]
+  [[ $(array.has-element 123 "${array[@]}")  == "false" ]]
 }
 
-@test "array-contains-element when element does not exist and is a space " {
+@test "array.has-element when element does not exist and is a space " {
   declare -a array=("a string" "test2000" "hello" "one")
-  [[ $(array-contains-element ' ' "${array[@]}")  == "false" ]]
+  [[ $(array.has-element ' ' "${array[@]}")  == "false" ]]
 }
 
-@test "array-bullet-list" {
+@test "array.to.bullet-list" {
   declare -a array=(kig pig)
   tmp=$(mktemp)
-  array-bullet-list "${array[@]}" > ${tmp}
+  array.to.bullet-list "${array[@]}" > ${tmp}
 
   lines=$(cat "${tmp}" | wc -l | tr -d ' ')
   echo "${tmp}"

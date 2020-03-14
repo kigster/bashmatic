@@ -47,7 +47,7 @@ gem.global.versions() {
   local gem=$1
   [[ -z ${gem} ]] && return
   gem.cache-installed
-  cat ${LibGem__GemListCache} | egrep "^${gem} " | hbsed "s/^${gem} //g;s/[(),]//g"
+  cat ${LibGem__GemListCache} | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
 # Returns a space-separated list of installed gem versions
@@ -124,8 +124,6 @@ gem.is-installed() {
     egrep "^${gem} \(" "${LibGem__GemListCache}" | grep "${version}"
   fi
 }
-
-
 
 # Install the gem, but use the version argument as a default. Final version
 # is determined from Gemfile.lock using the +gem.version+ above.

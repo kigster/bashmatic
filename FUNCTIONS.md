@@ -1,488 +1,644 @@
 
-# BashMatic Version 1.0.0
+# BashMatic
 
-## Function Listing
+## Table of Contents
 
-* [Function Listing](#function-listing)
-* [Function Implementations](#function-implementations)
-  * [`abort`](#abort)
-  * [`afp.servers`](#afpservers)
-  * [`ansi`](#ansi)
-  * [`array-bullet-list`](#array-bullet-list)
-  * [`array-contains-element`](#array-contains-element)
-  * [`array-csv`](#array-csv)
-  * [`array-join`](#array-join)
-  * [`array-piped`](#array-piped)
-  * [`array.complain-unless-includes`](#arraycomplain-unless-includes)
-  * [`array.contains-element`](#arraycontains-element)
-  * [`array.exit-unless-includes`](#arrayexit-unless-includes)
-  * [`array.from-command-output`](#arrayfrom-command-output)
-  * [`array.join`](#arrayjoin)
-  * [`array.piped`](#arraypiped)
-  * [`ascii-clean`](#ascii-clean)
-  * [`ask`](#ask)
-  * [`audio.wav-to-mp3`](#audiowav-to-mp3)
-  * [`audio.wave-file-frequency`](#audiowave-file-frequency)
-  * [`aws.ec2`](#awsec2)
-  * [`aws.rds.hostname`](#awsrdshostname)
-  * [`aws.s3.upload`](#awss3upload)
-  * [`bashmatic-set-fqdn`](#bashmatic-set-fqdn)
-  * [`bashmatic-term`](#bashmatic-term)
-  * [`bashmatic-term-program`](#bashmatic-term-program)
-  * [`bashmatic.auto-update`](#bashmaticauto-update)
-  * [`bashmatic.detect-subshell`](#bashmaticdetect-subshell)
-  * [`bashmatic.functions`](#bashmaticfunctions)
-  * [`bashmatic.functions-from`](#bashmaticfunctions-from)
-  * [`bashmatic.functions.output`](#bashmaticfunctionsoutput)
-  * [`bashmatic.functions.runtime`](#bashmaticfunctionsruntime)
-  * [`bashmatic.load-at-login`](#bashmaticload-at-login)
-  * [`bashmatic.reload`](#bashmaticreload)
-  * [`bashmatic.subshell-init`](#bashmaticsubshell-init)
-  * [`bashmatic.validate-sourced-in`](#bashmaticvalidate-sourced-in)
-  * [`bashmatic.validate-subshell`](#bashmaticvalidate-subshell)
-  * [`bashmatic.version`](#bashmaticversion)
-  * [`bold`](#bold)
-  * [`box.blue-in-green`](#boxblue-in-green)
-  * [`box.blue-in-yellow`](#boxblue-in-yellow)
-  * [`box.green-in-cyan`](#boxgreen-in-cyan)
-  * [`box.green-in-green`](#boxgreen-in-green)
-  * [`box.green-in-magenta`](#boxgreen-in-magenta)
-  * [`box.green-in-yellow`](#boxgreen-in-yellow)
-  * [`box.magenta-in-blue`](#boxmagenta-in-blue)
-  * [`box.magenta-in-green`](#boxmagenta-in-green)
-  * [`box.red-in-magenta`](#boxred-in-magenta)
-  * [`box.red-in-red`](#boxred-in-red)
-  * [`box.red-in-yellow`](#boxred-in-yellow)
-  * [`box.yellow-in-blue`](#boxyellow-in-blue)
-  * [`box.yellow-in-red`](#boxyellow-in-red)
-  * [`box.yellow-in-yellow`](#boxyellow-in-yellow)
-  * [`br`](#br)
-  * [`brew.cache-reset`](#brewcache-reset)
-  * [`brew.cache-reset.delayed`](#brewcache-resetdelayed)
-  * [`brew.cask.is-installed`](#brewcaskis-installed)
-  * [`brew.cask.list`](#brewcasklist)
-  * [`brew.cask.tap`](#brewcasktap)
-  * [`brew.install`](#brewinstall)
-  * [`brew.install.cask`](#brewinstallcask)
-  * [`brew.install.package`](#brewinstallpackage)
-  * [`brew.install.packages`](#brewinstallpackages)
-  * [`brew.package.is-installed`](#brewpackageis-installed)
-  * [`brew.package.list`](#brewpackagelist)
-  * [`brew.reinstall.package`](#brewreinstallpackage)
-  * [`brew.reinstall.packages`](#brewreinstallpackages)
-  * [`brew.relink`](#brewrelink)
-  * [`brew.setup`](#brewsetup)
-  * [`brew.uninstall.package`](#brewuninstallpackage)
-  * [`brew.uninstall.packages`](#brewuninstallpackages)
-  * [`brew.upgrade`](#brewupgrade)
-  * [`bundle.gems-with-c-extensions`](#bundlegems-with-c-extensions)
-  * [`cache-or-command`](#cache-or-command)
-  * [`caller.stack`](#callerstack)
-  * [`center`](#center)
-  * [`change-underscan`](#change-underscan)
-  * [`color.disable`](#colordisable)
-  * [`color.enable`](#colorenable)
-  * [`columnize`](#columnize)
-  * [`command-spacer`](#command-spacer)
-  * [`cookie-dump`](#cookie-dump)
-  * [`cursor.at.x`](#cursoratx)
-  * [`cursor.at.y`](#cursoraty)
-  * [`cursor.down`](#cursordown)
-  * [`cursor.left`](#cursorleft)
-  * [`cursor.rewind`](#cursorrewind)
-  * [`cursor.right`](#cursorright)
-  * [`cursor.up`](#cursorup)
-  * [`db.datetime`](#dbdatetime)
-  * [`db.dump`](#dbdump)
-  * [`db.num_procs`](#dbnum_procs)
-  * [`db.psql-args`](#dbpsql-args)
-  * [`db.psql.args.`](#dbpsqlargs)
-  * [`db.psql.args.default`](#dbpsqlargsdefault)
-  * [`db.psql.args.maint`](#dbpsqlargsmaint)
-  * [`db.rails.schema.checksum`](#dbrailsschemachecksum)
-  * [`db.rails.schema.file`](#dbrailsschemafile)
-  * [`db.restore`](#dbrestore)
-  * [`db.top`](#dbtop)
-  * [`db.wait-until-db-online`](#dbwait-until-db-online)
-  * [`debug`](#debug)
-  * [`decrypt.secrets`](#decryptsecrets)
-  * [`deploy.slack`](#deployslack)
-  * [`deploy.slack-ding`](#deployslack-ding)
-  * [`deploy.validate-vpn`](#deployvalidate-vpn)
-  * [`dev.crypt.chef`](#devcryptchef)
-  * [`dev.decrypt.file`](#devdecryptfile)
-  * [`dev.decrypt.str`](#devdecryptstr)
-  * [`dev.edit.file`](#deveditfile)
-  * [`dev.encrypt.file`](#devencryptfile)
-  * [`dev.encrypt.str`](#devencryptstr)
-  * [`dev.sym`](#devsym)
-  * [`dir.count-slashes`](#dircount-slashes)
-  * [`dir.expand-dir`](#direxpand-dir)
-  * [`dir.is-a-dir`](#diris-a-dir)
-  * [`docker.abort-if-down`](#dockerabort-if-down)
-  * [`docker.actions.build`](#dockeractionsbuild)
-  * [`docker.actions.clean`](#dockeractionsclean)
-  * [`docker.actions.pull`](#dockeractionspull)
-  * [`docker.actions.push`](#dockeractionspush)
-  * [`docker.actions.setup`](#dockeractionssetup)
-  * [`docker.actions.start`](#dockeractionsstart)
-  * [`docker.actions.stop`](#dockeractionsstop)
-  * [`docker.actions.tag`](#dockeractionstag)
-  * [`docker.actions.up`](#dockeractionsup)
-  * [`docker.actions.update`](#dockeractionsupdate)
-  * [`docker.build.container`](#dockerbuildcontainer)
-  * [`docker.containers.clean`](#dockercontainersclean)
-  * [`docker.image.inspect`](#dockerimageinspect)
-  * [`docker.image.rm`](#dockerimagerm)
-  * [`docker.images-named`](#dockerimages-named)
-  * [`docker.images.clean`](#dockerimagesclean)
-  * [`docker.images.inspect`](#dockerimagesinspect)
-  * [`docker.last-version`](#dockerlast-version)
-  * [`docker.next-version`](#dockernext-version)
-  * [`docker.set-repo`](#dockerset-repo)
-  * [`duration`](#duration)
-  * [`epoch`](#epoch)
-  * [`err`](#err)
-  * [`error`](#error)
-  * [`error-text`](#error-text)
-  * [`error:`](#error-1)
-  * [`file.exists-and-newer-than`](#fileexists-and-newer-than)
-  * [`file.gsub`](#filegsub)
-  * [`file.install_with_backup`](#fileinstall_with_backup)
-  * [`file.last-modified-date`](#filelast-modified-date)
-  * [`file.last-modified-year`](#filelast-modified-year)
-  * [`file.list.filter-existing`](#filelistfilter-existing)
-  * [`file.list.filter-non-empty`](#filelistfilter-non-empty)
-  * [`file.size`](#filesize)
-  * [`file.size.mb`](#filesizemb)
-  * [`file.source-if-exists`](#filesource-if-exists)
-  * [`file.stat`](#filestat)
-  * [`ftrace-in`](#ftrace-in)
-  * [`ftrace-off`](#ftrace-off)
-  * [`ftrace-on`](#ftrace-on)
-  * [`ftrace-out`](#ftrace-out)
-  * [`g-i`](#g-i)
-  * [`g-u`](#g-u)
-  * [`gem.cache-installed`](#gemcache-installed)
-  * [`gem.cache-refresh`](#gemcache-refresh)
-  * [`gem.clear-cache`](#gemclear-cache)
-  * [`gem.configure-cache`](#gemconfigure-cache)
-  * [`gem.ensure-gem-version`](#gemensure-gem-version)
-  * [`gem.gemfile.version`](#gemgemfileversion)
-  * [`gem.global.latest-version`](#gemgloballatest-version)
-  * [`gem.global.versions`](#gemglobalversions)
-  * [`gem.install`](#geminstall)
-  * [`gem.is-installed`](#gemis-installed)
-  * [`gem.uninstall`](#gemuninstall)
-  * [`gem.version`](#gemversion)
-  * [`git.configure-auto-updates`](#gitconfigure-auto-updates)
-  * [`git.last-update-at`](#gitlast-update-at)
-  * [`git.local-vs-remote`](#gitlocal-vs-remote)
-  * [`git.quiet`](#gitquiet)
-  * [`git.remotes`](#gitremotes)
-  * [`git.repo-is-clean`](#gitrepo-is-clean)
-  * [`git.save-last-update-at`](#gitsave-last-update-at)
-  * [`git.seconds-since-last-pull`](#gitseconds-since-last-pull)
-  * [`git.sync`](#gitsync)
-  * [`git.sync-remote`](#gitsync-remote)
-  * [`git.update-repo-if-needed`](#gitupdate-repo-if-needed)
-  * [`github.clone`](#githubclone)
-  * [`github.org`](#githuborg)
-  * [`github.setup`](#githubsetup)
-  * [`github.validate`](#githubvalidate)
-  * [`gvim.off`](#gvimoff)
-  * [`gvim.on`](#gvimon)
-  * [`h.black`](#hblack)
-  * [`h.blue`](#hblue)
-  * [`h.green`](#hgreen)
-  * [`h.red`](#hred)
-  * [`h.yellow`](#hyellow)
-  * [`h1`](#h1)
-  * [`h1.blue`](#h1blue)
-  * [`h1.green`](#h1green)
-  * [`h1.purple`](#h1purple)
-  * [`h1.red`](#h1red)
-  * [`h1.yellow`](#h1yellow)
-  * [`h2`](#h2)
-  * [`h2.green`](#h2green)
-  * [`h3`](#h3)
-  * [`hbsed`](#hbsed)
-  * [`hdr`](#hdr)
-  * [`hl.blue`](#hlblue)
-  * [`hl.desc`](#hldesc)
-  * [`hl.green`](#hlgreen)
-  * [`hl.orange`](#hlorange)
-  * [`hl.subtle`](#hlsubtle)
-  * [`hl.white-on-orange`](#hlwhite-on-orange)
-  * [`hl.white-on-salmon`](#hlwhite-on-salmon)
-  * [`hl.yellow`](#hlyellow)
-  * [`hl.yellow-on-gray`](#hlyellow-on-gray)
-  * [`hr`](#hr)
-  * [`hr.colored`](#hrcolored)
-  * [`http.servers`](#httpservers)
-  * [`https.servers`](#httpsservers)
-  * [`inf`](#inf)
-  * [`info`](#info)
-  * [`info:`](#info-1)
-  * [`interrupted`](#interrupted)
-  * [`is-func`](#is-func)
-  * [`italic`](#italic)
-  * [`jm.check`](#jmcheck)
-  * [`jm.jemalloc.detect-loud`](#jmjemallocdetect-loud)
-  * [`jm.jemalloc.detect-quiet`](#jmjemallocdetect-quiet)
-  * [`jm.jemalloc.stats`](#jmjemallocstats)
-  * [`jm.ruby.detect`](#jmrubydetect)
-  * [`jm.ruby.report`](#jmrubyreport)
-  * [`jm.usage`](#jmusage)
-  * [`json.begin-array`](#jsonbegin-array)
-  * [`json.begin-hash`](#jsonbegin-hash)
-  * [`json.begin-key`](#jsonbegin-key)
-  * [`json.end-array`](#jsonend-array)
-  * [`json.end-hash`](#jsonend-hash)
-  * [`json.file-to-array`](#jsonfile-to-array)
-  * [`left`](#left)
-  * [`left-prefix`](#left-prefix)
-  * [`long-pause`](#long-pause)
-  * [`millis`](#millis)
-  * [`net.fast-scan`](#netfast-scan)
-  * [`net.local-subnet`](#netlocal-subnet)
-  * [`not-ok`](#not-ok)
-  * [`not-ok:`](#not-ok-1)
-  * [`ok`](#ok)
-  * [`ok:`](#ok-1)
-  * [`okay`](#okay)
-  * [`osx.cookie-dump`](#osxcookie-dump)
-  * [`osx.env-print`](#osxenv-print)
-  * [`osx.local-servers`](#osxlocal-servers)
-  * [`osx.ramdisk.mount`](#osxramdiskmount)
-  * [`osx.ramdisk.unmount`](#osxramdiskunmount)
-  * [`osx.scutil-print`](#osxscutil-print)
-  * [`osx.set-fqdn`](#osxset-fqdn)
-  * [`output.color.off`](#outputcoloroff)
-  * [`output.color.on`](#outputcoloron)
-  * [`output.is_pipe`](#outputis_pipe)
-  * [`output.is_redirect`](#outputis_redirect)
-  * [`output.is_ssh`](#outputis_ssh)
-  * [`output.is_terminal`](#outputis_terminal)
-  * [`output.is_tty`](#outputis_tty)
-  * [`pall`](#pall)
-  * [`pause`](#pause)
-  * [`pid.alive`](#pidalive)
-  * [`pid.sig`](#pidsig)
-  * [`pid.stop`](#pidstop)
-  * [`pids-with-args`](#pids-with-args)
-  * [`pids.all`](#pidsall)
-  * [`pids.for-each`](#pidsfor-each)
-  * [`pids.matching`](#pidsmatching)
-  * [`pids.matching.regexp`](#pidsmatchingregexp)
-  * [`pids.normalize.search-string`](#pidsnormalizesearch-string)
-  * [`pids.stop`](#pidsstop)
-  * [`progress.bar`](#progressbar)
-  * [`psql.db-settings`](#psqldb-settings)
-  * [`pstop`](#pstop)
-  * [`puts`](#puts)
-  * [`red`](#red)
-  * [`repo.rebase`](#reporebase)
-  * [`repo.stash-and-rebase`](#repostash-and-rebase)
-  * [`repo.update`](#repoupdate)
-  * [`repos.catch-interrupt`](#reposcatch-interrupt)
-  * [`repos.init-interrupt`](#reposinit-interrupt)
-  * [`repos.recursive-update`](#reposrecursive-update)
-  * [`repos.update`](#reposupdate)
-  * [`repos.was-interrupted`](#reposwas-interrupted)
-  * [`reset-color`](#reset-color)
-  * [`reset-color:`](#reset-color-1)
-  * [`ruby.bundler-version`](#rubybundler-version)
-  * [`ruby.compiled-with`](#rubycompiled-with)
-  * [`ruby.default-gems`](#rubydefault-gems)
-  * [`ruby.full-version`](#rubyfull-version)
-  * [`ruby.gemfile-lock-version`](#rubygemfile-lock-version)
-  * [`ruby.gems`](#rubygems)
-  * [`ruby.gems.install`](#rubygemsinstall)
-  * [`ruby.gems.uninstall`](#rubygemsuninstall)
-  * [`ruby.init`](#rubyinit)
-  * [`ruby.install`](#rubyinstall)
-  * [`ruby.install-ruby`](#rubyinstall-ruby)
-  * [`ruby.install-ruby-with-deps`](#rubyinstall-ruby-with-deps)
-  * [`ruby.install-upgrade-bundler`](#rubyinstall-upgrade-bundler)
-  * [`ruby.installed-gems`](#rubyinstalled-gems)
-  * [`ruby.kigs-gems`](#rubykigs-gems)
-  * [`ruby.linked-libs`](#rubylinked-libs)
-  * [`ruby.numeric-version`](#rubynumeric-version)
-  * [`ruby.rbenv`](#rubyrbenv)
-  * [`ruby.rubygems-update`](#rubyrubygems-update)
-  * [`ruby.stop`](#rubystop)
-  * [`ruby.top-versions`](#rubytop-versions)
-  * [`ruby.top-versions-as-yaml`](#rubytop-versions-as-yaml)
-  * [`ruby.validate-version`](#rubyvalidate-version)
-  * [`run`](#run)
-  * [`run.config.detail-is-enabled`](#runconfigdetail-is-enabled)
-  * [`run.config.verbose-is-enabled`](#runconfigverbose-is-enabled)
-  * [`run.inspect`](#runinspect)
-  * [`run.inspect-variable`](#runinspect-variable)
-  * [`run.inspect-variables`](#runinspect-variables)
-  * [`run.inspect-variables-that-are`](#runinspect-variables-that-are)
-  * [`run.inspect.set-skip-false-or-blank`](#runinspectset-skip-false-or-blank)
-  * [`run.on-error.ask-is-enabled`](#runon-errorask-is-enabled)
-  * [`run.print-variable`](#runprint-variable)
-  * [`run.print-variables`](#runprint-variables)
-  * [`run.set-all`](#runset-all)
-  * [`run.set-all.list`](#runset-alllist)
-  * [`run.set-next`](#runset-next)
-  * [`run.set-next.list`](#runset-nextlist)
-  * [`run.ui.ask`](#runuiask)
-  * [`run.ui.ask-user-value`](#runuiask-user-value)
-  * [`run.ui.get-user-value`](#runuiget-user-value)
-  * [`run.ui.press-any-key`](#runuipress-any-key)
-  * [`run.ui.retry-command`](#runuiretry-command)
-  * [`run.variables-ending-with`](#runvariables-ending-with)
-  * [`run.variables-starting-with`](#runvariables-starting-with)
-  * [`run.with.minimum-duration`](#runwithminimum-duration)
-  * [`run.with.ruby-bundle`](#runwithruby-bundle)
-  * [`run.with.ruby-bundle-and-output`](#runwithruby-bundle-and-output)
-  * [`save-restore-x`](#save-restore-x)
-  * [`save-set-x`](#save-set-x)
-  * [`screen-width`](#screen-width)
-  * [`screen.height`](#screenheight)
-  * [`screen.width`](#screenwidth)
-  * [`set-e-restore`](#set-e-restore)
-  * [`set-e-save`](#set-e-save)
-  * [`set-e-status`](#set-e-status)
-  * [`shell-set.init-stack`](#shell-setinit-stack)
-  * [`shell-set.is-set`](#shell-setis-set)
-  * [`shell-set.pop-stack`](#shell-setpop-stack)
-  * [`shell-set.push-stack`](#shell-setpush-stack)
-  * [`shell-set.show-stack`](#shell-setshow-stack)
-  * [`short-pause`](#short-pause)
-  * [`shortish-pause`](#shortish-pause)
-  * [`shutdown`](#shutdown)
-  * [`sig.is-valid`](#sigis-valid)
-  * [`sig.list`](#siglist)
-  * [`ssh.load-keys`](#sshload-keys)
-  * [`ssh.servers`](#sshservers)
-  * [`stack.frame`](#stackframe)
-  * [`stderr`](#stderr)
-  * [`stdout`](#stdout)
-  * [`strikethrough`](#strikethrough)
-  * [`success`](#success)
-  * [`sym.dev.configure`](#symdevconfigure)
-  * [`sym.dev.files`](#symdevfiles)
-  * [`sym.dev.have_key`](#symdevhave_key)
-  * [`sym.dev.import`](#symdevimport)
-  * [`sym.dev.install-shell-helpers`](#symdevinstall-shell-helpers)
-  * [`sym.install.symit`](#syminstallsymit)
-  * [`test-group`](#test-group)
-  * [`time.date-from-epoch`](#timedate-from-epoch)
-  * [`time.duration.humanize`](#timedurationhumanize)
-  * [`time.duration.millis-to-secs`](#timedurationmillis-to-secs)
-  * [`time.epoch-to-iso`](#timeepoch-to-iso)
-  * [`time.epoch-to-local`](#timeepoch-to-local)
-  * [`time.epoch.minutes-ago`](#timeepochminutes-ago)
-  * [`today`](#today)
-  * [`trap-setup`](#trap-setup)
-  * [`trap-was-fired`](#trap-was-fired)
-  * [`trapped`](#trapped)
-  * [`txt-err`](#txt-err)
-  * [`txt-info`](#txt-info)
-  * [`txt-warn`](#txt-warn)
-  * [`ui.closer.kind-of-ok`](#uicloserkind-of-ok)
-  * [`ui.closer.kind-of-ok:`](#uicloserkind-of-ok-1)
-  * [`ui.closer.not-ok`](#uiclosernot-ok)
-  * [`ui.closer.not-ok:`](#uiclosernot-ok-1)
-  * [`ui.closer.ok`](#uicloserok)
-  * [`ui.closer.ok:`](#uicloserok-1)
-  * [`underline`](#underline)
-  * [`url.downloader`](#urldownloader)
-  * [`url.http-code`](#urlhttp-code)
-  * [`url.is-valid`](#urlis-valid)
-  * [`url.shorten`](#urlshorten)
-  * [`url.valid-status`](#urlvalid-status)
-  * [`user`](#user)
-  * [`user.finger.name`](#userfingername)
-  * [`user.first`](#userfirst)
-  * [`user.gitconfig.email`](#usergitconfigemail)
-  * [`user.gitconfig.name`](#usergitconfigname)
-  * [`user.host`](#userhost)
-  * [`user.my.ip`](#usermyip)
-  * [`user.my.reverse-ip`](#usermyreverse-ip)
-  * [`user.username`](#userusername)
-  * [`util.append-to-init-files`](#utilappend-to-init-files)
-  * [`util.arch`](#utilarch)
-  * [`util.call-if-function`](#utilcall-if-function)
-  * [`util.checksum.files`](#utilchecksumfiles)
-  * [`util.checksum.stdin`](#utilchecksumstdin)
-  * [`util.functions-matching`](#utilfunctions-matching)
-  * [`util.generate-password`](#utilgenerate-password)
-  * [`util.i-to-ver`](#utili-to-ver)
-  * [`util.install-direnv`](#utilinstall-direnv)
-  * [`util.is-a-function`](#utilis-a-function)
-  * [`util.is-numeric`](#utilis-numeric)
-  * [`util.is-variable-defined`](#utilis-variable-defined)
-  * [`util.lines-in-folder`](#utillines-in-folder)
-  * [`util.remove-from-init-files`](#utilremove-from-init-files)
-  * [`util.shell-init-files`](#utilshell-init-files)
-  * [`util.shell-name`](#utilshell-name)
-  * [`util.ver-to-i`](#utilver-to-i)
-  * [`util.whats-installed`](#utilwhats-installed)
-  * [`vim.gvim-off`](#vimgvim-off)
-  * [`vim.gvim-on`](#vimgvim-on)
-  * [`vim.setup`](#vimsetup)
-  * [`warn`](#warn)
-  * [`warning`](#warning)
-  * [`warning:`](#warning-1)
-  * [`watch-ls-al`](#watch-ls-al)
-  * [`yaml-diff`](#yaml-diff)
-  * [`yaml-dump`](#yaml-dump)
-  * [`yaml.diff`](#yamldiff)
-  * [`yaml.dump`](#yamldump)
-  * [`yaml.expand-aliases`](#yamlexpand-aliases)
+* [Table of Contents](#table-of-contents)
+* [List of Bashmatic Modules](#list-of-bashmatic-modules)
+* [List of Bashmatic Functions](#list-of-bashmatic-functions)
+  * [Module `7z`](#module-7z)
+    * [`7z.a`](#7za)
+    * [`7z.install`](#7zinstall)
+    * [`7z.unzip`](#7zunzip)
+    * [`7z.x`](#7zx)
+    * [`7z.zip`](#7zzip)
+  * [Module `array`](#module-array)
+    * [`array.from.stdin`](#arrayfromstdin)
+    * [`array.has-element`](#arrayhas-element)
+    * [`array.includes`](#arrayincludes)
+    * [`array.includes-or-complain`](#arrayincludes-or-complain)
+    * [`array.includes-or-exit`](#arrayincludes-or-exit)
+    * [`array.join`](#arrayjoin)
+    * [`array.to.bullet-list`](#arraytobullet-list)
+    * [`array.to.csv`](#arraytocsv)
+    * [`array.to.piped-list`](#arraytopiped-list)
+  * [Module `audio`](#module-audio)
+    * [`audio.wav-to-mp3`](#audiowav-to-mp3)
+    * [`audio.wave-file-frequency`](#audiowave-file-frequency)
+  * [Module `aws`](#module-aws)
+    * [`aws.ec2`](#awsec2)
+    * [`aws.rds.hostname`](#awsrdshostname)
+    * [`aws.s3.upload`](#awss3upload)
+  * [Module `bashmatic`](#module-bashmatic)
+    * [`bashmatic.bash.version`](#bashmaticbashversion)
+    * [`bashmatic.bash.version-four-or-later`](#bashmaticbashversion-four-or-later)
+    * [`bashmatic.cache.add-file`](#bashmaticcacheadd-file)
+    * [`bashmatic.cache.has-file`](#bashmaticcachehas-file)
+    * [`bashmatic.cache.list`](#bashmaticcachelist)
+    * [`bashmatic.functions`](#bashmaticfunctions)
+    * [`bashmatic.functions-from`](#bashmaticfunctions-from)
+    * [`bashmatic.functions.output`](#bashmaticfunctionsoutput)
+    * [`bashmatic.functions.runtime`](#bashmaticfunctionsruntime)
+    * [`bashmatic.load-at-login`](#bashmaticload-at-login)
+    * [`bashmatic.reload`](#bashmaticreload)
+    * [`bashmatic.setup`](#bashmaticsetup)
+    * [`bashmatic.source`](#bashmaticsource)
+    * [`bashmatic.source-dir`](#bashmaticsource-dir)
+    * [`bashmatic.version`](#bashmaticversion)
+  * [Module `brew`](#module-brew)
+    * [`brew.cache-reset`](#brewcache-reset)
+    * [`brew.cache-reset.delayed`](#brewcache-resetdelayed)
+    * [`brew.cask.is-installed`](#brewcaskis-installed)
+    * [`brew.cask.list`](#brewcasklist)
+    * [`brew.cask.tap`](#brewcasktap)
+    * [`brew.install`](#brewinstall)
+    * [`brew.install.cask`](#brewinstallcask)
+    * [`brew.install.package`](#brewinstallpackage)
+    * [`brew.install.packages`](#brewinstallpackages)
+    * [`brew.package.is-installed`](#brewpackageis-installed)
+    * [`brew.package.list`](#brewpackagelist)
+    * [`brew.reinstall.package`](#brewreinstallpackage)
+    * [`brew.reinstall.packages`](#brewreinstallpackages)
+    * [`brew.relink`](#brewrelink)
+    * [`brew.setup`](#brewsetup)
+    * [`brew.uninstall.package`](#brewuninstallpackage)
+    * [`brew.uninstall.packages`](#brewuninstallpackages)
+    * [`brew.upgrade`](#brewupgrade)
+    * [`cache-or-command`](#cache-or-command)
+  * [Module `caller`](#module-caller)
+    * [`caller.stack`](#callerstack)
+    * [`stack.frame`](#stackframe)
+  * [Module `color`](#module-color)
+    * [`ansi`](#ansi)
+    * [`bold`](#bold)
+    * [`color.disable`](#colordisable)
+    * [`color.enable`](#colorenable)
+    * [`error-text`](#error-text)
+    * [`italic`](#italic)
+    * [`red`](#red)
+    * [`reset-color`](#reset-color)
+    * [`strikethrough`](#strikethrough)
+    * [`txt-err`](#txt-err)
+    * [`txt-info`](#txt-info)
+    * [`txt-warn`](#txt-warn)
+    * [`underline`](#underline)
+  * [Module `db`](#module-db)
+    * [`db.datetime`](#dbdatetime)
+    * [`db.dump`](#dbdump)
+    * [`db.num-procs`](#dbnum-procs)
+    * [`db.psql-args`](#dbpsql-args)
+    * [`db.psql.args.`](#dbpsqlargs)
+    * [`db.psql.args.default`](#dbpsqlargsdefault)
+    * [`db.psql.args.maint`](#dbpsqlargsmaint)
+    * [`db.rails.schema.checksum`](#dbrailsschemachecksum)
+    * [`db.rails.schema.file`](#dbrailsschemafile)
+    * [`db.restore`](#dbrestore)
+    * [`db.top`](#dbtop)
+    * [`db.wait-until-db-online`](#dbwait-until-db-online)
+    * [`psql.db-settings`](#psqldb-settings)
+  * [Module `deploy`](#module-deploy)
+    * [`deploy.slack`](#deployslack)
+    * [`deploy.slack-ding`](#deployslack-ding)
+    * [`deploy.validate-vpn`](#deployvalidate-vpn)
+  * [Module `dir`](#module-dir)
+    * [`dir.count-slashes`](#dircount-slashes)
+    * [`dir.expand-dir`](#direxpand-dir)
+    * [`dir.is-a-dir`](#diris-a-dir)
+  * [Module `docker`](#module-docker)
+    * [`docker.abort-if-down`](#dockerabort-if-down)
+    * [`docker.actions.build`](#dockeractionsbuild)
+    * [`docker.actions.clean`](#dockeractionsclean)
+    * [`docker.actions.pull`](#dockeractionspull)
+    * [`docker.actions.push`](#dockeractionspush)
+    * [`docker.actions.setup`](#dockeractionssetup)
+    * [`docker.actions.start`](#dockeractionsstart)
+    * [`docker.actions.stop`](#dockeractionsstop)
+    * [`docker.actions.tag`](#dockeractionstag)
+    * [`docker.actions.up`](#dockeractionsup)
+    * [`docker.actions.update`](#dockeractionsupdate)
+    * [`docker.build.container`](#dockerbuildcontainer)
+    * [`docker.containers.clean`](#dockercontainersclean)
+    * [`docker.image.inspect`](#dockerimageinspect)
+    * [`docker.image.rm`](#dockerimagerm)
+    * [`docker.images-named`](#dockerimages-named)
+    * [`docker.images.clean`](#dockerimagesclean)
+    * [`docker.images.inspect`](#dockerimagesinspect)
+    * [`docker.last-version`](#dockerlast-version)
+    * [`docker.next-version`](#dockernext-version)
+    * [`docker.set-repo`](#dockerset-repo)
+  * [Module `file`](#module-file)
+    * [`file.exists-and-newer-than`](#fileexists-and-newer-than)
+    * [`file.gsub`](#filegsub)
+    * [`file.install-with-backup`](#fileinstall-with-backup)
+    * [`file.last-modified-date`](#filelast-modified-date)
+    * [`file.last-modified-year`](#filelast-modified-year)
+    * [`file.list.filter-existing`](#filelistfilter-existing)
+    * [`file.list.filter-non-empty`](#filelistfilter-non-empty)
+    * [`file.size`](#filesize)
+    * [`file.size.mb`](#filesizemb)
+    * [`file.source-if-exists`](#filesource-if-exists)
+    * [`file.stat`](#filestat)
+    * [`files.find`](#filesfind)
+    * [`files.map`](#filesmap)
+    * [`files.map.shell-scripts`](#filesmapshell-scripts)
+  * [Module `ftrace`](#module-ftrace)
+    * [`ftrace-in`](#ftrace-in)
+    * [`ftrace-off`](#ftrace-off)
+    * [`ftrace-on`](#ftrace-on)
+    * [`ftrace-out`](#ftrace-out)
+  * [Module `gem`](#module-gem)
+    * [`g-i`](#g-i)
+    * [`g-u`](#g-u)
+    * [`gem.cache-installed`](#gemcache-installed)
+    * [`gem.cache-refresh`](#gemcache-refresh)
+    * [`gem.clear-cache`](#gemclear-cache)
+    * [`gem.configure-cache`](#gemconfigure-cache)
+    * [`gem.ensure-gem-version`](#gemensure-gem-version)
+    * [`gem.gemfile.version`](#gemgemfileversion)
+    * [`gem.global.latest-version`](#gemgloballatest-version)
+    * [`gem.global.versions`](#gemglobalversions)
+    * [`gem.install`](#geminstall)
+    * [`gem.is-installed`](#gemis-installed)
+    * [`gem.uninstall`](#gemuninstall)
+    * [`gem.version`](#gemversion)
+  * [Module `git`](#module-git)
+    * [`bashmatic.auto-update`](#bashmaticauto-update)
+    * [`git.configure-auto-updates`](#gitconfigure-auto-updates)
+    * [`git.last-update-at`](#gitlast-update-at)
+    * [`git.local-vs-remote`](#gitlocal-vs-remote)
+    * [`git.quiet`](#gitquiet)
+    * [`git.remotes`](#gitremotes)
+    * [`git.repo-is-clean`](#gitrepo-is-clean)
+    * [`git.save-last-update-at`](#gitsave-last-update-at)
+    * [`git.seconds-since-last-pull`](#gitseconds-since-last-pull)
+    * [`git.sync`](#gitsync)
+    * [`git.sync-remote`](#gitsync-remote)
+    * [`git.update-repo-if-needed`](#gitupdate-repo-if-needed)
+  * [Module `github`](#module-github)
+    * [`github.clone`](#githubclone)
+    * [`github.org`](#githuborg)
+    * [`github.setup`](#githubsetup)
+    * [`github.validate`](#githubvalidate)
+  * [Module `jemalloc`](#module-jemalloc)
+    * [`jm.check`](#jmcheck)
+    * [`jm.jemalloc.detect-loud`](#jmjemallocdetect-loud)
+    * [`jm.jemalloc.detect-quiet`](#jmjemallocdetect-quiet)
+    * [`jm.jemalloc.stats`](#jmjemallocstats)
+    * [`jm.ruby.detect`](#jmrubydetect)
+    * [`jm.ruby.report`](#jmrubyreport)
+    * [`jm.usage`](#jmusage)
+  * [Module `json`](#module-json)
+    * [`json.begin-array`](#jsonbegin-array)
+    * [`json.begin-hash`](#jsonbegin-hash)
+    * [`json.begin-key`](#jsonbegin-key)
+    * [`json.end-array`](#jsonend-array)
+    * [`json.end-hash`](#jsonend-hash)
+    * [`json.file-to-array`](#jsonfile-to-array)
+  * [Module `net`](#module-net)
+    * [`net.fast-scan`](#netfast-scan)
+    * [`net.local-subnet`](#netlocal-subnet)
+  * [Module `osx`](#module-osx)
+    * [`afp.servers`](#afpservers)
+    * [`bashmatic-set-fqdn`](#bashmatic-set-fqdn)
+    * [`bashmatic-term`](#bashmatic-term)
+    * [`bashmatic-term-program`](#bashmatic-term-program)
+    * [`change-underscan`](#change-underscan)
+    * [`cookie-dump`](#cookie-dump)
+    * [`http.servers`](#httpservers)
+    * [`https.servers`](#httpsservers)
+    * [`osx.cookie-dump`](#osxcookie-dump)
+    * [`osx.env-print`](#osxenv-print)
+    * [`osx.local-servers`](#osxlocal-servers)
+    * [`osx.ramdisk.mount`](#osxramdiskmount)
+    * [`osx.ramdisk.unmount`](#osxramdiskunmount)
+    * [`osx.scutil-print`](#osxscutil-print)
+    * [`osx.set-fqdn`](#osxset-fqdn)
+    * [`ssh.servers`](#sshservers)
+  * [Module `output`](#module-output)
+    * [`abort`](#abort)
+    * [`ascii-clean`](#ascii-clean)
+    * [`ask`](#ask)
+    * [`box.blue-in-green`](#boxblue-in-green)
+    * [`box.blue-in-yellow`](#boxblue-in-yellow)
+    * [`box.green-in-cyan`](#boxgreen-in-cyan)
+    * [`box.green-in-green`](#boxgreen-in-green)
+    * [`box.green-in-magenta`](#boxgreen-in-magenta)
+    * [`box.green-in-yellow`](#boxgreen-in-yellow)
+    * [`box.magenta-in-blue`](#boxmagenta-in-blue)
+    * [`box.magenta-in-green`](#boxmagenta-in-green)
+    * [`box.red-in-magenta`](#boxred-in-magenta)
+    * [`box.red-in-red`](#boxred-in-red)
+    * [`box.red-in-yellow`](#boxred-in-yellow)
+    * [`box.yellow-in-blue`](#boxyellow-in-blue)
+    * [`box.yellow-in-red`](#boxyellow-in-red)
+    * [`box.yellow-in-yellow`](#boxyellow-in-yellow)
+    * [`br`](#br)
+    * [`center`](#center)
+    * [`columnize`](#columnize)
+    * [`command-spacer`](#command-spacer)
+    * [`cursor.at.x`](#cursoratx)
+    * [`cursor.at.y`](#cursoraty)
+    * [`cursor.down`](#cursordown)
+    * [`cursor.left`](#cursorleft)
+    * [`cursor.rewind`](#cursorrewind)
+    * [`cursor.right`](#cursorright)
+    * [`cursor.up`](#cursorup)
+    * [`debug`](#debug)
+    * [`duration`](#duration)
+    * [`err`](#err)
+    * [`error`](#error)
+    * [`error:`](#error-1)
+    * [`h.black`](#hblack)
+    * [`h.blue`](#hblue)
+    * [`h.green`](#hgreen)
+    * [`h.red`](#hred)
+    * [`h.yellow`](#hyellow)
+    * [`h1`](#h1)
+    * [`h1.blue`](#h1blue)
+    * [`h1.green`](#h1green)
+    * [`h1.purple`](#h1purple)
+    * [`h1.red`](#h1red)
+    * [`h1.yellow`](#h1yellow)
+    * [`h2`](#h2)
+    * [`h2.green`](#h2green)
+    * [`h3`](#h3)
+    * [`hdr`](#hdr)
+    * [`hl.blue`](#hlblue)
+    * [`hl.desc`](#hldesc)
+    * [`hl.green`](#hlgreen)
+    * [`hl.orange`](#hlorange)
+    * [`hl.subtle`](#hlsubtle)
+    * [`hl.white-on-orange`](#hlwhite-on-orange)
+    * [`hl.white-on-salmon`](#hlwhite-on-salmon)
+    * [`hl.yellow`](#hlyellow)
+    * [`hl.yellow-on-gray`](#hlyellow-on-gray)
+    * [`hr`](#hr)
+    * [`hr.colored`](#hrcolored)
+    * [`inf`](#inf)
+    * [`info`](#info)
+    * [`info:`](#info-1)
+    * [`left`](#left)
+    * [`left-prefix`](#left-prefix)
+    * [`not-ok`](#not-ok)
+    * [`not-ok:`](#not-ok-1)
+    * [`ok`](#ok)
+    * [`ok:`](#ok-1)
+    * [`okay`](#okay)
+    * [`output.color.off`](#outputcoloroff)
+    * [`output.color.on`](#outputcoloron)
+    * [`output.is-pipe`](#outputis-pipe)
+    * [`output.is-redirect`](#outputis-redirect)
+    * [`output.is-ssh`](#outputis-ssh)
+    * [`output.is-terminal`](#outputis-terminal)
+    * [`output.is-tty`](#outputis-tty)
+    * [`puts`](#puts)
+    * [`reset-color`](#reset-color-1)
+    * [`reset-color:`](#reset-color-2)
+    * [`screen-width`](#screen-width)
+    * [`screen.height`](#screenheight)
+    * [`screen.width`](#screenwidth)
+    * [`shutdown`](#shutdown)
+    * [`stderr`](#stderr)
+    * [`stdout`](#stdout)
+    * [`success`](#success)
+    * [`test-group`](#test-group)
+    * [`ui.closer.kind-of-ok`](#uicloserkind-of-ok)
+    * [`ui.closer.kind-of-ok:`](#uicloserkind-of-ok-1)
+    * [`ui.closer.not-ok`](#uiclosernot-ok)
+    * [`ui.closer.not-ok:`](#uiclosernot-ok-1)
+    * [`ui.closer.ok`](#uicloserok)
+    * [`ui.closer.ok:`](#uicloserok-1)
+    * [`warn`](#warn)
+    * [`warning`](#warning)
+    * [`warning:`](#warning-1)
+  * [Module `pids`](#module-pids)
+    * [`pall`](#pall)
+    * [`pid.alive`](#pidalive)
+    * [`pid.sig`](#pidsig)
+    * [`pid.stop`](#pidstop)
+    * [`pids-with-args`](#pids-with-args)
+    * [`pids.all`](#pidsall)
+    * [`pids.for-each`](#pidsfor-each)
+    * [`pids.matching`](#pidsmatching)
+    * [`pids.matching.regexp`](#pidsmatchingregexp)
+    * [`pids.normalize.search-string`](#pidsnormalizesearch-string)
+    * [`pids.stop`](#pidsstop)
+    * [`pstop`](#pstop)
+    * [`sig.is-valid`](#sigis-valid)
+    * [`sig.list`](#siglist)
+  * [Module `progress-bar`](#module-progress-bar)
+    * [`progress.bar`](#progressbar)
+  * [Module `repositories`](#module-repositories)
+    * [`repo.rebase`](#reporebase)
+    * [`repo.stash-and-rebase`](#repostash-and-rebase)
+    * [`repo.update`](#repoupdate)
+    * [`repos.catch-interrupt`](#reposcatch-interrupt)
+    * [`repos.init-interrupt`](#reposinit-interrupt)
+    * [`repos.recursive-update`](#reposrecursive-update)
+    * [`repos.update`](#reposupdate)
+    * [`repos.was-interrupted`](#reposwas-interrupted)
+  * [Module `ruby`](#module-ruby)
+    * [`bundle.gems-with-c-extensions`](#bundlegems-with-c-extensions)
+    * [`interrupted`](#interrupted)
+    * [`ruby.bundler-version`](#rubybundler-version)
+    * [`ruby.compiled-with`](#rubycompiled-with)
+    * [`ruby.default-gems`](#rubydefault-gems)
+    * [`ruby.full-version`](#rubyfull-version)
+    * [`ruby.gemfile-lock-version`](#rubygemfile-lock-version)
+    * [`ruby.gems`](#rubygems)
+    * [`ruby.gems.install`](#rubygemsinstall)
+    * [`ruby.gems.uninstall`](#rubygemsuninstall)
+    * [`ruby.init`](#rubyinit)
+    * [`ruby.install`](#rubyinstall)
+    * [`ruby.install-ruby`](#rubyinstall-ruby)
+    * [`ruby.install-ruby-with-deps`](#rubyinstall-ruby-with-deps)
+    * [`ruby.install-upgrade-bundler`](#rubyinstall-upgrade-bundler)
+    * [`ruby.installed-gems`](#rubyinstalled-gems)
+    * [`ruby.kigs-gems`](#rubykigs-gems)
+    * [`ruby.linked-libs`](#rubylinked-libs)
+    * [`ruby.numeric-version`](#rubynumeric-version)
+    * [`ruby.rbenv`](#rubyrbenv)
+    * [`ruby.rubygems-update`](#rubyrubygems-update)
+    * [`ruby.stop`](#rubystop)
+    * [`ruby.top-versions`](#rubytop-versions)
+    * [`ruby.top-versions-as-yaml`](#rubytop-versions-as-yaml)
+    * [`ruby.validate-version`](#rubyvalidate-version)
+  * [Module `run`](#module-run)
+    * [`run`](#run)
+    * [`run.ui.ask-user-value`](#runuiask-user-value)
+    * [`run.ui.get-user-value`](#runuiget-user-value)
+    * [`run.ui.retry-command`](#runuiretry-command)
+  * [Module `runtime-config`](#module-runtime-config)
+    * [`run.inspect`](#runinspect)
+    * [`run.set-all`](#runset-all)
+    * [`run.set-all.list`](#runset-alllist)
+    * [`run.set-next`](#runset-next)
+    * [`run.set-next.list`](#runset-nextlist)
+  * [Module `runtime`](#module-runtime)
+    * [`run`](#run-1)
+    * [`run.config.detail-is-enabled`](#runconfigdetail-is-enabled)
+    * [`run.config.verbose-is-enabled`](#runconfigverbose-is-enabled)
+    * [`run.inspect`](#runinspect-1)
+    * [`run.inspect-variable`](#runinspect-variable)
+    * [`run.inspect-variables`](#runinspect-variables)
+    * [`run.inspect-variables-that-are`](#runinspect-variables-that-are)
+    * [`run.inspect.set-skip-false-or-blank`](#runinspectset-skip-false-or-blank)
+    * [`run.on-error.ask-is-enabled`](#runon-errorask-is-enabled)
+    * [`run.print-variable`](#runprint-variable)
+    * [`run.print-variables`](#runprint-variables)
+    * [`run.ui.ask`](#runuiask)
+    * [`run.ui.press-any-key`](#runuipress-any-key)
+    * [`run.variables-ending-with`](#runvariables-ending-with)
+    * [`run.variables-starting-with`](#runvariables-starting-with)
+    * [`run.with.minimum-duration`](#runwithminimum-duration)
+    * [`run.with.ruby-bundle`](#runwithruby-bundle)
+    * [`run.with.ruby-bundle-and-output`](#runwithruby-bundle-and-output)
+  * [Module `set`](#module-set)
+    * [`set-e-restore`](#set-e-restore)
+    * [`set-e-save`](#set-e-save)
+    * [`set-e-status`](#set-e-status)
+  * [Module `settings`](#module-settings)
+  * [Module `shell-set`](#module-shell-set)
+    * [`save-restore-x`](#save-restore-x)
+    * [`save-set-x`](#save-set-x)
+    * [`shell-set.init-stack`](#shell-setinit-stack)
+    * [`shell-set.is-set`](#shell-setis-set)
+    * [`shell-set.pop-stack`](#shell-setpop-stack)
+    * [`shell-set.push-stack`](#shell-setpush-stack)
+    * [`shell-set.show-stack`](#shell-setshow-stack)
+  * [Module `ssh`](#module-ssh)
+    * [`ssh.load-keys`](#sshload-keys)
+  * [Module `subshell`](#module-subshell)
+    * [`bashmatic.detect-subshell`](#bashmaticdetect-subshell)
+    * [`bashmatic.subshell-init`](#bashmaticsubshell-init)
+    * [`bashmatic.validate-sourced-in`](#bashmaticvalidate-sourced-in)
+    * [`bashmatic.validate-subshell`](#bashmaticvalidate-subshell)
+  * [Module `sym`](#module-sym)
+    * [`decrypt.secrets`](#decryptsecrets)
+    * [`dev.crypt.chef`](#devcryptchef)
+    * [`dev.decrypt.file`](#devdecryptfile)
+    * [`dev.decrypt.str`](#devdecryptstr)
+    * [`dev.edit.file`](#deveditfile)
+    * [`dev.encrypt.file`](#devencryptfile)
+    * [`dev.encrypt.str`](#devencryptstr)
+    * [`dev.sym`](#devsym)
+    * [`sym.dev.configure`](#symdevconfigure)
+    * [`sym.dev.files`](#symdevfiles)
+    * [`sym.dev.have-key`](#symdevhave-key)
+    * [`sym.dev.import`](#symdevimport)
+    * [`sym.dev.install-shell-helpers`](#symdevinstall-shell-helpers)
+    * [`sym.install.symit`](#syminstallsymit)
+  * [Module `time`](#module-time)
+    * [`epoch`](#epoch)
+    * [`millis`](#millis)
+    * [`time.date-from-epoch`](#timedate-from-epoch)
+    * [`time.duration.humanize`](#timedurationhumanize)
+    * [`time.duration.millis-to-secs`](#timedurationmillis-to-secs)
+    * [`time.epoch-to-iso`](#timeepoch-to-iso)
+    * [`time.epoch-to-local`](#timeepoch-to-local)
+    * [`time.epoch.minutes-ago`](#timeepochminutes-ago)
+    * [`today`](#today)
+  * [Module `trap`](#module-trap)
+    * [`trap-setup`](#trap-setup)
+    * [`trap-was-fired`](#trap-was-fired)
+    * [`trapped`](#trapped)
+  * [Module `url`](#module-url)
+    * [`url.downloader`](#urldownloader)
+    * [`url.http-code`](#urlhttp-code)
+    * [`url.is-valid`](#urlis-valid)
+    * [`url.shorten`](#urlshorten)
+    * [`url.valid-status`](#urlvalid-status)
+  * [Module `user`](#module-user)
+    * [`user`](#user)
+    * [`user.finger.name`](#userfingername)
+    * [`user.first`](#userfirst)
+    * [`user.gitconfig.email`](#usergitconfigemail)
+    * [`user.gitconfig.name`](#usergitconfigname)
+    * [`user.host`](#userhost)
+    * [`user.my.ip`](#usermyip)
+    * [`user.my.reverse-ip`](#usermyreverse-ip)
+    * [`user.username`](#userusername)
+  * [Module `util`](#module-util)
+    * [`is-func`](#is-func)
+    * [`pause`](#pause)
+    * [`pause.long`](#pauselong)
+    * [`pause.medium`](#pausemedium)
+    * [`pause.short`](#pauseshort)
+    * [`sedx`](#sedx)
+    * [`util.append-to-init-files`](#utilappend-to-init-files)
+    * [`util.arch`](#utilarch)
+    * [`util.call-if-function`](#utilcall-if-function)
+    * [`util.checksum.files`](#utilchecksumfiles)
+    * [`util.checksum.stdin`](#utilchecksumstdin)
+    * [`util.functions-matching`](#utilfunctions-matching)
+    * [`util.generate-password`](#utilgenerate-password)
+    * [`util.i-to-ver`](#utili-to-ver)
+    * [`util.install-direnv`](#utilinstall-direnv)
+    * [`util.is-a-function`](#utilis-a-function)
+    * [`util.is-numeric`](#utilis-numeric)
+    * [`util.is-variable-defined`](#utilis-variable-defined)
+    * [`util.lines-in-folder`](#utillines-in-folder)
+    * [`util.remove-from-init-files`](#utilremove-from-init-files)
+    * [`util.shell-init-files`](#utilshell-init-files)
+    * [`util.shell-name`](#utilshell-name)
+    * [`util.ver-to-i`](#utilver-to-i)
+    * [`util.whats-installed`](#utilwhats-installed)
+    * [`watch.command`](#watchcommand)
+    * [`watch.ls-al`](#watchls-al)
+    * [`watch.set-refresh`](#watchset-refresh)
+  * [Module `vim`](#module-vim)
+    * [`gvim.off`](#gvimoff)
+    * [`gvim.on`](#gvimon)
+    * [`vim.gvim-off`](#vimgvim-off)
+    * [`vim.gvim-on`](#vimgvim-on)
+    * [`vim.setup`](#vimsetup)
+  * [Module `yaml`](#module-yaml)
+    * [`yaml-diff`](#yaml-diff)
+    * [`yaml-dump`](#yaml-dump)
+    * [`yaml.diff`](#yamldiff)
+    * [`yaml.dump`](#yamldump)
+    * [`yaml.expand-aliases`](#yamlexpand-aliases)
+* [Copyright](#copyright)
 
-## Function Implementations
-### `abort`
+## List of Bashmatic Modules
+
+* [7z](#module-7z)
+* [array](#module-array)
+* [audio](#module-audio)
+* [aws](#module-aws)
+* [bashmatic](#module-bashmatic)
+* [brew](#module-brew)
+* [caller](#module-caller)
+* [color](#module-color)
+* [db](#module-db)
+* [deploy](#module-deploy)
+* [dir](#module-dir)
+* [docker](#module-docker)
+* [file](#module-file)
+* [ftrace](#module-ftrace)
+* [gem](#module-gem)
+* [git](#module-git)
+* [github](#module-github)
+* [jemalloc](#module-jemalloc)
+* [json](#module-json)
+* [net](#module-net)
+* [osx](#module-osx)
+* [output](#module-output)
+* [pids](#module-pids)
+* [progress-bar](#module-progress-bar)
+* [repositories](#module-repositories)
+* [ruby](#module-ruby)
+* [run](#module-run)
+* [runtime-config](#module-runtime-config)
+* [runtime](#module-runtime)
+* [set](#module-set)
+* [settings](#module-settings)
+* [shell-set](#module-shell-set)
+* [ssh](#module-ssh)
+* [subshell](#module-subshell)
+* [sym](#module-sym)
+* [time](#module-time)
+* [trap](#module-trap)
+* [url](#module-url)
+* [user](#module-user)
+* [util](#module-util)
+* [vim](#module-vim)
+* [yaml](#module-yaml)
+
+## List of Bashmatic Functions
+
+
+
+### Module `7z`
+
+#### `7z.a`
 
 ```bash
-abort ()
+7z.a ()
 {
-    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2;
-    echo
+    7z.zip "$@"
 }
 
 ```
 
-### `afp.servers`
+#### `7z.install`
 
 ```bash
-afp.servers ()
+7z.install ()
 {
-    osx.local-servers afp
+    [[ -n $(which 7z) ]] || run "brew install p7zip";
+    [[ -n $(which 7z) ]] || {
+        error "7z is not found after installation";
+        return 1
+    };
+    return 0
 }
 
 ```
 
-### `ansi`
+#### `7z.unzip`
 
 ```bash
-ansi ()
+7z.unzip ()
 {
-    echo -e "\e[${1}m${*:2}\e[0m"
+    7z.install;
+    while [[ -n "$*" ]]; do
+        local archive="$1";
+        shift;
+        run "7z x -bt -mmt16 \"${archive}\"";
+    done
 }
 
 ```
 
-### `array-bullet-list`
+#### `7z.x`
 
 ```bash
-array-bullet-list ()
+7z.x ()
 {
-    array.join ' • ' true "$@"
+    7z.unzip "$@"
 }
 
 ```
 
-### `array-contains-element`
+#### `7z.zip`
 
 ```bash
-array-contains-element ()
+7z.zip ()
+{
+    7z.install;
+    while [[ -n "$*" ]]; do
+        local folder="$1";
+        shift;
+        run "7z a -bt -mmt16 \"${folder}\".7z \"${folder}\"";
+    done
+}
+
+```
+
+
+---
+
+
+### Module `array`
+
+#### `array.from.stdin`
+
+```bash
+array.from.stdin ()
+{
+    local array_name=$1;
+    shift;
+    local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)";
+    eval "${script}"
+}
+
+```
+
+#### `array.has-element`
+
+```bash
+array.has-element ()
 {
     local search="$1";
     shift;
@@ -503,42 +659,31 @@ array-contains-element ()
 
 ```
 
-### `array-csv`
+#### `array.includes`
 
 ```bash
-array-csv ()
+array.includes ()
 {
-    array.join ', ' false "$@"
+    local search="$1";
+    shift;
+    [[ "$*" =~ ${search} ]] || return 1;
+    for e in "${@}";
+    do
+        [[ "$e" == "${search}" ]] && {
+            return 0
+        };
+    done;
+    return 1
 }
 
 ```
 
-### `array-join`
+#### `array.includes-or-complain`
 
 ```bash
-array-join ()
+array.includes-or-complain ()
 {
-    array.join "$@"
-}
-
-```
-
-### `array-piped`
-
-```bash
-array-piped ()
-{
-    array.piped "$@"
-}
-
-```
-
-### `array.complain-unless-includes`
-
-```bash
-array.complain-unless-includes ()
-{
-    array.contains-element "$@" || {
+    array.includes "$@" || {
         element="$1";
         shift;
         local -a output=();
@@ -564,49 +709,17 @@ array.complain-unless-includes ()
 
 ```
 
-### `array.contains-element`
+#### `array.includes-or-exit`
 
 ```bash
-array.contains-element ()
+array.includes-or-exit ()
 {
-    local search="$1";
-    shift;
-    [[ "$*" =~ ${search} ]] || return 1;
-    for e in "${@}";
-    do
-        [[ "$e" == "${search}" ]] && {
-            return 0
-        };
-    done;
-    return 1
+    array.includes-or-complain "$@" || exit 1
 }
 
 ```
 
-### `array.exit-unless-includes`
-
-```bash
-array.exit-unless-includes ()
-{
-    array.complain-unless-includes "$@" || exit 1
-}
-
-```
-
-### `array.from-command-output`
-
-```bash
-array.from-command-output ()
-{
-    local array_name=$1;
-    shift;
-    local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)";
-    eval "${script}"
-}
-
-```
-
-### `array.join`
+#### `array.join`
 
 ```bash
 array.join ()
@@ -637,38 +750,43 @@ array.join ()
 
 ```
 
-### `array.piped`
+#### `array.to.bullet-list`
 
 ```bash
-array.piped ()
+array.to.bullet-list ()
+{
+    array.join ' • ' true "$@"
+}
+
+```
+
+#### `array.to.csv`
+
+```bash
+array.to.csv ()
+{
+    array.join ', ' false "$@"
+}
+
+```
+
+#### `array.to.piped-list`
+
+```bash
+array.to.piped-list ()
 {
     array.join ' | ' false "$@"
 }
 
 ```
 
-### `ascii-clean`
 
-```bash
-ascii-clean ()
-{
-    .output.clean "$@"
-}
+---
 
-```
 
-### `ask`
+### Module `audio`
 
-```bash
-ask ()
-{
-    printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}";
-    printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
-}
-
-```
-
-### `audio.wav-to-mp3`
+#### `audio.wav-to-mp3`
 
 ```bash
 audio.wav-to-mp3 ()
@@ -693,7 +811,7 @@ audio.wav-to-mp3 ()
 
 ```
 
-### `audio.wave-file-frequency`
+#### `audio.wave-file-frequency`
 
 ```bash
 audio.wave-file-frequency ()
@@ -707,7 +825,13 @@ audio.wave-file-frequency ()
 
 ```
 
-### `aws.ec2`
+
+---
+
+
+### Module `aws`
+
+#### `aws.ec2`
 
 ```bash
 aws.ec2 ()
@@ -728,7 +852,7 @@ aws.ec2 ()
 
 ```
 
-### `aws.rds.hostname`
+#### `aws.rds.hostname`
 
 ```bash
 aws.rds.hostname ()
@@ -736,13 +860,13 @@ aws.rds.hostname ()
     local name=${1};
     [[ -z $(which jq) ]] && out=$(brew.install.package jq 2>/dev/null 1>/dev/null);
     [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2>/dev/null 1>/dev/null);
-    [[ -n ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | hbsed 's/"//g' | egrep "^${name}\.";
-    [[ -z ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | hbsed 's/"//g'
+    [[ -n ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g' | egrep "^${name}\.";
+    [[ -z ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g'
 }
 
 ```
 
-### `aws.s3.upload`
+#### `aws.s3.upload`
 
 ```bash
 aws.s3.upload ()
@@ -767,7 +891,7 @@ aws.s3.upload ()
     [[ -z ${year} ]] && year=$(date +'%Y');
     [[ -z ${date} ]] && date=$(today);
     ${skip_file_modification} || {
-        [[ "${remote_file}" =~ "${date}" ]] && remote_file=$(echo "${remote_file}" | hbsed "s/[_\.-]?${date}[_\.-]//g");
+        [[ "${remote_file}" =~ "${date}" ]] && remote_file=$(echo "${remote_file}" | sedx "s/[_\.-]?${date}[_\.-]//g");
         [[ "${remote_file}" =~ "${date}" ]] || remote_file="${date}.${remote_file}"
     };
     remote_file=$(echo "${remote_file}" | sed -E 's/ /-/g;s/--+/-/g' | tr '[A-Z]' '[a-z]');
@@ -789,87 +913,76 @@ aws.s3.upload ()
 
 ```
 
-### `bashmatic-set-fqdn`
+
+---
+
+
+### Module `bashmatic`
+
+#### `bashmatic.bash.version`
 
 ```bash
-bashmatic-set-fqdn ()
+bashmatic.bash.version ()
 {
-    osx.set-fqdn "$@"
+    echo "${BASH_VERSION}" | cut -d '.' -f 1
 }
 
 ```
 
-### `bashmatic-term`
+#### `bashmatic.bash.version-four-or-later`
 
 ```bash
-bashmatic-term ()
+bashmatic.bash.version-four-or-later ()
 {
-    open $(bashmatic-term-program)
+    export BASH_MAJOR_VERSION=${BASH_MAJOR_VERSION:-$(bashmatic.bash.version)};
+    test "${BASH_MAJOR_VERSION}" -gt 3
 }
 
 ```
 
-### `bashmatic-term-program`
+#### `bashmatic.cache.add-file`
 
 ```bash
-bashmatic-term-program ()
+bashmatic.cache.add-file ()
 {
-    if [[ -d /Applications/iTerm.app ]]; then
-        printf '%s' /Applications/iTerm.app;
+    bashmatic.bash.version-four-or-later || return 1;
+    [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
+}
+
+```
+
+#### `bashmatic.cache.has-file`
+
+```bash
+bashmatic.cache.has-file ()
+{
+    local file="$1";
+    bashmatic.bash.version-four-or-later || return 1;
+    test -z "$file" && return 1;
+    if [[ -n "$1" && -n "${BashMatic__LoadCache["${file}"]}" ]]; then
+        return 0;
     else
-        if [[ -d /Applications/Utilities/Terminal.app ]]; then
-            printf '%s' /Applications/Utilities/Terminal.app;
-        else
-            printf '%s' "echo 'No TERMINAL application found'";
-        fi;
+        return 1;
     fi
 }
 
 ```
 
-### `bashmatic.auto-update`
+#### `bashmatic.cache.list`
 
 ```bash
-bashmatic.auto-update ()
+bashmatic.cache.list ()
 {
-    [[ ${Bashmatic__Test} -eq 1 ]] && return 0;
-    git.configure-auto-updates;
-    git.repo-is-clean || {
-        h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up.";
-        return 1
-    };
-    git.sync
+    bashmatic.bash.version-four-or-later || return 1;
+    for f in "${!BashMatic__LoadCache[@]}";
+    do
+        echo $f;
+    done
 }
 
 ```
 
-### `bashmatic.detect-subshell`
-
-```bash
-bashmatic.detect-subshell ()
-{
-    bashmatic.subshell-init;
-    [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && return ${BASH_IN_SUBSHELL};
-    unset BASH_IN_SUBSHELL;
-    export BASH_SUBSHELL_DETECTED=true;
-    local len="${#BASH_SOURCE[@]}";
-    local last_index=$((len - 1));
-    [[ -n ${DEBUG} ]] && {
-        echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2;
-        echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2;
-        echo "\$0            = $0" 1>&2
-    };
-    if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
-        export BASH_IN_SUBSHELL=0;
-    else
-        export BASH_IN_SUBSHELL=1;
-    fi;
-    return ${BASH_IN_SUBSHELL}
-}
-
-```
-
-### `bashmatic.functions`
+#### `bashmatic.functions`
 
 ```bash
 bashmatic.functions ()
@@ -879,7 +992,7 @@ bashmatic.functions ()
 
 ```
 
-### `bashmatic.functions-from`
+#### `bashmatic.functions-from`
 
 ```bash
 bashmatic.functions-from ()
@@ -887,18 +1000,18 @@ bashmatic.functions-from ()
     local pattern="${1}";
     [[ -n ${pattern} ]] && shift;
     [[ -z ${pattern} ]] && pattern="*.sh";
-    cd ${BASHMATIC_HOME} > /dev/null;
+    cd "${BASHMATIC_HOME}" > /dev/null || return 1;
     export SCREEN_WIDTH=$(screen-width);
     if [[ ! ${pattern} =~ "*" && ! ${pattern} =~ ".sh" ]]; then
         pattern="${pattern}.sh";
     fi;
-    egrep -e '^[_a-zA-Z]+.*\(\)' lib/${pattern} | sed -E 's/^lib\/.*\.sh://g' | sed -E 's/^function //g' | sed -E 's/\(\) *{.*$//g' | sed -E '/^ *$/d' | grep -v '^_' | sort | uniq | columnize "$@";
-    cd - > /dev/null
+    egrep -e '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} | sed -e 's/^lib\/.*\.sh://g' | sed -e 's/^function //g' | sed -e 's/\(\) *{.*$//g' | tr -d '()' | sed -e '/^ *$/d' | grep -v '^_' | sort | uniq | columnize "$@";
+    cd - > /dev/null || return 1
 }
 
 ```
 
-### `bashmatic.functions.output`
+#### `bashmatic.functions.output`
 
 ```bash
 bashmatic.functions.output ()
@@ -908,7 +1021,7 @@ bashmatic.functions.output ()
 
 ```
 
-### `bashmatic.functions.runtime`
+#### `bashmatic.functions.runtime`
 
 ```bash
 bashmatic.functions.runtime ()
@@ -918,7 +1031,7 @@ bashmatic.functions.runtime ()
 
 ```
 
-### `bashmatic.load-at-login`
+#### `bashmatic.load-at-login`
 
 ```bash
 bashmatic.load-at-login ()
@@ -945,7 +1058,7 @@ bashmatic.load-at-login ()
 
 ```
 
-### `bashmatic.reload`
+#### `bashmatic.reload`
 
 ```bash
 bashmatic.reload ()
@@ -955,47 +1068,86 @@ bashmatic.reload ()
 
 ```
 
-### `bashmatic.subshell-init`
+#### `bashmatic.setup`
 
 ```bash
-bashmatic.subshell-init ()
+bashmatic.setup ()
 {
-    export BASH_SUBSHELL_DETECTED=
+    [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 ";
+    [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - ";
+    if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
+        printf "\e[1;31mUnable to establish BashMatic's library source folder.\e[0m\n";
+        return 1;
+    fi;
+    bashmatic.source util.sh git.sh file.sh color.sh;
+    bashmatic.source-dir "${BASHMATIC_LIBDIR}";
+    bashmatic.auto-update
 }
 
 ```
 
-### `bashmatic.validate-sourced-in`
+#### `bashmatic.source`
 
 ```bash
-bashmatic.validate-sourced-in ()
+bashmatic.source ()
 {
-    bashmatic.detect-subshell;
-    [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || {
-        echo "This script to be sourced in, not run in a subshell." 1>&2;
-        return 1
-    };
+    local path="${BASHMATIC_LIBDIR}";
+    for file in "${@}";
+    do
+        [[ "${file}" =~ "/" ]] || file="${path}/${file}";
+        [[ -s "${file}" ]] || {
+            echo "Can't source file ${file} — fils is invalid.";
+            return 1
+        };
+        if ! bashmatic.cache.has-file "${file}"; then
+            [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" 1>&2;
+            set +e;
+            source "${file}";
+            bashmatic.cache.add-file "${file}";
+        else
+            [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" 1>&2;
+        fi;
+    done;
     return 0
 }
 
 ```
 
-### `bashmatic.validate-subshell`
+#### `bashmatic.source-dir`
 
 ```bash
-bashmatic.validate-subshell ()
+bashmatic.source-dir ()
 {
-    bashmatic.detect-subshell;
-    [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || {
-        echo "This script to be run, not sourced-in" 1>&2;
+    local folder="${1}";
+    local loaded=false;
+    local file;
+    unset files;
+    declare -a files;
+    eval "$(files.map.shell-scripts "${folder}" files)";
+    if [[ ${#files[@]} -eq 0 ]]; then
+        .err "No files were returned from files.map in " "\n  ${bldylw}${folder}";
+        return 1;
+    fi;
+    for file in "${files[@]}";
+    do
+        bashmatic.source "${file}" && loaded=true;
+    done;
+    unset files;
+    ${loaded} || {
+        .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIBDIR}";
         return 1
     };
-    return 0
+    if [[ ${LoadedShown} -eq 0 ]]; then
+        hr;
+        success "BashMatic was loaded! Happy Bashing :) ";
+        hr;
+        export LoadedShown=1;
+    fi
 }
 
 ```
 
-### `bashmatic.version`
+#### `bashmatic.version`
 
 ```bash
 bashmatic.version ()
@@ -1005,167 +1157,13 @@ bashmatic.version ()
 
 ```
 
-### `bold`
 
-```bash
-bold ()
-{
-    ansi 1 "$@"
-}
+---
 
-```
 
-### `box.blue-in-green`
+### Module `brew`
 
-```bash
-box.blue-in-green ()
-{
-    .output.box "${bldblu}" "${bldgrn}" "$@"
-}
-
-```
-
-### `box.blue-in-yellow`
-
-```bash
-box.blue-in-yellow ()
-{
-    .output.box "${bldylw}" "${bldblu}" "$@"
-}
-
-```
-
-### `box.green-in-cyan`
-
-```bash
-box.green-in-cyan ()
-{
-    .output.box "${bldgrn}" "${bldcyn}" "$@"
-}
-
-```
-
-### `box.green-in-green`
-
-```bash
-box.green-in-green ()
-{
-    .output.box "${bldgrn}" "${bldgrn}" "$@"
-}
-
-```
-
-### `box.green-in-magenta`
-
-```bash
-box.green-in-magenta ()
-{
-    .output.box "${bldgrn}" "${bldpur}" "$@"
-}
-
-```
-
-### `box.green-in-yellow`
-
-```bash
-box.green-in-yellow ()
-{
-    .output.box "${bldgrn}" "${bldylw}" "$@"
-}
-
-```
-
-### `box.magenta-in-blue`
-
-```bash
-box.magenta-in-blue ()
-{
-    .output.box "${bldblu}" "${bldpur}" "$@"
-}
-
-```
-
-### `box.magenta-in-green`
-
-```bash
-box.magenta-in-green ()
-{
-    .output.box "${bldpur}" "${bldgrn}" "$@"
-}
-
-```
-
-### `box.red-in-magenta`
-
-```bash
-box.red-in-magenta ()
-{
-    .output.box "${bldred}" "${bldpur}" "$@"
-}
-
-```
-
-### `box.red-in-red`
-
-```bash
-box.red-in-red ()
-{
-    .output.box "${bldred}" "${txtred}" "$@"
-}
-
-```
-
-### `box.red-in-yellow`
-
-```bash
-box.red-in-yellow ()
-{
-    .output.box "${bldred}" "${bldylw}" "$@"
-}
-
-```
-
-### `box.yellow-in-blue`
-
-```bash
-box.yellow-in-blue ()
-{
-    .output.box "${bldylw}" "${bldblu}" "$@"
-}
-
-```
-
-### `box.yellow-in-red`
-
-```bash
-box.yellow-in-red ()
-{
-    .output.box "${bldred}" "${bldylw}" "$@"
-}
-
-```
-
-### `box.yellow-in-yellow`
-
-```bash
-box.yellow-in-yellow ()
-{
-    .output.box "${bldylw}" "${txtylw}" "$@"
-}
-
-```
-
-### `br`
-
-```bash
-br ()
-{
-    echo
-}
-
-```
-
-### `brew.cache-reset`
+#### `brew.cache-reset`
 
 ```bash
 brew.cache-reset ()
@@ -1175,7 +1173,7 @@ brew.cache-reset ()
 
 ```
 
-### `brew.cache-reset.delayed`
+#### `brew.cache-reset.delayed`
 
 ```bash
 brew.cache-reset.delayed ()
@@ -1186,19 +1184,19 @@ brew.cache-reset.delayed ()
 
 ```
 
-### `brew.cask.is-installed`
+#### `brew.cask.is-installed`
 
 ```bash
 brew.cask.is-installed ()
 {
     local cask="${1}";
     local -a installed_casks=($(brew.cask.list));
-    array-contains-element $(basename "${cask}") "${installed_casks[@]}"
+    array.has-element $(basename "${cask}") "${installed_casks[@]}"
 }
 
 ```
 
-### `brew.cask.list`
+#### `brew.cask.list`
 
 ```bash
 brew.cask.list ()
@@ -1208,7 +1206,7 @@ brew.cask.list ()
 
 ```
 
-### `brew.cask.tap`
+#### `brew.cask.tap`
 
 ```bash
 brew.cask.tap ()
@@ -1218,7 +1216,7 @@ brew.cask.tap ()
 
 ```
 
-### `brew.install`
+#### `brew.install`
 
 ```bash
 brew.install ()
@@ -1236,7 +1234,7 @@ brew.install ()
 
 ```
 
-### `brew.install.cask`
+#### `brew.install.cask`
 
 ```bash
 brew.install.cask ()
@@ -1263,7 +1261,7 @@ brew.install.cask ()
 
 ```
 
-### `brew.install.package`
+#### `brew.install.package`
 
 ```bash
 brew.install.package ()
@@ -1289,7 +1287,7 @@ brew.install.package ()
 
 ```
 
-### `brew.install.packages`
+#### `brew.install.packages`
 
 ```bash
 brew.install.packages ()
@@ -1304,19 +1302,19 @@ brew.install.packages ()
 
 ```
 
-### `brew.package.is-installed`
+#### `brew.package.is-installed`
 
 ```bash
 brew.package.is-installed ()
 {
     local package="${1}";
     local -a installed_packages=($(brew.package.list));
-    array-contains-element $(basename "${package}") "${installed_packages[@]}"
+    array.has-element $(basename "${package}") "${installed_packages[@]}"
 }
 
 ```
 
-### `brew.package.list`
+#### `brew.package.list`
 
 ```bash
 brew.package.list ()
@@ -1326,7 +1324,7 @@ brew.package.list ()
 
 ```
 
-### `brew.reinstall.package`
+#### `brew.reinstall.package`
 
 ```bash
 brew.reinstall.package ()
@@ -1345,7 +1343,7 @@ brew.reinstall.package ()
 
 ```
 
-### `brew.reinstall.packages`
+#### `brew.reinstall.packages`
 
 ```bash
 brew.reinstall.packages ()
@@ -1361,7 +1359,7 @@ brew.reinstall.packages ()
 
 ```
 
-### `brew.relink`
+#### `brew.relink`
 
 ```bash
 brew.relink ()
@@ -1374,7 +1372,7 @@ brew.relink ()
 
 ```
 
-### `brew.setup`
+#### `brew.setup`
 
 ```bash
 brew.setup ()
@@ -1384,7 +1382,7 @@ brew.setup ()
 
 ```
 
-### `brew.uninstall.package`
+#### `brew.uninstall.package`
 
 ```bash
 brew.uninstall.package ()
@@ -1403,7 +1401,7 @@ brew.uninstall.package ()
 
 ```
 
-### `brew.uninstall.packages`
+#### `brew.uninstall.packages`
 
 ```bash
 brew.uninstall.packages ()
@@ -1418,7 +1416,7 @@ brew.uninstall.packages ()
 
 ```
 
-### `brew.upgrade`
+#### `brew.upgrade`
 
 ```bash
 brew.upgrade ()
@@ -1435,18 +1433,7 @@ brew.upgrade ()
 
 ```
 
-### `bundle.gems-with-c-extensions`
-
-```bash
-bundle.gems-with-c-extensions ()
-{
-    run.set-next show-output-on;
-    run "bundle show --paths | ruby -e \"STDIN.each_line {|dep| puts dep.split('/').last if File.directory?(File.join(dep.chomp, 'ext')) }\""
-}
-
-```
-
-### `cache-or-command`
+#### `cache-or-command`
 
 ```bash
 cache-or-command ()
@@ -1466,7 +1453,13 @@ cache-or-command ()
 
 ```
 
-### `caller.stack`
+
+---
+
+
+### Module `caller`
+
+#### `caller.stack`
 
 ```bash
 caller.stack ()
@@ -1482,90 +1475,43 @@ caller.stack ()
 
 ```
 
-### `center`
+#### `stack.frame`
 
 ```bash
-center ()
+stack.frame ()
 {
-    .output.center "$@"
+    caller.stack 0
 }
 
 ```
 
-### `change-underscan`
+
+---
+
+
+### Module `color`
+
+#### `ansi`
 
 ```bash
-change-underscan ()
+ansi ()
 {
-    set +e;
-    local amount_percentage="$1";
-    if [[ -z "${amount_percentage}" ]]; then
-        printf "%s\n\n" "USAGE: change-underscan percent";
-        printf "%s\n" "   eg: change-underscan   5  # underscan by 5%";
-        printf "%s\n" "   eg: change-underscan -10  # overscan by 10%";
-        return -1;
-    fi;
-    local file="/var/db/.com.apple.iokit.graphics";
-    local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')";
-    local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i");
-    h1 'This utility allows you to change underscan/overscan' 'on monitors that do not offer that option via GUI.';
-    run.ui.ask "Continue?";
-    info "Great! First we need to identify your monitor.";
-    hl.yellow "Please make sure that the external monitor is plugged in.";
-    run.ui.ask "Is it plugged in?";
-    info "Making a backup of your current graphics settings...";
-    inf "Please enter your password, if asked: ";
-    set -e;
-    bash -c 'set -e; sudo ls -1 > /dev/null; set +e';
-    ok;
-    run "sudo rm -f \"${backup}\"";
-    export LibRun__AbortOnError=${True};
-    run "sudo cp -v \"${file}\" \"${backup}\"";
-    h2 "Now: please change the resolution ${bldylw}on the problem monitor." "NOTE: it's ${italic}not important what resolution you choose," "as long as it's different than what you had previously..." "Finally: exit Display Preferences once you changed resolution.";
-    run "open /System/Library/PreferencePanes/Displays.prefPane";
-    run.ui.ask "Have you changed the resolution and exited Display Prefs? ";
-    local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i');
-    [[ -n $DEBUG ]] && info "diff line is at ${line}";
-    value=;
-    if [[ "${line}" -gt 0 ]]; then
-        line_pscn_key=$(($line - 4));
-        line_pscn_value=$(($line - 3));
-        ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && {
-            value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}');
-            [[ -n $DEBUG ]] && info "current value is ${value}"
-        };
-    else
-        error "It does not appear that anything changed, sorry.";
-        return -1;
-    fi;
-    h2 "Now, please unplug the problem monitor temporarily...";
-    run.ui.ask "...and press Enter to continue ";
-    if [[ -n ${value} && ${value} -ne ${new_value} ]]; then
-        export LibRun__AbortOnError=${True};
-        run "sudo sed -i.backup \"${line_pscn_value}s/${value}/${new_value}/g\" \"${file}\"";
-        echo;
-        h2 "Congratulations!" "Your display underscan value has been changed.";
-        info "Previous Value — ${bldpur}${value}";
-        info "New value:     — ${bldgrn}${new_value}";
-        hr;
-        info "${bldylw}IMPORTANT!";
-        info "You must restart your computer for the settings to take affect.";
-        echo;
-        run.ui.ask "Should I reboot your computer now? ";
-        info "Very well, rebooting!";
-        run "sudo reboot";
-    else
-        warning "Unable to find the display scan value to change. ";
-        info "Could it be that you haven't restarted since your last run?";
-        echo;
-        info "Feel free to edit file directly, using:";
-        info "eg: ${bldylw}vim ${file} +${line_pscn_value}";
-    fi
+    echo -e "\e[${1}m${*:2}\e[0m"
 }
 
 ```
 
-### `color.disable`
+#### `bold`
+
+```bash
+bold ()
+{
+    ansi 1 "$@"
+}
+
+```
+
+#### `color.disable`
 
 ```bash
 color.disable ()
@@ -1614,13 +1560,12 @@ color.disable ()
     unset white_on_pink;
     unset white_on_salmon;
     unset yellow_on_gray;
-    export AppColorsLoaded=1;
-    trap reset-color EXIT
+    export AppColorsLoaded=1
 }
 
 ```
 
-### `color.enable`
+#### `color.enable`
 
 ```bash
 color.enable ()
@@ -1674,122 +1619,108 @@ color.enable ()
         export AppColorsLoaded=1;
     else
         [[ -n ${DEBUG} ]] && echo "colors already loaded...";
-    fi;
-    trap reset-color EXIT
+    fi
 }
 
 ```
 
-### `columnize`
+#### `error-text`
 
 ```bash
-columnize ()
+error-text ()
 {
-    local columns="${1:-2}";
-    local sw=${SCREEN_WIDTH:-120};
-    [[ -z ${sw} ]] && sw=$(screen-width);
-    pr -l 10000 -${columns} -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
+    printf "${txtred}"
 }
 
 ```
 
-### `command-spacer`
+#### `italic`
 
 ```bash
-command-spacer ()
+italic ()
 {
-    local color="${txtgrn}";
-    [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}";
-    [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return;
-    printf "%s${color}" "";
-    local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10));
-    [[ ${__width} -gt 0 ]] && .output.replicate-to "▪" "${__width}"
+    ansi 3 "$@"
 }
 
 ```
 
-### `cookie-dump`
+#### `red`
 
 ```bash
-cookie-dump ()
+red ()
 {
-    osx.cookie-dump "$@"
+    ansi 31 "$@"
 }
 
 ```
 
-### `cursor.at.x`
+#### `reset-color`
 
 ```bash
-cursor.at.x ()
+reset-color ()
 {
-    .output.cursor-move-to-x "$@"
+    printf "${clr}\n"
 }
 
 ```
 
-### `cursor.at.y`
+#### `strikethrough`
 
 ```bash
-cursor.at.y ()
+strikethrough ()
 {
-    .output.cursor-move-to-y "$@"
+    ansi 9 "$@"
 }
 
 ```
 
-### `cursor.down`
+#### `txt-err`
 
 ```bash
-cursor.down ()
+txt-err ()
 {
-    .output.cursor-down-by "$@"
+    printf "${clr}${bldylw}${bakred}"
 }
 
 ```
 
-### `cursor.left`
+#### `txt-info`
 
 ```bash
-cursor.left ()
+txt-info ()
 {
-    .output.cursor-left-by "$@"
+    printf "${clr}${txtblu}"
 }
 
 ```
 
-### `cursor.rewind`
+#### `txt-warn`
 
 ```bash
-cursor.rewind ()
+txt-warn ()
 {
-    local x=${1:-0};
-    .output.cursor-move-to-x ${x}
+    printf "${clr}${bldylw}"
 }
 
 ```
 
-### `cursor.right`
+#### `underline`
 
 ```bash
-cursor.right ()
+underline ()
 {
-    .output.cursor-right-by "$@"
+    ansi 4 "$@"
 }
 
 ```
 
-### `cursor.up`
 
-```bash
-cursor.up ()
-{
-    .output.cursor-up-by "$@"
-}
+---
 
-```
 
-### `db.datetime`
+### Module `db`
+
+#### `db.datetime`
 
 ```bash
 db.datetime ()
@@ -1799,7 +1730,7 @@ db.datetime ()
 
 ```
 
-### `db.dump`
+#### `db.dump`
 
 ```bash
 db.dump ()
@@ -1829,17 +1760,17 @@ db.dump ()
 
 ```
 
-### `db.num_procs`
+#### `db.num-procs`
 
 ```bash
-db.num_procs ()
+db.num-procs ()
 {
     ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
 }
 
 ```
 
-### `db.psql-args`
+#### `db.psql-args`
 
 ```bash
 db.psql-args ()
@@ -1849,7 +1780,7 @@ db.psql-args ()
 
 ```
 
-### `db.psql.args.`
+#### `db.psql.args.`
 
 ```bash
 db.psql.args. ()
@@ -1859,7 +1790,7 @@ db.psql.args. ()
 
 ```
 
-### `db.psql.args.default`
+#### `db.psql.args.default`
 
 ```bash
 db.psql.args.default ()
@@ -1869,7 +1800,7 @@ db.psql.args.default ()
 
 ```
 
-### `db.psql.args.maint`
+#### `db.psql.args.maint`
 
 ```bash
 db.psql.args.maint ()
@@ -1879,7 +1810,7 @@ db.psql.args.maint ()
 
 ```
 
-### `db.rails.schema.checksum`
+#### `db.rails.schema.checksum`
 
 ```bash
 db.rails.schema.checksum ()
@@ -1895,7 +1826,7 @@ db.rails.schema.checksum ()
 
 ```
 
-### `db.rails.schema.file`
+#### `db.rails.schema.file`
 
 ```bash
 db.rails.schema.file ()
@@ -1919,7 +1850,7 @@ db.rails.schema.file ()
 
 ```
 
-### `db.restore`
+#### `db.restore`
 
 ```bash
 db.restore ()
@@ -1957,7 +1888,7 @@ db.restore ()
 
 ```
 
-### `db.top`
+#### `db.top`
 
 ```bash
 db.top ()
@@ -2035,7 +1966,7 @@ db.top ()
             .db.top.page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}";
         done;
         clear;
-        h.yellow " «   DB-TOP V0.1.2 © 2018-2019 Konstantin Gredeskoul, ReinventONE Inc. » ";
+        h.yellow " «   DB-TOP V0.1.2 © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.";
         cat ${tof};
         cursor.at.y $(($(.output.screen-height) + 1));
         printf "${bldwht}Press Ctrl-C to quit.${clr}";
@@ -2046,7 +1977,7 @@ db.top ()
 
 ```
 
-### `db.wait-until-db-online`
+#### `db.wait-until-db-online`
 
 ```bash
 db.wait-until-db-online ()
@@ -2067,34 +1998,23 @@ db.wait-until-db-online ()
 
 ```
 
-### `debug`
+#### `psql.db-settings`
 
 ```bash
-debug ()
+psql.db-settings ()
 {
-    [[ -z ${DEBUG} ]] && return;
-    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakwht}[ debug ] $*  ${clr}\n"
+    psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
 ```
 
-### `decrypt.secrets`
 
-```bash
-decrypt.secrets ()
-{
-    ./bin/decrypt;
-    local code=$?;
-    [[ ${code} != 0 ]] && {
-        error "bin/decrypt returned non-zero exit status ${code}";
-        echo;
-        exit ${code}
-    }
-}
+---
 
-```
 
-### `deploy.slack`
+### Module `deploy`
+
+#### `deploy.slack`
 
 ```bash
 deploy.slack ()
@@ -2121,7 +2041,7 @@ deploy.slack ()
 
 ```
 
-### `deploy.slack-ding`
+#### `deploy.slack-ding`
 
 ```bash
 deploy.slack-ding ()
@@ -2131,7 +2051,7 @@ deploy.slack-ding ()
 
 ```
 
-### `deploy.validate-vpn`
+#### `deploy.validate-vpn`
 
 ```bash
 deploy.validate-vpn ()
@@ -2141,97 +2061,13 @@ deploy.validate-vpn ()
 
 ```
 
-### `dev.crypt.chef`
 
-```bash
-dev.crypt.chef ()
-{
-    sym -ck APP_CHEF_SYM_KEY $*
-}
+---
 
-```
 
-### `dev.decrypt.file`
+### Module `dir`
 
-```bash
-dev.decrypt.file ()
-{
-    [[ -f ${1} ]] || {
-        error 'usage: dev.decrypt.file <filename.enc>';
-        return
-    };
-    sym -ck APP_SYM_KEY -n "${1}"
-}
-
-```
-
-### `dev.decrypt.str`
-
-```bash
-dev.decrypt.str ()
-{
-    [[ -z ${1} ]] && {
-        error 'usage: dev.decrypt.str "string to decrypt"';
-        return
-    };
-    sym -ck APP_SYM_KEY -d -s "$*"
-}
-
-```
-
-### `dev.edit.file`
-
-```bash
-dev.edit.file ()
-{
-    [[ -f ${1} ]] || {
-        error 'usage: dev.edit.file <filename>';
-        return
-    };
-    sym -ck APP_SYM_KEY -t "${1}"
-}
-
-```
-
-### `dev.encrypt.file`
-
-```bash
-dev.encrypt.file ()
-{
-    [[ -f ${1} ]] || {
-        error 'usage: dev.encrypt.file <filename>';
-        return
-    };
-    sym -ck APP_SYM_KEY -e -f "${1}" -o "${1}.enc"
-}
-
-```
-
-### `dev.encrypt.str`
-
-```bash
-dev.encrypt.str ()
-{
-    [[ -z "${1}" ]] && {
-        error 'usage: dev.encrypt.str "string to encrypt"';
-        return
-    };
-    sym -ck APP_SYM_KEY -e -s "$*"
-}
-
-```
-
-### `dev.sym`
-
-```bash
-dev.sym ()
-{
-    sym -cqk APP_SYM_KEY $*
-}
-
-```
-
-### `dir.count-slashes`
+#### `dir.count-slashes`
 
 ```bash
 dir.count-slashes ()
@@ -2242,7 +2078,7 @@ dir.count-slashes ()
 
 ```
 
-### `dir.expand-dir`
+#### `dir.expand-dir`
 
 ```bash
 dir.expand-dir ()
@@ -2260,7 +2096,7 @@ dir.expand-dir ()
 
 ```
 
-### `dir.is-a-dir`
+#### `dir.is-a-dir`
 
 ```bash
 dir.is-a-dir ()
@@ -2271,7 +2107,13 @@ dir.is-a-dir ()
 
 ```
 
-### `docker.abort-if-down`
+
+---
+
+
+### Module `docker`
+
+#### `docker.abort-if-down`
 
 ```bash
 docker.abort-if-down ()
@@ -2292,7 +2134,7 @@ docker.abort-if-down ()
 
 ```
 
-### `docker.actions.build`
+#### `docker.actions.build`
 
 ```bash
 docker.actions.build ()
@@ -2302,7 +2144,7 @@ docker.actions.build ()
 
 ```
 
-### `docker.actions.clean`
+#### `docker.actions.clean`
 
 ```bash
 docker.actions.clean ()
@@ -2312,7 +2154,7 @@ docker.actions.clean ()
 
 ```
 
-### `docker.actions.pull`
+#### `docker.actions.pull`
 
 ```bash
 docker.actions.pull ()
@@ -2324,7 +2166,7 @@ docker.actions.pull ()
 
 ```
 
-### `docker.actions.push`
+#### `docker.actions.push`
 
 ```bash
 docker.actions.push ()
@@ -2340,7 +2182,7 @@ docker.actions.push ()
 
 ```
 
-### `docker.actions.setup`
+#### `docker.actions.setup`
 
 ```bash
 docker.actions.setup ()
@@ -2352,7 +2194,7 @@ docker.actions.setup ()
 
 ```
 
-### `docker.actions.start`
+#### `docker.actions.start`
 
 ```bash
 docker.actions.start ()
@@ -2362,7 +2204,7 @@ docker.actions.start ()
 
 ```
 
-### `docker.actions.stop`
+#### `docker.actions.stop`
 
 ```bash
 docker.actions.stop ()
@@ -2372,7 +2214,7 @@ docker.actions.stop ()
 
 ```
 
-### `docker.actions.tag`
+#### `docker.actions.tag`
 
 ```bash
 docker.actions.tag ()
@@ -2385,7 +2227,7 @@ docker.actions.tag ()
 
 ```
 
-### `docker.actions.up`
+#### `docker.actions.up`
 
 ```bash
 docker.actions.up ()
@@ -2395,7 +2237,7 @@ docker.actions.up ()
 
 ```
 
-### `docker.actions.update`
+#### `docker.actions.update`
 
 ```bash
 docker.actions.update ()
@@ -2406,7 +2248,7 @@ docker.actions.update ()
 
 ```
 
-### `docker.build.container`
+#### `docker.build.container`
 
 ```bash
 docker.build.container ()
@@ -2418,7 +2260,7 @@ docker.build.container ()
 
 ```
 
-### `docker.containers.clean`
+#### `docker.containers.clean`
 
 ```bash
 docker.containers.clean ()
@@ -2429,7 +2271,7 @@ docker.containers.clean ()
 
 ```
 
-### `docker.image.inspect`
+#### `docker.image.inspect`
 
 ```bash
 docker.image.inspect ()
@@ -2442,7 +2284,7 @@ docker.image.inspect ()
 
 ```
 
-### `docker.image.rm`
+#### `docker.image.rm`
 
 ```bash
 docker.image.rm ()
@@ -2452,7 +2294,7 @@ docker.image.rm ()
 
 ```
 
-### `docker.images-named`
+#### `docker.images-named`
 
 ```bash
 docker.images-named ()
@@ -2467,7 +2309,7 @@ docker.images-named ()
 
 ```
 
-### `docker.images.clean`
+#### `docker.images.clean`
 
 ```bash
 docker.images.clean ()
@@ -2478,7 +2320,7 @@ docker.images.clean ()
 
 ```
 
-### `docker.images.inspect`
+#### `docker.images.inspect`
 
 ```bash
 docker.images.inspect ()
@@ -2489,7 +2331,7 @@ docker.images.inspect ()
 
 ```
 
-### `docker.last-version`
+#### `docker.last-version`
 
 ```bash
 docker.last-version ()
@@ -2504,7 +2346,7 @@ docker.last-version ()
 
 ```
 
-### `docker.next-version`
+#### `docker.next-version`
 
 ```bash
 docker.next-version ()
@@ -2519,7 +2361,7 @@ docker.next-version ()
 
 ```
 
-### `docker.set-repo`
+#### `docker.set-repo`
 
 ```bash
 docker.set-repo ()
@@ -2529,81 +2371,13 @@ docker.set-repo ()
 
 ```
 
-### `duration`
 
-```bash
-duration ()
-{
-    local millis="$1";
-    local exit_code="$2";
-    [[ -n $(which bc) ]] || return;
-    if [[ -n ${millis} && ${millis} -ge 0 ]]; then
-        local pattern;
-        pattern=" %6.6s ms ";
-        pattern="${txtblu}〔${pattern}〕";
-        printf "${txtblu}${pattern}" "${millis}";
-    fi;
-    if [[ -n ${exit_code} ]]; then
-        [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" ${exit_code};
-        [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" ${exit_code};
-    fi
-}
+---
 
-```
 
-### `epoch`
+### Module `file`
 
-```bash
-epoch ()
-{
-    date +%s
-}
-
-```
-
-### `err`
-
-```bash
-err ()
-{
-    printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" 1>&2
-}
-
-```
-
-### `error`
-
-```bash
-error ()
-{
-    header=$(printf -- "${txtblk}${bakred} « ERROR » ${clr}");
-    box.red-in-red "${header} ${bldylw}$@" 1>&2
-}
-
-```
-
-### `error-text`
-
-```bash
-error-text ()
-{
-    printf "${txtred}"
-}
-
-```
-
-### `error:`
-
-```bash
-error: ()
-{
-    err $*;
-    ui.closer.not-ok:
-}
-
-```
-
-### `file.exists-and-newer-than`
+#### `file.exists-and-newer-than`
 
 ```bash
 file.exists-and-newer-than ()
@@ -2621,7 +2395,7 @@ file.exists-and-newer-than ()
 
 ```
 
-### `file.gsub`
+#### `file.gsub`
 
 ```bash
 file.gsub ()
@@ -2644,10 +2418,10 @@ file.gsub ()
 
 ```
 
-### `file.install_with_backup`
+#### `file.install-with-backup`
 
 ```bash
-file.install_with_backup ()
+file.install-with-backup ()
 {
     local source=$1;
     local dest=$2;
@@ -2674,7 +2448,7 @@ file.install_with_backup ()
 
 ```
 
-### `file.last-modified-date`
+#### `file.last-modified-date`
 
 ```bash
 file.last-modified-date ()
@@ -2684,7 +2458,7 @@ file.last-modified-date ()
 
 ```
 
-### `file.last-modified-year`
+#### `file.last-modified-year`
 
 ```bash
 file.last-modified-year ()
@@ -2694,7 +2468,7 @@ file.last-modified-year ()
 
 ```
 
-### `file.list.filter-existing`
+#### `file.list.filter-existing`
 
 ```bash
 file.list.filter-existing ()
@@ -2707,7 +2481,7 @@ file.list.filter-existing ()
 
 ```
 
-### `file.list.filter-non-empty`
+#### `file.list.filter-non-empty`
 
 ```bash
 file.list.filter-non-empty ()
@@ -2720,7 +2494,7 @@ file.list.filter-non-empty ()
 
 ```
 
-### `file.size`
+#### `file.size`
 
 ```bash
 file.size ()
@@ -2735,7 +2509,7 @@ file.size ()
 
 ```
 
-### `file.size.mb`
+#### `file.size.mb`
 
 ```bash
 file.size.mb ()
@@ -2743,13 +2517,13 @@ file.size.mb ()
     local file="$1";
     shift;
     local s=$(file.size ${file});
-    local mb=$(echo $(($s / 10000)) | hbsed 's/([0-9][0-9])$/.\1/g');
+    local mb=$(echo $(($s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g');
     printf "%.2f MB" ${mb}
 }
 
 ```
 
-### `file.source-if-exists`
+#### `file.source-if-exists`
 
 ```bash
 file.source-if-exists ()
@@ -2763,7 +2537,7 @@ file.source-if-exists ()
 
 ```
 
-### `file.stat`
+#### `file.stat`
 
 ```bash
 file.stat ()
@@ -2786,7 +2560,65 @@ file.stat ()
 
 ```
 
-### `ftrace-in`
+#### `files.find`
+
+```bash
+files.find ()
+{
+    local folder="$1";
+    local pattern="${2}";
+    [[ -z ${folder} || -z ${pattern} ]] && {
+        echo "usage: files.find <folder> <pattern>" 1>&2;
+        return 1
+    };
+    find "$1" -name "${pattern}"
+}
+
+```
+
+#### `files.map`
+
+```bash
+files.map ()
+{
+    local folder="${1}";
+    local pattern="${2}";
+    local array="${3}";
+    local -a files;
+    if bashmatic.bash.version-four-or-later; then
+        mapfile -t files < <(files.find "${folder}" "${pattern}");
+    else
+        files=();
+        while IFS='' read -r line; do
+            files+=("$line");
+        done < <(files.find "${folder}" "${pattern}");
+    fi;
+    if [[ -n ${array} ]]; then
+        printf "%s" "unset ${array}; declare -a ${array}; ${array}=(${files[*]}); export ${array}";
+    else
+        printf "%s" "${files[*]}";
+    fi
+}
+
+```
+
+#### `files.map.shell-scripts`
+
+```bash
+files.map.shell-scripts ()
+{
+    files.map "$1" '*.sh' "$2"
+}
+
+```
+
+
+---
+
+
+### Module `ftrace`
+
+#### `ftrace-in`
 
 ```bash
 ftrace-in ()
@@ -2801,7 +2633,7 @@ ftrace-in ()
 
 ```
 
-### `ftrace-off`
+#### `ftrace-off`
 
 ```bash
 ftrace-off ()
@@ -2811,7 +2643,7 @@ ftrace-off ()
 
 ```
 
-### `ftrace-on`
+#### `ftrace-on`
 
 ```bash
 ftrace-on ()
@@ -2821,7 +2653,7 @@ ftrace-on ()
 
 ```
 
-### `ftrace-out`
+#### `ftrace-out`
 
 ```bash
 ftrace-out ()
@@ -2840,7 +2672,13 @@ ftrace-out ()
 
 ```
 
-### `g-i`
+
+---
+
+
+### Module `gem`
+
+#### `g-i`
 
 ```bash
 g-i ()
@@ -2850,7 +2688,7 @@ g-i ()
 
 ```
 
-### `g-u`
+#### `g-u`
 
 ```bash
 g-u ()
@@ -2860,7 +2698,7 @@ g-u ()
 
 ```
 
-### `gem.cache-installed`
+#### `gem.cache-installed`
 
 ```bash
 gem.cache-installed ()
@@ -2873,7 +2711,7 @@ gem.cache-installed ()
 
 ```
 
-### `gem.cache-refresh`
+#### `gem.cache-refresh`
 
 ```bash
 gem.cache-refresh ()
@@ -2885,7 +2723,7 @@ gem.cache-refresh ()
 
 ```
 
-### `gem.clear-cache`
+#### `gem.clear-cache`
 
 ```bash
 gem.clear-cache ()
@@ -2895,7 +2733,7 @@ gem.clear-cache ()
 
 ```
 
-### `gem.configure-cache`
+#### `gem.configure-cache`
 
 ```bash
 gem.configure-cache ()
@@ -2911,7 +2749,7 @@ gem.configure-cache ()
 
 ```
 
-### `gem.ensure-gem-version`
+#### `gem.ensure-gem-version`
 
 ```bash
 gem.ensure-gem-version ()
@@ -2930,7 +2768,7 @@ gem.ensure-gem-version ()
 
 ```
 
-### `gem.gemfile.version`
+#### `gem.gemfile.version`
 
 ```bash
 gem.gemfile.version ()
@@ -2944,7 +2782,7 @@ gem.gemfile.version ()
 
 ```
 
-### `gem.global.latest-version`
+#### `gem.global.latest-version`
 
 ```bash
 gem.global.latest-version ()
@@ -2967,7 +2805,7 @@ gem.global.latest-version ()
 
 ```
 
-### `gem.global.versions`
+#### `gem.global.versions`
 
 ```bash
 gem.global.versions ()
@@ -2975,12 +2813,12 @@ gem.global.versions ()
     local gem=$1;
     [[ -z ${gem} ]] && return;
     gem.cache-installed;
-    cat ${LibGem__GemListCache} | egrep "^${gem} " | hbsed "s/^${gem} //g;s/[(),]//g"
+    cat ${LibGem__GemListCache} | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
 ```
 
-### `gem.install`
+#### `gem.install`
 
 ```bash
 gem.install ()
@@ -3015,7 +2853,7 @@ gem.install ()
 
 ```
 
-### `gem.is-installed`
+#### `gem.is-installed`
 
 ```bash
 gem.is-installed ()
@@ -3032,7 +2870,7 @@ gem.is-installed ()
 
 ```
 
-### `gem.uninstall`
+#### `gem.uninstall`
 
 ```bash
 gem.uninstall ()
@@ -3056,7 +2894,7 @@ gem.uninstall ()
 
 ```
 
-### `gem.version`
+#### `gem.version`
 
 ```bash
 gem.version ()
@@ -3073,7 +2911,29 @@ gem.version ()
 
 ```
 
-### `git.configure-auto-updates`
+
+---
+
+
+### Module `git`
+
+#### `bashmatic.auto-update`
+
+```bash
+bashmatic.auto-update ()
+{
+    [[ ${Bashmatic__Test} -eq 1 ]] && return 0;
+    git.configure-auto-updates;
+    git.repo-is-clean || {
+        h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up.";
+        return 1
+    };
+    git.sync
+}
+
+```
+
+#### `git.configure-auto-updates`
 
 ```bash
 git.configure-auto-updates ()
@@ -3085,7 +2945,7 @@ git.configure-auto-updates ()
 
 ```
 
-### `git.last-update-at`
+#### `git.last-update-at`
 
 ```bash
 git.last-update-at ()
@@ -3099,7 +2959,7 @@ git.last-update-at ()
 
 ```
 
-### `git.local-vs-remote`
+#### `git.local-vs-remote`
 
 ```bash
 git.local-vs-remote ()
@@ -3139,7 +2999,7 @@ git.local-vs-remote ()
 
 ```
 
-### `git.quiet`
+#### `git.quiet`
 
 ```bash
 git.quiet ()
@@ -3149,7 +3009,7 @@ git.quiet ()
 
 ```
 
-### `git.remotes`
+#### `git.remotes`
 
 ```bash
 git.remotes ()
@@ -3159,7 +3019,7 @@ git.remotes ()
 
 ```
 
-### `git.repo-is-clean`
+#### `git.repo-is-clean`
 
 ```bash
 git.repo-is-clean ()
@@ -3177,7 +3037,7 @@ git.repo-is-clean ()
 
 ```
 
-### `git.save-last-update-at`
+#### `git.save-last-update-at`
 
 ```bash
 git.save-last-update-at ()
@@ -3187,7 +3047,7 @@ git.save-last-update-at ()
 
 ```
 
-### `git.seconds-since-last-pull`
+#### `git.seconds-since-last-pull`
 
 ```bash
 git.seconds-since-last-pull ()
@@ -3199,7 +3059,7 @@ git.seconds-since-last-pull ()
 
 ```
 
-### `git.sync`
+#### `git.sync`
 
 ```bash
 git.sync ()
@@ -3218,7 +3078,7 @@ git.sync ()
 
 ```
 
-### `git.sync-remote`
+#### `git.sync-remote`
 
 ```bash
 git.sync-remote ()
@@ -3248,7 +3108,7 @@ git.sync-remote ()
 
 ```
 
-### `git.update-repo-if-needed`
+#### `git.update-repo-if-needed`
 
 ```bash
 git.update-repo-if-needed ()
@@ -3267,7 +3127,13 @@ git.update-repo-if-needed ()
 
 ```
 
-### `github.clone`
+
+---
+
+
+### Module `github`
+
+#### `github.clone`
 
 ```bash
 github.clone ()
@@ -3277,7 +3143,7 @@ github.clone ()
 
 ```
 
-### `github.org`
+#### `github.org`
 
 ```bash
 github.org ()
@@ -3293,7 +3159,7 @@ github.org ()
 
 ```
 
-### `github.setup`
+#### `github.setup`
 
 ```bash
 github.setup ()
@@ -3312,7 +3178,7 @@ github.setup ()
 
 ```
 
-### `github.validate`
+#### `github.validate`
 
 ```bash
 github.validate ()
@@ -3330,397 +3196,13 @@ github.validate ()
 
 ```
 
-### `gvim.off`
 
-```bash
-gvim.off ()
-{
-    vim.gvim-off
-}
+---
 
-```
 
-### `gvim.on`
+### Module `jemalloc`
 
-```bash
-gvim.on ()
-{
-    vim.gvim-on
-}
-
-```
-
-### `h.black`
-
-```bash
-h.black ()
-{
-    center "${bldylw}${bakblk}" "$@"
-}
-
-```
-
-### `h.blue`
-
-```bash
-h.blue ()
-{
-    center "${txtblk}${bakblu}" "$@"
-}
-
-```
-
-### `h.green`
-
-```bash
-h.green ()
-{
-    center "${txtblk}${bakgrn}" "$@"
-}
-
-```
-
-### `h.red`
-
-```bash
-h.red ()
-{
-    center "${txtblk}${bakred}" "$@"
-}
-
-```
-
-### `h.yellow`
-
-```bash
-h.yellow ()
-{
-    center "${txtblk}${bakylw}" "$@"
-}
-
-```
-
-### `h1`
-
-```bash
-h1 ()
-{
-    box.blue-in-yellow "$@"
-}
-
-```
-
-### `h1.blue`
-
-```bash
-h1.blue ()
-{
-    box.magenta-in-blue "$@"
-}
-
-```
-
-### `h1.green`
-
-```bash
-h1.green ()
-{
-    box.green-in-magenta "$@"
-}
-
-```
-
-### `h1.purple`
-
-```bash
-h1.purple ()
-{
-    box.magenta-in-green "$@"
-}
-
-```
-
-### `h1.red`
-
-```bash
-h1.red ()
-{
-    box.red-in-red "$@"
-}
-
-```
-
-### `h1.yellow`
-
-```bash
-h1.yellow ()
-{
-    box.yellow-in-red "$@"
-}
-
-```
-
-### `h2`
-
-```bash
-h2 ()
-{
-    box.blue-in-green "$@"
-}
-
-```
-
-### `h2.green`
-
-```bash
-h2.green ()
-{
-    box.green-in-cyan "$@"
-}
-
-```
-
-### `h3`
-
-```bash
-h3 ()
-{
-    hl.subtle "$@"
-}
-
-```
-
-### `hbsed`
-
-```bash
-hbsed ()
-{
-    local current=$(which sed);
-    local latest=${LibSed__latestVersion:-'/usr/local/bin/gsed'};
-    local os=$(uname -s);
-    if [[ ! -x "${latest}" ]]; then
-        if [[ "${os}" == "Darwin" ]]; then
-            [[ -n $(which brew) ]] || return 1;
-            brew install gnu-sed > /dev/null 2>&1;
-            [[ -x "${latest}" ]] || latest="${current}";
-        else
-            if [[ "${os}" == "Linux" ]]; then
-                latest="${current}";
-            fi;
-        fi;
-    fi;
-    latest=${latest:-${current}};
-    ${latest} -E "$@"
-}
-
-```
-
-### `hdr`
-
-```bash
-hdr ()
-{
-    h1 "$@"
-}
-
-```
-
-### `hl.blue`
-
-```bash
-hl.blue ()
-{
-    left "${bldwht}${bakpur}" "$@"
-}
-
-```
-
-### `hl.desc`
-
-```bash
-hl.desc ()
-{
-    left "${bakylw}${txtblk}${bakylw}" "$@"
-}
-
-```
-
-### `hl.green`
-
-```bash
-hl.green ()
-{
-    left "${txtblk}${bakgrn}" "$@"
-}
-
-```
-
-### `hl.orange`
-
-```bash
-hl.orange ()
-{
-    left "${white_on_orange}" "$@"
-}
-
-```
-
-### `hl.subtle`
-
-```bash
-hl.subtle ()
-{
-    left "${bldwht}${bakblk}${underlined}" "$@"
-}
-
-```
-
-### `hl.white-on-orange`
-
-```bash
-hl.white-on-orange ()
-{
-    left "${white_on_orange}" "$@"
-}
-
-```
-
-### `hl.white-on-salmon`
-
-```bash
-hl.white-on-salmon ()
-{
-    left "${white_on_salmon}" "$@"
-}
-
-```
-
-### `hl.yellow`
-
-```bash
-hl.yellow ()
-{
-    left "${bakylw}${txtblk}" "$@"
-}
-
-```
-
-### `hl.yellow-on-gray`
-
-```bash
-hl.yellow-on-gray ()
-{
-    left "${yellow_on_gray}" "$@s"
-}
-
-```
-
-### `hr`
-
-```bash
-hr ()
-{
-    [[ -z "$*" ]] || printf $*;
-    .output.hr
-}
-
-```
-
-### `hr.colored`
-
-```bash
-hr.colored ()
-{
-    local color="$*";
-    [[ -z ${color} ]] && color="${bldred}";
-    .output.hr "$(screen-width)" "—" "${*}"
-}
-
-```
-
-### `http.servers`
-
-```bash
-http.servers ()
-{
-    osx.local-servers http
-}
-
-```
-
-### `https.servers`
-
-```bash
-https.servers ()
-{
-    osx.local-servers https
-}
-
-```
-
-### `inf`
-
-```bash
-inf ()
-{
-    printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
-}
-
-```
-
-### `info`
-
-```bash
-info ()
-{
-    inf $@;
-    echo
-}
-
-```
-
-### `info:`
-
-```bash
-info: ()
-{
-    inf $*;
-    ui.closer.ok:
-}
-
-```
-
-### `interrupted`
-
-```bash
-interrupted ()
-{
-    export BashMatic__Interrupted=true
-}
-
-```
-
-### `is-func`
-
-```bash
-is-func ()
-{
-    util.is-a-function "$@"
-}
-
-```
-
-### `italic`
-
-```bash
-italic ()
-{
-    ansi 3 "$@"
-}
-
-```
-
-### `jm.check`
+#### `jm.check`
 
 ```bash
 jm.check ()
@@ -3775,7 +3257,7 @@ jm.check ()
 
 ```
 
-### `jm.jemalloc.detect-loud`
+#### `jm.jemalloc.detect-loud`
 
 ```bash
 jm.jemalloc.detect-loud ()
@@ -3795,7 +3277,7 @@ jm.jemalloc.detect-loud ()
 
 ```
 
-### `jm.jemalloc.detect-quiet`
+#### `jm.jemalloc.detect-quiet`
 
 ```bash
 jm.jemalloc.detect-quiet ()
@@ -3806,7 +3288,7 @@ jm.jemalloc.detect-quiet ()
 
 ```
 
-### `jm.jemalloc.stats`
+#### `jm.jemalloc.stats`
 
 ```bash
 jm.jemalloc.stats ()
@@ -3820,7 +3302,7 @@ jm.jemalloc.stats ()
 
 ```
 
-### `jm.ruby.detect`
+#### `jm.ruby.detect`
 
 ```bash
 jm.ruby.detect ()
@@ -3837,7 +3319,7 @@ jm.ruby.detect ()
 
 ```
 
-### `jm.ruby.report`
+#### `jm.ruby.report`
 
 ```bash
 jm.ruby.report ()
@@ -3847,7 +3329,7 @@ jm.ruby.report ()
 
 ```
 
-### `jm.usage`
+#### `jm.usage`
 
 ```bash
 jm.usage ()
@@ -3875,7 +3357,13 @@ ${ColorBlue}OPTIONS${ColorReset}
 
 ```
 
-### `json.begin-array`
+
+---
+
+
+### Module `json`
+
+#### `json.begin-array`
 
 ```bash
 json.begin-array ()
@@ -3886,7 +3374,7 @@ json.begin-array ()
 
 ```
 
-### `json.begin-hash`
+#### `json.begin-hash`
 
 ```bash
 json.begin-hash ()
@@ -3897,7 +3385,7 @@ json.begin-hash ()
 
 ```
 
-### `json.begin-key`
+#### `json.begin-key`
 
 ```bash
 json.begin-key ()
@@ -3909,7 +3397,7 @@ json.begin-key ()
 
 ```
 
-### `json.end-array`
+#### `json.end-array`
 
 ```bash
 json.end-array ()
@@ -3921,7 +3409,7 @@ json.end-array ()
 
 ```
 
-### `json.end-hash`
+#### `json.end-hash`
 
 ```bash
 json.end-hash ()
@@ -3933,7 +3421,7 @@ json.end-hash ()
 
 ```
 
-### `json.file-to-array`
+#### `json.file-to-array`
 
 ```bash
 json.file-to-array ()
@@ -3945,50 +3433,13 @@ json.file-to-array ()
 
 ```
 
-### `left`
 
-```bash
-left ()
-{
-    .output.left-justify "$@"
-}
+---
 
-```
 
-### `left-prefix`
+### Module `net`
 
-```bash
-left-prefix ()
-{
-    [[ -z ${LibOutput__LeftPrefix} ]] && {
-        export LibOutput__LeftPrefix=$(.output.replicate-to " " "${LibOutput__LeftPrefixLen}")
-    };
-    printf "${LibOutput__LeftPrefix}"
-}
-
-```
-
-### `long-pause`
-
-```bash
-long-pause ()
-{
-    sleep "${1:-10}"
-}
-
-```
-
-### `millis`
-
-```bash
-millis ()
-{
-    .run.millis
-}
-
-```
-
-### `net.fast-scan`
+#### `net.fast-scan`
 
 ```bash
 net.fast-scan ()
@@ -4006,7 +3457,7 @@ net.fast-scan ()
 
 ```
 
-### `net.local-subnet`
+#### `net.local-subnet`
 
 ```bash
 net.local-subnet ()
@@ -4024,58 +3475,164 @@ net.local-subnet ()
 
 ```
 
-### `not-ok`
+
+---
+
+
+### Module `osx`
+
+#### `afp.servers`
 
 ```bash
-not-ok ()
+afp.servers ()
 {
-    ui.closer.not-ok "$@"
+    osx.local-servers afp
 }
 
 ```
 
-### `not-ok:`
+#### `bashmatic-set-fqdn`
 
 ```bash
-not-ok: ()
+bashmatic-set-fqdn ()
 {
-    ui.closer.not-ok: "$@"
+    osx.set-fqdn "$@"
 }
 
 ```
 
-### `ok`
+#### `bashmatic-term`
 
 ```bash
-ok ()
+bashmatic-term ()
 {
-    ui.closer.ok "$@"
+    open $(bashmatic-term-program)
 }
 
 ```
 
-### `ok:`
+#### `bashmatic-term-program`
 
 ```bash
-ok: ()
+bashmatic-term-program ()
 {
-    ui.closer.ok: "$@"
+    if [[ -d /Applications/iTerm.app ]]; then
+        printf '%s' /Applications/iTerm.app;
+    else
+        if [[ -d /Applications/Utilities/Terminal.app ]]; then
+            printf '%s' /Applications/Utilities/Terminal.app;
+        else
+            printf '%s' "echo 'No TERMINAL application found'";
+        fi;
+    fi
 }
 
 ```
 
-### `okay`
+#### `change-underscan`
 
 ```bash
-okay ()
+change-underscan ()
 {
-    printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" 1>&2;
-    echo
+    set +e;
+    local amount_percentage="$1";
+    if [[ -z "${amount_percentage}" ]]; then
+        printf "%s\n\n" "USAGE: change-underscan percent";
+        printf "%s\n" "   eg: change-underscan   5  # underscan by 5%";
+        printf "%s\n" "   eg: change-underscan -10  # overscan by 10%";
+        return -1;
+    fi;
+    local file="/var/db/.com.apple.iokit.graphics";
+    local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')";
+    local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i");
+    h1 'This utility allows you to change underscan/overscan' 'on monitors that do not offer that option via GUI.';
+    run.ui.ask "Continue?";
+    info "Great! First we need to identify your monitor.";
+    hl.yellow "Please make sure that the external monitor is plugged in.";
+    run.ui.ask "Is it plugged in?";
+    info "Making a backup of your current graphics settings...";
+    inf "Please enter your password, if asked: ";
+    set -e;
+    bash -c 'set -e; sudo ls -1 > /dev/null; set +e';
+    ok;
+    run "sudo rm -f \"${backup}\"";
+    export LibRun__AbortOnError=${True};
+    run "sudo cp -v \"${file}\" \"${backup}\"";
+    h2 "Now: please change the resolution ${bldylw}on the problem monitor." "NOTE: it's ${italic}not important what resolution you choose," "as long as it's different than what you had previously..." "Finally: exit Display Preferences once you changed resolution.";
+    run "open /System/Library/PreferencePanes/Displays.prefPane";
+    run.ui.ask "Have you changed the resolution and exited Display Prefs? ";
+    local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i');
+    [[ -n $DEBUG ]] && info "diff line is at ${line}";
+    value=;
+    if [[ "${line}" -gt 0 ]]; then
+        line_pscn_key=$(($line - 4));
+        line_pscn_value=$(($line - 3));
+        ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && {
+            value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}');
+            [[ -n $DEBUG ]] && info "current value is ${value}"
+        };
+    else
+        error "It does not appear that anything changed, sorry.";
+        return -1;
+    fi;
+    h2 "Now, please unplug the problem monitor temporarily...";
+    run.ui.ask "...and press Enter to continue ";
+    if [[ -n ${value} && ${value} -ne ${new_value} ]]; then
+        export LibRun__AbortOnError=${True};
+        run "sudo sed -i.backup \"${line_pscn_value}s/${value}/${new_value}/g\" \"${file}\"";
+        echo;
+        h2 "Congratulations!" "Your display underscan value has been changed.";
+        info "Previous Value — ${bldpur}${value}";
+        info "New value:     — ${bldgrn}${new_value}";
+        hr;
+        info "${bldylw}IMPORTANT!";
+        info "You must restart your computer for the settings to take affect.";
+        echo;
+        run.ui.ask "Should I reboot your computer now? ";
+        info "Very well, rebooting!";
+        run "sudo reboot";
+    else
+        warning "Unable to find the display scan value to change. ";
+        info "Could it be that you haven't restarted since your last run?";
+        echo;
+        info "Feel free to edit file directly, using:";
+        info "eg: ${bldylw}vim ${file} +${line_pscn_value}";
+    fi
 }
 
 ```
 
-### `osx.cookie-dump`
+#### `cookie-dump`
+
+```bash
+cookie-dump ()
+{
+    osx.cookie-dump "$@"
+}
+
+```
+
+#### `http.servers`
+
+```bash
+http.servers ()
+{
+    osx.local-servers http
+}
+
+```
+
+#### `https.servers`
+
+```bash
+https.servers ()
+{
+    osx.local-servers https
+}
+
+```
+
+#### `osx.cookie-dump`
 
 ```bash
 osx.cookie-dump ()
@@ -4105,7 +3662,7 @@ osx.cookie-dump ()
 
 ```
 
-### `osx.env-print`
+#### `osx.env-print`
 
 ```bash
 osx.env-print ()
@@ -4116,7 +3673,7 @@ osx.env-print ()
 
 ```
 
-### `osx.local-servers`
+#### `osx.local-servers`
 
 ```bash
 osx.local-servers ()
@@ -4128,7 +3685,7 @@ osx.local-servers ()
 
 ```
 
-### `osx.ramdisk.mount`
+#### `osx.ramdisk.mount`
 
 ```bash
 osx.ramdisk.mount ()
@@ -4144,7 +3701,7 @@ osx.ramdisk.mount ()
 
 ```
 
-### `osx.ramdisk.unmount`
+#### `osx.ramdisk.unmount`
 
 ```bash
 osx.ramdisk.unmount ()
@@ -4160,7 +3717,7 @@ osx.ramdisk.unmount ()
 
 ```
 
-### `osx.scutil-print`
+#### `osx.scutil-print`
 
 ```bash
 osx.scutil-print ()
@@ -4171,7 +3728,7 @@ osx.scutil-print ()
 
 ```
 
-### `osx.set-fqdn`
+#### `osx.set-fqdn`
 
 ```bash
 osx.set-fqdn ()
@@ -4210,7 +3767,748 @@ osx.set-fqdn ()
 
 ```
 
-### `output.color.off`
+#### `ssh.servers`
+
+```bash
+ssh.servers ()
+{
+    osx.local-servers ssh
+}
+
+```
+
+
+---
+
+
+### Module `output`
+
+#### `abort`
+
+```bash
+abort ()
+{
+    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2;
+    echo
+}
+
+```
+
+#### `ascii-clean`
+
+```bash
+ascii-clean ()
+{
+    .output.clean "$@"
+}
+
+```
+
+#### `ask`
+
+```bash
+ask ()
+{
+    printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}";
+    printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
+}
+
+```
+
+#### `box.blue-in-green`
+
+```bash
+box.blue-in-green ()
+{
+    .output.box "${bldblu}" "${bldgrn}" "$@"
+}
+
+```
+
+#### `box.blue-in-yellow`
+
+```bash
+box.blue-in-yellow ()
+{
+    .output.box "${bldylw}" "${bldblu}" "$@"
+}
+
+```
+
+#### `box.green-in-cyan`
+
+```bash
+box.green-in-cyan ()
+{
+    .output.box "${bldgrn}" "${bldcyn}" "$@"
+}
+
+```
+
+#### `box.green-in-green`
+
+```bash
+box.green-in-green ()
+{
+    .output.box "${bldgrn}" "${bldgrn}" "$@"
+}
+
+```
+
+#### `box.green-in-magenta`
+
+```bash
+box.green-in-magenta ()
+{
+    .output.box "${bldgrn}" "${bldpur}" "$@"
+}
+
+```
+
+#### `box.green-in-yellow`
+
+```bash
+box.green-in-yellow ()
+{
+    .output.box "${bldgrn}" "${bldylw}" "$@"
+}
+
+```
+
+#### `box.magenta-in-blue`
+
+```bash
+box.magenta-in-blue ()
+{
+    .output.box "${bldblu}" "${bldpur}" "$@"
+}
+
+```
+
+#### `box.magenta-in-green`
+
+```bash
+box.magenta-in-green ()
+{
+    .output.box "${bldpur}" "${bldgrn}" "$@"
+}
+
+```
+
+#### `box.red-in-magenta`
+
+```bash
+box.red-in-magenta ()
+{
+    .output.box "${bldred}" "${bldpur}" "$@"
+}
+
+```
+
+#### `box.red-in-red`
+
+```bash
+box.red-in-red ()
+{
+    .output.box "${bldred}" "${txtred}" "$@"
+}
+
+```
+
+#### `box.red-in-yellow`
+
+```bash
+box.red-in-yellow ()
+{
+    .output.box "${bldred}" "${bldylw}" "$@"
+}
+
+```
+
+#### `box.yellow-in-blue`
+
+```bash
+box.yellow-in-blue ()
+{
+    .output.box "${bldylw}" "${bldblu}" "$@"
+}
+
+```
+
+#### `box.yellow-in-red`
+
+```bash
+box.yellow-in-red ()
+{
+    .output.box "${bldred}" "${bldylw}" "$@"
+}
+
+```
+
+#### `box.yellow-in-yellow`
+
+```bash
+box.yellow-in-yellow ()
+{
+    .output.box "${bldylw}" "${txtylw}" "$@"
+}
+
+```
+
+#### `br`
+
+```bash
+br ()
+{
+    echo
+}
+
+```
+
+#### `center`
+
+```bash
+center ()
+{
+    .output.center "$@"
+}
+
+```
+
+#### `columnize`
+
+```bash
+columnize ()
+{
+    local columns="${1:-2}";
+    local sw=${SCREEN_WIDTH:-120};
+    [[ -z ${sw} ]] && sw=$(screen-width);
+    pr -l 10000 -${columns} -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
+}
+
+```
+
+#### `command-spacer`
+
+```bash
+command-spacer ()
+{
+    local color="${txtgrn}";
+    [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}";
+    [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return;
+    printf "%s${color}" "";
+    local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10));
+    [[ ${__width} -gt 0 ]] && .output.replicate-to "▪" "${__width}"
+}
+
+```
+
+#### `cursor.at.x`
+
+```bash
+cursor.at.x ()
+{
+    .output.cursor-move-to-x "$@"
+}
+
+```
+
+#### `cursor.at.y`
+
+```bash
+cursor.at.y ()
+{
+    .output.cursor-move-to-y "$@"
+}
+
+```
+
+#### `cursor.down`
+
+```bash
+cursor.down ()
+{
+    .output.cursor-down-by "$@"
+}
+
+```
+
+#### `cursor.left`
+
+```bash
+cursor.left ()
+{
+    .output.cursor-left-by "$@"
+}
+
+```
+
+#### `cursor.rewind`
+
+```bash
+cursor.rewind ()
+{
+    local x=${1:-0};
+    .output.cursor-move-to-x ${x}
+}
+
+```
+
+#### `cursor.right`
+
+```bash
+cursor.right ()
+{
+    .output.cursor-right-by "$@"
+}
+
+```
+
+#### `cursor.up`
+
+```bash
+cursor.up ()
+{
+    .output.cursor-up-by "$@"
+}
+
+```
+
+#### `debug`
+
+```bash
+debug ()
+{
+    [[ -z ${DEBUG} ]] && return;
+    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakwht}[ debug ] $*  ${clr}\n"
+}
+
+```
+
+#### `duration`
+
+```bash
+duration ()
+{
+    local millis="$1";
+    local exit_code="$2";
+    [[ -n $(which bc) ]] || return;
+    if [[ -n ${millis} && ${millis} -ge 0 ]]; then
+        local pattern;
+        pattern=" %6.6s ms ";
+        pattern="${txtblu}〔${pattern}〕";
+        printf "${txtblu}${pattern}" "${millis}";
+    fi;
+    if [[ -n ${exit_code} ]]; then
+        [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" ${exit_code};
+        [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" ${exit_code};
+    fi
+}
+
+```
+
+#### `err`
+
+```bash
+err ()
+{
+    printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" 1>&2
+}
+
+```
+
+#### `error`
+
+```bash
+error ()
+{
+    header=$(printf -- "${txtblk}${bakred} « ERROR » ${clr}");
+    box.red-in-red "${header} ${bldylw}$@" 1>&2
+}
+
+```
+
+#### `error:`
+
+```bash
+error: ()
+{
+    err $*;
+    ui.closer.not-ok:
+}
+
+```
+
+#### `h.black`
+
+```bash
+h.black ()
+{
+    center "${bldylw}${bakblk}" "$@"
+}
+
+```
+
+#### `h.blue`
+
+```bash
+h.blue ()
+{
+    center "${txtblk}${bakblu}" "$@"
+}
+
+```
+
+#### `h.green`
+
+```bash
+h.green ()
+{
+    center "${txtblk}${bakgrn}" "$@"
+}
+
+```
+
+#### `h.red`
+
+```bash
+h.red ()
+{
+    center "${txtblk}${bakred}" "$@"
+}
+
+```
+
+#### `h.yellow`
+
+```bash
+h.yellow ()
+{
+    center "${txtblk}${bakylw}" "$@"
+}
+
+```
+
+#### `h1`
+
+```bash
+h1 ()
+{
+    box.blue-in-yellow "$@"
+}
+
+```
+
+#### `h1.blue`
+
+```bash
+h1.blue ()
+{
+    box.magenta-in-blue "$@"
+}
+
+```
+
+#### `h1.green`
+
+```bash
+h1.green ()
+{
+    box.green-in-magenta "$@"
+}
+
+```
+
+#### `h1.purple`
+
+```bash
+h1.purple ()
+{
+    box.magenta-in-green "$@"
+}
+
+```
+
+#### `h1.red`
+
+```bash
+h1.red ()
+{
+    box.red-in-red "$@"
+}
+
+```
+
+#### `h1.yellow`
+
+```bash
+h1.yellow ()
+{
+    box.yellow-in-red "$@"
+}
+
+```
+
+#### `h2`
+
+```bash
+h2 ()
+{
+    box.blue-in-green "$@"
+}
+
+```
+
+#### `h2.green`
+
+```bash
+h2.green ()
+{
+    box.green-in-cyan "$@"
+}
+
+```
+
+#### `h3`
+
+```bash
+h3 ()
+{
+    hl.subtle "$@"
+}
+
+```
+
+#### `hdr`
+
+```bash
+hdr ()
+{
+    h1 "$@"
+}
+
+```
+
+#### `hl.blue`
+
+```bash
+hl.blue ()
+{
+    left "${bldwht}${bakpur}" "$@"
+}
+
+```
+
+#### `hl.desc`
+
+```bash
+hl.desc ()
+{
+    left "${bakylw}${txtblk}${bakylw}" "$@"
+}
+
+```
+
+#### `hl.green`
+
+```bash
+hl.green ()
+{
+    left "${txtblk}${bakgrn}" "$@"
+}
+
+```
+
+#### `hl.orange`
+
+```bash
+hl.orange ()
+{
+    left "${white_on_orange}" "$@"
+}
+
+```
+
+#### `hl.subtle`
+
+```bash
+hl.subtle ()
+{
+    left "${bldwht}${bakblk}${underlined}" "$@"
+}
+
+```
+
+#### `hl.white-on-orange`
+
+```bash
+hl.white-on-orange ()
+{
+    left "${white_on_orange}" "$@"
+}
+
+```
+
+#### `hl.white-on-salmon`
+
+```bash
+hl.white-on-salmon ()
+{
+    left "${white_on_salmon}" "$@"
+}
+
+```
+
+#### `hl.yellow`
+
+```bash
+hl.yellow ()
+{
+    left "${bakylw}${txtblk}" "$@"
+}
+
+```
+
+#### `hl.yellow-on-gray`
+
+```bash
+hl.yellow-on-gray ()
+{
+    left "${yellow_on_gray}" "$@s"
+}
+
+```
+
+#### `hr`
+
+```bash
+hr ()
+{
+    [[ -z "$*" ]] || printf $*;
+    .output.hr
+}
+
+```
+
+#### `hr.colored`
+
+```bash
+hr.colored ()
+{
+    local color="$*";
+    [[ -z ${color} ]] && color="${bldred}";
+    .output.hr "$(screen-width)" "—" "${*}"
+}
+
+```
+
+#### `inf`
+
+```bash
+inf ()
+{
+    printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
+}
+
+```
+
+#### `info`
+
+```bash
+info ()
+{
+    inf $@;
+    echo
+}
+
+```
+
+#### `info:`
+
+```bash
+info: ()
+{
+    inf $*;
+    ui.closer.ok:
+}
+
+```
+
+#### `left`
+
+```bash
+left ()
+{
+    .output.left-justify "$@"
+}
+
+```
+
+#### `left-prefix`
+
+```bash
+left-prefix ()
+{
+    [[ -z ${LibOutput__LeftPrefix} ]] && {
+        export LibOutput__LeftPrefix=$(.output.replicate-to " " "${LibOutput__LeftPrefixLen}")
+    };
+    printf "${LibOutput__LeftPrefix}"
+}
+
+```
+
+#### `not-ok`
+
+```bash
+not-ok ()
+{
+    ui.closer.not-ok "$@"
+}
+
+```
+
+#### `not-ok:`
+
+```bash
+not-ok: ()
+{
+    ui.closer.not-ok: "$@"
+}
+
+```
+
+#### `ok`
+
+```bash
+ok ()
+{
+    ui.closer.ok "$@"
+}
+
+```
+
+#### `ok:`
+
+```bash
+ok: ()
+{
+    ui.closer.ok: "$@"
+}
+
+```
+
+#### `okay`
+
+```bash
+okay ()
+{
+    printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" 1>&2;
+    echo
+}
+
+```
+
+#### `output.color.off`
 
 ```bash
 output.color.off ()
@@ -4221,7 +4519,7 @@ output.color.off ()
 
 ```
 
-### `output.color.on`
+#### `output.color.on`
 
 ```bash
 output.color.on ()
@@ -4232,57 +4530,287 @@ output.color.on ()
 
 ```
 
-### `output.is_pipe`
+#### `output.is-pipe`
 
 ```bash
-output.is_pipe ()
+output.is-pipe ()
 {
     [[ -p /dev/stdout ]]
 }
 
 ```
 
-### `output.is_redirect`
+#### `output.is-redirect`
 
 ```bash
-output.is_redirect ()
+output.is-redirect ()
 {
     [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 
 ```
 
-### `output.is_ssh`
+#### `output.is-ssh`
 
 ```bash
-output.is_ssh ()
+output.is-ssh ()
 {
     [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]
 }
 
 ```
 
-### `output.is_terminal`
+#### `output.is-terminal`
 
 ```bash
-output.is_terminal ()
+output.is-terminal ()
 {
-    output.is_tty || output.is_redirect || output.is_pipe || output.is_ssh
+    output.is-tty || output.is-redirect || output.is-pipe || output.is-ssh
 }
 
 ```
 
-### `output.is_tty`
+#### `output.is-tty`
 
 ```bash
-output.is_tty ()
+output.is-tty ()
 {
     [[ -t 1 ]]
 }
 
 ```
 
-### `pall`
+#### `puts`
+
+```bash
+puts ()
+{
+    printf "  ⇨ ${txtwht}$*${clr}"
+}
+
+```
+
+#### `reset-color`
+
+```bash
+reset-color ()
+{
+    printf "${clr}\n"
+}
+
+```
+
+#### `reset-color:`
+
+```bash
+reset-color: ()
+{
+    printf "${clr}"
+}
+
+```
+
+#### `screen-width`
+
+```bash
+screen-width ()
+{
+    .output.screen-width
+}
+
+```
+
+#### `screen.height`
+
+```bash
+screen.height ()
+{
+    .output.screen-height
+}
+
+```
+
+#### `screen.width`
+
+```bash
+screen.width ()
+{
+    .output.screen-width
+}
+
+```
+
+#### `shutdown`
+
+```bash
+shutdown ()
+{
+    local message=${1:-"Shutting down..."};
+    echo;
+    box.red-in-red "${message}";
+    echo;
+    exit 1
+}
+
+```
+
+#### `stderr`
+
+```bash
+stderr ()
+{
+    local file=$1;
+    hl.subtle STDERR;
+    printf "${txtred}";
+    [[ -s ${file} ]] && cat ${file};
+    reset-color
+}
+
+```
+
+#### `stdout`
+
+```bash
+stdout ()
+{
+    local file=$1;
+    hl.subtle STDOUT;
+    printf "${clr}";
+    [[ -s ${file} ]] && cat ${file};
+    reset-color
+}
+
+```
+
+#### `success`
+
+```bash
+success ()
+{
+    echo;
+    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2;
+    echo;
+    echo
+}
+
+```
+
+#### `test-group`
+
+```bash
+test-group ()
+{
+    [[ -z ${white_on_salmon} ]] && hr;
+    hl.white-on-salmon "$@"
+}
+
+```
+
+#### `ui.closer.kind-of-ok`
+
+```bash
+ui.closer.kind-of-ok ()
+{
+    .output.cursor-left-by 1000;
+    printf " ${bakylw}${bldwht} ❖ ${clr} "
+}
+
+```
+
+#### `ui.closer.kind-of-ok:`
+
+```bash
+ui.closer.kind-of-ok: ()
+{
+    ui.closer.kind-of-ok $@;
+    echo
+}
+
+```
+
+#### `ui.closer.not-ok`
+
+```bash
+ui.closer.not-ok ()
+{
+    .output.cursor-left-by 1000;
+    printf " ${bakred}${bldwht} ✘ ${clr} "
+}
+
+```
+
+#### `ui.closer.not-ok:`
+
+```bash
+ui.closer.not-ok: ()
+{
+    ui.closer.not-ok $@;
+    echo
+}
+
+```
+
+#### `ui.closer.ok`
+
+```bash
+ui.closer.ok ()
+{
+    .output.cursor-left-by 1000;
+    printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
+}
+
+```
+
+#### `ui.closer.ok:`
+
+```bash
+ui.closer.ok: ()
+{
+    ui.closer.ok "$@";
+    echo
+}
+
+```
+
+#### `warn`
+
+```bash
+warn ()
+{
+    printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" 1>&2
+}
+
+```
+
+#### `warning`
+
+```bash
+warning ()
+{
+    header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}");
+    box.yellow-in-yellow "${header} ${bldylw}$*" 1>&2
+}
+
+```
+
+#### `warning:`
+
+```bash
+warning: ()
+{
+    warn $*;
+    ui.closer.kind-of-ok:
+}
+
+```
+
+
+---
+
+
+### Module `pids`
+
+#### `pall`
 
 ```bash
 pall ()
@@ -4292,17 +4820,7 @@ pall ()
 
 ```
 
-### `pause`
-
-```bash
-pause ()
-{
-    sleep "${1:-1}"
-}
-
-```
-
-### `pid.alive`
+#### `pid.alive`
 
 ```bash
 pid.alive ()
@@ -4317,7 +4835,7 @@ pid.alive ()
 
 ```
 
-### `pid.sig`
+#### `pid.sig`
 
 ```bash
 pid.sig ()
@@ -4352,7 +4870,7 @@ USAGE:
 
 ```
 
-### `pid.stop`
+#### `pid.stop`
 
 ```bash
 pid.stop ()
@@ -4382,7 +4900,7 @@ EXAMPLES:
 
 ```
 
-### `pids-with-args`
+#### `pids-with-args`
 
 ```bash
 pids-with-args ()
@@ -4392,7 +4910,7 @@ pids-with-args ()
     local -a matching=();
     for arg in $@;
     do
-        array.contains-element "${arg}" "${permitted[@]}" && additional=(${additional[@]} $arg) && continue;
+        array.includes "${arg}" "${permitted[@]}" && additional=(${additional[@]} $arg) && continue;
         matching=("${matching[@]}" "${arg}");
     done;
     local columns="pid,ppid,user,%cpu,%mem,command";
@@ -4404,7 +4922,7 @@ pids-with-args ()
 
 ```
 
-### `pids.all`
+#### `pids.all`
 
 ```bash
 pids.all ()
@@ -4429,7 +4947,7 @@ EXAMPLES:
 
 ```
 
-### `pids.for-each`
+#### `pids.for-each`
 
 ```bash
 pids.for-each ()
@@ -4465,7 +4983,7 @@ EXAMPLES:
 
 ```
 
-### `pids.matching`
+#### `pids.matching`
 
 ```bash
 pids.matching ()
@@ -4490,7 +5008,7 @@ EXAMPLES:
 
 ```
 
-### `pids.matching.regexp`
+#### `pids.matching.regexp`
 
 ```bash
 pids.matching.regexp ()
@@ -4514,7 +5032,7 @@ EXAMPLES:
 
 ```
 
-### `pids.normalize.search-string`
+#### `pids.normalize.search-string`
 
 ```bash
 pids.normalize.search-string ()
@@ -4526,7 +5044,7 @@ pids.normalize.search-string ()
 
 ```
 
-### `pids.stop`
+#### `pids.stop`
 
 ```bash
 pids.stop ()
@@ -4549,7 +5067,43 @@ EXAMPLES:
 
 ```
 
-### `progress.bar`
+#### `pstop`
+
+```bash
+pstop ()
+{
+    pids.stop "$@"
+}
+
+```
+
+#### `sig.is-valid`
+
+```bash
+sig.is-valid ()
+{
+    [[ -n $(kill -l ${1} 2>/dev/null) ]]
+}
+
+```
+
+#### `sig.list`
+
+```bash
+sig.list ()
+{
+    /bin/kill -l | sed -E 's/([ 0-9][0-9]\) SIG)//g; s/\s+/\n/g' | tr 'a-z' 'A-Z' | sort
+}
+
+```
+
+
+---
+
+
+### Module `progress-bar`
+
+#### `progress.bar`
 
 ```bash
 progress.bar ()
@@ -4566,47 +5120,13 @@ progress.bar ()
 
 ```
 
-### `psql.db-settings`
 
-```bash
-psql.db-settings ()
-{
-    psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
-}
+---
 
-```
 
-### `pstop`
+### Module `repositories`
 
-```bash
-pstop ()
-{
-    pids.stop "$@"
-}
-
-```
-
-### `puts`
-
-```bash
-puts ()
-{
-    printf "  ⇨ ${txtwht}$*${clr}"
-}
-
-```
-
-### `red`
-
-```bash
-red ()
-{
-    ansi 31 "$@"
-}
-
-```
-
-### `repo.rebase`
+#### `repo.rebase`
 
 ```bash
 repo.rebase ()
@@ -4616,7 +5136,7 @@ repo.rebase ()
 
 ```
 
-### `repo.stash-and-rebase`
+#### `repo.stash-and-rebase`
 
 ```bash
 repo.stash-and-rebase ()
@@ -4628,7 +5148,7 @@ repo.stash-and-rebase ()
 
 ```
 
-### `repo.update`
+#### `repo.update`
 
 ```bash
 repo.update ()
@@ -4649,7 +5169,7 @@ repo.update ()
 
 ```
 
-### `repos.catch-interrupt`
+#### `repos.catch-interrupt`
 
 ```bash
 repos.catch-interrupt ()
@@ -4659,7 +5179,7 @@ repos.catch-interrupt ()
 
 ```
 
-### `repos.init-interrupt`
+#### `repos.init-interrupt`
 
 ```bash
 repos.init-interrupt ()
@@ -4670,7 +5190,7 @@ repos.init-interrupt ()
 
 ```
 
-### `repos.recursive-update`
+#### `repos.recursive-update`
 
 ```bash
 repos.recursive-update ()
@@ -4703,7 +5223,7 @@ repos.recursive-update ()
 
 ```
 
-### `repos.update`
+#### `repos.update`
 
 ```bash
 repos.update ()
@@ -4722,7 +5242,7 @@ repos.update ()
 
 ```
 
-### `repos.was-interrupted`
+#### `repos.was-interrupted`
 
 ```bash
 repos.was-interrupted ()
@@ -4732,27 +5252,34 @@ repos.was-interrupted ()
 
 ```
 
-### `reset-color`
+
+---
+
+
+### Module `ruby`
+
+#### `bundle.gems-with-c-extensions`
 
 ```bash
-reset-color ()
+bundle.gems-with-c-extensions ()
 {
-    printf "${clr}\n"
+    run.set-next show-output-on;
+    run "bundle show --paths | ruby -e \"STDIN.each_line {|dep| puts dep.split('/').last if File.directory?(File.join(dep.chomp, 'ext')) }\""
 }
 
 ```
 
-### `reset-color:`
+#### `interrupted`
 
 ```bash
-reset-color: ()
+interrupted ()
 {
-    printf "${clr}"
+    export BashMatic__Interrupted=true
 }
 
 ```
 
-### `ruby.bundler-version`
+#### `ruby.bundler-version`
 
 ```bash
 ruby.bundler-version ()
@@ -4761,12 +5288,12 @@ ruby.bundler-version ()
         error "Can not find Gemfile.lock";
         return 1;
     fi;
-    tail -1 Gemfile.lock | hbsed 's/ //g'
+    tail -1 Gemfile.lock | sedx 's/ //g'
 }
 
 ```
 
-### `ruby.compiled-with`
+#### `ruby.compiled-with`
 
 ```bash
 ruby.compiled-with ()
@@ -4780,7 +5307,7 @@ ruby.compiled-with ()
 
 ```
 
-### `ruby.default-gems`
+#### `ruby.default-gems`
 
 ```bash
 ruby.default-gems ()
@@ -4792,7 +5319,7 @@ ruby.default-gems ()
 
 ```
 
-### `ruby.full-version`
+#### `ruby.full-version`
 
 ```bash
 ruby.full-version ()
@@ -4802,7 +5329,7 @@ ruby.full-version ()
 
 ```
 
-### `ruby.gemfile-lock-version`
+#### `ruby.gemfile-lock-version`
 
 ```bash
 ruby.gemfile-lock-version ()
@@ -4817,7 +5344,7 @@ ruby.gemfile-lock-version ()
 
 ```
 
-### `ruby.gems`
+#### `ruby.gems`
 
 ```bash
 ruby.gems ()
@@ -4827,7 +5354,7 @@ ruby.gems ()
 
 ```
 
-### `ruby.gems.install`
+#### `ruby.gems.install`
 
 ```bash
 ruby.gems.install ()
@@ -4845,7 +5372,7 @@ ruby.gems.install ()
     for gem in "${gems[@]}";
     do
         local gem_info=;
-        if [[ $(array-contains-element "${gem}" "${existing[@]}") == "true" ]]; then
+        if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
             gem_info="${bldgrn} ✔  ${gem}${clr}\n";
         else
             gem_info="${bldred} x  ${gem}${clr}\n";
@@ -4875,7 +5402,7 @@ ruby.gems.install ()
 
 ```
 
-### `ruby.gems.uninstall`
+#### `ruby.gems.uninstall`
 
 ```bash
 ruby.gems.uninstall ()
@@ -4893,7 +5420,7 @@ ruby.gems.uninstall ()
     for gem in ${gems[@]};
     do
         local gem_info=;
-        if [[ $(array-contains-element "${gem}" "${existing[@]}") == "true" ]]; then
+        if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
             run "gem uninstall -a -x -I -D --force ${gem}";
             deleted=$(($deleted + 1));
         else
@@ -4909,7 +5436,7 @@ ruby.gems.uninstall ()
 
 ```
 
-### `ruby.init`
+#### `ruby.init`
 
 ```bash
 ruby.init ()
@@ -4923,7 +5450,7 @@ ruby.init ()
 
 ```
 
-### `ruby.install`
+#### `ruby.install`
 
 ```bash
 ruby.install ()
@@ -4933,7 +5460,7 @@ ruby.install ()
 
 ```
 
-### `ruby.install-ruby`
+#### `ruby.install-ruby`
 
 ```bash
 ruby.install-ruby ()
@@ -4958,7 +5485,7 @@ ruby.install-ruby ()
 
 ```
 
-### `ruby.install-ruby-with-deps`
+#### `ruby.install-ruby-with-deps`
 
 ```bash
 ruby.install-ruby-with-deps ()
@@ -4971,7 +5498,7 @@ ruby.install-ruby-with-deps ()
 
 ```
 
-### `ruby.install-upgrade-bundler`
+#### `ruby.install-upgrade-bundler`
 
 ```bash
 ruby.install-upgrade-bundler ()
@@ -4982,7 +5509,7 @@ ruby.install-upgrade-bundler ()
 
 ```
 
-### `ruby.installed-gems`
+#### `ruby.installed-gems`
 
 ```bash
 ruby.installed-gems ()
@@ -4992,7 +5519,7 @@ ruby.installed-gems ()
 
 ```
 
-### `ruby.kigs-gems`
+#### `ruby.kigs-gems`
 
 ```bash
 ruby.kigs-gems ()
@@ -5012,7 +5539,7 @@ ruby.kigs-gems ()
 
 ```
 
-### `ruby.linked-libs`
+#### `ruby.linked-libs`
 
 ```bash
 ruby.linked-libs ()
@@ -5022,7 +5549,7 @@ ruby.linked-libs ()
 
 ```
 
-### `ruby.numeric-version`
+#### `ruby.numeric-version`
 
 ```bash
 ruby.numeric-version ()
@@ -5032,7 +5559,7 @@ ruby.numeric-version ()
 
 ```
 
-### `ruby.rbenv`
+#### `ruby.rbenv`
 
 ```bash
 ruby.rbenv ()
@@ -5047,7 +5574,7 @@ ruby.rbenv ()
 
 ```
 
-### `ruby.rubygems-update`
+#### `ruby.rubygems-update`
 
 ```bash
 ruby.rubygems-update ()
@@ -5058,7 +5585,7 @@ ruby.rubygems-update ()
 
 ```
 
-### `ruby.stop`
+#### `ruby.stop`
 
 ```bash
 ruby.stop ()
@@ -5082,7 +5609,7 @@ ruby.stop ()
 
 ```
 
-### `ruby.top-versions`
+#### `ruby.top-versions`
 
 ```bash
 ruby.top-versions ()
@@ -5104,7 +5631,7 @@ ruby.top-versions ()
 
 ```
 
-### `ruby.top-versions-as-yaml`
+#### `ruby.top-versions-as-yaml`
 
 ```bash
 ruby.top-versions-as-yaml ()
@@ -5114,7 +5641,7 @@ ruby.top-versions-as-yaml ()
 
 ```
 
-### `ruby.validate-version`
+#### `ruby.validate-version`
 
 ```bash
 ruby.validate-version ()
@@ -5125,8 +5652,8 @@ ruby.validate-version ()
     [[ -d ~/.rbenv/plugins/ruby-build ]] && {
         run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
     };
-    array.from-command-output ruby_versions 'rbenv install --list | sed -E "s/\s+//g"';
-    array.contains-element "${version}" "${ruby_versions[@]}" || {
+    array.from.stdin ruby_versions 'rbenv install --list | sed -E "s/\s+//g"';
+    array.includes "${version}" "${ruby_versions[@]}" || {
         error "Ruby Version provided was found by rbenv: ${bldylw}${version}";
         return 1
     };
@@ -5135,7 +5662,13 @@ ruby.validate-version ()
 
 ```
 
-### `run`
+
+---
+
+
+### Module `run`
+
+#### `run`
 
 ```bash
 run ()
@@ -5146,7 +5679,144 @@ run ()
 
 ```
 
-### `run.config.detail-is-enabled`
+#### `run.ui.ask-user-value`
+
+```bash
+run.ui.ask-user-value ()
+{
+    local variable="$1";
+    shift;
+    local text="$*";
+    local user_input;
+    trap 'echo; echo Aborting at user request... ; echo; abort; return' int;
+    ask "${text}";
+    read user_input;
+    if [[ -z "${user_input}" ]]; then
+        error "Sorry, I didn't get that. Please try again or press Ctrl-C to abort.";
+        return 1;
+    else
+        eval "export ${variable}=\"${user_input}\"";
+        return 0;
+    fi
+}
+
+```
+
+#### `run.ui.get-user-value`
+
+```bash
+run.ui.get-user-value ()
+{
+    run.ui.retry-command run.ui.ask-user-value "${@}"
+}
+
+```
+
+#### `run.ui.retry-command`
+
+```bash
+run.ui.retry-command ()
+{
+    local command="$*";
+    local retries=5;
+    n=0;
+    until [ $n -ge ${retries} ]; do
+        [[ ${n} -gt 0 ]] && info "Retry number ${n}...";
+        command && break;
+        n=$(($n + 1));
+        sleep 1;
+    done
+}
+
+```
+
+
+---
+
+
+### Module `runtime-config`
+
+#### `run.inspect`
+
+```bash
+run.inspect ()
+{
+    if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
+        run.inspect-variables-that-are starting-with LibRun;
+    fi;
+    if [[ ${#@} -eq 0 || $(array.has-element "totals" "$@") == "true" ]]; then
+        hl.subtle "TOTALS";
+        info "${bldgrn}${commands_completed} commands completed successfully";
+        [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed";
+        [[ ${commands_ignored} -gt 0 ]] && info "${bldylw}${commands_ignored} commands failed, but were ignored.";
+        echo;
+    fi;
+    if [[ ${#@} -eq 0 || $(array.has-element "current" "$@") == "true" ]]; then
+        run.inspect-variables-that-are ending-with __LastExitCode;
+    fi;
+    reset-color
+}
+
+```
+
+#### `run.set-all`
+
+```bash
+run.set-all ()
+{
+    ____run.configure all "$@"
+}
+
+```
+
+#### `run.set-all.list`
+
+```bash
+run.set-all.list ()
+{
+    set | egrep '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+}
+
+```
+
+#### `run.set-next`
+
+```bash
+run.set-next ()
+{
+    ____run.configure next "$@"
+}
+
+```
+
+#### `run.set-next.list`
+
+```bash
+run.set-next.list ()
+{
+    set | egrep '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+}
+
+```
+
+
+---
+
+
+### Module `runtime`
+
+#### `run`
+
+```bash
+run ()
+{
+    .run "$@";
+    return ${LibRun__LastExitCode}
+}
+
+```
+
+#### `run.config.detail-is-enabled`
 
 ```bash
 run.config.detail-is-enabled ()
@@ -5156,7 +5826,7 @@ run.config.detail-is-enabled ()
 
 ```
 
-### `run.config.verbose-is-enabled`
+#### `run.config.verbose-is-enabled`
 
 ```bash
 run.config.verbose-is-enabled ()
@@ -5166,22 +5836,22 @@ run.config.verbose-is-enabled ()
 
 ```
 
-### `run.inspect`
+#### `run.inspect`
 
 ```bash
 run.inspect ()
 {
-    if [[ ${#@} -eq 0 || $(array-contains-element "config" "$@") == "true" ]]; then
+    if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
         run.inspect-variables-that-are starting-with LibRun;
     fi;
-    if [[ ${#@} -eq 0 || $(array-contains-element "totals" "$@") == "true" ]]; then
+    if [[ ${#@} -eq 0 || $(array.has-element "totals" "$@") == "true" ]]; then
         hl.subtle "TOTALS";
         info "${bldgrn}${commands_completed} commands completed successfully";
         [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed";
         [[ ${commands_ignored} -gt 0 ]] && info "${bldylw}${commands_ignored} commands failed, but were ignored.";
         echo;
     fi;
-    if [[ ${#@} -eq 0 || $(array-contains-element "current" "$@") == "true" ]]; then
+    if [[ ${#@} -eq 0 || $(array.has-element "current" "$@") == "true" ]]; then
         run.inspect-variables-that-are ending-with __LastExitCode;
     fi;
     reset-color
@@ -5189,7 +5859,7 @@ run.inspect ()
 
 ```
 
-### `run.inspect-variable`
+#### `run.inspect-variable`
 
 ```bash
 run.inspect-variable ()
@@ -5259,7 +5929,7 @@ run.inspect-variable ()
 
 ```
 
-### `run.inspect-variables`
+#### `run.inspect-variables`
 
 ```bash
 run.inspect-variables ()
@@ -5275,7 +5945,7 @@ run.inspect-variables ()
 
 ```
 
-### `run.inspect-variables-that-are`
+#### `run.inspect-variables-that-are`
 
 ```bash
 run.inspect-variables-that-are ()
@@ -5287,7 +5957,7 @@ run.inspect-variables-that-are ()
 
 ```
 
-### `run.inspect.set-skip-false-or-blank`
+#### `run.inspect.set-skip-false-or-blank`
 
 ```bash
 run.inspect.set-skip-false-or-blank ()
@@ -5299,7 +5969,7 @@ run.inspect.set-skip-false-or-blank ()
 
 ```
 
-### `run.on-error.ask-is-enabled`
+#### `run.on-error.ask-is-enabled`
 
 ```bash
 run.on-error.ask-is-enabled ()
@@ -5309,7 +5979,7 @@ run.on-error.ask-is-enabled ()
 
 ```
 
-### `run.print-variable`
+#### `run.print-variable`
 
 ```bash
 run.print-variable ()
@@ -5319,7 +5989,7 @@ run.print-variable ()
 
 ```
 
-### `run.print-variables`
+#### `run.print-variables`
 
 ```bash
 run.print-variables ()
@@ -5335,47 +6005,7 @@ run.print-variables ()
 
 ```
 
-### `run.set-all`
-
-```bash
-run.set-all ()
-{
-    ____run.configure all "$@"
-}
-
-```
-
-### `run.set-all.list`
-
-```bash
-run.set-all.list ()
-{
-    set | egrep '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | hbsed 's/[() ]//g'
-}
-
-```
-
-### `run.set-next`
-
-```bash
-run.set-next ()
-{
-    ____run.configure next "$@"
-}
-
-```
-
-### `run.set-next.list`
-
-```bash
-run.set-next.list ()
-{
-    set | egrep '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | hbsed 's/[() ]//g'
-}
-
-```
-
-### `run.ui.ask`
+#### `run.ui.ask`
 
 ```bash
 run.ui.ask ()
@@ -5405,40 +6035,7 @@ run.ui.ask ()
 
 ```
 
-### `run.ui.ask-user-value`
-
-```bash
-run.ui.ask-user-value ()
-{
-    local variable="$1";
-    shift;
-    local text="$*";
-    local user_input;
-    trap 'echo; echo Aborting at user request... ; echo; abort; return' int;
-    ask "${text}";
-    read user_input;
-    if [[ -z "${user_input}" ]]; then
-        error "Sorry, I didn't get that. Please try again or press Ctrl-C to abort.";
-        return 1;
-    else
-        eval "export ${variable}=\"${user_input}\"";
-        return 0;
-    fi
-}
-
-```
-
-### `run.ui.get-user-value`
-
-```bash
-run.ui.get-user-value ()
-{
-    run.ui.retry-command run.ui.ask-user-value "${@}"
-}
-
-```
-
-### `run.ui.press-any-key`
+#### `run.ui.press-any-key`
 
 ```bash
 run.ui.press-any-key ()
@@ -5457,47 +6054,29 @@ run.ui.press-any-key ()
 
 ```
 
-### `run.ui.retry-command`
-
-```bash
-run.ui.retry-command ()
-{
-    local command="$*";
-    local retries=5;
-    n=0;
-    until [ $n -ge ${retries} ]; do
-        [[ ${n} -gt 0 ]] && info "Retry number ${n}...";
-        command && break;
-        n=$(($n + 1));
-        sleep 1;
-    done
-}
-
-```
-
-### `run.variables-ending-with`
+#### `run.variables-ending-with`
 
 ```bash
 run.variables-ending-with ()
 {
     local suffix="${1}";
-    env | egrep ".*${suffix}=.*\$" | grep '=' | hbsed 's/=.*//g' | sort
+    env | egrep ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 ```
 
-### `run.variables-starting-with`
+#### `run.variables-starting-with`
 
 ```bash
 run.variables-starting-with ()
 {
     local prefix="${1}";
-    env | egrep "^${prefix}" | grep '=' | hbsed 's/=.*//g' | sort
+    env | egrep "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 ```
 
-### `run.with.minimum-duration`
+#### `run.with.minimum-duration`
 
 ```bash
 run.with.minimum-duration ()
@@ -5511,7 +6090,7 @@ run.with.minimum-duration ()
     local result=$?;
     local duration=$((($(millis) - ${started}) / 1000));
     if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
-        local cmd="$(echo ${command} | hbsed 's/\"//g')";
+        local cmd="$(echo ${command} | sedx 's/\"//g')";
         error "An operation finished too quickly. The threshold was set to ${bldylw}${min_duration} sec." "The command took ${bldylw}${duration}${txtred} secs." "${bldylw}${cmd}${txtred}";
         ((${BASH_IN_SUBSHELL})) && exit 1 || return 1;
     else
@@ -5524,7 +6103,7 @@ run.with.minimum-duration ()
 
 ```
 
-### `run.with.ruby-bundle`
+#### `run.with.ruby-bundle`
 
 ```bash
 run.with.ruby-bundle ()
@@ -5534,7 +6113,7 @@ run.with.ruby-bundle ()
 
 ```
 
-### `run.with.ruby-bundle-and-output`
+#### `run.with.ruby-bundle-and-output`
 
 ```bash
 run.with.ruby-bundle-and-output ()
@@ -5544,57 +6123,13 @@ run.with.ruby-bundle-and-output ()
 
 ```
 
-### `save-restore-x`
 
-```bash
-save-restore-x ()
-{
-    shell-set.pop-stack x
-}
+---
 
-```
 
-### `save-set-x`
+### Module `set`
 
-```bash
-save-set-x ()
-{
-    shell-set.push-stack x
-}
-
-```
-
-### `screen-width`
-
-```bash
-screen-width ()
-{
-    .output.screen-width
-}
-
-```
-
-### `screen.height`
-
-```bash
-screen.height ()
-{
-    .output.screen-height
-}
-
-```
-
-### `screen.width`
-
-```bash
-screen.width ()
-{
-    .output.screen-width
-}
-
-```
-
-### `set-e-restore`
+#### `set-e-restore`
 
 ```bash
 set-e-restore ()
@@ -5614,7 +6149,7 @@ set-e-restore ()
 
 ```
 
-### `set-e-save`
+#### `set-e-save`
 
 ```bash
 set-e-save ()
@@ -5626,7 +6161,7 @@ set-e-save ()
 
 ```
 
-### `set-e-status`
+#### `set-e-status`
 
 ```bash
 set-e-status ()
@@ -5636,7 +6171,39 @@ set-e-status ()
 
 ```
 
-### `shell-set.init-stack`
+
+---
+
+
+### Module `settings`
+
+
+---
+
+
+### Module `shell-set`
+
+#### `save-restore-x`
+
+```bash
+save-restore-x ()
+{
+    shell-set.pop-stack x
+}
+
+```
+
+#### `save-set-x`
+
+```bash
+save-set-x ()
+{
+    shell-set.push-stack x
+}
+
+```
+
+#### `shell-set.init-stack`
 
 ```bash
 shell-set.init-stack ()
@@ -5648,7 +6215,7 @@ shell-set.init-stack ()
 
 ```
 
-### `shell-set.is-set`
+#### `shell-set.is-set`
 
 ```bash
 shell-set.is-set ()
@@ -5664,7 +6231,7 @@ shell-set.is-set ()
 
 ```
 
-### `shell-set.pop-stack`
+#### `shell-set.pop-stack`
 
 ```bash
 shell-set.pop-stack ()
@@ -5685,7 +6252,7 @@ shell-set.pop-stack ()
 
 ```
 
-### `shell-set.push-stack`
+#### `shell-set.push-stack`
 
 ```bash
 shell-set.push-stack ()
@@ -5699,7 +6266,7 @@ shell-set.push-stack ()
 
 ```
 
-### `shell-set.show-stack`
+#### `shell-set.show-stack`
 
 ```bash
 shell-set.show-stack ()
@@ -5709,61 +6276,13 @@ shell-set.show-stack ()
 
 ```
 
-### `short-pause`
 
-```bash
-short-pause ()
-{
-    sleep "${1:-0.1}"
-}
+---
 
-```
 
-### `shortish-pause`
+### Module `ssh`
 
-```bash
-shortish-pause ()
-{
-    sleep "${1:-0.3}"
-}
-
-```
-
-### `shutdown`
-
-```bash
-shutdown ()
-{
-    local message=${1:-"Shutting down..."};
-    echo;
-    box.red-in-red "${message}";
-    echo;
-    exit 1
-}
-
-```
-
-### `sig.is-valid`
-
-```bash
-sig.is-valid ()
-{
-    [[ -n $(kill -l ${1} 2>/dev/null) ]]
-}
-
-```
-
-### `sig.list`
-
-```bash
-sig.list ()
-{
-    /bin/kill -l | sed -E 's/([ 0-9][0-9]\) SIG)//g; s/\s+/\n/g' | tr 'a-z' 'A-Z' | sort
-}
-
-```
-
-### `ssh.load-keys`
+#### `ssh.load-keys`
 
 ```bash
 ssh.load-keys ()
@@ -5774,78 +6293,191 @@ ssh.load-keys ()
 
 ```
 
-### `ssh.servers`
+
+---
+
+
+### Module `subshell`
+
+#### `bashmatic.detect-subshell`
 
 ```bash
-ssh.servers ()
+bashmatic.detect-subshell ()
 {
-    osx.local-servers ssh
+    bashmatic.subshell-init;
+    [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && return ${BASH_IN_SUBSHELL};
+    unset BASH_IN_SUBSHELL;
+    export BASH_SUBSHELL_DETECTED=true;
+    local len="${#BASH_SOURCE[@]}";
+    local last_index=$((len - 1));
+    [[ -n ${DEBUG} ]] && {
+        echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2;
+        echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2;
+        echo "\$0            = $0" 1>&2
+    };
+    if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
+        export BASH_IN_SUBSHELL=0;
+    else
+        export BASH_IN_SUBSHELL=1;
+    fi;
+    return ${BASH_IN_SUBSHELL}
 }
 
 ```
 
-### `stack.frame`
+#### `bashmatic.subshell-init`
 
 ```bash
-stack.frame ()
+bashmatic.subshell-init ()
 {
-    caller.stack 0
+    export BASH_SUBSHELL_DETECTED=
 }
 
 ```
 
-### `stderr`
+#### `bashmatic.validate-sourced-in`
 
 ```bash
-stderr ()
+bashmatic.validate-sourced-in ()
 {
-    local file=$1;
-    hl.subtle STDERR;
-    printf "${txtred}";
-    [[ -s ${file} ]] && cat ${file};
-    reset-color
+    bashmatic.detect-subshell;
+    [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || {
+        echo "This script to be sourced in, not run in a subshell." 1>&2;
+        return 1
+    };
+    return 0
 }
 
 ```
 
-### `stdout`
+#### `bashmatic.validate-subshell`
 
 ```bash
-stdout ()
+bashmatic.validate-subshell ()
 {
-    local file=$1;
-    hl.subtle STDOUT;
-    printf "${clr}";
-    [[ -s ${file} ]] && cat ${file};
-    reset-color
+    bashmatic.detect-subshell;
+    [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || {
+        echo "This script to be run, not sourced-in" 1>&2;
+        return 1
+    };
+    return 0
 }
 
 ```
 
-### `strikethrough`
+
+---
+
+
+### Module `sym`
+
+#### `decrypt.secrets`
 
 ```bash
-strikethrough ()
+decrypt.secrets ()
 {
-    ansi 9 "$@"
+    ./bin/decrypt;
+    local code=$?;
+    [[ ${code} != 0 ]] && {
+        error "bin/decrypt returned non-zero exit status ${code}";
+        echo;
+        exit ${code}
+    }
 }
 
 ```
 
-### `success`
+#### `dev.crypt.chef`
 
 ```bash
-success ()
+dev.crypt.chef ()
 {
-    echo;
-    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2;
-    echo;
-    echo
+    sym -ck APP_CHEF_SYM_KEY $*
 }
 
 ```
 
-### `sym.dev.configure`
+#### `dev.decrypt.file`
+
+```bash
+dev.decrypt.file ()
+{
+    [[ -f ${1} ]] || {
+        error 'usage: dev.decrypt.file <filename.enc>';
+        return
+    };
+    sym -ck APP_SYM_KEY -n "${1}"
+}
+
+```
+
+#### `dev.decrypt.str`
+
+```bash
+dev.decrypt.str ()
+{
+    [[ -z ${1} ]] && {
+        error 'usage: dev.decrypt.str "string to decrypt"';
+        return
+    };
+    sym -ck APP_SYM_KEY -d -s "$*"
+}
+
+```
+
+#### `dev.edit.file`
+
+```bash
+dev.edit.file ()
+{
+    [[ -f ${1} ]] || {
+        error 'usage: dev.edit.file <filename>';
+        return
+    };
+    sym -ck APP_SYM_KEY -t "${1}"
+}
+
+```
+
+#### `dev.encrypt.file`
+
+```bash
+dev.encrypt.file ()
+{
+    [[ -f ${1} ]] || {
+        error 'usage: dev.encrypt.file <filename>';
+        return
+    };
+    sym -ck APP_SYM_KEY -e -f "${1}" -o "${1}.enc"
+}
+
+```
+
+#### `dev.encrypt.str`
+
+```bash
+dev.encrypt.str ()
+{
+    [[ -z "${1}" ]] && {
+        error 'usage: dev.encrypt.str "string to encrypt"';
+        return
+    };
+    sym -ck APP_SYM_KEY -e -s "$*"
+}
+
+```
+
+#### `dev.sym`
+
+```bash
+dev.sym ()
+{
+    sym -cqk APP_SYM_KEY $*
+}
+
+```
+
+#### `sym.dev.configure`
 
 ```bash
 sym.dev.configure ()
@@ -5855,7 +6487,7 @@ sym.dev.configure ()
 
 ```
 
-### `sym.dev.files`
+#### `sym.dev.files`
 
 ```bash
 sym.dev.files ()
@@ -5865,10 +6497,10 @@ sym.dev.files ()
 
 ```
 
-### `sym.dev.have_key`
+#### `sym.dev.have-key`
 
 ```bash
-sym.dev.have_key ()
+sym.dev.have-key ()
 {
     sym.dev.configure;
     if [[ -z ${CI} ]]; then
@@ -5880,7 +6512,7 @@ sym.dev.have_key ()
 
 ```
 
-### `sym.dev.import`
+#### `sym.dev.import`
 
 ```bash
 sym.dev.import ()
@@ -5895,7 +6527,7 @@ sym.dev.import ()
     [[ -f ~/.sym.symit.bash ]] && source ~/.sym.symit.bash;
     h2 'Encryption Key Import';
     info "Checking for the existence of the current key...";
-    if [[ -n "$(sym.dev.have_key)" ]]; then
+    if [[ -n "$(sym.dev.have-key)" ]]; then
         info: "Key ${SYMIT_KEY} is already in you your OS-X Key Chain.";
         run.ui.ask "Would you like to re-import it?";
         [[ $? != 0 ]] && return;
@@ -5946,7 +6578,7 @@ sym.dev.import ()
 
 ```
 
-### `sym.dev.install-shell-helpers`
+#### `sym.dev.install-shell-helpers`
 
 ```bash
 sym.dev.install-shell-helpers ()
@@ -5978,7 +6610,7 @@ sym.dev.install-shell-helpers ()
 
 ```
 
-### `sym.install.symit`
+#### `sym.install.symit`
 
 ```bash
 sym.install.symit ()
@@ -6006,18 +6638,33 @@ sym.install.symit ()
 
 ```
 
-### `test-group`
+
+---
+
+
+### Module `time`
+
+#### `epoch`
 
 ```bash
-test-group ()
+epoch ()
 {
-    [[ -z ${white_on_salmon} ]] && hr;
-    hl.white-on-salmon "$@"
+    date +%s
 }
 
 ```
 
-### `time.date-from-epoch`
+#### `millis`
+
+```bash
+millis ()
+{
+    .run.millis
+}
+
+```
+
+#### `time.date-from-epoch`
 
 ```bash
 time.date-from-epoch ()
@@ -6032,7 +6679,7 @@ time.date-from-epoch ()
 
 ```
 
-### `time.duration.humanize`
+#### `time.duration.humanize`
 
 ```bash
 time.duration.humanize ()
@@ -6058,7 +6705,7 @@ time.duration.humanize ()
 
 ```
 
-### `time.duration.millis-to-secs`
+#### `time.duration.millis-to-secs`
 
 ```bash
 time.duration.millis-to-secs ()
@@ -6072,7 +6719,7 @@ time.duration.millis-to-secs ()
 
 ```
 
-### `time.epoch-to-iso`
+#### `time.epoch-to-iso`
 
 ```bash
 time.epoch-to-iso ()
@@ -6083,7 +6730,7 @@ time.epoch-to-iso ()
 
 ```
 
-### `time.epoch-to-local`
+#### `time.epoch-to-local`
 
 ```bash
 time.epoch-to-local ()
@@ -6095,7 +6742,7 @@ time.epoch-to-local ()
 
 ```
 
-### `time.epoch.minutes-ago`
+#### `time.epoch.minutes-ago`
 
 ```bash
 time.epoch.minutes-ago ()
@@ -6109,7 +6756,7 @@ time.epoch.minutes-ago ()
 
 ```
 
-### `today`
+#### `today`
 
 ```bash
 today ()
@@ -6119,7 +6766,13 @@ today ()
 
 ```
 
-### `trap-setup`
+
+---
+
+
+### Module `trap`
+
+#### `trap-setup`
 
 ```bash
 trap-setup ()
@@ -6132,7 +6785,7 @@ trap-setup ()
 
 ```
 
-### `trap-was-fired`
+#### `trap-was-fired`
 
 ```bash
 trap-was-fired ()
@@ -6146,7 +6799,7 @@ trap-was-fired ()
 
 ```
 
-### `trapped`
+#### `trapped`
 
 ```bash
 trapped ()
@@ -6160,113 +6813,13 @@ trapped ()
 
 ```
 
-### `txt-err`
 
-```bash
-txt-err ()
-{
-    printf "${clr}${bldylw}${bakred}"
-}
+---
 
-```
 
-### `txt-info`
+### Module `url`
 
-```bash
-txt-info ()
-{
-    printf "${clr}${txtblu}"
-}
-
-```
-
-### `txt-warn`
-
-```bash
-txt-warn ()
-{
-    printf "${clr}${bldylw}"
-}
-
-```
-
-### `ui.closer.kind-of-ok`
-
-```bash
-ui.closer.kind-of-ok ()
-{
-    .output.cursor-left-by 1000;
-    printf " ${bakylw}${bldwht} ❖ ${clr} "
-}
-
-```
-
-### `ui.closer.kind-of-ok:`
-
-```bash
-ui.closer.kind-of-ok: ()
-{
-    ui.closer.kind-of-ok $@;
-    echo
-}
-
-```
-
-### `ui.closer.not-ok`
-
-```bash
-ui.closer.not-ok ()
-{
-    .output.cursor-left-by 1000;
-    printf " ${bakred}${bldwht} ✘ ${clr} "
-}
-
-```
-
-### `ui.closer.not-ok:`
-
-```bash
-ui.closer.not-ok: ()
-{
-    ui.closer.not-ok $@;
-    echo
-}
-
-```
-
-### `ui.closer.ok`
-
-```bash
-ui.closer.ok ()
-{
-    .output.cursor-left-by 1000;
-    printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
-}
-
-```
-
-### `ui.closer.ok:`
-
-```bash
-ui.closer.ok: ()
-{
-    ui.closer.ok "$@";
-    echo
-}
-
-```
-
-### `underline`
-
-```bash
-underline ()
-{
-    ansi 4 "$@"
-}
-
-```
-
-### `url.downloader`
+#### `url.downloader`
 
 ```bash
 url.downloader ()
@@ -6286,7 +6839,7 @@ url.downloader ()
 
 ```
 
-### `url.http-code`
+#### `url.http-code`
 
 ```bash
 url.http-code ()
@@ -6320,7 +6873,7 @@ url.http-code ()
 
 ```
 
-### `url.is-valid`
+#### `url.is-valid`
 
 ```bash
 url.is-valid ()
@@ -6335,7 +6888,7 @@ url.is-valid ()
 
 ```
 
-### `url.shorten`
+#### `url.shorten`
 
 ```bash
 url.shorten ()
@@ -6356,7 +6909,7 @@ url.shorten ()
 
 ```
 
-### `url.valid-status`
+#### `url.valid-status`
 
 ```bash
 url.valid-status ()
@@ -6374,7 +6927,13 @@ url.valid-status ()
 
 ```
 
-### `user`
+
+---
+
+
+### Module `user`
+
+#### `user`
 
 ```bash
 user ()
@@ -6389,17 +6948,17 @@ user ()
 
 ```
 
-### `user.finger.name`
+#### `user.finger.name`
 
 ```bash
 user.finger.name ()
 {
-    [[ -n $(which finge) ]] && finger ${USER} | head -1 | hbsed 's/.*Name: //g'
+    [[ -n $(which finge) ]] && finger ${USER} | head -1 | sedx 's/.*Name: //g'
 }
 
 ```
 
-### `user.first`
+#### `user.first`
 
 ```bash
 user.first ()
@@ -6409,31 +6968,31 @@ user.first ()
 
 ```
 
-### `user.gitconfig.email`
+#### `user.gitconfig.email`
 
 ```bash
 user.gitconfig.email ()
 {
     if [[ -s ${HOME}/.gitconfig ]]; then
-        grep email ${HOME}/.gitconfig | hbsed 's/.*=\s?//g';
+        grep email ${HOME}/.gitconfig | sedx 's/.*=\s?//g';
     fi
 }
 
 ```
 
-### `user.gitconfig.name`
+#### `user.gitconfig.name`
 
 ```bash
 user.gitconfig.name ()
 {
     if [[ -s ${HOME}/.gitconfig ]]; then
-        grep name ${HOME}/.gitconfig | hbsed 's/.*=\s?//g';
+        grep name ${HOME}/.gitconfig | sedx 's/.*=\s?//g';
     fi
 }
 
 ```
 
-### `user.host`
+#### `user.host`
 
 ```bash
 user.host ()
@@ -6446,7 +7005,7 @@ user.host ()
 
 ```
 
-### `user.my.ip`
+#### `user.my.ip`
 
 ```bash
 user.my.ip ()
@@ -6456,17 +7015,17 @@ user.my.ip ()
 
 ```
 
-### `user.my.reverse-ip`
+#### `user.my.reverse-ip`
 
 ```bash
 user.my.reverse-ip ()
 {
-    nslookup $(user.my.ip) | grep 'name =' | hbsed 's/.*name = //g'
+    nslookup $(user.my.ip) | grep 'name =' | sedx 's/.*name = //g'
 }
 
 ```
 
-### `user.username`
+#### `user.username`
 
 ```bash
 user.username ()
@@ -6476,7 +7035,88 @@ user.username ()
 
 ```
 
-### `util.append-to-init-files`
+
+---
+
+
+### Module `util`
+
+#### `is-func`
+
+```bash
+is-func ()
+{
+    util.is-a-function "$@"
+}
+
+```
+
+#### `pause`
+
+```bash
+pause ()
+{
+    sleep "${1:-1}"
+}
+
+```
+
+#### `pause.long`
+
+```bash
+pause.long ()
+{
+    sleep "${1:-10}"
+}
+
+```
+
+#### `pause.medium`
+
+```bash
+pause.medium ()
+{
+    sleep "${1:-0.3}"
+}
+
+```
+
+#### `pause.short`
+
+```bash
+pause.short ()
+{
+    sleep "${1:-0.1}"
+}
+
+```
+
+#### `sedx`
+
+```bash
+sedx ()
+{
+    local current=$(which sed);
+    local latest=${LibSed__latestVersion:-'/usr/local/bin/gsed'};
+    local os=$(uname -s);
+    if [[ ! -x "${latest}" ]]; then
+        if [[ "${os}" == "Darwin" ]]; then
+            [[ -n $(which brew) ]] || return 1;
+            brew install gnu-sed > /dev/null 2>&1;
+            [[ -x "${latest}" ]] || latest="${current}";
+        else
+            if [[ "${os}" == "Linux" ]]; then
+                latest="${current}";
+            fi;
+        fi;
+    fi;
+    latest=${latest:-${current}};
+    ${latest} -E "$@"
+}
+
+```
+
+#### `util.append-to-init-files`
 
 ```bash
 util.append-to-init-files ()
@@ -6509,7 +7149,7 @@ util.append-to-init-files ()
 
 ```
 
-### `util.arch`
+#### `util.arch`
 
 ```bash
 util.arch ()
@@ -6519,7 +7159,7 @@ util.arch ()
 
 ```
 
-### `util.call-if-function`
+#### `util.call-if-function`
 
 ```bash
 util.call-if-function ()
@@ -6533,7 +7173,7 @@ util.call-if-function ()
 
 ```
 
-### `util.checksum.files`
+#### `util.checksum.files`
 
 ```bash
 util.checksum.files ()
@@ -6543,7 +7183,7 @@ util.checksum.files ()
 
 ```
 
-### `util.checksum.stdin`
+#### `util.checksum.stdin`
 
 ```bash
 util.checksum.stdin ()
@@ -6553,7 +7193,7 @@ util.checksum.stdin ()
 
 ```
 
-### `util.functions-matching`
+#### `util.functions-matching`
 
 ```bash
 util.functions-matching ()
@@ -6565,7 +7205,7 @@ util.functions-matching ()
 
 ```
 
-### `util.generate-password`
+#### `util.generate-password`
 
 ```bash
 util.generate-password ()
@@ -6578,7 +7218,7 @@ util.generate-password ()
 
 ```
 
-### `util.i-to-ver`
+#### `util.i-to-ver`
 
 ```bash
 util.i-to-ver ()
@@ -6589,7 +7229,7 @@ util.i-to-ver ()
 
 ```
 
-### `util.install-direnv`
+#### `util.install-direnv`
 
 ```bash
 util.install-direnv ()
@@ -6607,7 +7247,7 @@ util.install-direnv ()
 
 ```
 
-### `util.is-a-function`
+#### `util.is-a-function`
 
 ```bash
 util.is-a-function ()
@@ -6617,7 +7257,7 @@ util.is-a-function ()
 
 ```
 
-### `util.is-numeric`
+#### `util.is-numeric`
 
 ```bash
 util.is-numeric ()
@@ -6627,7 +7267,7 @@ util.is-numeric ()
 
 ```
 
-### `util.is-variable-defined`
+#### `util.is-variable-defined`
 
 ```bash
 util.is-variable-defined ()
@@ -6638,7 +7278,7 @@ util.is-variable-defined ()
 
 ```
 
-### `util.lines-in-folder`
+#### `util.lines-in-folder`
 
 ```bash
 util.lines-in-folder ()
@@ -6649,7 +7289,7 @@ util.lines-in-folder ()
 
 ```
 
-### `util.remove-from-init-files`
+#### `util.remove-from-init-files`
 
 ```bash
 util.remove-from-init-files ()
@@ -6684,7 +7324,7 @@ util.remove-from-init-files ()
 
 ```
 
-### `util.shell-init-files`
+#### `util.shell-init-files`
 
 ```bash
 util.shell-init-files ()
@@ -6701,7 +7341,7 @@ util.shell-init-files ()
 
 ```
 
-### `util.shell-name`
+#### `util.shell-name`
 
 ```bash
 util.shell-name ()
@@ -6711,7 +7351,7 @@ util.shell-name ()
 
 ```
 
-### `util.ver-to-i`
+#### `util.ver-to-i`
 
 ```bash
 util.ver-to-i ()
@@ -6722,12 +7362,12 @@ util.ver-to-i ()
 
 ```
 
-### `util.whats-installed`
+#### `util.whats-installed`
 
 ```bash
 util.whats-installed ()
 {
-    declare -a hb_aliases=($(alias | grep -E 'hb\..*=' | hbsed 's/alias//g; s/=.*$//g'));
+    declare -a hb_aliases=($(alias | grep -E 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'));
     h2 "Installed app aliases:" ' ' "${hb_aliases[@]}";
     h2 "Installed DB Functions:";
     info "hb.db  [ ms | r1 | r2 | c ]";
@@ -6736,7 +7376,78 @@ util.whats-installed ()
 
 ```
 
-### `vim.gvim-off`
+#### `watch.command`
+
+```bash
+watch.command ()
+{
+    [[ -z "$1" ]] && return 1;
+    trap "return 1" SIGINT;
+    while true; do
+        clear;
+        hr.colored "${txtblu}";
+        printf " ❯ Command: ${bldgrn}$*${clr}  •  ${txtblu}$(date)${clr}  •  Refresh: ${bldcyn}${LibUtil__WatchRefreshSeconds}${clr}\n";
+        hr.colored "${txtblu}";
+        eval "$*";
+        hr.colored "${txtblu}";
+        printf "To change refresh rate run ${bldylw}watch.set-refresh <seconds>${clr}\n\n\n";
+        sleep "${LibUtil__WatchRefreshSeconds}";
+    done
+}
+
+```
+
+#### `watch.ls-al`
+
+```bash
+watch.ls-al ()
+{
+    while true; do
+        ls -al;
+        sleep ${LibUtil__WatchRefreshSeconds};
+        clear;
+    done
+}
+
+```
+
+#### `watch.set-refresh`
+
+```bash
+watch.set-refresh ()
+{
+    export LibUtil__WatchRefreshSeconds="${1:-"0.5"}"
+}
+
+```
+
+
+---
+
+
+### Module `vim`
+
+#### `gvim.off`
+
+```bash
+gvim.off ()
+{
+    vim.gvim-off
+}
+
+```
+
+#### `gvim.on`
+
+```bash
+gvim.on ()
+{
+    vim.gvim-on
+}
+
+```
+
+#### `vim.gvim-off`
 
 ```bash
 vim.gvim-off ()
@@ -6759,7 +7470,7 @@ vim.gvim-off ()
 
 ```
 
-### `vim.gvim-on`
+#### `vim.gvim-on`
 
 ```bash
 vim.gvim-on ()
@@ -6782,7 +7493,7 @@ vim.gvim-on ()
 
 ```
 
-### `vim.setup`
+#### `vim.setup`
 
 ```bash
 vim.setup ()
@@ -6795,53 +7506,13 @@ vim.setup ()
 
 ```
 
-### `warn`
 
-```bash
-warn ()
-{
-    printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" 1>&2
-}
+---
 
-```
 
-### `warning`
+### Module `yaml`
 
-```bash
-warning ()
-{
-    header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}");
-    box.yellow-in-yellow "${header} ${bldylw}$*" 1>&2
-}
-
-```
-
-### `warning:`
-
-```bash
-warning: ()
-{
-    warn $*;
-    ui.closer.kind-of-ok:
-}
-
-```
-
-### `watch-ls-al`
-
-```bash
-watch-ls-al ()
-{
-    while true; do
-        ls -al;
-        sleep 0.3;
-        clear;
-    done
-}
-
-```
-
-### `yaml-diff`
+#### `yaml-diff`
 
 ```bash
 yaml-diff ()
@@ -6851,7 +7522,7 @@ yaml-diff ()
 
 ```
 
-### `yaml-dump`
+#### `yaml-dump`
 
 ```bash
 yaml-dump ()
@@ -6861,7 +7532,7 @@ yaml-dump ()
 
 ```
 
-### `yaml.diff`
+#### `yaml.diff`
 
 ```bash
 yaml.diff ()
@@ -6888,7 +7559,7 @@ yaml.diff ()
 
 ```
 
-### `yaml.dump`
+#### `yaml.dump`
 
 ```bash
 yaml.dump ()
@@ -6908,7 +7579,7 @@ yaml.dump ()
 
 ```
 
-### `yaml.expand-aliases`
+#### `yaml.expand-aliases`
 
 ```bash
 yaml.expand-aliases ()
@@ -6918,3 +7589,13 @@ yaml.expand-aliases ()
 
 ```
 
+
+---
+
+
+
+## Copyright
+
+
+
+© 2020 Konstantin Gredeskoul, All rights reserved, MIT License.

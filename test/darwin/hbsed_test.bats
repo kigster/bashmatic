@@ -1,12 +1,12 @@
 #!/usr/bin/env bats
+source lib/util.sh
 
-source lib/hbsed.sh
 
 moo() {
-  echo "config/moo.enc" | hbsed 's/\.(sym|enc)$//g'
+  echo "config/moo.enc" | sedx 's/\.(sym|enc)$//g'
 }
 
-@test "hbsed() without gnu-sed installed" {
+@test "sedx() without gnu-sed installed" {
   if [[ -n $(which brew) ]]; then
     if [[ -n "${INTEGRATION_TEST}" ]]; then
       brew uninstall --force --quiet gnu-sed 2>&1 | cat >/dev/null
@@ -20,7 +20,7 @@ moo() {
   fi
 }
 
-@test "hbsed() with gnu-sed installed" {
+@test "sedx() with gnu-sed installed" {
   if [[ -n $(which brew) && -z $(which gsed) ]]; then
     brew install --force --quiet gnu-sed 2>&1 | cat >/dev/null
   fi

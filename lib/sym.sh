@@ -61,7 +61,7 @@ sym.dev.configure() {
   export SYMIT__KEY="APP_SYM_KEY"
 }
 
-sym.dev.have_key() {
+sym.dev.have-key() {
   sym.dev.configure
 
   if [[ -z ${CI} ]]; then
@@ -94,7 +94,7 @@ sym.dev.import() {
 
   info "Checking for the existence of the current key..."
 
-  if [[ -n "$(sym.dev.have_key)" ]]; then
+  if [[ -n "$(sym.dev.have-key)" ]]; then
     info: "Key ${SYMIT_KEY} is already in you your OS-X Key Chain."
     run.ui.ask "Would you like to re-import it?"
     [[ $? != 0 ]] && return

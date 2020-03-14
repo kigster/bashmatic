@@ -1,34 +1,23 @@
 #!/usr/bin/env bash
 #———————————————————————————————————————————————————————————————————————————————
-# © 2016-2017 Author: Konstantin Gredeskoul
+# © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modifications, © 2017 Konstantin Gredeskoul, Inc. All rights reserved.
+# Any modifications, © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 #———————————————————————————————————————————————————————————————————————————————
 
 # Returns "true" if the first argument is a member of the array
 # passed as the second argument:
 #
-#
-#
-# Simplest case:
+# Example:
 #
 #     $ declare -a array=("a string" test2000 moo)
-#     $ array.contains-element moo "${array[@]}" || echo "no luck!"
-#     $ array.complain-unless-includes haha "${array[@]}" || echo "no luck!"
-
-#     if [[ $(array-contains-element "a string" "${array[@]}") == "true" ]]; then
+#     if [[ $(array.has-element "a string" "${array[@]}") == "true" ]]; then
 #       ...
 #     fi
 #
-#
-# @param: search string
-# @param: array to search as a string
-# @output: prints "true" or "false"
-#
-
-array-contains-element() {
+array.has-element() {
   local search="$1"; shift
   local r="false"
   local e
@@ -45,7 +34,9 @@ array-contains-element() {
   return 0
 }
 
-array.contains-element() {
+# similar to array.has-elements, but does not print anything, just
+# returns 0 if includes, 1 if not.
+array.includes() {
   local search="$1"; shift
   [[ "$*" =~ ${search} ]] || return 1
   for e in "${@}"; do
@@ -56,8 +47,8 @@ array.contains-element() {
   return 1
 }
 
-array.complain-unless-includes() {
-  array.contains-element "$@" || {
+array.includes-or-complain() {
+  array.includes "$@" || {
     element="$1"; shift
     local -a output=()
     while true; do
@@ -82,8 +73,8 @@ array.complain-unless-includes() {
   return 1
 }
 
-array.exit-unless-includes() {
-  array.complain-unless-includes "$@" || exit 1
+array.includes-or-exit() {
+  array.includes-or-complain "$@" || exit 1
 }
 
 array.join() {
@@ -112,26 +103,20 @@ array.join() {
   done
 }
 
-array-join() { array.join "$@"; }
-
-array-csv() {
+array.to.csv() {
   array.join ', ' false "$@"
 }
 
-array-bullet-list() {
+array.to.bullet-list() {
   array.join ' • ' true "$@"
 }
 
-array.piped() {
+array.to.piped-list() {
   array.join ' | ' false "$@"
 }
 
-array.from-command-output() {
+array.from.stdin() {
   local array_name=$1; shift
   local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)"
   eval "${script}"
-}
-
-array-piped() {
-  array.piped "$@";
 }

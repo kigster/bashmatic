@@ -169,7 +169,7 @@ pids-with-args() {
   local -a additional=()
   local -a matching=()
   for arg in $@; do
-    array.contains-element "${arg}" "${permitted[@]}" && additional=(${additional[@]} $arg) && continue
+    array.includes "${arg}" "${permitted[@]}" && additional=(${additional[@]} $arg) && continue
     matching=("${matching[@]}" "${arg}")
   done
 

@@ -78,10 +78,10 @@ Perhaps the easiest way to install BashMatic is using this boot-strapping script
 
 ### Bootstrapping Bashmatic using `curl`
 
-First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-0-0 to a version you'd like to install):
+First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-0-1 to a version you'd like to install):
 
 ```bash
-❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-0)"
+❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-1)"
 ```
 
 This not only will check out bashmatic into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
@@ -195,7 +195,7 @@ bashmatic         ftrace            output            settings          util
 brew              gem               pids              shell-set         vim
 caller            git-recurse-updat progress-bar      ssh               yaml
 color             git               ruby              subshell
-db                hbsed             run               sym
+db                sedx             run               sym
 ```
 
 ### Key Modules Explained
@@ -287,11 +287,11 @@ ascii-clean                    h.black                        ok
 box.blue-in-green              h.blue                         okay
 box.blue-in-yellow             h.green                        output.color.off
 box.green-in-cyan              h.red                          output.color.on
-box.green-in-green             h.yellow                       output.is_pipe
-box.green-in-magenta           h1                             output.is_redirect
-box.green-in-yellow            h1.blue                        output.is_ssh
-box.magenta-in-blue            h1.green                       output.is_terminal
-box.magenta-in-green           h1.purple                      output.is_tty
+box.green-in-green             h.yellow                       output.is-pipe
+box.green-in-magenta           h1                             output.is-redirect
+box.green-in-yellow            h1.blue                        output.is-ssh
+box.magenta-in-blue            h1.green                       output.is-terminal
+box.magenta-in-green           h1.purple                      output.is-tty
 box.red-in-magenta             h1.red                         puts
 box.red-in-red                 h1.yellow                      reset-color
 box.red-in-yellow              h2                             reset-color:
@@ -372,7 +372,7 @@ These are often named after HTML elements, such as `hr`, `h1`, `h2`, etc.
 Here is another example where we are deciding whether to print something based on whether the output is a proper terminal (and not a pipe or redirect):
 
 ```
-output.is_tty && h1 "Yay For Terminals!"
+output.is-tty && h1 "Yay For Terminals!"
 ```
 
 The above reads more like a high level language like Ruby or Python than Shell. That's because BASH is more powerful than most people think.
@@ -455,7 +455,7 @@ For instance:
 
 file.exists_and_newer_than                    file.list.filter-non-empty
 file.gsub                                     file.size
-file.install_with_backup                      file.size.mb
+file.install-with-backup                      file.size.mb
 file.last-modified-date                       file.source-if-exists
 file.last-modified-year                       file.stat
 file.list.filter-existing
@@ -473,26 +473,26 @@ For instance, `file.stat` offers access to the `fstat()` C-function:
 ```bash
 ❯ bashmatic.functions-from array
 
-array-bullet-list                             array.contains-element
-array-contains-element                        array.exit-unless-includes
-array-csv                                     array.from-command-output
+array.to.bullet-list                             array.includes
+array.has-element                        array.includes-or-exit
+array.to.csv                                     array.from.stdin
 array-join                                    array.join
-array-piped                                   array.piped
-array.complain-unless-includes
+array-piped                                   array.to.piped-list
+array.includes-or-complain
 ```
 
 For instance:
 
 ```bash
 ❯ declare -a farm_animals=(chicken duck rooster pig)
-❯ array-bullet-list ${farm_animals[@]}
+❯ array.to.bullet-list ${farm_animals[@]}
  • chicken
  • duck
  • rooster
  • pig
-❯ array.contains-element "duck" "${farm_animals[@]}" && echo Yes || echo No
+❯ array.includes "duck" "${farm_animals[@]}" && echo Yes || echo No
 Yes
-❯ array.contains-element  "cow" "${farm_animals[@]}" && echo Yes || echo No
+❯ array.includes  "cow" "${farm_animals[@]}" && echo Yes || echo No
 No
 ```
 
@@ -503,17 +503,17 @@ The utilities module has the following functions:
 ```bash
 ❯ bashmatic.functions-from util
 
-long-pause                                    util.install-direnv
+pause.long                                    util.install-direnv
 pause                                         util.is-a-function
-short-pause                                   util.is-numeric
-shortish-pause                                util.is-variable-defined
+pause.short                                   util.is-numeric
+pause.medium                                util.is-variable-defined
 util.append-to-init-files                     util.lines-in-folder
 util.arch                                     util.remove-from-init-files
 util.call-if-function                         util.shell-init-files
 util.checksum.files                           util.shell-name
 util.checksum.stdin                           util.ver-to-i
 util.functions-matching                       util.whats-installed
-util.generate-password                        watch-ls-al
+util.generate-password                        watch.ls-al
 ```
 
 For example, version helpers can be very handy in automated version detection, sorting and identifying the latest or the oldest versions:

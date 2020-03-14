@@ -65,7 +65,7 @@ file.exists-and-newer-than() {
   fi
 }
 
-file.install_with_backup() {
+file.install-with-backup() {
   local source=$1
   local dest=$2
   if [[ ! -f ${source} ]]; then
@@ -134,7 +134,7 @@ file.size.mb() {
   local file="$1"
   shift
   local s=$(file.size ${file})
-  local mb=$(echo $(($s / 10000)) | hbsed 's/([0-9][0-9])$/.\1/g')
+  local mb=$(echo $(($s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
   printf "%.2f MB" ${mb}
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #———————————————————————————————————————————————————————————————————————————————
-# © 2016 — 2017 Author: Konstantin Gredeskoul
+# © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #———————————————————————————————————————————————————————————————————————————————
@@ -85,13 +85,13 @@ cache-or-command() {
 brew.package.is-installed() {
   local package="${1}"
   local -a installed_packages=($(brew.package.list))
-  array-contains-element $(basename "${package}") "${installed_packages[@]}"
+  array.has-element $(basename "${package}") "${installed_packages[@]}"
 }
 
 brew.cask.is-installed() {
   local cask="${1}"
   local -a installed_casks=($(brew.cask.list))
-  array-contains-element $(basename "${cask}") "${installed_casks[@]}"
+  array.has-element $(basename "${cask}") "${installed_casks[@]}"
 }
 
 brew.reinstall.package() {

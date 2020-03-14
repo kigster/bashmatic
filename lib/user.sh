@@ -1,17 +1,17 @@
 user.gitconfig.email() {
   if [[ -s ${HOME}/.gitconfig ]]; then
-    grep email ${HOME}/.gitconfig | hbsed 's/.*=\s?//g'
+    grep email ${HOME}/.gitconfig | sedx 's/.*=\s?//g'
   fi
 }
 
 user.gitconfig.name() {
   if [[ -s ${HOME}/.gitconfig ]]; then
-    grep name ${HOME}/.gitconfig | hbsed 's/.*=\s?//g'
+    grep name ${HOME}/.gitconfig | sedx 's/.*=\s?//g'
   fi
 }
 
 user.finger.name() {
-  [[ -n $(which finge) ]] && finger ${USER} | head -1 | hbsed 's/.*Name: //g'
+  [[ -n $(which finge) ]] && finger ${USER} | head -1 | sedx 's/.*Name: //g'
 }
 
 user.username() {
@@ -36,7 +36,7 @@ user.my.ip() {
 }
 
 user.my.reverse-ip() {
-  nslookup $(user.my.ip) | grep 'name =' | hbsed 's/.*name = //g'
+  nslookup $(user.my.ip) | grep 'name =' | sedx 's/.*name = //g'
 }
 
 user.host() {

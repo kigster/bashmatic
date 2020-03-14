@@ -41,7 +41,7 @@ db.wait-until-db-online() {
   return 0
 }
 
-db.num_procs() {
+db.num-procs() {
   ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
 }
 
@@ -199,7 +199,7 @@ db.top() {
       .db.top.page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
     done
     clear
-    h.yellow " «   DB-TOP V0.1.2 © 2018-2019 Konstantin Gredeskoul, ReinventONE Inc. » "
+    h.yellow " «   DB-TOP V0.1.2 © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License."
     cat ${tof}
     cursor.at.y $(($(.output.screen-height) + 1))
     printf "${bldwht}Press Ctrl-C to quit.${clr}"

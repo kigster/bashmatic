@@ -5,29 +5,29 @@ export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
 .output.cursor-right-by() {
-  output.is_terminal && printf "\e[${1}C"
+  output.is-terminal && printf "\e[${1}C"
 }
 
 .output.cursor-left-by() {
-  output.is_terminal && printf "\e[${1}D"
+  output.is-terminal && printf "\e[${1}D"
 }
 
 .output.cursor-up-by() {
-  output.is_terminal && printf "\e[${1}A"
+  output.is-terminal && printf "\e[${1}A"
 }
 
 .output.cursor-down-by() {
-  output.is_terminal && printf "\e[${1}B"
+  output.is-terminal && printf "\e[${1}B"
 }
 
 .output.cursor-move-to-y() {
-  output.is_terminal || return
+  output.is-terminal || return
   .output.cursor-up-by 1000
   .output.cursor-down-by ${1:-0}
 }
 
 .output.cursor-move-to-x() {
-  output.is_terminal || return
+  output.is-terminal || return
   .output.cursor-left-by 1000
   .output.cursor-right-by ${1:-0}
 }
@@ -75,7 +75,7 @@ output.color.off() {
   if [[ $os == 'Darwin' ]]; then
     w=$(stty -a 2>/dev/null | grep columns | awk '{print $6}')
   elif [[ $os == 'Linux' ]]; then
-    w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | hbsed 's/;//g')
+    w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')
   fi
 
   MIN_WIDTH=${MIN_WIDTH:-40}
@@ -109,7 +109,7 @@ output.color.off() {
   if [[ ${AppCurrentOS:-$(uname -s)} == 'Darwin' ]]; then
     h=$(stty -a 2>/dev/null | grep rows | awk '{print $4}')
   elif [[ ${AppCurrentOS} == 'Linux' ]]; then
-    h=$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | hbsed 's/;//g')
+    h=$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')
   fi
 
   MIN_HEIGHT=${MIN_HEIGHT:-30}
@@ -210,7 +210,7 @@ output.color.off() {
   shift
   local text="$*"
 
-  output.is_terminal || {
+  output.is-terminal || {
     printf ">>> %80.80s <<< \n" ${text}
     return
   }
@@ -235,7 +235,7 @@ output.color.off() {
   shift
   local line
 
-  output.is_terminal || {
+  output.is-terminal || {
     for line in "$@"; do
       printf ">>> %80.80s <<< \n" ${line}
     done
@@ -289,7 +289,7 @@ output.color.off() {
   local text="$*"
   echo
   printf "${color}"
-  if output.is_terminal; then
+  if output.is-terminal; then
     local width=$((2 * $(.output.screen-width) / 3))
     [[ ${width} -lt 70 ]] && width="70"
     printf -- "  %-${width}.${width}s${clr}\n\n" "« ${text} »"
@@ -330,23 +330,23 @@ screen.height() {
   .output.screen-height
 }
 
-output.is_terminal() {
-  output.is_tty || output.is_redirect || output.is_pipe || output.is_ssh
+output.is-terminal() {
+  output.is-tty || output.is-redirect || output.is-pipe || output.is-ssh
 }
 
-output.is_ssh() {
+output.is-ssh() {
   [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]
 }
 
-output.is_tty() {
+output.is-tty() {
   [[ -t 1 ]]
 }
 
-output.is_pipe() {
+output.is-pipe() {
   [[ -p /dev/stdout ]]
 }
 
-output.is_redirect() {
+output.is-redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 

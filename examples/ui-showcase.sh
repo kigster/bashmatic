@@ -101,7 +101,7 @@ info "${bldylw}IMPORTANT! $(txt-info)Active support version is ${bldylw}$(gem.ge
 
 hl.subtle "BTW, did you notice that commands are printed with their execution times?"
 
-shortish-pause
+pause.medium
 
 br
 success "This demonstration was a remarkable success!"

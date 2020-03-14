@@ -100,7 +100,7 @@ ruby.gems.install() {
 
   for gem in "${gems[@]}"; do
     local gem_info=
-    if [[ $(array-contains-element "${gem}" "${existing[@]}") == "true" ]]; then
+    if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
       gem_info="${bldgrn} ✔  ${gem}${clr}\n"
     else
       gem_info="${bldred} x  ${gem}${clr}\n"
@@ -172,7 +172,7 @@ ruby.gems.uninstall() {
     #}
 
     local gem_info=
-    if [[ $(array-contains-element "${gem}" "${existing[@]}") == "true" ]]; then
+    if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
       run "gem uninstall -a -x -I -D --force ${gem}"
       deleted=$(($deleted + 1))
     else
@@ -279,9 +279,9 @@ ruby.validate-version() {
     run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
   }
 
-  array.from-command-output ruby_versions 'rbenv install --list | sed -E "s/\s+//g"'
+  array.from.stdin ruby_versions 'rbenv install --list | sed -E "s/\s+//g"'
 
-  array.contains-element "${version}" "${ruby_versions[@]}" || {
+  array.includes "${version}" "${ruby_versions[@]}" || {
     error "Ruby Version provided was found by rbenv: ${bldylw}${version}"
     return 1
   }
@@ -307,7 +307,7 @@ ruby.bundler-version() {
     error "Can not find Gemfile.lock"
     return 1
   fi
-  tail -1 Gemfile.lock | hbsed 's/ //g'
+  tail -1 Gemfile.lock | sedx 's/ //g'
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————
