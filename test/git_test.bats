@@ -5,6 +5,9 @@ load test_helper
 
 source lib/git.sh
 
+git config --global user.email "kigster@gmail.com"
+git config --global user.name "Konstantin Gredeskoul"
+
 @test "git.repo-is-clean() when dirty" {
   pwd=$(pwd)
   dir="/tmp/clean/repo"

@@ -62,29 +62,34 @@ config-moo() {
   echo "config/moo.enc" | sedx 's/\.(sym|enc)$//g'
 }
 
-if [[ $(uname -s) == "Darwin" ]]; then
-
 @test "sedx() with gnu-sed installed" {
-  if [[ -n $(which brew) && -z $(which gsed) ]]; then
-    brew install --force --quiet gnu-sed 2>&1 | cat >/dev/null
+  if [[ $(uname -s) == "Darwin" ]]; then
+    if [[ -n $(which brew) && -z $(which gsed) ]]; then
+      brew install --force --quiet gnu-sed 2>&1 | cat >/dev/null
+    fi
+    result=$(config-moo)
+    [[ "${result}" == "config/moo" ]]
+  else
+    true
   fi
-  result=$(config-moo)
-  [[ "${result}" == "config/moo" ]]
 }
 
 @test "sedx() without gnu-sed installed" {
-  if [[ -n $(which brew) ]]; then
-    if [[ -n "${INTEGRATION_TEST}" ]]; then
-      brew uninstall --force --quiet gnu-sed 2>&1 | cat >/dev/null
-      result=$(config-moo)
-      [[ "${result}" == "config/moo" ]]
+  if [[ $(uname -s) == "Darwin" ]]; then
+    if [[ -n $(which brew) ]]; then
+      if [[ -n "${INTEGRATION_TEST}" ]]; then
+        brew uninstall --force --quiet gnu-sed 2>&1 | cat >/dev/null
+        result=$(config-moo)
+        [[ "${result}" == "config/moo" ]]
+      else
+        true
+      fi
     else
-      true
+      false
     fi
   else
-    false
+    true
   fi
 }
 
-fi
 

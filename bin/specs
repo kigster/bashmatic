@@ -7,8 +7,11 @@
 export TERM=${TERM:-xterm-256color}
 export MIN_WIDTH=${MIN_WIDTH:-"100"}
 
-export ProjectRoot=$(pwd)
-export BatsRoot=${ProjectRoot}/.bats
+export ProjectRoot=$(pwd -P)
+export BatsRoot="${ProjectRoot}/.bats-sources"
+export BatsPrefix="${ProjectRoot}/.bats-install"
+
+echo "BatsPrefix is ${BatsPrefix}"
 
 declare -a TestFiles=()
 
@@ -16,9 +19,6 @@ export True=1
 export False=0
 
 export Bashmatic__Test=${True}
-
-export BatsPrefix="/usr/local"
-[[ -n $CI ]] && export BatsPrefix="./bats-install"
 
 (mkdir -p ${BatsPrefix}            2>/dev/null) || true 
 (mkdir -p ${BatsPrefix}/bin           2>/dev/null)  || true 
@@ -67,6 +67,10 @@ specs.install-bats() {
   fi
 }
 
+spec.find-bats() {
+  command -v bats || which bats || find . -name bats -perm "-u=x" | grep -e -v 'fixtures|libexec'
+}
+
 specs.run-file() {
   local file="$1"
   if [[ -z "${file}" ]]; then
@@ -79,7 +83,19 @@ specs.run-file() {
   fi
   test-group "${file}"
   set -e
-  ${BatsPrefix}/bin/bats -p "${file}"
+
+  local bats=$(spec.find-bats)
+  
+  [[ -z ${bats} ]] && {
+    echo "ERROR: can't find bats executable :("
+    echo
+    echo "which bats:                      $(which bats)"
+    echo "command -v bats:                 $(command -v bats)"
+    echo "find ${BatsRoot} -name bats:     $(find ${BatsRoot} -name bats)"
+    exit 1
+  }
+
+  ${bats} -p "${file}"
   set +e
 }
 
@@ -133,5 +149,4 @@ while :; do
   esac
 done
 
-[[ -n ${CI} ]] && color.disable
 specs.main "$@"
