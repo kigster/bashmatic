@@ -41,6 +41,22 @@ run.inspect() {
   run.inspect
 }
 
+### ASK decline function, can be either exit or return
+____run.set.next.on-decline-exit() {
+  export LibRun__AskDeclineFunction="exit"
+}
+____run.set.next.on-decline-return() {
+  export LibRun__AskDeclineFunction="return"
+}
+____run.set.all.on-decline-exit() {
+  export LibRun__AskDeclineFunction="exit"
+  export LibRun__AskDeclineFunction__Default="exit"
+}
+____run.set.all.on-decline-return() {
+  export LibRun__AskDeclineFunction="return"
+  export LibRun__AskDeclineFunction__Default="return"
+}
+
 ##############################################################################
 # Command control for all invocations of the run() method.
 # These come in two flavors: run:set-next... and run:set-all....
@@ -54,8 +70,8 @@ ____run.set.next.show-detail-off() {
   export LibRun__Detail=${False}
 }
 
-### show details
 
+### show details
 ____run.set.next.show-output-on() {
   export LibRun__ShowCommandOutput=${True}
 }
@@ -167,10 +183,12 @@ ____run.configure() {
 ____run.list-options() {
   local type=$1
   local func="run.set-${type}.list"
-  local prefix="    • "
-  info "List of available configuration features for ${type} command(s):\n"
-  printf "${prefix}"
+  local -a features=( $(eval "$func") )
 
-  eval ${func} | tr '\n' ',' | sedx 's/,$//g' | sedx "s/,/\\n${prefix}/g"
+  h2 "List of available configuration features for ${type} command(s):"
+
+  array.to.bullet-list "${features[@]}"
+
+  #eval ${func} | tr '\n' ',' | sedx 's/,$//g' | sedx "s/,/\\n${prefix}${bldpur}/g"
   echo
 }

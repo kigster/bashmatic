@@ -17,6 +17,8 @@ export LibRun__CommandLength=0
 # used after each #run() call as the basis for the library variables that
 # control the next call to #run().
 
+export LibRun__Inspect__SkipFalseOrBlank=${False}
+
 export LibRun__AbortOnError__Default=${False}
 export LibRun__ShowCommandOutput__Default=${False}
 export LibRun__AskOnError__Default=${False}
@@ -315,34 +317,6 @@ run.ui.press-any-key() {
   echo
 }
 
-# Ask the user if they want to proceed, defaulting to Yes.
-# Choosing no exits the program. The arguments are printed as a question.
-run.ui.ask() {
-  local question=$*
-  echo
-  inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}"
-
-  read a 2>/dev/null
-  code=$?
-  if [[ ${code} != 0 ]]; then
-    error "Unable to read from STDIN."
-    exit 12
-  fi
-  echo
-  if [[ ${a} == 'y' || ${a} == 'Y' || ${a} == '' ]]; then
-    info "${bldblu}Roger that."
-    info "Let's just hope it won't go nuclear on us :) 💥"
-    hr
-    echo
-  else
-    info "${bldred}(Great idea!) Abort! Abandon ship!  🛳  "
-    hr
-    echo
-    exit 1
-  fi
-}
-
-export LibRun__Inspect__SkipFalseOrBlank=${False}
 
 run.inspect.set-skip-false-or-blank() {
   local value="${1}"
