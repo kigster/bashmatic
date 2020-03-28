@@ -130,6 +130,8 @@
     * [`docker.set-repo`](#dockerset-repo)
   * [Module `file`](#module-file)
     * [`file.exists-and-newer-than`](#fileexists-and-newer-than)
+    * [`file.extension.replace`](#fileextreplace)
+    * [`file.extension`](#fileextension)
     * [`file.gsub`](#filegsub)
     * [`file.install-with-backup`](#fileinstall-with-backup)
     * [`file.last-modified-date`](#filelast-modified-date)
@@ -140,6 +142,7 @@
     * [`file.size.mb`](#filesizemb)
     * [`file.source-if-exists`](#filesource-if-exists)
     * [`file.stat`](#filestat)
+    * [`file.strip.extension`](#filestripextension)
     * [`files.find`](#filesfind)
     * [`files.map`](#filesmap)
     * [`files.map.shell-scripts`](#filesmapshell-scripts)
@@ -376,8 +379,10 @@
     * [`ruby.validate-version`](#rubyvalidate-version)
   * [Module `run`](#module-run)
     * [`run`](#run)
+    * [`run.ui.ask`](#runuiask)
     * [`run.ui.ask-user-value`](#runuiask-user-value)
     * [`run.ui.get-user-value`](#runuiget-user-value)
+    * [`run.ui.press-any-key`](#runuipress-any-key)
     * [`run.ui.retry-command`](#runuiretry-command)
   * [Module `runtime-config`](#module-runtime-config)
     * [`run.inspect`](#runinspect)
@@ -398,8 +403,7 @@
     * [`run.print-command`](#runprint-command)
     * [`run.print-variable`](#runprint-variable)
     * [`run.print-variables`](#runprint-variables)
-    * [`run.ui.ask`](#runuiask)
-    * [`run.ui.press-any-key`](#runuipress-any-key)
+    * [`run.ui.press-any-key`](#runuipress-any-key-1)
     * [`run.variables-ending-with`](#runvariables-ending-with)
     * [`run.variables-starting-with`](#runvariables-starting-with)
     * [`run.with.minimum-duration`](#runwithminimum-duration)
@@ -490,6 +494,7 @@
     * [`util.is-numeric`](#utilis-numeric)
     * [`util.is-variable-defined`](#utilis-variable-defined)
     * [`util.lines-in-folder`](#utillines-in-folder)
+    * [`util.random-number`](#utilrandom-number)
     * [`util.remove-from-init-files`](#utilremove-from-init-files)
     * [`util.shell-init-files`](#utilshell-init-files)
     * [`util.shell-name`](#utilshell-name)
@@ -593,11 +598,15 @@
 7z.unzip ()
 {
     7z.install;
-    while [[ -n "$*" ]]; do
-        local archive="$1";
-        shift;
-        run "7z x -bt -mmt16 \"${archive}\"";
-    done
+    local archive="$1";
+    [[ -f ${archive} ]] || archive="${archive}.tar.7z";
+    [[ -f ${archive} ]] || {
+        error "Neither $1 nor ${archive} were found.";
+        return 1
+    };
+    info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size ${archive}) bytes.";
+    run.set-next show-output-on;
+    run "7za x -so ${archive} | tar xfv -"
 }
 
 ```
@@ -617,12 +626,15 @@
 ```bash
 7z.zip ()
 {
+    local archive="$1";
     7z.install;
-    while [[ -n "$*" ]]; do
-        local folder="$1";
-        shift;
-        run "7z a -bt -mmt16 \"${folder}\".7z \"${folder}\"";
-    done
+    [[ -f ${archive} || -d ${archive} ]] && archive="$(basename ${archive} | sedx 's/\./-/g').tar.7z";
+    [[ -f ${archive} ]] && {
+        run.set-next on-decline-return;
+        run.ui.ask "File ${archive} already exists. Press Y to remove it and continue." || return 1;
+        run "rm -f ${archive}"
+    };
+    run "tar cf - $* | 7za a -si ${archive}"
 }
 
 ```
@@ -2418,6 +2430,36 @@ file.exists-and-newer-than ()
 
 ```
 
+#### `file.extension.replace`
+
+```bash
+file.extension.replace ()
+{
+    local ext="$1";
+    shift;
+    [[ "${ext:0:1}" != "." ]] && ext=".${ext}";
+    local first=true;
+    for file in "$@";
+    do
+        ${first} || printf " ";
+        printf "%s${ext}" "$(file.strip.extension "${file}")";
+        first=false;
+    done
+}
+
+```
+
+#### `file.extension`
+
+```bash
+file.extension ()
+{
+    local filename="$1";
+    printf "${filename##*.}"
+}
+
+```
+
 #### `file.gsub`
 
 ```bash
@@ -2579,6 +2621,17 @@ file.stat ()
     };
     eval $(stat -s ${file} | tr ' ' '\n' | sed 's/^/local /g');
     echo ${!field}
+}
+
+```
+
+#### `file.strip.extension`
+
+```bash
+file.strip.extension ()
+{
+    local filename="$1";
+    printf "${filename%.*}"
 }
 
 ```
@@ -5808,6 +5861,38 @@ run ()
 
 ```
 
+#### `run.ui.ask`
+
+```bash
+run.ui.ask ()
+{
+    local question=$*;
+    local func="${LibRun__AskDeclineFunction}";
+    export LibRun__AskDeclineFunction="${LibRun__AskDeclineFunction__Default}";
+    echo;
+    inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}";
+    read a 2> /dev/null;
+    code=$?;
+    if [[ ${code} != 0 ]]; then
+        error "Unable to read from STDIN.";
+        eval "${func} 12";
+    fi;
+    echo;
+    if [[ ${a} == 'y' || ${a} == 'Y' || ${a} == '' ]]; then
+        info "${bldblu}Roger that.";
+        info "Let's just hope it won't go nuclear on us :) 💥";
+        hr;
+        echo;
+    else
+        info "${bldred}(Great idea!) Abort! Abandon ship!  🛳   ";
+        hr;
+        echo;
+        eval "${func} 1";
+    fi
+}
+
+```
+
 #### `run.ui.ask-user-value`
 
 ```bash
@@ -5837,6 +5922,25 @@ run.ui.ask-user-value ()
 run.ui.get-user-value ()
 {
     run.ui.retry-command run.ui.ask-user-value "${@}"
+}
+
+```
+
+#### `run.ui.press-any-key`
+
+```bash
+run.ui.press-any-key ()
+{
+    local prompt="$*";
+    [[ -z ${prompt} ]] && prompt="Press any key to continue...";
+    br;
+    printf "    ${txtgrn}${italic}${prompt} ${clr}  ";
+    read -r -s -n1 key;
+    cursor.rewind;
+    printf "                                                           ";
+    cursor.up 2;
+    cursor.rewind;
+    echo
 }
 
 ```
@@ -6161,36 +6265,6 @@ run.print-variables ()
     do
         run.print-variable "${var}";
     done
-}
-
-```
-
-#### `run.ui.ask`
-
-```bash
-run.ui.ask ()
-{
-    local question=$*;
-    echo;
-    inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}";
-    read a 2> /dev/null;
-    code=$?;
-    if [[ ${code} != 0 ]]; then
-        error "Unable to read from STDIN.";
-        exit 12;
-    fi;
-    echo;
-    if [[ ${a} == 'y' || ${a} == 'Y' || ${a} == '' ]]; then
-        info "${bldblu}Roger that.";
-        info "Let's just hope it won't go nuclear on us :) 💥";
-        hr;
-        echo;
-    else
-        info "${bldred}(Great idea!) Abort! Abandon ship!  🛳  ";
-        hr;
-        echo;
-        exit 1;
-    fi
 }
 
 ```
@@ -7445,6 +7519,17 @@ util.lines-in-folder ()
 {
     local folder=${1:-'.'};
     find ${folder} -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
+}
+
+```
+
+#### `util.random-number`
+
+```bash
+util.random-number ()
+{
+    local limit="${1:-"1000000"}";
+    printf $(((RANDOM % ${limit})))
 }
 
 ```

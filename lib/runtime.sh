@@ -474,3 +474,7 @@ run.config.detail-is-enabled() {
 run.on-error.ask-is-enabled() {
   [[ ${LibRun__AskOnError} -eq ${True} ]]
 }
+
+run.was-successful() { 
+  [[ ${LibRun__LastExitCode} -eq 0 ]]
+}

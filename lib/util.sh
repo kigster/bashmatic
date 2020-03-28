@@ -9,6 +9,11 @@ util.is-variable-defined() {
   [[ ${!var_name+x} ]]
 }
 
+util.random-number() {
+  local limit="${1:-"1000000"}" # maxinum number
+  printf $(((RANDOM % ${limit})))
+}
+
 util.generate-password() {
   local len=${1:-32}
   local val=$(($(date '+%s') - 100000 * $RANDOM))

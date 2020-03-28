@@ -18,8 +18,10 @@ load test_helper
 # files.map.shell-scripts
 
 source lib/file.sh
+source lib/util.sh
 
 set -e
+
 
 @test "file.source-if-exists()" {
   set -e
@@ -38,4 +40,37 @@ set -e
 @test "file.size()" {
   set -e
   [[ $(file.size test/fixtures/b.sh) -eq 13 ]]
+}
+
+@test "file.extension()" {
+  set -e
+  [[ "$(file.extension test/fixtures/b.sh)" == "sh" ]]
+}
+
+@test "file.strip.extension()" {
+  set -e
+  [[ "$(file.strip.extension test/fixtures/b.sh)" == "test/fixtures/b" ]]
+}
+
+@test "file.extension.replace() single file" {
+  set -e
+  local result="$(file.extension.replace .adoc test/fixtures/b.sh)"
+  [[ "${result}" == "test/fixtures/b.adoc" ]]
+}
+
+@test "file.extension.replace() list of files: result size comparison" {
+  set -e
+  local -a files=( $(find lib -type f -name '*.sh') )
+  local -a result=( $(file.extension.replace .bash "${files[@]}") )
+
+  # first check the sizes
+  [[ ${#result[@]} -eq ${#files[@]} ]]
+
+  # now we'll just check that the random element of the array
+  # is as we expect it.
+
+  local index=$(util.random-number ${#result[@]})
+
+  # first check the actual arrays
+  [[ "${result[${index}]/.bash/.sh}" == "${files[${index}]}" ]]
 }

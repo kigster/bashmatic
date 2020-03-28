@@ -210,3 +210,31 @@ files.map() {
 files.map.shell-scripts() {
   files.map "$1" '*.sh' "$2"
 }
+
+file.strip.extension() {
+  local filename="$1"
+  printf "${filename%.*}"
+}
+
+file.extension() {
+  local filename="$1"
+  printf "${filename##*.}"
+}
+
+# usage:
+#    file.extension.replace .sh $(find lib -type f -name '*.bash')
+# replaces all files under lib/ mathcing *.sh and renames them
+# to the given extension.
+file.extension.replace() {
+  local ext="$1"
+  shift
+
+  [[ "${ext:0:1}" != "." ]] && ext=".${ext}"
+
+  local first=true
+  for file in "$@"; do
+    ${first} || printf " "
+    printf "%s${ext}" "$(file.strip.extension "${file}")"
+    first=false
+  done
+}
