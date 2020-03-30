@@ -1,7 +1,6 @@
 
 # BashMatic
 
-
 ## Table of Contents
 
 * [Table of Contents](#table-of-contents)
@@ -129,9 +128,12 @@
     * [`docker.next-version`](#dockernext-version)
     * [`docker.set-repo`](#dockerset-repo)
   * [Module `file`](#module-file)
+    * [`dir.find`](#dirfind)
+    * [`ff`](#ff)
     * [`file.exists-and-newer-than`](#fileexists-and-newer-than)
-    * [`file.extension.replace`](#fileextreplace)
     * [`file.extension`](#fileextension)
+    * [`file.extension.replace`](#fileextensionreplace)
+    * [`file.find`](#filefind)
     * [`file.gsub`](#filegsub)
     * [`file.install-with-backup`](#fileinstall-with-backup)
     * [`file.last-modified-date`](#filelast-modified-date)
@@ -406,6 +408,7 @@
     * [`run.ui.press-any-key`](#runuipress-any-key-1)
     * [`run.variables-ending-with`](#runvariables-ending-with)
     * [`run.variables-starting-with`](#runvariables-starting-with)
+    * [`run.was-successful`](#runwas-successful)
     * [`run.with.minimum-duration`](#runwithminimum-duration)
     * [`run.with.ruby-bundle`](#runwithruby-bundle)
     * [`run.with.ruby-bundle-and-output`](#runwithruby-bundle-and-output)
@@ -516,6 +519,7 @@
     * [`yaml.dump`](#yamldump)
     * [`yaml.expand-aliases`](#yamlexpand-aliases)
 * [Copyright](#copyright)
+
 ## List of Bashmatic Modules
 
 * [7z](#module-7z)
@@ -2412,6 +2416,26 @@ docker.set-repo ()
 
 ### Module `file`
 
+#### `dir.find`
+
+```bash
+dir.find ()
+{
+    find . -name "*$1*" -type d -print
+}
+
+```
+
+#### `ff`
+
+```bash
+ff ()
+{
+    file.find "$@"
+}
+
+```
+
 #### `file.exists-and-newer-than`
 
 ```bash
@@ -2426,6 +2450,17 @@ file.exists-and-newer-than ()
     else
         return 1;
     fi
+}
+
+```
+
+#### `file.extension`
+
+```bash
+file.extension ()
+{
+    local filename="$1";
+    printf "${filename##*.}"
 }
 
 ```
@@ -2449,13 +2484,12 @@ file.extension.replace ()
 
 ```
 
-#### `file.extension`
+#### `file.find`
 
 ```bash
-file.extension ()
+file.find ()
 {
-    local filename="$1";
-    printf "${filename##*.}"
+    find . -name "*$1*" -type f -print
 }
 
 ```
@@ -6306,6 +6340,16 @@ run.variables-starting-with ()
 {
     local prefix="${1}";
     env | egrep "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
+}
+
+```
+
+#### `run.was-successful`
+
+```bash
+run.was-successful ()
+{
+    [[ ${LibRun__LastExitCode} -eq 0 ]]
 }
 
 ```
