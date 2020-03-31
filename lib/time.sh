@@ -42,6 +42,15 @@ time.date-from-epoch() {
     printf "date --date='@${epoch_ts}'"
   fi
 }
+
+time.now.db() {
+  date '+%F.%T' | tr -d '[-.:]'  
+}
+
+time.now.file-extension() {
+  time.now.db
+}
+
 time.epoch-to-iso() {
   local epoch_ts=$1
   eval "$(time.date-from-epoch ${epoch_ts}) -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
