@@ -241,33 +241,43 @@ ruby.install-ruby-with-deps() {
   run "brew install --display-times ${packages[*]}"
 }
 
-##——————————————————————————————————————————————————————————————————————————————————
+##—————————————————————————————————————————————————————————————
+# usage: ruby.install-ruby RUBY_VERSION
+# 
 ruby.install-ruby() {
-  local version="$1"
+  local version="$1" ; shift
   local version_source="provided as an argument"
-
   if [[ -z ${version} && -f .ruby-version ]]; then
     version="$(cat .ruby-version | tr -d '\n')"
     version_source="auto-detected from .ruby-version file"
   fi
-
   [[ -z ${version} ]] && {
-    error "usage: ${BASH_SOURCE[*]} ruby-version" "Alternatively, create .ruby-version file"
+    error "usage: ${BASH_SOURCE[*]} ruby-version" \
+        "Alternatively, create .ruby-version file"
     return 1
   }
-
   hl.subtle "Installing Ruby Version ${version} ${version_source}."
-
   ruby.validate-version "${version}" || return 1
-
-  brew.install.packages rbenv ruby-build jemalloc
+  brew.install.packages rbenv ruby-build
+  if [[ -n "$*" ]]; then
+    info "Attemping to install additional packages via Brew:"
+    for package in "$@"; do
+      run.set-next abort-on-error
+      brew.install.package ${package}
+    done
+  fi
   eval "$(rbenv init -)"
-
-  run "RUBY_CONFIGURE_OPTS=--with-jemalloc rbenv install -s ${version}"
+  run "rbenv install -s ${version}"
   return "${LibRun__LastExitCode:-"0"}"
 }
 
-##——————————————————————————————————————————————————————————————————————————————————
+# Installs Ruby with jemalloc 
+ruby.install-ruby-with-jemalloc() {
+  export RUBY_CONFIGURE_OPTS="--with-jemalloc"
+  ruby.install-ruby "$1" jemalloc
+}
+
+##————————————————————————————————————————————————————————————————
 ruby.validate-version() {
   local version="$1"
   local -a ruby_versions=()
