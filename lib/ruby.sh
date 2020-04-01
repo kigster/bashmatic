@@ -32,13 +32,13 @@ ruby.top-versions() {
 
 ruby.default-gems() {
   declare -a DEFAULT_RUBY_GEMS=(
+    bundler
     rubocop
     relaxed-rubocop
     rubocop-performance
     warp-dir
     colored2
     sym
-    pg
     pry
     pry-doc
     pry-byebug
@@ -195,18 +195,20 @@ ruby.rubygems-update() {
 
 ##——————————————————————————————————————————————————————————————————————————————————
 ruby.kigs-gems() {
-  if [[ -z $(type wd 2>/dev/null) ]]; then
-    wd install --dotfile ~/.bashrc >/dev/null
+  if [[ -z $(type wd 2>/dev/null) && -n $(command -v warp-dir) ]]; then
+    warp-dir install --dotfile ~/.bashrc >/dev/null
     [[ -f ~/.bash_wd ]] && source ~/.bash_wd
   fi
 
-  sym -B ~/.bashrc
-
-  for file in .sym.completion.bash .sym.symit.bash; do
-    [[ -f ${file} ]] && next
+  [[ -n $(command -v sym) ]] && {
     sym -B ~/.bashrc
-    break
-  done
+
+    for file in .sym.completion.bash .sym.symit.bash; do
+      [[ -f ${file} ]] && next
+      sym -B ~/.bashrc
+      break
+    done
+  }
 }
 
 ruby.install-upgrade-bundler() {
@@ -243,19 +245,22 @@ ruby.install-ruby-with-deps() {
 
 ##—————————————————————————————————————————————————————————————
 # usage: ruby.install-ruby RUBY_VERSION
-# 
+#
 ruby.install-ruby() {
-  local version="$1" ; shift
+  local version="$1"
+  shift
   local version_source="provided as an argument"
   if [[ -z ${version} && -f .ruby-version ]]; then
     version="$(cat .ruby-version | tr -d '\n')"
     version_source="auto-detected from .ruby-version file"
   fi
+
   [[ -z ${version} ]] && {
-    error "usage: ${BASH_SOURCE[*]} ruby-version" \
-        "Alternatively, create .ruby-version file"
+    error "USAGE: ruby.install-ruby VERSION" \
+      "Or, you can create a local .ruby-version file"
     return 1
   }
+
   hl.subtle "Installing Ruby Version ${version} ${version_source}."
   ruby.validate-version "${version}" || return 1
   brew.install.packages rbenv ruby-build
@@ -271,7 +276,7 @@ ruby.install-ruby() {
   return "${LibRun__LastExitCode:-"0"}"
 }
 
-# Installs Ruby with jemalloc 
+# Installs Ruby with jemalloc
 ruby.install-ruby-with-jemalloc() {
   export RUBY_CONFIGURE_OPTS="--with-jemalloc"
   ruby.install-ruby "$1" jemalloc

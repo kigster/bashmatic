@@ -134,8 +134,10 @@ bashmatic.auto-update() {
   git.configure-auto-updates
 
   git.repo-is-clean || {
-    h1 "${BASHMATIC_HOME} has locally modified changes." \
-      "Will wait with auto-update until it's sync'd up."
+    output.is-ssh || {
+      h1 "${BASHMATIC_HOME} has locally modified changes." \
+         "Will wait with auto-update until it's sync'd up."
+    }
     return 1
   }
 

@@ -18,6 +18,7 @@ export BASHMATIC_INIT="${BASH_SOURCE[0]}"
 # shellcheck disable=SC2155
 export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | head -1)"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
+export PATH="${PATH}:${BASHMATIC_HOME}/bin"
 
 declare -A BashMatic__LoadCache 2>/dev/null
 export BashMatic__LoadCache

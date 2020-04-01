@@ -198,3 +198,18 @@ brew.uninstall.packages() {
     brew.uninstall.package ${package}
   done
 }
+
+brew.service.up() {
+  local svc="$1"
+  run "brew services start ${svc}"
+}
+
+brew.service.down() {
+  local svc="$1"
+  run "brew services stop ${svc}"
+}
+
+brew.service.restart() {
+  local svc="$1"
+  run "brew services restart ${svc}"
+}

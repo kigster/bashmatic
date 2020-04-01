@@ -1,0 +1,244 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+set -e
+source ${HOME}/.bashmatic/init.sh 1>/dev/null
+
+run.set-all abort-on-error
+
+export ruby_version="2.7.0"
+
+[[ -f .ruby-version ]] && export ruby_version="$(cat .ruby-version | tr -d '\n')"
+
+# List of Brew Formulas to install and l`ink
+declare -a brew_deps_base=(
+  ack
+  asciidoc
+  asciidoctor
+  awscli
+  bash
+  bash-completion
+  bats
+  coreutils
+  curl
+  direnv
+  git
+  htop
+  libevent
+  imagemagick@6
+  jpeg
+  jq
+  lame
+  libffi
+  libgcrypt
+  libgpg-error
+  libheif
+  libiconv
+  libidn2
+  libksba
+  libmemcached
+  libmpc
+  libomp
+  libpng
+  libtasn1
+  libtiff
+  libtool
+  libunistring
+  libusb
+  libxml2
+  libxslt
+  libyaml
+  libzip
+  ncurses
+  netcat
+  nmap
+  openssl
+  p7zip
+  pandoc
+  pcre
+  pstree
+  rsync
+  shellcheck
+  the_silver_searcher
+  tree
+  vim
+  watch
+  wget
+  ydiff
+  zlib
+)
+
+declare -a brew_deps_gnu=(
+  gcc
+  gdbm
+  gnupg
+  gnutls
+  gnu-sed
+  gnu-tar
+  gnu-time
+  gnu-which
+)
+
+declare -a brew_deps_dev=(
+  autoconf
+  bazelisk
+  buildifier
+  cloc
+  cmake
+  go
+  node
+  yarn
+  openjdk@11
+  python
+  rbenv
+  readline
+  ruby-build
+  terraform
+)
+
+# List of Brew Formulas to install and link
+declare -a brew_deps_services=(
+  memcached
+  haproxy
+  nginx
+  postgresql
+  mysql
+  redis
+  solr
+)
+
+declare -a brew_deps_casks=(
+  chromedriver
+  rowanj-gitx
+  teamviewer
+  macdown
+)
+
+declare -a components=(
+  base
+  gnu
+  dev
+  services
+  casks
+)
+
+export piped_components=$(array.to.piped-list "${components[@]}")
+
+usage() {
+  h2 "USAGE: ${bldblu}dev-setup "  \
+     "${bldcyn}[ --all | [ ${bldylw}ruby|$(array.join '|' "${components[@]}")${bldcyn} ] ] [ -r | --ruby VERSION ]"  \
+     "NOTE: default ruby version is ${bldgrn}${ruby_version}"
+  exit 0
+}
+
+setup() {
+  h2 "Setting up prerequisutes..."
+  brew.install
+  brew.upgrade
+}
+
+dev-install.ruby() {
+  if [[ -n ${ruby_version} ]]; then
+    ruby.install "${ruby_version}"
+    ruby.init
+  fi
+}
+
+dev-install.brew() {
+
+  h1 "Starting Installation of the following components:" \
+    "${bldylw}$(array.to.csv ${components_to_install[@]})"
+
+  setup
+
+  for c in ${components_to_install[@]}; do
+    h3 "Installing Components of type: ${c}..."
+    array_name="\${brew_deps_${c}[*]}"
+    set -e
+    for item in $(eval "echo ${array_name}"); do
+      if [[ "$c" == "casks" ]]; then
+        brew.install.cask "${item}"
+      else
+        brew.install.package "${item}"
+        if [[ "$c" == "services" ]]; then
+          brew.service.up "${item}"
+        fi
+      fi
+    done
+    hr
+  done
+
+  success "All components have been installed. Thanks!"
+  return 0
+}
+
+declare -a components_to_install=()
+declare -a additional_functions=()
+
+function main.parse-opts() {
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -h | -\? | --help)
+      shift
+      usage
+      exit 0
+      ;;
+
+    -r | --ruby)
+      shift
+      export ruby_version="$1"
+      shift
+      break
+      ;;
+
+    --all | -a)
+      components_to_install=(${components[@]})
+      additional_functions=(ruby)
+      shift
+      break
+      ;;
+
+    ruby)
+      shift
+      additional_functions=(${additional_functions[@]} ruby)
+      break
+      ;;
+
+    base | gnu | dev | services | casks)
+      components_to_install=(${components_to_install[@]} $1)
+      shift
+      break
+      ;;
+
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+
+    *)
+      break
+      ;;
+    esac
+  done
+
+  export components_to_install
+  export additional_functions
+
+  if [[ ${#components_to_install[@]} -eq 0 && ${#additional_functions[@]} -eq 0 ]]; then
+    usage
+    exit 1
+  fi
+}
+
+main() {
+  main.parse-opts "$@"
+  if [[ ${#components_to_install[@]} -gt 0 ]]; then
+    dev-install.brew
+  fi
+  for additional in ${additional_functions[@]}; do
+    local func="dev-install.${additional}"
+    ${func}
+  done
+}
+
+main "$@"
