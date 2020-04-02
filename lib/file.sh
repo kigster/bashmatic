@@ -65,6 +65,19 @@ file.exists-and-newer-than() {
   fi
 }
 
+file.ask.if-exists() {
+  local file="$1"; shift
+  local message="$*"
+
+  [[ -z "${message}" ]] && message="File ${file} exists. Overwrite?"
+
+  if [[ -f ${file} ]]; then
+    run.set-next on-decline-return
+    run.ui.ask "${message}" || return 1
+  fi
+  return 0
+}
+
 file.install-with-backup() {
   local source=$1
   local dest=$2
@@ -229,12 +242,17 @@ file.extension.replace() {
   local ext="$1"
   shift
 
-  [[ "${ext:0:1}" != "." ]] && ext=".${ext}"
+  [[ -z "$1" ]] && {
+    info "USAGE: file.extension.replace <new-extension> file1 file2 ... "
+    return 1
+  }
+
+  ext=".$(echo ${ext} | tr -d '.')"
 
   local first=true
   for file in "$@"; do
     ${first} || printf " "
-    printf "%s${ext}" "$(file.strip.extension "${file}")"
+    printf "%s%s" "$(file.strip.extension "${file}")" "${ext}"
     first=false
   done
 }

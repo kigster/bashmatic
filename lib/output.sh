@@ -166,6 +166,7 @@ output.color.off() {
 }
 
 .output.box-separator() {
+  printf "$1"
   printf "├"
   .output.line
   .output.cursor-left-by 1
@@ -173,7 +174,7 @@ output.color.off() {
 }
 
 .output.box-top() {
-  printf "┌"
+  printf "$1┌"
   .output.line
   .output.cursor-left-by 1
   printf "┐${clr}\n"
@@ -204,9 +205,9 @@ output.color.off() {
 }
 
 .output.boxed-text() {
-  local border_color=${1}
+  local __color_bdr=${1}
   shift
-  local text_color=${1}
+  local __color_fg=${1}
   shift
   local text="$*"
 
@@ -218,20 +219,20 @@ output.color.off() {
   local clean_text=$(.output.clean "${text}")
   local width=$(($(.output.screen-width) - 2))
   local remaining_space_len=$(($width - ${#clean_text} - 1))
-  printf "${border_color}│ ${text_color}"
+  printf "${__color_bdr}│ ${__color_fg}"
   printf -- "${text}"
   [[ ${remaining_space_len} -gt 0 ]] && .output.repeat-char " " "${remaining_space_len}"
   .output.cursor-left-by 1
-  printf "${border_color}│${clr}\n"
+  printf "${__color_bdr}│${clr}\n"
 }
 
 #
 # Usage: .output.box border-color text-color "line 1" "line 2" ....
 #
 .output.box() {
-  local border_color=${1}
+  local __color_bdr=${1}
   shift
-  local text_color=${1}
+  local __color_fg=${1}
   shift
   local line
 
@@ -244,20 +245,20 @@ output.color.off() {
 
   [[ -n "${opts_suppress_headers}" ]] && return
 
-  printf "${border_color}"
+  printf "${__color_bdr}"
   .output.box-top
 
   local __i=0
   for line in "$@"; do
     [[ $__i == 1 ]] && {
-      printf "${border_color}"
+      printf "${__color_bdr}"
       .output.box-separator
     }
-    .output.boxed-text "${border_color}" "${text_color}" "${line}"
+    .output.boxed-text "${__color_bdr}" "${__color_fg}" "${line}"
     __i=$(($__i + 1))
   done
 
-  printf "${border_color}"
+  printf "${__color_bdr}"
   .output.box-bottom
 }
 
