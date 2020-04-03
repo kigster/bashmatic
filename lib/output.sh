@@ -4,6 +4,22 @@
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
+export LibOutput__MinWidth__Default=80
+export LibOutput__MaxWidth__Default=
+
+output.reset-min-max-width() {
+  export LibOutput__MinWidth=${LibOutput__MinWidth__Default}
+  export LibOutput__MaxWidth=${LibOutput__MaxWidth__Default}
+}
+
+output.set-max-width() {
+  export LibOutput__MaxWidth="$1"
+}
+
+output.set-min-width() {
+  export LibOutput__MinWidth="$1"
+}
+
 .output.cursor-right-by() {
   output.is-terminal && printf "\e[${1}C"
 }
@@ -78,10 +94,14 @@ output.color.off() {
     w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')
   fi
 
-  MIN_WIDTH=${MIN_WIDTH:-40}
-  [[ -z ${w} ]] && w=${MIN_WIDTH}
+  [[ -z ${w} ]] && w=${LibOutput__MinWidth}
+  [[ ${w} -lt ${LibOutput__MinWidth} ]] && w=${LibOutput__MinWidth}
 
-  [[ ${w} -lt ${MIN_WIDTH} ]] && w=${MIN_WIDTH}
+  if [[ -n ${LibOutput__MaxWidth} ]]; then
+    if [[ ${w} -gt ${LibOutput__MaxWidth} ]]; then
+      w=${LibOutput__MaxWidth}
+    fi
+  fi
 
   printf -- "%d" $w
 }

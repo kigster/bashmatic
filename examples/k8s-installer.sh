@@ -12,7 +12,6 @@
 }
 
 source ${HOME}/.bashmatic/init.sh
-source ${HOME}/.bashmatic/bashmatic.sh
 
 bashmatic.bash.exit-unless-version-four-or-later
 

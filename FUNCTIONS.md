@@ -23,8 +23,8 @@
     * [`array.to.csv`](#arraytocsv)
     * [`array.to.piped-list`](#arraytopiped-list)
   * [Module `audio`](#module-audio)
-    * [`audio.wav-to-mp3`](#audiowav-to-mp3)
-    * [`audio.wave-file-frequency`](#audiowave-file-frequency)
+    * [`audio.file.frequency`](#audiofilefrequency)
+    * [`audio.make.mp3`](#audiomakemp3)
   * [Module `aws`](#module-aws)
     * [`aws.ec2`](#awsec2)
     * [`aws.rds.hostname`](#awsrdshostname)
@@ -56,11 +56,15 @@
     * [`brew.install.cask`](#brewinstallcask)
     * [`brew.install.package`](#brewinstallpackage)
     * [`brew.install.packages`](#brewinstallpackages)
+    * [`brew.package.available-versions`](#brewpackageavailable-versions)
     * [`brew.package.is-installed`](#brewpackageis-installed)
     * [`brew.package.list`](#brewpackagelist)
     * [`brew.reinstall.package`](#brewreinstallpackage)
     * [`brew.reinstall.packages`](#brewreinstallpackages)
     * [`brew.relink`](#brewrelink)
+    * [`brew.service.down`](#brewservicedown)
+    * [`brew.service.restart`](#brewservicerestart)
+    * [`brew.service.up`](#brewserviceup)
     * [`brew.setup`](#brewsetup)
     * [`brew.uninstall.package`](#brewuninstallpackage)
     * [`brew.uninstall.packages`](#brewuninstallpackages)
@@ -130,8 +134,10 @@
   * [Module `file`](#module-file)
     * [`dir.find`](#dirfind)
     * [`ff`](#ff)
+    * [`file.ask.if-exists`](#fileaskif-exists)
     * [`file.exists-and-newer-than`](#fileexists-and-newer-than)
     * [`file.extension`](#fileextension)
+    * [`file.extension.remove`](#fileextensionremove)
     * [`file.extension.replace`](#fileextensionreplace)
     * [`file.find`](#filefind)
     * [`file.gsub`](#filegsub)
@@ -201,6 +207,8 @@
     * [`json.end-array`](#jsonend-array)
     * [`json.end-hash`](#jsonend-hash)
     * [`json.file-to-array`](#jsonfile-to-array)
+  * [Module `maths`](#module-maths)
+    * [`maths.eval`](#mathseval)
   * [Module `net`](#module-net)
     * [`net.fast-scan`](#netfast-scan)
     * [`net.local-subnet`](#netlocal-subnet)
@@ -298,6 +306,9 @@
     * [`output.is-ssh`](#outputis-ssh)
     * [`output.is-terminal`](#outputis-terminal)
     * [`output.is-tty`](#outputis-tty)
+    * [`output.reset-min-max-width`](#outputreset-min-max-width)
+    * [`output.set-max-width`](#outputset-max-width)
+    * [`output.set-min-width`](#outputset-min-width)
     * [`puts`](#puts)
     * [`reset-color`](#reset-color-1)
     * [`reset-color:`](#reset-color-2)
@@ -368,6 +379,7 @@
     * [`ruby.install`](#rubyinstall)
     * [`ruby.install-ruby`](#rubyinstall-ruby)
     * [`ruby.install-ruby-with-deps`](#rubyinstall-ruby-with-deps)
+    * [`ruby.install-ruby-with-jemalloc`](#rubyinstall-ruby-with-jemalloc)
     * [`ruby.install-upgrade-bundler`](#rubyinstall-upgrade-bundler)
     * [`ruby.installed-gems`](#rubyinstalled-gems)
     * [`ruby.kigs-gems`](#rubykigs-gems)
@@ -426,6 +438,7 @@
     * [`shell-set.push-stack`](#shell-setpush-stack)
     * [`shell-set.show-stack`](#shell-setshow-stack)
   * [Module `ssh`](#module-ssh)
+    * [`ssh.keys.generate`](#sshkeysgenerate)
     * [`ssh.load-keys`](#sshload-keys)
   * [Module `subshell`](#module-subshell)
     * [`bashmatic.detect-subshell`](#bashmaticdetect-subshell)
@@ -447,6 +460,8 @@
     * [`sym.dev.import`](#symdevimport)
     * [`sym.dev.install-shell-helpers`](#symdevinstall-shell-helpers)
     * [`sym.install.symit`](#syminstallsymit)
+  * [Module `text`](#module-text)
+    * [`text.markdown-to-asciidoc`](#textmarkdown-to-asciidoc)
   * [Module `time`](#module-time)
     * [`epoch`](#epoch)
     * [`millis`](#millis)
@@ -456,6 +471,8 @@
     * [`time.epoch-to-iso`](#timeepoch-to-iso)
     * [`time.epoch-to-local`](#timeepoch-to-local)
     * [`time.epoch.minutes-ago`](#timeepochminutes-ago)
+    * [`time.now.db`](#timenowdb)
+    * [`time.now.file-extension`](#timenowfile-extension)
     * [`today`](#today)
   * [Module `trap`](#module-trap)
     * [`trap-setup`](#trap-setup)
@@ -467,6 +484,9 @@
     * [`url.is-valid`](#urlis-valid)
     * [`url.shorten`](#urlshorten)
     * [`url.valid-status`](#urlvalid-status)
+  * [Module `usage`](#module-usage)
+    * [`usage-box`](#usage-box)
+    * [`usage.set-min-flag-len`](#usageset-min-flag-len)
   * [Module `user`](#module-user)
     * [`user`](#user)
     * [`user.finger.name`](#userfingername)
@@ -541,6 +561,7 @@
 * [github](#module-github)
 * [jemalloc](#module-jemalloc)
 * [json](#module-json)
+* [maths](#module-maths)
 * [net](#module-net)
 * [osx](#module-osx)
 * [output](#module-output)
@@ -557,9 +578,11 @@
 * [ssh](#module-ssh)
 * [subshell](#module-subshell)
 * [sym](#module-sym)
+* [text](#module-text)
 * [time](#module-time)
 * [trap](#module-trap)
 * [url](#module-url)
+* [usage](#module-usage)
 * [user](#module-user)
 * [util](#module-util)
 * [vim](#module-vim)
@@ -813,41 +836,41 @@ array.to.piped-list ()
 
 ### Module `audio`
 
-#### `audio.wav-to-mp3`
+#### `audio.file.frequency`
 
 ```bash
-audio.wav-to-mp3 ()
+audio.file.frequency ()
 {
     local file="$1";
-    shift;
-    [[ -z "${file}" ]] && {
-        h2 "USAGE: wav2mp3 <file.wav>" "NOTE: wave file sampling rate will be auto-detected.";
-        return
-    };
-    [[ -n "$(which lame)" ]] || brew.package.install lame;
-    nfile=$(echo "${file}" | sed -E 's/\.wav$/\.mp3/ig');
-    khz=$(audio.wave-file-frequency "${file}");
-    info "${bldgrn}Source: ${bldylw}$(basename "${file}")";
-    info "${bldpur}Output: ${bldylw}${nfile}$(txt-info) | (sampling rate: ${bldgrn}${khz:-'Unknown'}kHz)";
-    [[ -n ${khz} ]] && khz=" -s ${khz} ";
-    run.set-next show-output-on;
-    hr;
-    run "lame --disptime 1 -m s -r -q 0 -b 320 ${khz} --cbr $* ${file} ${nfile}";
-    hr
+    [[ -z $(command -V mdls) ]] && return 1;
+    local frequency=$(mdls "${file}" | grep kMDItemAudioSampleRate | sed 's/.*= //g');
+    [[ -z ${frequency} ]] && frequency=48000;
+    local kHz=$(maths.eval "${frequency} / 1000.0" 0);
+    printf ${kHz}
 }
 
 ```
 
-#### `audio.wave-file-frequency`
+#### `audio.make.mp3`
 
 ```bash
-audio.wave-file-frequency ()
+audio.make.mp3 ()
 {
     local file="$1";
-    [[ -z $(which mdls) ]] && return 1;
-    local frequency=$(mdls ${file} | grep kMDItemAudioSampleRate | sed 's/.*= //g');
-    local kHz=$((${frequency} / 1000));
-    printf ${kHz}
+    shift;
+    [[ -n "$(command -V lame)" ]] || brew.package.install lame;
+    local default_options=" -m s -r -h -b 320 --cbr ";
+    [[ -z "${file}" ]] && {
+        usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] © Convert a RAW PCM Audio to highest quality MP3" "You can pass additional flags to ${bldylw}lame" "" "Just run ${bldylw}lame --longhelp for more info." "" "Default Flags: ${default_options}" "";
+        return
+    };
+    nfile=$(echo "${file}" | sed -E 's/\.(wav|aiff?)$/\.mp3/ig');
+    khz=$(audio.file.frequency "${file}");
+    [[ -n ${khz} ]] && khz=" -s ${khz} ";
+    h2 "'$(basename "${file}")' ——→ '${nfile}', sample rate: ${khz:-'Unknown'}kHz" "lame ${default_options} ${khz} $* '${file}' '${nfile}'";
+    run.set-next show-output-on;
+    run "lame ${default_options} ${khz} $* '${file}' '${nfile}'";
+    hr
 }
 
 ```
@@ -1341,6 +1364,17 @@ brew.install.packages ()
 
 ```
 
+#### `brew.package.available-versions`
+
+```bash
+brew.package.available-versions ()
+{
+    local package="$1";
+    brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr
+}
+
+```
+
 #### `brew.package.is-installed`
 
 ```bash
@@ -1407,6 +1441,39 @@ brew.relink ()
     local verbose=;
     [[ -n ${opts_verbose} ]] && verbose="--verbose";
     run "brew link ${verbose} ${package} --overwrite"
+}
+
+```
+
+#### `brew.service.down`
+
+```bash
+brew.service.down ()
+{
+    local svc="$1";
+    run "brew services stop ${svc}"
+}
+
+```
+
+#### `brew.service.restart`
+
+```bash
+brew.service.restart ()
+{
+    local svc="$1";
+    run "brew services restart ${svc}"
+}
+
+```
+
+#### `brew.service.up`
+
+```bash
+brew.service.up ()
+{
+    local svc="$1";
+    run "brew services start ${svc}"
 }
 
 ```
@@ -2436,6 +2503,24 @@ ff ()
 
 ```
 
+#### `file.ask.if-exists`
+
+```bash
+file.ask.if-exists ()
+{
+    local file="$1";
+    shift;
+    local message="$*";
+    [[ -z "${message}" ]] && message="File ${file} exists. Overwrite?";
+    if [[ -f ${file} ]]; then
+        run.set-next on-decline-return;
+        run.ui.ask "${message}" || return 1;
+    fi;
+    return 0
+}
+
+```
+
 #### `file.exists-and-newer-than`
 
 ```bash
@@ -2465,6 +2550,17 @@ file.extension ()
 
 ```
 
+#### `file.extension.remove`
+
+```bash
+file.extension.remove ()
+{
+    local filename="$1";
+    printf "${filename%.*}"
+}
+
+```
+
 #### `file.extension.replace`
 
 ```bash
@@ -2472,12 +2568,16 @@ file.extension.replace ()
 {
     local ext="$1";
     shift;
-    [[ "${ext:0:1}" != "." ]] && ext=".${ext}";
+    [[ -z "$1" ]] && {
+        info "USAGE: file.extension.replace <new-extension> file1 file2 ... ";
+        return 1
+    };
+    ext=".$(echo ${ext} | tr -d '.')";
     local first=true;
     for file in "$@";
     do
         ${first} || printf " ";
-        printf "%s${ext}" "$(file.strip.extension "${file}")";
+        printf "%s%s" "$(file.strip.extension "${file}")" "${ext}";
         first=false;
     done
 }
@@ -2664,8 +2764,7 @@ file.stat ()
 ```bash
 file.strip.extension ()
 {
-    local filename="$1";
-    printf "${filename%.*}"
+    file.extension.remove "$@"
 }
 
 ```
@@ -2897,12 +2996,12 @@ gem.gemfile.version ()
 ```bash
 gem.global.latest-version ()
 {
-    local gem=$1;
+    local gem="$1";
     [[ -z ${gem} ]] && return;
     declare -a versions=($(gem.global.versions ${gem}));
     local max=0;
     local max_version=;
-    for v in ${versions[@]};
+    for v in "${versions[@]}";
     do
         vi=$(util.ver-to-i ${v});
         if [[ ${vi} -gt ${max} ]]; then
@@ -3035,7 +3134,9 @@ bashmatic.auto-update ()
     [[ ${Bashmatic__Test} -eq 1 ]] && return 0;
     git.configure-auto-updates;
     git.repo-is-clean || {
-        h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up.";
+        output.is-ssh || {
+            h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up."
+        };
         return 1
     };
     git.sync
@@ -3539,6 +3640,52 @@ json.file-to-array ()
     json.begin-array "$1";
     cat $2 | tr -d '\r' | tr -d '\015' | sed 's/^/"/g;s/$/",/g' | tail -r | awk -F, '{if (FNR!=1) print; else print $1} ' | tail -r;
     json.end-array $3
+}
+
+```
+
+
+---
+
+
+### Module `maths`
+
+#### `maths.eval`
+
+```bash
+maths.eval ()
+{
+    local __math_chars=(!²³¹¼½¾×÷ΠΣ⁰ⁱ⁴⁵⁶⁷⁸⁹ⁿ⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞∅∈∉√∛∜∞∩∪∿⊂⊃⟌τ𝛕𝜏𝝉𝞃𝞽०१२३४५६७८९ℯ𝐞𝑒𝒆𝖾𝗲𝘦𝙚𝚎ｅπϖ𝛑𝛡𝜋𝜛𝝅𝝕𝝿𝞏𝞹𝟉𝐢𝑖𝒊𝒾𝓲𝔦𝕚𝖎𝗂𝗶𝘪𝙞𝚒);
+    local -a __math_chars_array=($(echo "${__math_chars}" | sedx -E 's/(.)/\1 /g'));
+    local __math_chars_array;
+    [[ -z "$1" ]] && {
+        output.set-max-width 100;
+        output.set-min-width 40;
+        usage-box "maths.eval 'expression' [ floating precitions [ total width ] © Computes a mathematical expression with UTF support" "Example 1." "maths.eval '√(57)*⅓×(sin(π÷(1.3)))' => 1.66882" "Example 2." "maths.eval '5!×(ｅ)' => 326.19382" "Special Characters:" "" " 0 through 23" "${__math_chars_array[*]:0:24}" "24 through 48" "${__math_chars_array[*]:24:24}" "48 through 72" "${__math_chars_array[*]:48:24}" "72 through 96" "${__math_chars_array[*]:72:24}";
+        info "NOTE: ensure to use () brackets to group items you want to compute.";
+        info "NOTE: if in doubt, add more brackets :) ";
+        output.reset-min-max-width;
+        return 0
+    };
+    gem.install unicode_math > /dev/null;
+    local expression="$1";
+    shift;
+    local output_precision="${1:-"5"}";
+    shift;
+    local output_width="${1}";
+    local ruby_script="require 'unicode_math'; printf('%${output_width}.${output_precision}f', (Math.module_eval { ${expression} }))";
+    ruby_script="$(echo "${ruby_script}" | sedx -E 's/ ?(×|÷|!)/\.\1/g')";
+    local temp_file;
+    temp_file="$(mktemp)";
+    ruby -r 'unicode_math' -e "${ruby_script}" 2> "${temp_file}";
+    local code="$?";
+    [[ ${code} -ne 0 ]] && {
+        error "Unable to perform an arithmetic expression:" "${bldylw}${ruby_script}" 1>&2;
+        info "Error: \n${bldylw}$(cat "${temp_file}")";
+        return 1
+    };
+    rm -f "${temp_file}";
+    return 0
 }
 
 ```
@@ -4690,6 +4837,37 @@ output.is-tty ()
 
 ```
 
+#### `output.reset-min-max-width`
+
+```bash
+output.reset-min-max-width ()
+{
+    export LibOutput__MinWidth=${LibOutput__MinWidth__Default};
+    export LibOutput__MaxWidth=${LibOutput__MaxWidth__Default}
+}
+
+```
+
+#### `output.set-max-width`
+
+```bash
+output.set-max-width ()
+{
+    export LibOutput__MaxWidth="$1"
+}
+
+```
+
+#### `output.set-min-width`
+
+```bash
+output.set-min-width ()
+{
+    export LibOutput__MinWidth="$1"
+}
+
+```
+
 #### `puts`
 
 ```bash
@@ -5528,7 +5706,7 @@ ruby.compiled-with ()
 ```bash
 ruby.default-gems ()
 {
-    declare -a DEFAULT_RUBY_GEMS=(rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pg pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools);
+    declare -a DEFAULT_RUBY_GEMS=(bundler rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools);
     export DEFAULT_RUBY_GEMS;
     printf "${DEFAULT_RUBY_GEMS[*]}"
 }
@@ -5682,20 +5860,29 @@ ruby.install ()
 ruby.install-ruby ()
 {
     local version="$1";
+    shift;
     local version_source="provided as an argument";
     if [[ -z ${version} && -f .ruby-version ]]; then
         version="$(cat .ruby-version | tr -d '\n')";
         version_source="auto-detected from .ruby-version file";
     fi;
     [[ -z ${version} ]] && {
-        error "usage: ${BASH_SOURCE[*]} ruby-version" "Alternatively, create .ruby-version file";
+        error "USAGE: ruby.install-ruby VERSION" "Or, you can create a local .ruby-version file";
         return 1
     };
     hl.subtle "Installing Ruby Version ${version} ${version_source}.";
     ruby.validate-version "${version}" || return 1;
-    brew.install.packages rbenv ruby-build jemalloc;
+    brew.install.packages rbenv ruby-build;
+    if [[ -n "$*" ]]; then
+        info "Attemping to install additional packages via Brew:";
+        for package in "$@";
+        do
+            run.set-next abort-on-error;
+            brew.install.package ${package};
+        done;
+    fi;
     eval "$(rbenv init -)";
-    run "RUBY_CONFIGURE_OPTS=--with-jemalloc rbenv install -s ${version}";
+    run "rbenv install -s ${version}";
     return "${LibRun__LastExitCode:-"0"}"
 }
 
@@ -5710,6 +5897,17 @@ ruby.install-ruby-with-deps ()
     declare -a packages=(cask bash bash-completion git go haproxy htop jemalloc libxslt jq libiconv libzip netcat nginx openssl pcre pstree p7zip rbenv redis ruby_build tree vim watch wget zlib);
     run.set-next show-output-on;
     run "brew install --display-times ${packages[*]}"
+}
+
+```
+
+#### `ruby.install-ruby-with-jemalloc`
+
+```bash
+ruby.install-ruby-with-jemalloc ()
+{
+    export RUBY_CONFIGURE_OPTS="--with-jemalloc";
+    ruby.install-ruby "$1" jemalloc
 }
 
 ```
@@ -5740,17 +5938,19 @@ ruby.installed-gems ()
 ```bash
 ruby.kigs-gems ()
 {
-    if [[ -z $(type wd 2>/dev/null) ]]; then
-        wd install --dotfile ~/.bashrc > /dev/null;
+    if [[ -z $(type wd 2>/dev/null) && -n $(command -v warp-dir) ]]; then
+        warp-dir install --dotfile ~/.bashrc > /dev/null;
         [[ -f ~/.bash_wd ]] && source ~/.bash_wd;
     fi;
-    sym -B ~/.bashrc;
-    for file in .sym.completion.bash .sym.symit.bash;
-    do
-        [[ -f ${file} ]] && next;
+    [[ -n $(command -v sym) ]] && {
         sym -B ~/.bashrc;
-        break;
-    done
+        for file in .sym.completion.bash .sym.symit.bash;
+        do
+            [[ -f ${file} ]] && next;
+            sym -B ~/.bashrc;
+            break;
+        done
+    }
 }
 
 ```
@@ -6560,6 +6760,31 @@ shell-set.show-stack ()
 
 ### Module `ssh`
 
+#### `ssh.keys.generate`
+
+```bash
+ssh.keys.generate ()
+{
+    local email="$(user.gitconfig.email)";
+    [[ -z ${email} ]] && {
+        info "Couldnt' get your email from ~/.gitconfig...";
+        run.ui.ask-user-value email "What's the email you'd like to use with this key?"
+    };
+    local date=$( time.now.db );
+    if [[ -f ~/.ssh/id_rsa ]]; then
+        warning "There is an existing file ${bldred}~/.ssh/id_rsa";
+        info "It will be backed up into ~/.ssh/id_rsa.bak.${date}";
+        for file in ~/.ssh/id_rsa ~/.ssh/id_rsa.pub;
+        do
+            [[ -f ${file} ]] && run "mv ${file} ${file}.bak.${date}";
+        done;
+    fi;
+    run.set-next show-output-on;
+    run "ssh-keygen -t rsa -b 4096 -C ${email}"
+}
+
+```
+
 #### `ssh.load-keys`
 
 ```bash
@@ -6920,6 +7145,51 @@ sym.install.symit ()
 ---
 
 
+### Module `text`
+
+#### `text.markdown-to-asciidoc`
+
+```bash
+text.markdown-to-asciidoc ()
+{
+    local file="$1";
+    shift;
+    local default_flags="--imagesdir=/assets/images --no-html-to-native";
+    [[ -n $(command -v kramdoc) ]] || gem.install "kramdown-asciidoc";
+    if [[ -z "${file}" ]]; then
+        usage.set-min-flag-len 1;
+        usage-box "text.markdown-to-asciidoc markdown-file [ flags ] © Converts a markdown doc to asciidoc using the kramdown-asciidoc ruby gem" " " "Default flags: ${bldcyn}${default_flags}" " " "To override pass any flags that are supported by ${bldred}kramdoc${bldylw}, see below:";
+        printf "\n${txtblu}";
+        kramdoc --help | tail -16;
+        printf "${clr}\n";
+        return 0;
+    fi;
+    [[ -f ${file} && $(file.extension "${file}") == "md" ]] || {
+        error "File ${file} either does not exist, or is not markdown.";
+        run.set-all on-decline-return;
+        run.ui.ask "Convert anyway?"
+    };
+    local target="$(file.extension.replace adoc "${file}")";
+    file.ask.if-exists "${target}" || {
+        info "Aborting conversion, leaving ${target} in place.";
+        return 1
+    };
+    gem.install "kramdown-asciidoc";
+    local args;
+    if [[ -z "$*" ]]; then
+        args="--auto-ids --auto-id-prefix=_ --auto-id-separator=_ --imagesdir=/assets/images --no-html-to-native";
+    else
+        args="$*";
+    fi;
+    run "kramdoc -o ${target} ${args} ${file}"
+}
+
+```
+
+
+---
+
+
 ### Module `time`
 
 #### `epoch`
@@ -7030,6 +7300,26 @@ time.epoch.minutes-ago ()
     local seconds=$((${mins} * 60));
     local epoch=$(epoch);
     echo $((${epoch} - ${seconds}))
+}
+
+```
+
+#### `time.now.db`
+
+```bash
+time.now.db ()
+{
+    date '+%F.%T' | tr -d '[-.:]'
+}
+
+```
+
+#### `time.now.file-extension`
+
+```bash
+time.now.file-extension ()
+{
+    time.now.db
 }
 
 ```
@@ -7201,6 +7491,45 @@ url.valid-status ()
     else
       print "invalid"
     end'
+}
+
+```
+
+
+---
+
+
+### Module `usage`
+
+#### `usage-box`
+
+```bash
+usage-box ()
+{
+    local command;
+    local title;
+    if [[ "${1}" =~ "©" ]]; then
+        command="${1/ © */}";
+        title="${1/* © /}";
+    else
+        command="$1";
+        title=;
+    fi;
+    shift;
+    .usage.begin;
+    .usage.command "${command}";
+    [[ -n ${title} ]] && .usage.title "${title}";
+    [[ -n "$*" ]] && .usage.flags "$@"
+}
+
+```
+
+#### `usage.set-min-flag-len`
+
+```bash
+usage.set-min-flag-len ()
+{
+    export LibUsage__MinFlagLen="${1}"
 }
 
 ```

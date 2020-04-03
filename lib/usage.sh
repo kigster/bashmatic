@@ -23,25 +23,26 @@
 .usage.command() {
   .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr usage) ${__color_cmd}$1"
   shift
-  
+
   for line in "$@"; do
-    .output.boxed-text "${__color_bdr}" "${__color_cmd}"   "         ${line}"
+    .output.boxed-text "${__color_bdr}" "${__color_cmd}" "         ${line}"
   done
   .output.box-separator "${__color_bdr}"
-} 
+}
 
 .usage.hdr() {
   printf "%-15s " "$*:" | tr 'a-z' 'A-Z'
 }
 
-export LibUsage__MinFlagLen=19
+export LibUsage__MinFlagLen=15
+export LibUsage__NoFlagsIndent=15
 
 usage.set-min-flag-len() {
   export LibUsage__MinFlagLen="${1}"
 }
 
 .usage.flags() {
-  local flags="$@"
+  local -a flags=("$@")
   local line=""
   local n=0
   local l=0
@@ -50,40 +51,44 @@ usage.set-min-flag-len() {
   local l_desc=0
 
   # First we compute the length of the longest flag, and longest flag
-  # description. Yes, I know — total overkill. 
+  # description. Yes, I know — total overkill.
   for arg in "$@"; do
-     if (( $(($n % 2 )) == 0 )); then
-       l=${#arg}
-       [[ $l -gt ${l_flags} ]] && l_flags=$l
-     else
-       [[ $l -gt ${l_desc} ]] && l_desc=$l
-     fi
-     n=$(( n + 1 ))
-  done  
+    if (($(($n % 2)) == 0)); then
+      l=${#arg}
+      [[ $l -gt ${l_flags} ]] && l_flags=$l
+    else
+      [[ $l -gt ${l_desc} ]] && l_desc=$l
+    fi
+    n=$((n + 1))
+  done
 
-  [[ ${l_flags} -lt ${LibUsage__MinFlagLen} ]] && l_flags=${LibUsage__MinFlagLen}
+  if [[ ${l_flags} -eq 0 ]]; then
+    l_flags="${LibUsage__NoFlagsIndent}"
+  elif [[ ${l_flags} -lt ${LibUsage__MinFlagLen} ]]; then
+    l_flags=${LibUsage__MinFlagLen}
+  fi
 
   local n=0
   .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr flags)"
 
   for arg in "$@"; do
-     if (( $(($n % 2 )) == 0 )); then
-       line=$(printf "%${l_flags}s" "${arg}")
-     else
-       line=$(printf "%s${__color_fg}  %${l_desc}s\n" "${line}" "${arg}")
+    if (($(($n % 2)) == 0)); then
+      line=$(printf "${__color_flag}%${l_flags}s" "${arg}")
+    else
+      line=$(printf "%s${__color_fg}  %s\n" "${line}" "${arg}")
 
-       .output.boxed-text "${__color_bdr}" "${__color_cmd}" "${line}"
-     fi
-     n=$(( n + 1 ))
-  done  
+      .output.boxed-text "${__color_bdr}" "${__color_cmd}" "${line}"
+    fi
+    n=$((n + 1))
+  done
 
   printf "${__color_bdr}"
   .output.box-bottom
 }
 
 # Prints usage information for a command.
-# 
-# usage-box "command © title" "flag1" "flag1 description" "flag2" "flag2 description"... 
+#
+# usage-box "command © title" "flag1" "flag1 description" "flag2" "flag2 description"...
 #
 # eg:
 #    usage-box "/bin/ls © Command that lists all files in the current directory" \
@@ -94,7 +99,7 @@ usage-box() {
   local command
   local title
 
-  if [[ "${1}" =~ "©" ]] ; then
+  if [[ "${1}" =~ "©" ]]; then
     command="${1/ © */}"
     title="${1/* © /}"
   else
@@ -109,6 +114,3 @@ usage-box() {
   [[ -n ${title} ]] && .usage.title "${title}"
   [[ -n "$*" ]] && .usage.flags "$@"
 }
-
-
-

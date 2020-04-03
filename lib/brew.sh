@@ -7,6 +7,14 @@
 export LibBrew__PackageCacheList="/tmp/.lib_brew_packages.txt"
 export LibBrew__CaskCacheList="/tmp/.lib_brew_casks.txt"
 
+# This function returns the sorted list of versions that are specified
+# for a given package in Brew using @<version>, for instance: "mysql@5.5" or
+# postgres@9.4 etc.
+brew.package.available-versions() {
+  local package="$1"
+  brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr
+}
+
 brew.cache-reset() {
   rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}
 }

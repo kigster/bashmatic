@@ -191,6 +191,7 @@ ruby.gems.uninstall() {
 ruby.rubygems-update() {
   info "This might take a little white, darling. Smoke a spliff, would you?"
   run "gem update --system"
+  gem.clear-cache
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————

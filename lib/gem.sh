@@ -52,13 +52,13 @@ gem.global.versions() {
 
 # Returns a space-separated list of installed gem versions
 gem.global.latest-version() {
-  local gem=$1
+  local gem="$1"
   [[ -z ${gem} ]] && return
 
   declare -a versions=($(gem.global.versions ${gem}))
   local max=0
   local max_version=
-  for v in ${versions[@]}; do
+  for v in "${versions[@]}"; do
     vi=$(util.ver-to-i ${v})
     if [[ ${vi} -gt ${max} ]]; then
       max=${vi}

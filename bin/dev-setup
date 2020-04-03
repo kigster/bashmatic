@@ -5,7 +5,21 @@ source ${HOME}/.bashmatic/init.sh 1>/dev/null
 
 run.set-all abort-on-error
 
-export ruby_version="2.7.0"
+export ruby_version="${ruby_version:-"2.7.1"}"
+
+.dev-install.pg-versions() {
+  brew search postgresql@ | tr -d 'a-z@A-Z =>-' | sed '/^$/d' | sort -nr
+}
+
+declare -a pg_versions=( $(brew.package.available-versions postgresql) )
+export latest_postgres_version=${pg_versions[0]}
+export postgres_version=${postgres_version:-${latest_postgres_version}}
+
+declare -a mysql_versions=( $(brew.package.available-versions mysql) )
+export latest_mysql_version="${mysql_versions[0]}"
+export mysql_version=${mysql_version:-${latest_mysql_version}}
+
+h1 "PostgreSQL Version: ${postgres_version}" "MySQL Version: ${mysql_version}"
 
 [[ -f .ruby-version ]] && export ruby_version="$(cat .ruby-version | tr -d '\n')"
 
@@ -48,6 +62,7 @@ declare -a brew_deps_base=(
   libxslt
   libyaml
   libzip
+  mysql-client
   ncurses
   netcat
   nmap
@@ -100,10 +115,9 @@ declare -a brew_deps_services=(
   memcached
   haproxy
   nginx
-  postgresql
-  mysql
+  postgresql@${postgres_version}
+  mysql@${mysql_version}
   redis
-  solr
 )
 
 declare -a brew_deps_casks=(
@@ -124,16 +138,19 @@ declare -a components=(
 export piped_components=$(array.to.piped-list "${components[@]}")
 
 usage() {
-  h2 "USAGE: ${bldblu}dev-setup "  \
+  h2 "USAGE: ${bldblu}dev-dev-install.init "  \
      "${bldcyn}[ --all | [ ${bldylw}ruby|$(array.join '|' "${components[@]}")${bldcyn} ] ] [ -r | --ruby VERSION ]"  \
      "NOTE: default ruby version is ${bldgrn}${ruby_version}"
   exit 0
 }
 
-setup() {
+#———————————————————————————————————————————————————————————————————————————————
+
+
+dev-install.init() {
   h2 "Setting up prerequisutes..."
   brew.install
-  brew.upgrade
+  #brew.upgrade
 }
 
 dev-install.ruby() {
@@ -148,7 +165,7 @@ dev-install.brew() {
   h1 "Starting Installation of the following components:" \
     "${bldylw}$(array.to.csv ${components_to_install[@]})"
 
-  setup
+  dev-install.init
 
   for c in ${components_to_install[@]}; do
     h3 "Installing Components of type: ${c}..."

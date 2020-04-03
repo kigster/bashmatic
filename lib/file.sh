@@ -224,9 +224,13 @@ files.map.shell-scripts() {
   files.map "$1" '*.sh' "$2"
 }
 
-file.strip.extension() {
+file.extension.remove() {
   local filename="$1"
   printf "${filename%.*}"
+}
+
+file.strip.extension() {
+  file.extension.remove "$@"
 }
 
 file.extension() {
