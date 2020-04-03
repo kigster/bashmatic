@@ -202,7 +202,7 @@ run.print-command() {
 
     [[ ${tries} -gt 1 && ${__Previous__ShowCommandOutput} -eq ${True} ]] && \
       export LibRun__ShowCommandOutput=${False}
-    
+
     .run.retry.enforce-max
 
     export LibRun__RetryCount="$((LibRun__RetryCount - 1))"
@@ -316,7 +316,6 @@ run.ui.press-any-key() {
   cursor.rewind
   echo
 }
-
 
 run.inspect.set-skip-false-or-blank() {
   local value="${1}"
@@ -475,6 +474,6 @@ run.on-error.ask-is-enabled() {
   [[ ${LibRun__AskOnError} -eq ${True} ]]
 }
 
-run.was-successful() { 
+run.was-successful() {
   [[ ${LibRun__LastExitCode} -eq 0 ]]
 }

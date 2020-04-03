@@ -69,6 +69,19 @@ cursor.right() {
   .output.cursor-right-by "$@"
 }
 
+output.print-at-x-y() {
+  local x=$1
+  shift
+  local y=$1
+  shift
+
+  .output.cursor-move-to-x "${x}"
+  cursor.up "${y}"
+  printf "%s" "$*"
+  cursor.down "${y}"
+  .output.cursor-move-to-x 0
+}
+
 .ver-to-i() {
   version=${1}
   echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
@@ -399,6 +412,12 @@ box.red-in-red() {
   .output.box "${bldred}" "${txtred}" "$@"
 }
 
+h.e() {
+  local header="$1"
+  shift
+  box.red-in-red "${bakred}${bldwht} ${bldylw}${header}" "$@" >&2
+}
+
 box.green-in-magenta() {
   .output.box "${bldgrn}" "${bldpur}" "$@"
 }
@@ -543,7 +562,7 @@ hr.colored() {
 }
 
 hr() {
-  [[ -z "$*" ]] || printf $*
+  [[ -z "$*" ]] || printf "$*"
   .output.hr
 }
 

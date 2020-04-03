@@ -38,15 +38,11 @@ brew.upgrade() {
 }
 
 brew.install() {
-  declare -a brew_packages=$@
-
   local brew=$(which brew 2>/dev/null)
-
   if [[ -z "${brew}" ]]; then
     info "Installing Homebrew, please wait..."
     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   else
-    info "Homebrew is already installed."
     info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
   fi
 }
@@ -123,18 +119,37 @@ brew.install.package() {
   [[ -n ${opts_force} ]] && force="--force"
   [[ -n ${opts_verbose} ]] && verbose="--verbose"
 
-  inf "checking if package ${bldylw}${package}$(txt-info) is already installed..."
+  [[ -z ${opt_terse} ]] && inf "checking for package ${bldylw}${package}..."
+
   if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
-    ui.closer.ok:
+    [[ -z ${opt_terse} ]] && ok:
+    [[ -z ${opt_terse} ]] || printf "${bldgrn}○ "
+    export LibRun__LastExitCode=0
   else
-    printf "${bldred}not found.${clr}\n"
-    run "brew install ${package} ${force} ${verbose}"
-    if [[ ${LibRun__LastExitCode} != 0 ]]; then
-      info "NOTE: ${bldred}${package}$(txt-info) failed to install, attempting to reinstall..."
-      brew.reinstall.package "${package}"
+    if [[ -z ${opt_terse} ]]; then
+      printf " — ${package} is not yet installed.\n"
+      run "brew install ${package} ${force} ${verbose}"
+    else
+      (brew install ${package} ${force} ${verbose}) 2>&1 | cat >/dev/null
+      local code=$?
     fi
+
+    [[ ${code} -eq 0 || ${LibRun__LastExitCode} -eq 0 ]] || {
+      brew.reinstall.package "${package}"
+    }
+
     brew.cache-reset.delayed
+    export LibRun__LastExitCode=0
+
+    if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
+      [[ -n ${opt_terse} ]] && printf "\n🟢 "
+    else
+      [[ -n ${opt_terse} ]] && printf "\n🔴 "
+      export LibRun__LastExitCode=1
+    fi
   fi
+
+  return ${LibRun__LastExitCode}
 }
 
 brew.install.cask() {
@@ -183,8 +198,8 @@ brew.install.packages() {
   local force=
   [[ -n ${opts_force} ]] && force="--force"
 
-  for package in $@; do
-    brew.install.package ${package}
+  for package in "$@"; do
+    brew.install.package "${package}"
   done
 }
 
@@ -192,9 +207,9 @@ brew.reinstall.packages() {
   local force=
   [[ -n ${opts_force} ]] && force="--force"
 
-  for package in $@; do
-    brew.uninstall.package ${package}
-    brew.install.package ${package}
+  for package in "$@"; do
+    brew.uninstall.package "${package}"
+    brew.install.package "${package}"
   done
 }
 

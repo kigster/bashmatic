@@ -546,7 +546,7 @@ util.arch                                     util.remove-from-init-files
 util.call-if-function                         util.shell-init-files
 util.checksum.files                           util.shell-name
 util.checksum.stdin                           util.ver-to-i
-util.functions-matching                       util.whats-installed
+util.functions-starting-with                       util.whats-installed
 util.generate-password                        watch.ls-al
 ```
 

@@ -156,10 +156,22 @@ util.lines-in-folder() {
   find ${folder} -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
 }
 
-util.functions-matching() {
-  local prefix=${1}
+util.functions-starting-with() {
+  local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | egrep "^${prefix}" | sed -E 's/.*.//g; s/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+  set | egrep '()' | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+}
+
+util.functions-matching() {
+  local prefix="${1}"
+  local extra_command=${2:-"cat"}
+  set | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+}
+
+util.functions-matching.diff() {
+  for e in $(util.functions-matching "${1}"); do
+    echo ${e/${1}/}
+  done
 }
 
 util.checksum.files() {

@@ -1,261 +1,448 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-set -e
-source ${HOME}/.bashmatic/init.sh 1>/dev/null
+source "${HOME}/.bashmatic/init.sh" 1>/dev/null
 
-run.set-all abort-on-error
+run.set-all continue-on-error
 
-export ruby_version="${ruby_version:-"2.7.1"}"
+export opt_terse=
+export ruby_version=
+export DevSetup__Version="0.1.0"
 
-.dev-install.pg-versions() {
+.dev-setup.pg-versions() {
   brew search postgresql@ | tr -d 'a-z@A-Z =>-' | sed '/^$/d' | sort -nr
 }
 
-declare -a pg_versions=( $(brew.package.available-versions postgresql) )
-export latest_postgres_version=${pg_versions[0]}
-export postgres_version=${postgres_version:-${latest_postgres_version}}
-
-declare -a mysql_versions=( $(brew.package.available-versions mysql) )
-export latest_mysql_version="${mysql_versions[0]}"
-export mysql_version=${mysql_version:-${latest_mysql_version}}
-
-h1 "PostgreSQL Version: ${postgres_version}" "MySQL Version: ${mysql_version}"
-
-[[ -f .ruby-version ]] && export ruby_version="$(cat .ruby-version | tr -d '\n')"
-
-# List of Brew Formulas to install and l`ink
-declare -a brew_deps_base=(
-  ack
-  asciidoc
-  asciidoctor
-  awscli
-  bash
-  bash-completion
-  bats
-  coreutils
-  curl
-  direnv
-  git
-  htop
-  libevent
-  imagemagick@6
-  jpeg
-  jq
-  lame
-  libffi
-  libgcrypt
-  libgpg-error
-  libheif
-  libiconv
-  libidn2
-  libksba
-  libmemcached
-  libmpc
-  libomp
-  libpng
-  libtasn1
-  libtiff
-  libtool
-  libunistring
-  libusb
-  libxml2
-  libxslt
-  libyaml
-  libzip
-  mysql-client
-  ncurses
-  netcat
-  nmap
-  openssl
-  p7zip
-  pandoc
-  pcre
-  pstree
-  rsync
-  shellcheck
-  the_silver_searcher
-  tree
-  vim
-  watch
-  wget
-  ydiff
-  zlib
-)
-
-declare -a brew_deps_gnu=(
-  gcc
-  gdbm
-  gnupg
-  gnutls
-  gnu-sed
-  gnu-tar
-  gnu-time
-  gnu-which
-)
-
-declare -a brew_deps_dev=(
-  autoconf
-  bazelisk
-  buildifier
-  cloc
-  cmake
-  go
-  node
-  yarn
-  openjdk@11
-  python
-  rbenv
-  readline
-  ruby-build
-  terraform
-)
-
-# List of Brew Formulas to install and link
-declare -a brew_deps_services=(
-  memcached
-  haproxy
-  nginx
-  postgresql@${postgres_version}
-  mysql@${mysql_version}
-  redis
-)
-
-declare -a brew_deps_casks=(
-  chromedriver
-  rowanj-gitx
-  teamviewer
-  macdown
-)
-
-declare -a components=(
-  base
-  gnu
-  dev
-  services
-  casks
-)
-
-export piped_components=$(array.to.piped-list "${components[@]}")
-
-usage() {
-  h2 "USAGE: ${bldblu}dev-dev-install.init "  \
-     "${bldcyn}[ --all | [ ${bldylw}ruby|$(array.join '|' "${components[@]}")${bldcyn} ] ] [ -r | --ruby VERSION ]"  \
-     "NOTE: default ruby version is ${bldgrn}${ruby_version}"
-  exit 0
+.dev-setup.detect.pg-version() {
+  declare -a pg_versions=($(brew.package.available-versions postgresql))
+  export pg_versions
+  export latest_postgres_version=${pg_versions[0]}
+  export postgres_version=${postgres_version:-${latest_postgres_version}}
 }
 
-#———————————————————————————————————————————————————————————————————————————————
-
-
-dev-install.init() {
-  h2 "Setting up prerequisutes..."
-  brew.install
-  #brew.upgrade
+.dev-setup.detect.mysql-version() {
+  declare -a mysql_versions=($(brew.package.available-versions mysql))
+  export mysql_versions
+  export latest_mysql_version="${mysql_versions[0]}"
+  export mysql_version=${mysql_version:-${latest_mysql_version}}
 }
 
-dev-install.ruby() {
+.dev-setup.detect.ruby-version() {
+  [[ -n ${ruby_version} ]] && return 0
+  [[ -f .ruby-version ]] && {
+    export ruby_version="$(cat .ruby-version | tr -d '\n')"
+  }
+}
+
+.dev-setup.ruby() {
   if [[ -n ${ruby_version} ]]; then
+    h1 "Installing Ruby ${ruby_version}"
     ruby.install "${ruby_version}"
     ruby.init
+  else
+    warning "No Ruby Version was provided."
   fi
 }
 
-dev-install.brew() {
+declare -a DevSetup__Errors=()
+declare -a DevSetup__BrewPackages=()
+declare -a DevSetup__BrewCasks=()
+declare -a DevSetup__BrewServices=()
+declare -a DevSetup__Callbacks=()
 
-  h1 "Starting Installation of the following components:" \
-    "${bldylw}$(array.to.csv ${components_to_install[@]})"
+export DevSetup__BrewPackages
+export DevSetup__BrewCasks
+export DevSetup__BrewServices
+export DevSetup__Callbacks
 
-  dev-install.init
+.dev-setup.brew.dev() {
+  # List of Brew Formulas to install and l`ink
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    ack
+    asciidoc
+    asciidoctor
+    awscli
+    bash
+    bash-completion
+    bats
+    cloc
+    coreutils
+    curl
+    direnv
+    git
+    htop
+    libevent
+    imagemagick@6
+    jpeg
+    jq
+    lame
+    libffi
+    libgcrypt
+    libgpg-error
+    libheif
+    libiconv
+    libidn2
+    libksba
+    libmemcached
+    libmpc
+    libomp
+    libpng
+    libtasn1
+    libtiff
+    libtool
+    libunistring
+    libusb
+    libxml2
+    libxslt
+    libyaml
+    libzip
+    mysql-client
+    ncurses
+    netcat
+    nmap
+    openssl@1.1
+    p7zip
+    pandoc
+    pcre
+    pstree
+    readline
+    rsync
+    shellcheck
+    the_silver_searcher
+    tree
+    vim
+    watch
+    wget
+    ydiff
+    zlib
+  )
 
-  for c in ${components_to_install[@]}; do
-    h3 "Installing Components of type: ${c}..."
-    array_name="\${brew_deps_${c}[*]}"
-    set -e
-    for item in $(eval "echo ${array_name}"); do
-      if [[ "$c" == "casks" ]]; then
-        brew.install.cask "${item}"
-      else
-        brew.install.package "${item}"
-        if [[ "$c" == "services" ]]; then
-          brew.service.up "${item}"
-        fi
-      fi
-    done
-    hr
-  done
-
-  success "All components have been installed. Thanks!"
-  return 0
+  export DevSetup__BrewCasks=("${DevSetup__BrewCasks[@]}"
+    chromedriver
+    rowanj-gitx
+  )
 }
 
-declare -a components_to_install=()
-declare -a additional_functions=()
+.dev-setup.brew.gnu() {
+  # List of Brew Formulas to install and l`ink
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    gnupg
+    gnutls
+    gnu-sed
+    gnu-tar
+    gnu-time
+    gnu-which
+  )
+}
 
-function main.parse-opts() {
+.dev-setup.brew.cpp() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    autoconf
+    automake
+    cmake
+    gcc
+    gdbm
+    make
+    pkg-config
+  )
+}
+
+.dev-setup.brew.js() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    node
+    yarn
+  )
+  export DevSetup__BrewCasks=("${DevSetup__BrewCasks[@]}"
+    phantomjs
+  )
+  export DevSetup__Callbacks=(${DevSetup__Callbacks[@]}
+    "[[ -f package.json ]] && npm install"
+  )
+}
+
+.dev-setup.brew.python() {
+  # List of Brew Formulas to install and l`ink
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    python
+  )
+}
+
+.dev-setup.brew.ruby() {
+  .dev-setup.detect.ruby-version
+  [[ -z ${ruby_version} ]] && {
+    error "Ruby Version must be provided."
+    exit 1
+  }
+  # List of Brew Formulas to install and l`ink
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    rbenv
+    ruby-build
+    ruby-completion
+  )
+
+  export DevSetup__Callbacks=(${DevSetup__Callbacks[@]}
+    "ruby.install ${ruby_version}"
+    "rbenv global ${ruby_version}"
+    "gem update --system"
+    "gem install bundler"
+    "[[ -f Gemfile ]] && bundle install"
+
+  )
+
+}
+
+.dev-setup.brew.java() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    openjdk@11
+    maven
+    maven-completion
+    maven-shell
+    ant
+    ant-contrib
+  )
+}
+
+.dev-setup.brew.go() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    golang
+  )
+}
+
+.dev-setup.brew.bazel() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    openjdk@11
+    buildifier
+    bazelisk
+    python
+  )
+}
+
+.dev-setup.brew.monitoring() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    htop
+    glances
+    nmon
+  )
+}
+
+.dev-setup.brew.load-balancing() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    haproxy
+    nginx
+  )
+  export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
+    haproxy
+    nginx
+  )
+}
+
+.dev-setup.brew.caching() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    memcached
+    redis
+  )
+  export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
+    memcached
+    redis
+  )
+}
+
+.dev-setup.brew.databases() {
+  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
+    "mysql@${mysql_version}"
+    "postgresql@${postgres_version}"
+  )
+  export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
+    "mysql@${mysql_version}"
+    "postgresql@${postgres_version}"
+  )
+}
+
+declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
+declare -a components_to_install=()
+
+usage() {
+  usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
+    "-a / -all" "Installs everything" \
+    "-g / --groups" "Installs groups of packages and casks." \
+    "-q / --quieter" "Do not print as much output." \
+    " " "Note that ${bldblu}dev${bldylw} group is always installed." \
+    " " "${bldblu}$(array.to.csv ${components[@]:0:5})" \
+    " " "${bldblu}$(array.to.csv ${components[@]:5:5})" \
+    " " "${bldblu}$(array.to.csv ${components[@]:10:5})" \
+    "-r /  --ruby-version VERSION" "Ruby version, overrides defaulkt ${ruby_version}" \
+    "-p /    --pg-version VERSION" "PostgreSQL version, overrides ${pg_version}" \
+    "-m / --mysql-version VERSION" "MySQL version, overrides ${mysql_version}"
+
+  output.print-at-x-y 2 6 "$(usage-box.section "GROUPS")"
+  exit 0
+}
+
+dev-setup.parse-opts() {
+  [[ -z "$1" ]] && {
+    usage
+    exit 0
+  }
+
   # Parse additional flags
   while :; do
     case $1 in
+    -g | --groups)
+      shift
+      [[ ${#components_to_install[@]} -eq 0 ]] && {
+        export components_to_install=("dev")
+      }
+      for c in "${1}"; do
+        export components_to_install=(${components_to_install[@]} "$c")
+      done
+      shift
+      ;;
+    -a | --all)
+      shift
+      export components_to_install=(${components[@]})
+      ;;
+    -r | --ruby-version)
+      shift
+      export ruby_version="$1"
+      shift
+      ;;
+    -p | --pg-version)
+      shift
+      export postgres_version="$1"
+      array.includes "${postgres_version}" "${pg_versions[@]}" || {
+        error "PostgreSQL version ${postgres_version} can not be installed via Brew." \
+          "Supported versions are $(array.to.csv "${pg_versions[@]}")"
+        exit 2
+      }
+      shift
+      ;;
+    -m | --mysql-version)
+      shift
+      export mysql_version="$1"
+      array.includes "${mysql_version}" "${mysql_versions[@]}" || {
+        error "MySQL version ${mysql_version} can not be installed via Brew." \
+          "Supported versions are $(array.to.csv "${mysql_versions[@]}")"
+        exit 2
+      }
+      shift
+      ;;
+    -n | --dry-run)
+      run::set-all dry-run-on
+      shift
+      ;;
+    -q | --quieter)
+      export opt_terse=true
+      shift
+      ;;
     -h | -\? | --help)
       shift
       usage
       exit 0
       ;;
-
-    -r | --ruby)
-      shift
-      export ruby_version="$1"
-      shift
-      break
-      ;;
-
-    --all | -a)
-      components_to_install=(${components[@]})
-      additional_functions=(ruby)
-      shift
-      break
-      ;;
-
-    ruby)
-      shift
-      additional_functions=(${additional_functions[@]} ruby)
-      break
-      ;;
-
-    base | gnu | dev | services | casks)
-      components_to_install=(${components_to_install[@]} $1)
-      shift
-      break
-      ;;
-
     --) # End of all options; anything after will be passed to the action function
       shift
       break
       ;;
-
+    -?*)
+      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
     *)
-      break
+      [[ -z "$1" ]] && break
+      shift
       ;;
     esac
   done
-
-  export components_to_install
-  export additional_functions
-
-  if [[ ${#components_to_install[@]} -eq 0 && ${#additional_functions[@]} -eq 0 ]]; then
-    usage
-    exit 1
-  fi
 }
 
-main() {
-  main.parse-opts "$@"
-  if [[ ${#components_to_install[@]} -gt 0 ]]; then
-    dev-install.brew
-  fi
-  for additional in ${additional_functions[@]}; do
-    local func="dev-install.${additional}"
-    ${func}
+dev-setup.init() {
+  brew.install
+}
+
+dev-setup.install.packages() {
+  local command="$1"
+  shift
+  local errors=0
+
+  for package in "${@}"; do
+    eval "${command} ${package}"
+    local code=$?
+
+    [[ ${code} -ne 0 ]] && {
+      errors=$((errors + 1))
+      DevSetup__Errors=(${DevSetup__Errors[@]} "${command} ${package}")
+    }
   done
+  echo
+  hr
+  echo
+  return ${errors}
 }
 
-main "$@"
+dev-setup.install() {
+  local failures=0
+
+  [[ "${#DevSetup__BrewPackages[@]}" -gt 0 ]] && {
+    h2 "Installing Brew Packages"
+    dev-setup.install.packages "brew.install.package" "${DevSetup__BrewPackages[@]}" || {
+      failures=$((failures + 1))
+    }
+  }
+
+  [[ "${#DevSetup__BrewCasks[@]}" -gt 0 ]] && {
+    h2 "Installing Brew Casks"
+    dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewCasks[@]}" || {
+      failures=$((failures + 1))
+    }
+  }
+
+  [[ "${#DevSetup__BrewServices[@]}" -gt 0 ]] && {
+    h2 "Starting Brew Services"
+    dev-setup.install.packages "brew.service.up" "${DevSetup__BrewServices[@]}" || {
+      failures=$((failures + 1))
+    }
+  }
+
+  [[ "${#DevSetup__Callbacks[@]}" -gt 0 ]] && {
+    h2 "Executing Callbacks"
+    for command in "${DevSetup__Callbacks[@]}"; do
+      if util.is-a-function "${command/ */}"; then
+        eval "${command}" || {
+          failures=$((failures + 1))
+        }
+      else
+        run "${command}"
+        [[ ${LibRun__LastExitCode} -eq 0 ]] || {
+          failures=$((failures + 1))
+        }
+      fi
+    done
+  }
+
+  echo
+  hr
+  echo
+  if [[ ${failures} -eq 0 ]]; then
+    success "Setup has completed with no failures."
+  else
+    warning "Setup completed, but with some failures." \
+      "Total of ${failures} were detected and skipped."
+    echo
+    echo
+    h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
+  fi
+}
+
+h1 "Welcome to Bashmatic Mac-OSX DevSetup Installer, Version ${DevSetup__Version}"
+echo
+
+dev-setup.parse-opts "$@"
+
+[[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})
+
+for c in "${components_to_install[@]}"; do
+  func=".dev-setup.brew.${c}"
+  eval "${func}"
+done
+
+dev-setup.install

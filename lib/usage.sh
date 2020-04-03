@@ -114,3 +114,8 @@ usage-box() {
   [[ -n ${title} ]] && .usage.title "${title}"
   [[ -n "$*" ]] && .usage.flags "$@"
 }
+
+usage-box.section() {
+  printf "${__color_headers}"
+  .usage.hdr "$*"
+}

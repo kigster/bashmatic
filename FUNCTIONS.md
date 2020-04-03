@@ -509,7 +509,7 @@
     * [`util.call-if-function`](#utilcall-if-function)
     * [`util.checksum.files`](#utilchecksumfiles)
     * [`util.checksum.stdin`](#utilchecksumstdin)
-    * [`util.functions-matching`](#utilfunctions-matching)
+    * [`util.functions-starting-with`](#utilfunctions-starting-with)
     * [`util.generate-password`](#utilgenerate-password)
     * [`util.i-to-ver`](#utili-to-ver)
     * [`util.install-direnv`](#utilinstall-direnv)
@@ -7800,10 +7800,10 @@ util.checksum.stdin ()
 
 ```
 
-#### `util.functions-matching`
+#### `util.functions-starting-with`
 
 ```bash
-util.functions-matching ()
+util.functions-starting-with ()
 {
     local prefix=${1};
     local extra_command=${2:-"cat"};
