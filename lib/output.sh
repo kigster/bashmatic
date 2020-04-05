@@ -707,7 +707,8 @@ warn() {
 
 warning() {
   header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}")
-  box.yellow-in-yellow "${header} ${bldylw}$*" >&2
+  local first="$1"; shift
+  box.yellow-in-yellow "${header} ${bldylw}$first" "$@" >&2
 }
 
 br() {

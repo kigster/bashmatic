@@ -119,7 +119,7 @@ brew.install.package() {
   [[ -n ${opts_force} ]] && force="--force"
   [[ -n ${opts_verbose} ]] && verbose="--verbose"
 
-  [[ -z ${opt_terse} ]] && inf "checking for package ${bldylw}${package}..."
+  [[ -z ${opt_terse} ]] && inf "checking for 🍻  ${bldylw}${package}..."
 
   if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
     [[ -z ${opt_terse} ]] && ok:
@@ -127,7 +127,7 @@ brew.install.package() {
     export LibRun__LastExitCode=0
   else
     if [[ -z ${opt_terse} ]]; then
-      printf " — ${package} is not yet installed.\n"
+      printf " ${bldpur}${package}${txtylw} must pour.\n${clr}"
       run "brew install ${package} ${force} ${verbose}"
     else
       (brew install ${package} ${force} ${verbose}) 2>&1 | cat >/dev/null

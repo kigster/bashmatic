@@ -73,7 +73,7 @@ usage.set-min-flag-len() {
 
   for arg in "$@"; do
     if (($(($n % 2)) == 0)); then
-      line=$(printf "${__color_flag}%${l_flags}s" "${arg}")
+      line=$(printf "    ${__color_flag}%-${l_flags}s" "${arg}")
     else
       line=$(printf "%s${__color_fg}  %s\n" "${line}" "${arg}")
 

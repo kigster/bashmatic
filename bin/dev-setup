@@ -69,6 +69,7 @@ export DevSetup__Callbacks
     curl
     direnv
     git
+    geoip
     htop
     libevent
     imagemagick@6
@@ -98,7 +99,6 @@ export DevSetup__Callbacks
     mysql-client
     ncurses
     netcat
-    nmap
     openssl@1.1
     p7zip
     pandoc
@@ -220,7 +220,7 @@ export DevSetup__Callbacks
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     htop
     glances
-    nmon
+    nmap
   )
 }
 
@@ -261,19 +261,28 @@ declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
 declare -a components_to_install=()
 
 usage() {
+  if [[ -f ${BASHMATIC_HOME}/bin/.dev-setup ]]; then
+    cat ${BASHMATIC_HOME}/bin/.dev-setup
+    return 0
+  fi
+
   usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
     "-a / -all" "Installs everything" \
-    "-g / --groups" "Installs groups of packages and casks." \
+    "-e / -exit-on-error" "Abort if an error occurs. Default is to keep going." \
+    "-g / --groups" "Installs dev + specific groups of packages and casks." \
+    "-d / --no-dev" "Skips dev when used with a specific -g selection." \
     "-q / --quieter" "Do not print as much output." \
+    "-n / --dry-run" "Only print commands, but do not run them" \
+    "-r / --ruby-version VERSION" "Ruby version, overrides defaulkt ${ruby_version}" \
+    "-p / --pg-version VERSION" "PostgreSQL version, overrides ${pg_version}" \
+    "-m / --mysql-version VERSION" "MySQL version, overrides ${mysql_version}" \
     " " "Note that ${bldblu}dev${bldylw} group is always installed." \
+    " " " " \
     " " "${bldblu}$(array.to.csv ${components[@]:0:5})" \
     " " "${bldblu}$(array.to.csv ${components[@]:5:5})" \
-    " " "${bldblu}$(array.to.csv ${components[@]:10:5})" \
-    "-r /  --ruby-version VERSION" "Ruby version, overrides defaulkt ${ruby_version}" \
-    "-p /    --pg-version VERSION" "PostgreSQL version, overrides ${pg_version}" \
-    "-m / --mysql-version VERSION" "MySQL version, overrides ${mysql_version}"
+    " " "${bldblu}$(array.to.csv ${components[@]:10:5})"
 
-  output.print-at-x-y 2 6 "$(usage-box.section "GROUPS")"
+  output.print-at-x-y 2 4 "$(usage-box.section "GROUPS")"
   exit 0
 }
 
@@ -283,18 +292,22 @@ dev-setup.parse-opts() {
     exit 0
   }
 
+  local -a default_components=(dev)
+  export default_components
+
   # Parse additional flags
   while :; do
     case $1 in
     -g | --groups)
       shift
-      [[ ${#components_to_install[@]} -eq 0 ]] && {
-        export components_to_install=("dev")
-      }
       for c in "${1}"; do
         export components_to_install=(${components_to_install[@]} "$c")
       done
       shift
+      ;;
+    -d | --no-dev)
+      shift
+      export default_components=()
       ;;
     -a | --all)
       shift
@@ -329,6 +342,10 @@ dev-setup.parse-opts() {
       run::set-all dry-run-on
       shift
       ;;
+    -e | --exit-on-error)
+      run::set-all abort-on-error
+      shift
+      ;;
     -q | --quieter)
       export opt_terse=true
       shift
@@ -353,6 +370,10 @@ dev-setup.parse-opts() {
       ;;
     esac
   done
+
+  [[ ${#default_components[@]} -gt 0 ]] && {
+    export components_to_install=(${default_components[@]} ${components_to_install[@]})
+  }
 }
 
 dev-setup.init() {
@@ -374,13 +395,13 @@ dev-setup.install.packages() {
     }
   done
   echo
-  hr
-  echo
   return ${errors}
 }
 
 dev-setup.install() {
   local failures=0
+
+  brew.cache-reset
 
   [[ "${#DevSetup__BrewPackages[@]}" -gt 0 ]] && {
     h2 "Installing Brew Packages"
@@ -419,24 +440,19 @@ dev-setup.install() {
     done
   }
 
-  echo
-  hr
-  echo
   if [[ ${failures} -eq 0 ]]; then
     success "Setup has completed with no failures."
   else
-    warning "Setup completed, but with some failures." \
-      "Total of ${failures} were detected and skipped."
     echo
+    warning \
+      "Setup completed, but with some failures." "Total of ${failures} were detected and skipped."
     echo
     h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
   fi
 }
 
-h1 "Welcome to Bashmatic Mac-OSX DevSetup Installer, Version ${DevSetup__Version}"
-echo
-
 dev-setup.parse-opts "$@"
+box.magenta-in-blue "Bashmatic Mac-OSX DevSetup Installer" "Version ${DevSetup__Version}"
 
 [[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})
 
