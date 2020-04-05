@@ -25,18 +25,27 @@ gem.configure-cache() {
   export LibGem__GemListCache="${LibGem__GemListCacheBase}.${ruby_version}"
 
   local dir=$(dirname ${LibGem__GemListCache})
-  [[ -d ${dir} ]] || run "mkdir -p ${dir}"
+  [[ -d ${dir} ]] || run "mkdir -p ${dir}" >/dev/null
 }
 
 gem.version() {
-  local gem=$1
-  local default=$2
+  local gem="$1"
+  local default="$2"
 
   [[ -z ${gem} ]] && return
 
   local version
-  [[ -f Gemfile.lock ]] && version=$(gem.gemfile.version ${gem})
-  [[ -z ${version} ]] && version=$(gem.global.latest-version ${gem})
+
+  [[ -f Gemfile.lock ]] && version=$(gem.gemfile.version "${gem}")
+
+  if [[ -z ${version} ]]; then
+    if gem.is-installed "${gem}"; then
+      version=$(gem.global.latest-version "${gem}")
+    else
+      version=$(gem.remote.version "${gem}")
+    fi
+  fi
+
   [[ -z ${version} && -n ${default} ]] && version=${default} # fallback to the default if not found
 
   printf "%s" "${version}"
@@ -47,7 +56,12 @@ gem.global.versions() {
   local gem=$1
   [[ -z ${gem} ]] && return
   gem.cache-installed
-  cat ${LibGem__GemListCache} | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
+  cat "${LibGem__GemListCache}" | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
+}
+
+gem.remote.version() {
+  [[ -z "$1" ]] && return
+  gem query "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
 }
 
 # Returns a space-separated list of installed gem versions
@@ -57,12 +71,12 @@ gem.global.latest-version() {
 
   declare -a versions=($(gem.global.versions ${gem}))
   local max=0
-  local max_version=
+  local max_version=${versions[0]}
   for v in "${versions[@]}"; do
-    vi=$(util.ver-to-i ${v})
+    vi=$(util.ver-to-i "${v}")
     if [[ ${vi} -gt ${max} ]]; then
       max=${vi}
-      max_version=${v}
+      max_version="${v}"
     fi
   done
   printf "%s" "${max_version}"
@@ -70,9 +84,7 @@ gem.global.latest-version() {
 
 gem.gemfile.version() {
   local gem=$1
-
   [[ -z ${gem} ]] && return
-
   if [[ -f Gemfile.lock ]]; then
     egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9]\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
   fi
@@ -82,18 +94,20 @@ gem.gemfile.version() {
 gem.cache-installed() {
   gem.configure-cache
   if [[ ! -s "${LibGem__GemListCache}" || -z $(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null) ]]; then
-    run "gem list > ${LibGem__GemListCache}"
+    run "gem list > ${LibGem__GemListCache}" >/dev/null
   fi
 }
 
 gem.clear-cache() {
-  rm -f ${LibGem__GemListCache}
+  rm -f "${LibGem__GemListCache}" >/dev/null
 }
 
 gem.cache-refresh() {
-  gem.configure-cache
-  gem.clear-cache
-  gem.cache-installed
+  (
+    gem.configure-cache
+    gem.clear-cache
+    gem.cache-installed
+  ) >/dev/null
 }
 
 gem.ensure-gem-version() {
@@ -116,12 +130,12 @@ gem.is-installed() {
   local gem=$1
   local version=$2
 
-  gem.cache-installed
+  gem.cache-installed >/dev/null
 
   if [[ -z ${version} ]]; then
-    egrep "^${gem} \(" "${LibGem__GemListCache}"
+    egrep -q "^${gem} \(" "${LibGem__GemListCache}"
   else
-    egrep "^${gem} \(" "${LibGem__GemListCache}" | grep "${version}"
+    egrep "^${gem} \(" "${LibGem__GemListCache}" | egrep -q "${version}"
   fi
 }
 
@@ -130,8 +144,8 @@ gem.is-installed() {
 gem.install() {
   .gem.verify-name "$@" || return 1
 
-  local gem_name=$1
-  local gem_version=$2
+  local gem_name="$1"
+  local gem_version="$2"
   local gem_version_flags=
   local gem_version_name=
 
@@ -145,7 +159,9 @@ gem.install() {
     gem_version_flags="--version ${gem_version}"
   fi
 
-  if [[ -z $(gem.is-installed ${gem_name} ${gem_version}) ]]; then
+  if gem.is-installed ${gem_name} ${gem_version}; then
+    info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed"
+  else
     info "installing ${bldylw}${gem_name} ${bldgrn}(${gem_version_name})${txtblu}..."
     run "gem install ${gem_name} ${gem_version_flags} ${LibGem__GemInstallFlags}"
     if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
@@ -155,8 +171,6 @@ gem.install() {
       error "Unable to install gem ${bldylw}${gem_name}"
     fi
     return ${LibRun__LastExitCode}
-  else
-    info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed"
   fi
 }
 
@@ -165,10 +179,10 @@ gem.uninstall() {
   local gem_name=$1
   local gem_version=$2 # optional
 
-  if [[ -z $(gem.is-installed ${gem_name} ${gem_version}) ]]; then
+  gem.is-installed "${gem_name}" "${gem_version}" || {
     info "gem ${bldylw}${gem_name}${txtblu} is not installed"
     return
-  fi
+  }
 
   local gem_flags="-x -I --force"
   if [[ -z ${gem_version} ]]; then
@@ -178,7 +192,8 @@ gem.uninstall() {
   fi
 
   run "gem uninstall ${gem_name} ${gem_flags}"
-  gem.cache-refresh
+  gem.clear-cache
+  return ${LibRun__LastExitCode}
 }
 
 ## Shortcuts

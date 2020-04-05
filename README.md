@@ -1,21 +1,28 @@
 [![Build Status](https://travis-ci.org/kigster/bashmatic.svg?branch=master)](https://travis-ci.org/kigster/bashmatic)
 ![CI](https://github.com/kigster/bashmatic/workflows/CI/badge.svg)
 
-# BashMatic
+# Bashmatic
 
-BashMatic is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
+_Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
 
-Start exploring Bashmatic below with our [examples section](#usage-examples-for-the-impatient). When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the [functions index page](FUNCTIONS.md).
+**_Bashmatic®_ is meant to be used primarily with Mac OS-X, although some functions will also work under Linux.**.
 
+Start exploring _Bashmatic®_ below with our [examples section](#usage-examples-for-the-impatient). When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the [functions index page](FUNCTIONS.md).
+
+**For quick installation instructions, please [see the corresponding section](#installing-bashmatic)**.
+
+And, finally, don't worry, **_Bashmatic®_** is totally open source and free to use and extend. We just like the way it looks with a little **®** 😂.
 ## Table of Contents
 
 * [Table of Contents](#table-of-contents)
 * [Project Motivation](#project-motivation)
-* [Usage examples for the impatient](#usage-examples-for-the-impatient)
-  * [Installing Brew packages and Ruby Gems](#installing-brew-packages-and-ruby-gems)
+* [What's The Fuss? Another BASH framework?](#whats-the-fuss-another-bash-framework)
+  * [Usage Examples](#usage-examples)
+    * [Gem and Brew Install](#gem-and-brew-install)
   * [Installing `kubectl` and `minikube` into `/usr/local/bin`](#installing-kubectl-and-minikube-into-usrlocalbin)
-* [Installing](#installing)
-  * [Bootstrapping Bashmatic using `curl`](#bootstrapping-bashmatic-using-curl)
+  * [Mac OSX Developer Setup](#mac-osx-developer-setup)
+* [Installing Bashmatic](#installing-bashmatic)
+  * [Bootstrapping _Bashmatic®_ using `curl`](#bootstrapping-bashmatic-using-curl)
   * [Installing Manually](#installing-manually)
 * [Usage](#usage)
   * [Function Naming Convention Unpacked](#function-naming-convention-unpacked)
@@ -39,36 +46,52 @@ Start exploring Bashmatic below with our [examples section](#usage-examples-for-
       * [Gem Helpers](#gem-helpers)
     * [9. Additional Helpers](#9-additional-helpers)
 * [How To...](#how-to)
-  * [Write new DSL in the Bashmatic Style](#write-new-dsl-in-the-bashmatic-style)
+  * [Write new DSL in the _Bashmatic®_ Style](#write-new-dsl-in-the-bashmatic-style)
   * [How can I test if the function was ran as part of a script, or "sourced-in"?](#how-can-i-test-if-the-function-was-ran-as-part-of-a-script-or-sourced-in)
-  * [How do I run unit tests for BashMatic?](#how-do-i-run-unit-tests-for-bashmatic)
+  * [How do I run unit tests for Bashmatic?](#how-do-i-run-unit-tests-for-bashmatic)
   * [How can I change the underscan or overscan for an old monitor?](#how-can-i-change-the-underscan-or-overscan-for-an-old-monitor)
   * [Contributing](#contributing)
 
-BashMatic is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
+_Bashmatic®_ is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
 
 ## Project Motivation
 
 This project was born out of a simple realization made by several very senior and highly experienced engineers, that:
 
- 1. It is often easier to use BASH for writing things like universal **installers**, a.k.a. **setup scripts**, **uploaders**, wrappers for all sorts of functionality, such as **NPM**, **rbenv**, installing gems, rubies, using AWS, deploying code, etc.
+ * It is often easier to use BASH for writing things like universal **installers**, a.k.a. **setup scripts**, **uploaders**, wrappers for all sorts of functionality, such as **NPM**, **rbenv**, installing gems, rubies, using AWS, deploying code, etc.
 
- 2. A lot of tasks are easy and compact to automate in BASH, and BASH function's return values lend themselves nicely to a compact DSL ([domain specific language](https://en.wikipedia.org/wiki/Domain-specific_language)) where multiple functions can be chained by logical AND `&&` and OR `||` to provide a very compact execution logic. Most importantly, we think that this logic is **extremely easy to read and understand.**
+ * BASH function's return values lend themselves nicely to a compact DSL ([domain specific language](https://en.wikipedia.org/wiki/Domain-specific_language)) where multiple functions can be chained by logical AND `&&` and OR `||` to provide a very compact execution logic. Most importantly, we think that this logic is **extremely easy to read and understand.**
 
- 3. By using a consistent programming style and descriptive method names we can create installers and uploaders that are easy to read, maintain and debug. Did we mention about the most awesome **runtime** framework? See below!
+Despite the above points, it is also generally accepted that:
 
-## Usage examples for the impatient
+ * A lot of BASH scripts are very poorly written and hard to read and understand.
 
-### Installing Brew packages and Ruby Gems
+ * It's often difficult to understand what the hell is going on while the script is running, because either its not outputting anything useful, OR it's outputting way too much.
 
-Given this tiny four-line script:
+ * When BASH errors occur, shit generally hits the fan and someone decides that they should rewrite the 20-line BASH script in C++ or Go, because, well, it's a goddamn BASH script and it ain't working.
+
+**_Bashmatic_'s goal is to make BASH programming both fun, consistent, and provide plenty of visible output to the user so that there is no mystery as to what is going on.**
+
+## What's The Fuss? Another BASH framework?
+
+BASH is know to be too verbose and unreliable. We beg to differ.
+
+This is why we wanted to start this README with a couple of examples.
+
+### Usage Examples
+
+#### Gem and Brew Install
+
+Just look at this tiny, five-line script:
 
 ```bash
+#!/usr/bin/env bash
+source ~/.bashmatic/init.sh
 
 h2 "Installing ruby gem sym and brew package curl..." \
    "Please standby..."
-gem.install "sym" && brew.install.package "curl"
-success "installed sym ruby gem, version $(gem.version sym)"
+gem.install "sym" && brew.install.package "curl" && \
+  success "installed sym ruby gem, version $(gem.version sym)"
 ```
 
 Results in this detailed and, let's be honest, *gorgeous* ASCII output:
@@ -101,24 +124,35 @@ Because:
 4. It shows in green exit code '0' of each command. Should any of the commands fail, you'll see it in red.
 5. It's source code is terse, explicit, and easy to read. There is no magic. Just BASH functions.
 
-> If you need to create a BASH installer, Bashmatic offers some incredible time savers.
+> If you need to create a BASH installer, _Bashmatic®_ offers some incredible time savers.
 
 Let's get back to the Earth, and talk about how to install Bashmatic, and how to use it in more detail right after.
 
+### Mac OSX Developer Setup
 
-## Installing
+This final example is not just an example — it's a working functioning script that can be used to install a bunch of cool stuff on your laptop. It's located in [`bin/dev-setup`](bin/dev/setup) and has many CLI flags:
 
-Perhaps the easiest way to install BashMatic is using this boot-strapping script.
+![dev-setup.png](.dev-setup.png)
 
-### Bootstrapping Bashmatic using `curl`
+Try running the following to install Ruby 2.7.1 and supporting tools:
+
+```bash
+~/.bashmatic/bin/dev-setup -d -g ruby -r 2.7.1
+```
+
+## Installing Bashmatic
+
+Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script.
+
+### Bootstrapping _Bashmatic®_ using `curl`
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-0-1 to a version you'd like to install):
 
 ```bash
-❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-1)"
+❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-2)"
 ```
 
-This not only will check out bashmatic into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
+This not only will check out _bashmatic®_ into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
 
 Restart your shell, and make sure that when you type `bashmatic.version` in the command line (and press Enter) you see the version number printed like so:
 
@@ -127,39 +161,39 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 1.0.0
 ```
 
-If you get an error, perhaps Bashmatic did not properly install.
+If you get an error, perhaps _Bashmatic®_ did not properly install.
 
 ### Installing Manually
 
-For the impatient, here is how to install BashMatic very quickly and easily. You can add the following script to your `~/.bashrc`  or any other script:
+For the impatient, here is how to install _Bashmatic®_ very quickly and easily. You can add the following script to your `~/.bashrc`  or any other script:
 
 ```bash
 
-[[ -d ${HOME}/.bashmatic ]] || {
+[[ -d ${HOME}/._bashmatic®_ ]] || {
   git clone https://github.com/kigster/bashmatic.git ~/.bashmatic
 }
 source ~/.bashmatic/init.sh
 ```
 
-Finally, to ensure Bashmatic loads every time you login, run the following command:
+Finally, to ensure _Bashmatic®_ loads every time you login, run the following command:
 
 ```bash
 bashmatic.load-at-login
 ```
 
-When you run the `bashmatic.load-at-login` function, it will add a bashmatic hook to one of your BASH initialization files, so all of its functions are available in your shell.
+When you run the `bashmatic.load-at-login` function, it will add a _bashmatic®_ hook to one of your BASH initialization files, so all of its functions are available in your shell.
 
-Note — you can always reload BashMatic with `bashmatic.reload` function.
+Note — you can always reload _Bashmatic®_ with `bashmatic.reload` function.
 
 ## Usage
 
-Welcome to **BashMatic** — an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
+Welcome to **Bashmatic** — an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
 
 We have adopted the [Google Bash Style Guide](https://google.github.io/styleguide/shell.xml), and it's recommended that anyone committing to this repo reads the guides to understand the conventions, gotchas and anti-patterns.
 
 ### Function Naming Convention Unpacked
 
-Bashmatic provides a large number of functions, which are all loaded in your current shell. The functions are split into two fundamental groups:
+_Bashmatic®_ provides a large number of functions, which are all loaded in your current shell. The functions are split into two fundamental groups:
 
  * Functions with names beginning with a `.` are considered "private" functions, for example `.run.env` and `.run.initializer`
  * All other functions are considered public.
@@ -217,7 +251,7 @@ docker.actions.update
 
 You can list various modules by listing the `lib` sub-directory of the `~/.bashmatic` folder.
 
-Note how we use Bashmatic helper `columnize [ columns ]` to display a long list in five columns.
+Note how we use _Bashmatic®_ helper `columnize [ columns ]` to display a long list in five columns.
 
 ```bash
 ❯ ls -1 ~/.bashmatic/lib | sed 's/\.sh//g' | columnize 5
@@ -225,7 +259,7 @@ Note how we use Bashmatic helper `columnize [ columns ]` to display a long list 
 array             dir               json              runtime           trap
 audio             docker            net               set               url
 aws               file              osx               set               user
-bashmatic         ftrace            output            settings          util
+_bashmatic®_         ftrace            output            settings          util
 brew              gem               pids              shell-set         vim
 caller            git-recurse-updat progress-bar      ssh               yaml
 color             git               ruby              subshell
@@ -290,7 +324,7 @@ Programming style used in this project lends itself nicely to using a DSL-like a
 ```bash
 #!/usr/bin/env bash
 
-# (See below on the location of .bashmatic and ways to install it)
+# (See below on the location of ._bashmatic®_ and ways to install it)
 source ~/.bashmatic/init.sh
 
 # configure global behavior of all run() invocations
@@ -411,7 +445,7 @@ output.is-tty && h1 "Yay For Terminals!"
 
 The above reads more like a high level language like Ruby or Python than Shell. That's because BASH is more powerful than most people think.
 
-There is an [example script](examples/test-ui.sh) that demonstrates the capabilities of BashMatic.
+There is an [example script](examples/test-ui.sh) that demonstrates the capabilities of Bashmatic.
 
 If you ran the script, you should see the output shown [in this screenshot](.bashmatic.png). Your colors may vary depending on what color scheme and font you use for your terminal.
 
@@ -659,7 +693,7 @@ See the full function index with the function implementation body in the [FUNCTI
 
 ## How To...
 
-### Write new DSL in the Bashmatic Style
+### Write new DSL in the _Bashmatic®_ Style
 
 The following example is the actual code from a soon to be integrated AWS credentials install script. This code below checks that a user has a local `~/.aws/credentials` file needed by the `awscli`, and in the right INI format. If it doesn't find it, it checks for the access key CSV file in the `~/Downloads` folder, and converts that if found. Now, if even that is not found, it prompts the user with instructions on how to generate a new key pair on AWS IAM website, and download it locally, thereby quickly converting and installing it as a proper credentials file. Not bad, for a compact BASH script, right? (of course, you are not seeing all of the involved functions, only the public ones).
 
@@ -697,7 +731,7 @@ it *is* a DSL.
 > This script could be your `bin/s3-uploader`
 ```bash
   #!/usr/bin/env bash
-  # Initialize BashMatic in this subshell
+  # Initialize _Bashmatic®_ in this subshell
 
   # call the function. It will exit if the user fails to follow instructions
   # and install a proper file.
@@ -714,12 +748,12 @@ Some bash files exists as libraries to be "sourced in", and others exist as scri
 
 What do you, programmer, do to educate the user about correct usage of your script/library?
 
-BashMatic offers a reliable way to test this:
+_Bashmatic®_ offers a reliable way to test this:
 
 ```bash
 #!/usr/bin/env bash
 # load library
-if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
+if [[ -f "${Bashmatic__Init}" ]]; then source "${Bashmatic__Init}"; else source ~/.bashmatic/init.sh; fi
 bashmatic.validate-subshell || return 1
 ```
 
@@ -728,11 +762,11 @@ If you'd rather require a library to be sourced in, but not run, use the code as
 ```bash
 #!/usr/bin/env bash
 # load library
-if [[ -f "${BashMatic__Init}" ]]; then source "${BashMatic__Init}"; else source ~/.bashmatic/init.sh; fi
+if [[ -f "${Bashmatic__Init}" ]]; then source "${Bashmatic__Init}"; else source ~/.bashmatic/init.sh; fi
 bashmatic.validate-sourced-in || exit 1
 ```
 
-### How do I run unit tests for BashMatic?
+### How do I run unit tests for Bashmatic?
 
 The framework comes with a bunch of automated unit tests based on the fantastic framework [`bats`](https://github.com/sstephenson/bats.git).
 

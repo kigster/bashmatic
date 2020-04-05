@@ -267,8 +267,8 @@ usage() {
   fi
 
   usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
-    "-a / -all" "Installs everything" \
-    "-e / -exit-on-error" "Abort if an error occurs. Default is to keep going." \
+    "-a / --all" "Installs everything" \
+    "-e / --exit-on-error" "Abort if an error occurs. Default is to keep going." \
     "-g / --groups" "Installs dev + specific groups of packages and casks." \
     "-d / --no-dev" "Skips dev when used with a specific -g selection." \
     "-q / --quieter" "Do not print as much output." \

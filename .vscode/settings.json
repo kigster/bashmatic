@@ -22,4 +22,7 @@
    "command-runner.commands": {
       "Run Bats Unit Tests": "cd ${workspaceFolder} && bin/specs ${file}",
    },
+   "cSpell.words": [
+      "Bashmatic"
+   ],
 }
