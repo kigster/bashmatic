@@ -108,8 +108,13 @@ ruby.gems.install() {
     fi
     printf "   ${gem_info}"
   done
+  
+  if [[ ${#gems_to_be_installed[@]} -eq 0 ]]; then
+    info "All gems are already installed. 👍🏼"
+    return 0
+  fi
 
-  hl.subtle "It appears that only ${#gems_to_be_installed[@]} gems are left to install..."
+  info "Looks like ${#gems_to_be_installed[@]} gems are left to install..."
 
   local -a gems_installed=()
 
@@ -130,10 +135,8 @@ ruby.gems.install() {
       continue
     fi
   done
-  hr
-  echo
   gem.clear-cache
-  success "Total of ${#gem_installed[@]} gems were successfully installed."
+  info "Total of ${#gem_installed[@]} gems were installed."
   echo
 }
 
@@ -197,18 +200,16 @@ ruby.rubygems-update() {
 ##——————————————————————————————————————————————————————————————————————————————————
 ruby.kigs-gems() {
   if [[ -z $(type wd 2>/dev/null) && -n $(command -v warp-dir) ]]; then
-    warp-dir install --dotfile ~/.bashrc >/dev/null
-    [[ -f ~/.bash_wd ]] && source ~/.bash_wd
+    [[ -f ~/.bash_wd ]] || {
+      warp-dir install --dotfile ~/.bashrc >/dev/null
+      source ~/.bash_wd
+    }
   fi
 
   [[ -n $(command -v sym) ]] && {
-    sym -B ~/.bashrc
-
-    for file in .sym.completion.bash .sym.symit.bash; do
-      [[ -f ${file} ]] && next
+    [[ -f ~/.sym.completion.bash ]] || {
       sym -B ~/.bashrc
-      break
-    done
+    }
   }
 }
 
@@ -315,6 +316,14 @@ ruby.gemfile-lock-version() {
   fi
 
   egrep " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
+}
+
+##——————————————————————————————————————————————————————————————————————————————————
+
+ruby.bundle-install() {
+  if [[ -f Gemfile.lock ]]; then
+    run "bundle install"
+  fi
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————

@@ -1,5 +1,5 @@
 
-# BashMatic
+# BashMatic Functions Index
 
 ## Table of Contents
 
@@ -172,6 +172,7 @@
     * [`gem.global.versions`](#gemglobalversions)
     * [`gem.install`](#geminstall)
     * [`gem.is-installed`](#gemis-installed)
+    * [`gem.remote.version`](#gemremoteversion)
     * [`gem.uninstall`](#gemuninstall)
     * [`gem.version`](#gemversion)
   * [Module `git`](#module-git)
@@ -265,6 +266,7 @@
     * [`error:`](#error-1)
     * [`h.black`](#hblack)
     * [`h.blue`](#hblue)
+    * [`h.e`](#he)
     * [`h.green`](#hgreen)
     * [`h.red`](#hred)
     * [`h.yellow`](#hyellow)
@@ -306,6 +308,7 @@
     * [`output.is-ssh`](#outputis-ssh)
     * [`output.is-terminal`](#outputis-terminal)
     * [`output.is-tty`](#outputis-tty)
+    * [`output.print-at-x-y`](#outputprint-at-x-y)
     * [`output.reset-min-max-width`](#outputreset-min-max-width)
     * [`output.set-max-width`](#outputset-max-width)
     * [`output.set-min-width`](#outputset-min-width)
@@ -367,6 +370,7 @@
   * [Module `ruby`](#module-ruby)
     * [`bundle.gems-with-c-extensions`](#bundlegems-with-c-extensions)
     * [`interrupted`](#interrupted)
+    * [`ruby.bundle-install`](#rubybundle-install)
     * [`ruby.bundler-version`](#rubybundler-version)
     * [`ruby.compiled-with`](#rubycompiled-with)
     * [`ruby.default-gems`](#rubydefault-gems)
@@ -486,6 +490,7 @@
     * [`url.valid-status`](#urlvalid-status)
   * [Module `usage`](#module-usage)
     * [`usage-box`](#usage-box)
+    * [`usage-box.section`](#usage-boxsection)
     * [`usage.set-min-flag-len`](#usageset-min-flag-len)
   * [Module `user`](#module-user)
     * [`user`](#user)
@@ -509,6 +514,8 @@
     * [`util.call-if-function`](#utilcall-if-function)
     * [`util.checksum.files`](#utilchecksumfiles)
     * [`util.checksum.stdin`](#utilchecksumstdin)
+    * [`util.functions-matching`](#utilfunctions-matching)
+    * [`util.functions-matching.diff`](#utilfunctions-matchingdiff)
     * [`util.functions-starting-with`](#utilfunctions-starting-with)
     * [`util.generate-password`](#utilgenerate-password)
     * [`util.i-to-ver`](#utili-to-ver)
@@ -1283,13 +1290,11 @@ brew.cask.tap ()
 ```bash
 brew.install ()
 {
-    declare -a brew_packages=$@;
     local brew=$(which brew 2>/dev/null);
     if [[ -z "${brew}" ]]; then
         info "Installing Homebrew, please wait...";
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";
     else
-        info "Homebrew is already installed.";
         info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)";
     fi
 }
@@ -1333,18 +1338,32 @@ brew.install.package ()
     local verbose=;
     [[ -n ${opts_force} ]] && force="--force";
     [[ -n ${opts_verbose} ]] && verbose="--verbose";
-    inf "checking if package ${bldylw}${package}$(txt-info) is already installed...";
+    [[ -z ${opt_terse} ]] && inf "checking for 🍻  ${bldylw}${package}...";
     if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
-        ui.closer.ok:;
+        [[ -z ${opt_terse} ]] && ok:;
+        [[ -z ${opt_terse} ]] || printf "${bldgrn}○ ";
+        export LibRun__LastExitCode=0;
     else
-        printf "${bldred}not found.${clr}\n";
-        run "brew install ${package} ${force} ${verbose}";
-        if [[ ${LibRun__LastExitCode} != 0 ]]; then
-            info "NOTE: ${bldred}${package}$(txt-info) failed to install, attempting to reinstall...";
-            brew.reinstall.package "${package}";
+        if [[ -z ${opt_terse} ]]; then
+            printf " ${bldpur}${package}${txtylw} must pour.\n${clr}";
+            run "brew install ${package} ${force} ${verbose}";
+        else
+            ( brew install ${package} ${force} ${verbose} ) 2>&1 | cat > /dev/null;
+            local code=$?;
         fi;
+        [[ ${code} -eq 0 || ${LibRun__LastExitCode} -eq 0 ]] || {
+            brew.reinstall.package "${package}"
+        };
         brew.cache-reset.delayed;
-    fi
+        export LibRun__LastExitCode=0;
+        if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
+            [[ -n ${opt_terse} ]] && printf "\n🟢 ";
+        else
+            [[ -n ${opt_terse} ]] && printf "\n🔴 ";
+            export LibRun__LastExitCode=1;
+        fi;
+    fi;
+    return ${LibRun__LastExitCode}
 }
 
 ```
@@ -1356,9 +1375,9 @@ brew.install.packages ()
 {
     local force=;
     [[ -n ${opts_force} ]] && force="--force";
-    for package in $@;
+    for package in "$@";
     do
-        brew.install.package ${package};
+        brew.install.package "${package}";
     done
 }
 
@@ -1423,10 +1442,10 @@ brew.reinstall.packages ()
 {
     local force=;
     [[ -n ${opts_force} ]] && force="--force";
-    for package in $@;
+    for package in "$@";
     do
-        brew.uninstall.package ${package};
-        brew.install.package ${package};
+        brew.uninstall.package "${package}";
+        brew.install.package "${package}";
     done
 }
 
@@ -2914,7 +2933,7 @@ gem.cache-installed ()
 {
     gem.configure-cache;
     if [[ ! -s "${LibGem__GemListCache}" || -z $(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null) ]]; then
-        run "gem list > ${LibGem__GemListCache}";
+        run "gem list > ${LibGem__GemListCache}" > /dev/null;
     fi
 }
 
@@ -2925,9 +2944,9 @@ gem.cache-installed ()
 ```bash
 gem.cache-refresh ()
 {
-    gem.configure-cache;
+    ( gem.configure-cache;
     gem.clear-cache;
-    gem.cache-installed
+    gem.cache-installed ) > /dev/null
 }
 
 ```
@@ -2937,7 +2956,7 @@ gem.cache-refresh ()
 ```bash
 gem.clear-cache ()
 {
-    rm -f ${LibGem__GemListCache}
+    rm -f "${LibGem__GemListCache}" > /dev/null
 }
 
 ```
@@ -2953,7 +2972,7 @@ gem.configure-cache ()
     local ruby_version=$(ruby.numeric-version);
     export LibGem__GemListCache="${LibGem__GemListCacheBase}.${ruby_version}";
     local dir=$(dirname ${LibGem__GemListCache});
-    [[ -d ${dir} ]] || run "mkdir -p ${dir}"
+    [[ -d ${dir} ]] || run "mkdir -p ${dir}" > /dev/null
 }
 
 ```
@@ -3000,13 +3019,13 @@ gem.global.latest-version ()
     [[ -z ${gem} ]] && return;
     declare -a versions=($(gem.global.versions ${gem}));
     local max=0;
-    local max_version=;
+    local max_version=${versions[0]};
     for v in "${versions[@]}";
     do
-        vi=$(util.ver-to-i ${v});
+        vi=$(util.ver-to-i "${v}");
         if [[ ${vi} -gt ${max} ]]; then
             max=${vi};
-            max_version=${v};
+            max_version="${v}";
         fi;
     done;
     printf "%s" "${max_version}"
@@ -3022,7 +3041,7 @@ gem.global.versions ()
     local gem=$1;
     [[ -z ${gem} ]] && return;
     gem.cache-installed;
-    cat ${LibGem__GemListCache} | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
+    cat "${LibGem__GemListCache}" | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
 ```
@@ -3033,8 +3052,8 @@ gem.global.versions ()
 gem.install ()
 {
     .gem.verify-name "$@" || return 1;
-    local gem_name=$1;
-    local gem_version=$2;
+    local gem_name="$1";
+    local gem_version="$2";
     local gem_version_flags=;
     local gem_version_name=;
     gem_version=${gem_version:-$(gem.version ${gem_name})};
@@ -3045,7 +3064,9 @@ gem.install ()
         gem_version_name="${gem_version}";
         gem_version_flags="--version ${gem_version}";
     fi;
-    if [[ -z $(gem.is-installed ${gem_name} ${gem_version}) ]]; then
+    if gem.is-installed ${gem_name} ${gem_version}; then
+        info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed";
+    else
         info "installing ${bldylw}${gem_name} ${bldgrn}(${gem_version_name})${txtblu}...";
         run "gem install ${gem_name} ${gem_version_flags} ${LibGem__GemInstallFlags}";
         if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
@@ -3055,8 +3076,6 @@ gem.install ()
             error "Unable to install gem ${bldylw}${gem_name}";
         fi;
         return ${LibRun__LastExitCode};
-    else
-        info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed";
     fi
 }
 
@@ -3069,12 +3088,23 @@ gem.is-installed ()
 {
     local gem=$1;
     local version=$2;
-    gem.cache-installed;
+    gem.cache-installed > /dev/null;
     if [[ -z ${version} ]]; then
-        egrep "^${gem} \(" "${LibGem__GemListCache}";
+        egrep -q "^${gem} \(" "${LibGem__GemListCache}";
     else
-        egrep "^${gem} \(" "${LibGem__GemListCache}" | grep "${version}";
+        egrep "^${gem} \(" "${LibGem__GemListCache}" | egrep -q "${version}";
     fi
+}
+
+```
+
+#### `gem.remote.version`
+
+```bash
+gem.remote.version ()
+{
+    [[ -z "$1" ]] && return;
+    gem query "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
 }
 
 ```
@@ -3087,10 +3117,10 @@ gem.uninstall ()
     .gem.verify-name "$@" || return 1;
     local gem_name=$1;
     local gem_version=$2;
-    if [[ -z $(gem.is-installed ${gem_name} ${gem_version}) ]]; then
+    gem.is-installed "${gem_name}" "${gem_version}" || {
         info "gem ${bldylw}${gem_name}${txtblu} is not installed";
-        return;
-    fi;
+        return
+    };
     local gem_flags="-x -I --force";
     if [[ -z ${gem_version} ]]; then
         gem_flags="${gem_flags} -a";
@@ -3098,7 +3128,8 @@ gem.uninstall ()
         gem_flags="${gem_flags} --version ${gem_version}";
     fi;
     run "gem uninstall ${gem_name} ${gem_flags}";
-    gem.cache-refresh
+    gem.clear-cache;
+    return ${LibRun__LastExitCode}
 }
 
 ```
@@ -3108,12 +3139,18 @@ gem.uninstall ()
 ```bash
 gem.version ()
 {
-    local gem=$1;
-    local default=$2;
+    local gem="$1";
+    local default="$2";
     [[ -z ${gem} ]] && return;
     local version;
-    [[ -f Gemfile.lock ]] && version=$(gem.gemfile.version ${gem});
-    [[ -z ${version} ]] && version=$(gem.global.latest-version ${gem});
+    [[ -f Gemfile.lock ]] && version=$(gem.gemfile.version "${gem}");
+    if [[ -z ${version} ]]; then
+        if gem.is-installed "${gem}"; then
+            version=$(gem.global.latest-version "${gem}");
+        else
+            version=$(gem.remote.version "${gem}");
+        fi;
+    fi;
     [[ -z ${version} && -n ${default} ]] && version=${default};
     printf "%s" "${version}"
 }
@@ -4416,6 +4453,18 @@ h.blue ()
 
 ```
 
+#### `h.e`
+
+```bash
+h.e ()
+{
+    local header="$1";
+    shift;
+    box.red-in-red "${bakred}${bldwht} ${bldylw}${header}" "$@" 1>&2
+}
+
+```
+
 #### `h.green`
 
 ```bash
@@ -4641,7 +4690,7 @@ hl.yellow-on-gray ()
 ```bash
 hr ()
 {
-    [[ -z "$*" ]] || printf $*;
+    [[ -z "$*" ]] || printf "$*";
     .output.hr
 }
 
@@ -4833,6 +4882,24 @@ output.is-terminal ()
 output.is-tty ()
 {
     [[ -t 1 ]]
+}
+
+```
+
+#### `output.print-at-x-y`
+
+```bash
+output.print-at-x-y ()
+{
+    local x=$1;
+    shift;
+    local y=$1;
+    shift;
+    .output.cursor-move-to-x "${x}";
+    cursor.up "${y}";
+    printf "%s" "$*";
+    cursor.down "${y}";
+    .output.cursor-move-to-x 0
 }
 
 ```
@@ -5076,7 +5143,9 @@ warn ()
 warning ()
 {
     header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}");
-    box.yellow-in-yellow "${header} ${bldylw}$*" 1>&2
+    local first="$1";
+    shift;
+    box.yellow-in-yellow "${header} ${bldylw}$first" "$@" 1>&2
 }
 
 ```
@@ -5673,6 +5742,18 @@ interrupted ()
 
 ```
 
+#### `ruby.bundle-install`
+
+```bash
+ruby.bundle-install ()
+{
+    if [[ -f Gemfile.lock ]]; then
+        run "bundle install";
+    fi
+}
+
+```
+
 #### `ruby.bundler-version`
 
 ```bash
@@ -5774,7 +5855,11 @@ ruby.gems.install ()
         fi;
         printf "   ${gem_info}";
     done;
-    hl.subtle "It appears that only ${#gems_to_be_installed[@]} gems are left to install...";
+    if [[ ${#gems_to_be_installed[@]} -eq 0 ]]; then
+        info "All gems are already installed. 👍🏼";
+        return 0;
+    fi;
+    info "Looks like ${#gems_to_be_installed[@]} gems are left to install...";
     local -a gems_installed=();
     for gem in ${gems_to_be_installed[@]};
     do
@@ -5787,10 +5872,8 @@ ruby.gems.install ()
             continue;
         fi;
     done;
-    hr;
-    echo;
     gem.clear-cache;
-    success "Total of ${#gem_installed[@]} gems were successfully installed.";
+    info "Total of ${#gem_installed[@]} gems were installed.";
     echo
 }
 
@@ -5939,17 +6022,15 @@ ruby.installed-gems ()
 ruby.kigs-gems ()
 {
     if [[ -z $(type wd 2>/dev/null) && -n $(command -v warp-dir) ]]; then
-        warp-dir install --dotfile ~/.bashrc > /dev/null;
-        [[ -f ~/.bash_wd ]] && source ~/.bash_wd;
+        [[ -f ~/.bash_wd ]] || {
+            warp-dir install --dotfile ~/.bashrc > /dev/null;
+            source ~/.bash_wd
+        };
     fi;
     [[ -n $(command -v sym) ]] && {
-        sym -B ~/.bashrc;
-        for file in .sym.completion.bash .sym.symit.bash;
-        do
-            [[ -f ${file} ]] && next;
-            sym -B ~/.bashrc;
-            break;
-        done
+        [[ -f ~/.sym.completion.bash ]] || {
+            sym -B ~/.bashrc
+        }
     }
 }
 
@@ -5996,7 +6077,8 @@ ruby.rbenv ()
 ruby.rubygems-update ()
 {
     info "This might take a little white, darling. Smoke a spliff, would you?";
-    run "gem update --system"
+    run "gem update --system";
+    gem.clear-cache
 }
 
 ```
@@ -7524,6 +7606,17 @@ usage-box ()
 
 ```
 
+#### `usage-box.section`
+
+```bash
+usage-box.section ()
+{
+    printf "${__color_headers}";
+    .usage.hdr "$*"
+}
+
+```
+
 #### `usage.set-min-flag-len`
 
 ```bash
@@ -7800,14 +7893,39 @@ util.checksum.stdin ()
 
 ```
 
+#### `util.functions-matching`
+
+```bash
+util.functions-matching ()
+{
+    local prefix="${1}";
+    local extra_command=${2:-"cat"};
+    set | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+}
+
+```
+
+#### `util.functions-matching.diff`
+
+```bash
+util.functions-matching.diff ()
+{
+    for e in $(util.functions-matching "${1}");
+    do
+        echo ${e/${1}/};
+    done
+}
+
+```
+
 #### `util.functions-starting-with`
 
 ```bash
 util.functions-starting-with ()
 {
-    local prefix=${1};
+    local prefix="${1}";
     local extra_command=${2:-"cat"};
-    set | egrep "^${prefix}" | sed -E 's/.*.//g; s/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+    set | egrep '()' | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
 }
 
 ```

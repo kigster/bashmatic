@@ -12,7 +12,7 @@ generate() {
   local temp=/tmp/FUNCTIONS.md
   run "rm -f ${temp} && touch ${temp}"
 
-  printf "\n# BashMatic\n\n" >>${temp}
+  printf "\n# BashMatic Functions Index\n\n" >>${temp}
 
   printf "\n## Table of Contents\n\n" >>${temp}
 

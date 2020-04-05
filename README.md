@@ -146,10 +146,10 @@ Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping sc
 
 ### Bootstrapping _Bashmatic®_ using `curl`
 
-First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-0-1 to a version you'd like to install):
+First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-1-0 to a version you'd like to install):
 
 ```bash
-❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-2)"
+❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-1-0)"
 ```
 
 This not only will check out _bashmatic®_ into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
@@ -169,7 +169,7 @@ For the impatient, here is how to install _Bashmatic®_ very quickly and easily.
 
 ```bash
 
-[[ -d ${HOME}/._bashmatic®_ ]] || {
+[[ -d ${HOME}/.bashmatic ]] || {
   git clone https://github.com/kigster/bashmatic.git ~/.bashmatic
 }
 source ~/.bashmatic/init.sh
@@ -324,7 +324,7 @@ Programming style used in this project lends itself nicely to using a DSL-like a
 ```bash
 #!/usr/bin/env bash
 
-# (See below on the location of ._bashmatic®_ and ways to install it)
+# (See below on the location of .bashmatic and ways to install it)
 source ~/.bashmatic/init.sh
 
 # configure global behavior of all run() invocations
@@ -392,9 +392,9 @@ function valid-cask()  { sleep 1; return 0; }
 function verify-cask() {
   inf "verifying brew cask ${1}...."
   if valid-cask ${1}; then
-    ui.closer.ok:
+    ok:
   else
-    ui.closer.not-ok:
+    not-ok:
   fi
 }
 ```

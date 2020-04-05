@@ -182,12 +182,9 @@ export DevSetup__Callbacks
   export DevSetup__Callbacks=(${DevSetup__Callbacks[@]}
     "ruby.install ${ruby_version}"
     "rbenv global ${ruby_version}"
-    "gem update --system"
-    "gem install bundler"
-    "[[ -f Gemfile ]] && bundle install"
-
+    "ruby.init"
+    "ruby.bundle-install"
   )
-
 }
 
 .dev-setup.brew.java() {
