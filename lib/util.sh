@@ -252,6 +252,14 @@ watch.command() {
   done
 }
 
+util.dev-setup.update() {
+  run "rm -f ~/.bashmatic/bin/.dev-setup"
+  run "dev-setup > /tmp/a"
+  run "mv /tmp/a ~/.bashmatic/bin/.dev-setup"
+  run "cd ~/.bashmatic && git add bin/.dev-setup"
+  run "cd -"
+}
+
 pause() { sleep "${1:-1}"; }
 pause.medium() { sleep "${1:-0.3}"; }
 pause.short() { sleep "${1:-0.1}"; }

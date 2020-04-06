@@ -147,7 +147,7 @@ export DevSetup__Callbacks
 }
 
 .dev-setup.js.callbacks() {
-  if [[ -f package.json ]]; then 
+  if [[ -f package.json ]]; then
     if [[ -f yarn.lock ]]; then
       brew.install yarn
       run "yarn install"
@@ -156,7 +156,7 @@ export DevSetup__Callbacks
       run "npm install"
     fi
   fi
-} 
+}
 
 .dev-setup.brew.js() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
@@ -170,7 +170,6 @@ export DevSetup__Callbacks
     .dev-setup.js.callbacks
   )
 }
-
 
 .dev-setup.brew.python() {
   # List of Brew Formulas to install and l`ink
@@ -274,32 +273,6 @@ export DevSetup__Callbacks
 declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
 declare -a components_to_install=()
 
-usage() {
-  if [[ -f ${BASHMATIC_HOME}/bin/.dev-setup ]]; then
-    cat ${BASHMATIC_HOME}/bin/.dev-setup
-    return 0
-  fi
-
-  usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
-    "-a / --all" "Installs everything" \
-    "-e / --exit-on-error" "Abort if an error occurs. Default is to keep going." \
-    "-g / --groups" "Installs dev + specific groups of packages and casks." \
-    "-d / --no-dev" "Skips dev when used with a specific -g selection." \
-    "-q / --quieter" "Do not print as much output." \
-    "-n / --dry-run" "Only print commands, but do not run them" \
-    "-r / --ruby-version VERSION" "Ruby version, overrides defaulkt ${ruby_version}" \
-    "-p / --pg-version VERSION" "PostgreSQL version, overrides ${pg_version}" \
-    "-m / --mysql-version VERSION" "MySQL version, overrides ${mysql_version}" \
-    " " "Note that ${bldblu}dev${bldylw} group is always installed." \
-    " " " " \
-    " " "${bldblu}$(array.to.csv ${components[@]:0:5})" \
-    " " "${bldblu}$(array.to.csv ${components[@]:5:5})" \
-    " " "${bldblu}$(array.to.csv ${components[@]:10:5})"
-
-  output.print-at-x-y 2 4 "$(usage-box.section "GROUPS")"
-  exit 0
-}
-
 dev-setup.parse-opts() {
   [[ -z "$1" ]] && {
     usage
@@ -314,7 +287,12 @@ dev-setup.parse-opts() {
     case $1 in
     -g | --groups)
       shift
-      export components_to_install=(${components_to_install[@]} $1)
+      local component="$1"
+      array.includes "${component}" "${components[@]}" || {
+        error "Invalid group: $1." "Valid groups are: ${bldgrn}$(array.to.csv "${components[@]}")"
+        exit 1
+      }
+      export components_to_install=(${components_to_install[@]} "${component}")
       shift
       ;;
     -d | --no-dev)
@@ -383,7 +361,7 @@ dev-setup.parse-opts() {
     esac
   done
 
-  array.includes "ruby" ${components_to_install[@]} && {
+  array.includes "ruby" "${components_to_install[@]}" && {
     .dev-setup.detect.ruby-version
     if [[ -z ${ruby_version} ]]; then
       error "Can not install Ruby dependencies, without Ruby Version."
@@ -394,8 +372,45 @@ dev-setup.parse-opts() {
   }
 
   [[ ${#default_components[@]} -gt 0 ]] && {
-    export components_to_install=(${default_components[@]} ${components_to_install[@]})
+    export components_to_install=("${default_components[@]}" "${components_to_install[@]}")
   }
+}
+
+usage() {
+  if [[ -f ${BASHMATIC_HOME}/bin/.dev-setup ]]; then
+    cat ${BASHMATIC_HOME}/bin/.dev-setup
+    return 0
+  fi
+
+  usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
+    "-a / --all" \
+    "Installs everything" \
+    "-e / --exit-on-error" \
+    "Abort if an error occurs. Default is to keep going." \
+    "-g / --groups" \
+    "Installs dev + specified groups of packages and casks." \
+    " " \
+    "Can be space separated array, eg -g 'ruby js monitoring'" \
+    "-d / --no-dev" \
+    "Skips dev when used with -g ." \
+    "-q / --quieter" \
+    "Do not print as much output." \
+    "-n / --dry-run" \
+    "Only print commands, but do not run them" \
+    "-r / --ruby-version VERSION" \
+    "Ruby version, overrides defaulkt ${ruby_version}" \
+    "-p / --pg-version VERSION" \
+    "PostgreSQL version, overrides ${pg_version}" \
+    "-m / --mysql-version VERSION" \
+    "MySQL version, overrides ${mysql_version}" \
+    " " "Note that ${bldblu}dev${bldylw} group is always installed." \
+    " " " " \
+    " " "${bldblu}$(array.to.csv ${components[@]:0:5})" \
+    " " "${bldblu}$(array.to.csv ${components[@]:5:5})" \
+    " " "${bldblu}$(array.to.csv ${components[@]:10:5})"
+
+  output.print-at-x-y 2 4 "$(usage-box.section "GROUPS")"
+  exit 0
 }
 
 dev-setup.init() {
@@ -473,14 +488,16 @@ dev-setup.install() {
   fi
 }
 
-dev-setup.parse-opts "$@"
-box.magenta-in-blue "Bashmatic Mac-OSX DevSetup Installer" "Version ${DevSetup__Version}"
+if [[ $0 =~ 'dev-setup' ]]; then
+  dev-setup.parse-opts "$@"
+  box.magenta-in-blue "Bashmatic Mac-OSX DevSetup Installer" "Version ${DevSetup__Version}"
 
-[[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})
+  [[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})
 
-for c in "${components_to_install[@]}"; do
-  func=".dev-setup.brew.${c}"
-  eval "${func}"
-done
+  for c in "${components_to_install[@]}"; do
+    func=".dev-setup.brew.${c}"
+    eval "${func}"
+  done
 
-dev-setup.install
+  dev-setup.install
+fi

@@ -1,10 +1,10 @@
 # Private
 
 .usage.setup() {
-  export __color_fg=${1:-${bldylw}}
-  export __color_bdr=${2:-${bldblu}}
-  export __color_cmd=${3:-${bldgrn}}
-  export __color_flag=${4:-${bldpur}}
+  export __color_fg=${1:-${txtylw}}
+  export __color_bdr=${2:-${txtblu}}
+  export __color_cmd=${3:-${txtgrn}}
+  export __color_flag=${4:-${txtpur}}
   export __color_headers=${5:-${bldred}}
 }
 
