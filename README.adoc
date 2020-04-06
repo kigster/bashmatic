@@ -44,7 +44,7 @@ This is why we wanted to start this README with a couple of examples.
 
 === Usage Examples
 
-==== Gem and Brew Install
+==== Example 1. Gem and Brew Install Script
 
 Just look at this tiny, five-line script:
 
@@ -71,7 +71,7 @@ Still not convinced?
 
 Take a look at a more comprehensive example next.
 
-=== Installing `kubectl` and `minikube` into `/usr/local/bin`
+=== Example 2. Installing `kubectl` and `minikube` into `/usr/local/bin`
 
 We provided an example script in link:examples/k8s-installer.sh[`examples/k8s-installer.sh`]. Please click and take a look at the source.
 
@@ -93,18 +93,34 @@ NOTE: If you need to create a BASH installer, _Bashmatic®_ offers some incredib
 
 Let's get back to the Earth, and talk about how to install Bashmatic, and how to use it in more detail right after.
 
-=== Mac OSX Developer Setup
+=== Example 3. Mac OSX Developer Setup Script
 
-This final example is not just an example -- it's a working functioning script that can be used to install a bunch of cool stuff on your laptop. It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
+This final and most feature-rich example is not just an example -- **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
+
+NOTE: the script relies on Homebrew behind the scenes, and therefore would not work on Linux or Windows (unless Brew gets ported there).
+
+It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
 image::.dev-setup.png[dev-setup.png,width=80%]
 
-Try running the following to install Ruby 2.7.1 and supporting tools:
+Here are a couple of ways to run it:
+
+==== Example 3.1 Dev Tools + PostgreSQL + Redis/Memcached + Ruby 2.7.1 + NodeJS/NPM/Yarn
+
+In this example we'll install the above mentioned tools in one command. We'll run this from a folder where our application is installed, because then the Ruby Version will be auto-detected from our `.ruby-version` file, and in addition to installing all the dependencies the script will also run `bundle install` and `npm install` (or `yarn install`). Not bad, huh?
 
 [source,bash]
 ----
-~/.bashmatic/bin/dev-setup -d -g ruby -r 2.7.1
+~/.bashmatic/bin/dev-setup \
+  -g "ruby postgres mysql caching js monitoring" \
+  -r $(cat .ruby-version) \
+  -p 9.5 \ # use PostgreSQL version 9.5
+  -m 5.6   # use MySQL version 5.6
 ----
+
+This compact command line installs a ton of things, but don't take our word for it — run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
+
+NOTE: when we produced the screenshot we used `-q` flag to shorten the amount of screen output, otherwise it wouldnt' have fit onto one giant vertical monitor. But we don't recommend using `-q` when running `dev-setup` as it hides what's going on.
 
 == Installing Bashmatic
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+
+set +x
 source "${HOME}/.bashmatic/init.sh" 1>/dev/null
 
 run.set-all continue-on-error
@@ -196,6 +198,7 @@ export DevSetup__Callbacks
 .dev-setup.callbacks.ruby() {
   ruby.install "${ruby_version}"
   run "rbenv global ${ruby_version}"
+  export LIBRARY_PATH=$LIBRARY_PATH:$(brew --prefix openssl)/lib
   ruby.init
   ruby.bundle-install
 }
@@ -277,6 +280,8 @@ export DevSetup__Callbacks
 declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
 declare -a components_to_install=()
 export show_header=1
+export run_callbacks=1
+export only_callbacks=0
 
 dev-setup.parse-opts() {
   [[ -z "$1" ]] && {
@@ -302,6 +307,14 @@ dev-setup.parse-opts() {
       done
       have_components=1
       shift
+      ;;
+    -c | --only-callbacks)
+      shift
+      export only_callbacks=1
+      ;;
+    -C | --no-callbacks)
+      shift
+      export run_callbacks=0
       ;;
     -d | --no-dev)
       shift
@@ -395,26 +408,18 @@ usage() {
   dev-setup.header
 
   usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
-    "-a / --all" \
-    "Installs everything" \
-    "-e / --exit-on-error" \
-    "Abort if an error occurs. Default is to keep going." \
-    "-g / --groups" \
-    "Installs dev + specified groups of packages and casks." \
-    " " \
-    "Can be space separated array, eg -g 'ruby js monitoring'" \
-    "-d / --no-dev" \
-    "Skips dev when used with -g ." \
-    "-q / --quieter" \
-    "Do not print as much output." \
-    "-n / --dry-run" \
-    "Only print commands, but do not run them" \
-    "-r / --ruby-version VERSION" \
-    "Ruby version, overrides defaulkt ${ruby_version}" \
-    "-p / --pg-version VERSION" \
-    "PostgreSQL version, overrides ${pg_version}" \
-    "-m / --mysql-version VERSION" \
-    "MySQL version, overrides ${mysql_version}" \
+    "-a / --all" "Installs everything" \
+    "-e / --exit-on-error" "Abort if an error occurs. Default is to keep going." \
+    "-g / --groups" "Installs dev + specified groups of packages and casks." \
+    " " "Can be space separated array, eg -g 'ruby js monitoring'" \
+    "-d / --no-dev" "Skips ${bldblu}dev${txtylw} when used with -g flag." \
+    "-C / --no-callbacks" "Skip executing group callbacks when installing" \
+    "-c / --only-callbacks" "Skip main installers, and only run the callbacks." \
+    "-q / --quieter" "Do not print as much output." \
+    "-n / --dry-run" "Only print commands, but do not run them" \
+    "-r / --ruby-version VERSION" "Ruby version, overrides defaulkt ${ruby_version}" \
+    "-p / --pg-version VERSION" "PostgreSQL version, overrides ${pg_version}" \
+    "-m / --mysql-version VERSION" "MySQL version, overrides ${mysql_version}" \
     " " "Note that ${bldblu}dev${bldylw} group is always installed." \
     " " " " \
     " " "${bldblu}$(array.to.csv ${components[@]:0:5})" \
@@ -422,6 +427,18 @@ usage() {
     " " "${bldblu}$(array.to.csv ${components[@]:10:5})"
 
   output.print-at-x-y 2 4 "$(usage-box.section "GROUPS")"
+
+  info "This script installs groups of Brew packages and Casks, organized by a programming "
+  info "language or a stack. Each group may register some of its members as Brew services"
+  info "to be started (such as PostgreSQL and MySQL)."
+  echo
+  info "Additionally, each group may optionally register a shell function to run as a"
+  info "callback at the end. For instance, Ruby's callback might be to run ${bldylw}bundle install"
+  info "if the Gemfile file is found."
+  echo
+  info "You can disable running of callbacks with -C / --no-callbacks flag."
+  echo
+  success "Happy Installing!"
   exit 0
 }
 
@@ -485,52 +502,62 @@ dev-setup.install.packages() {
 
 dev-setup.install() {
   local failures=0
+  local total=0
 
   brew.cache-reset
 
-  [[ "${#DevSetup__BrewPackages[@]}" -gt 0 ]] && {
-    h2 "Installing Brew Packages"
-    dev-setup.install.packages "brew.install.package" "${DevSetup__BrewPackages[@]}" || {
-      failures=$((failures + 1))
+  if [[ ${only_callbacks} -ne 1 ]]; then
+    [[ "${#DevSetup__BrewPackages[@]}" -gt 0 ]] && {
+      h2 "Installing Brew Packages"
+      dev-setup.install.packages "brew.install.package" "${DevSetup__BrewPackages[@]}" || {
+        failures=$((failures + 1))
+      }
+      total=$((total + 1))
     }
-  }
 
-  [[ "${#DevSetup__BrewCasks[@]}" -gt 0 ]] && {
-    h2 "Installing Brew Casks"
-    dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewCasks[@]}" || {
-      failures=$((failures + 1))
+    [[ "${#DevSetup__BrewCasks[@]}" -gt 0 ]] && {
+      h2 "Installing Brew Casks"
+      dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewCasks[@]}" || {
+        failures=$((failures + 1))
+      }
+      total=$((total + 1))
     }
-  }
 
-  [[ "${#DevSetup__BrewServices[@]}" -gt 0 ]] && {
-    h2 "Starting Brew Services"
-    dev-setup.install.packages "brew.service.up" "${DevSetup__BrewServices[@]}" || {
-      failures=$((failures + 1))
+    [[ "${#DevSetup__BrewServices[@]}" -gt 0 ]] && {
+      h2 "Starting Brew Services"
+      dev-setup.install.packages "brew.service.up" "${DevSetup__BrewServices[@]}" || {
+        failures=$((failures + 1))
+      }
+      total=$((total + 1))
     }
-  }
+  fi
 
-  [[ "${#DevSetup__Callbacks[@]}" -gt 0 ]] && {
-    h2 "Executing Callbacks"
-    for command in "${DevSetup__Callbacks[@]}"; do
-      if util.is-a-function "${command/ */}"; then
-        eval "${command}" || {
-          failures=$((failures + 1))
-        }
-      else
-        run "${command}"
-        [[ "${LibRun__LastExitCode}" -eq 0 ]] || {
-          failures=$((failures + 1))
-        }
-      fi
-    done
-  }
+  if [[ ${run_callbacks} -eq 1 ]]; then
+    [[ "${#DevSetup__Callbacks[@]}" -gt 0 ]] && {
+      h2 "Executing Callbacks"
+      for command in "${DevSetup__Callbacks[@]}"; do
+        if util.is-a-function "${command/ */}"; then
+          eval "${command}" || {
+            failures=$((failures + 1))
+          }
+          total=$((total + 1))
+        else
+          run "${command}"
+          [[ "${LibRun__LastExitCode}" -eq 0 ]] || {
+            failures=$((failures + 1))
+          }
+          total=$((total + 1))
+        fi
+      done
+    }
+  fi
 
   if [[ ${failures} -eq 0 ]]; then
-    success "Setup has completed with no failures."
+    success "Setup has completed with no failures and ${total} commands ran."
   else
     echo
     warning \
-      "Setup completed, but with some failures." "Total of ${failures} were detected and skipped."
+      "Setup completed, but with some failures." "Total of ${failures} failures out of ${total} commands were detected and skipped."
     echo
     h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
   fi
