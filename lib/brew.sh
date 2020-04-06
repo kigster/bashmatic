@@ -51,6 +51,12 @@ brew.setup() {
   brew.upgrade
 }
 
+brew.package.link() {
+  local package="${1}"; shift
+  [[ -n ${opts_verbose} ]] && verbose="--verbose"
+  run "brew link ${verbose} ${package} $*"
+}
+
 brew.relink() {
   local package=${1}
   local verbose=
