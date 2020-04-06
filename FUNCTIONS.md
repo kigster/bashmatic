@@ -58,6 +58,7 @@
     * [`brew.install.packages`](#brewinstallpackages)
     * [`brew.package.available-versions`](#brewpackageavailable-versions)
     * [`brew.package.is-installed`](#brewpackageis-installed)
+    * [`brew.package.link`](#brewpackagelink)
     * [`brew.package.list`](#brewpackagelist)
     * [`brew.reinstall.package`](#brewreinstallpackage)
     * [`brew.reinstall.packages`](#brewreinstallpackages)
@@ -268,7 +269,11 @@
     * [`h.blue`](#hblue)
     * [`h.e`](#he)
     * [`h.green`](#hgreen)
+    * [`h.orange`](#horange)
+    * [`h.orange-center`](#horange-center)
     * [`h.red`](#hred)
+    * [`h.salmon`](#hsalmon)
+    * [`h.salmon-center`](#hsalmon-center)
     * [`h.yellow`](#hyellow)
     * [`h1`](#h1)
     * [`h1.blue`](#h1blue)
@@ -283,10 +288,7 @@
     * [`hl.blue`](#hlblue)
     * [`hl.desc`](#hldesc)
     * [`hl.green`](#hlgreen)
-    * [`hl.orange`](#hlorange)
     * [`hl.subtle`](#hlsubtle)
-    * [`hl.white-on-orange`](#hlwhite-on-orange)
-    * [`hl.white-on-salmon`](#hlwhite-on-salmon)
     * [`hl.yellow`](#hlyellow)
     * [`hl.yellow-on-gray`](#hlyellow-on-gray)
     * [`hr`](#hr)
@@ -514,6 +516,7 @@
     * [`util.call-if-function`](#utilcall-if-function)
     * [`util.checksum.files`](#utilchecksumfiles)
     * [`util.checksum.stdin`](#utilchecksumstdin)
+    * [`util.dev-setup.update`](#utildev-setupupdate)
     * [`util.functions-matching`](#utilfunctions-matching)
     * [`util.functions-matching.diff`](#utilfunctions-matchingdiff)
     * [`util.functions-starting-with`](#utilfunctions-starting-with)
@@ -546,7 +549,6 @@
     * [`yaml.dump`](#yamldump)
     * [`yaml.expand-aliases`](#yamlexpand-aliases)
 * [Copyright](#copyright)
-
 ## List of Bashmatic Modules
 
 * [7z](#module-7z)
@@ -1389,7 +1391,7 @@ brew.install.packages ()
 brew.package.available-versions ()
 {
     local package="$1";
-    brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr
+    brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
 }
 
 ```
@@ -1402,6 +1404,19 @@ brew.package.is-installed ()
     local package="${1}";
     local -a installed_packages=($(brew.package.list));
     array.has-element $(basename "${package}") "${installed_packages[@]}"
+}
+
+```
+
+#### `brew.package.link`
+
+```bash
+brew.package.link ()
+{
+    local package="${1}";
+    shift;
+    [[ -n ${opts_verbose} ]] && verbose="--verbose";
+    run "brew link ${verbose} ${package} $*"
 }
 
 ```
@@ -4475,12 +4490,52 @@ h.green ()
 
 ```
 
+#### `h.orange`
+
+```bash
+h.orange ()
+{
+    left "${white_on_orange}" "$@"
+}
+
+```
+
+#### `h.orange-center`
+
+```bash
+h.orange-center ()
+{
+    center "${white_on_orange}" "$@"
+}
+
+```
+
 #### `h.red`
 
 ```bash
 h.red ()
 {
     center "${txtblk}${bakred}" "$@"
+}
+
+```
+
+#### `h.salmon`
+
+```bash
+h.salmon ()
+{
+    left "${white_on_salmon}" "$@"
+}
+
+```
+
+#### `h.salmon-center`
+
+```bash
+h.salmon-center ()
+{
+    center "${white_on_salmon}" "$@"
 }
 
 ```
@@ -4625,42 +4680,12 @@ hl.green ()
 
 ```
 
-#### `hl.orange`
-
-```bash
-hl.orange ()
-{
-    left "${white_on_orange}" "$@"
-}
-
-```
-
 #### `hl.subtle`
 
 ```bash
 hl.subtle ()
 {
     left "${bldwht}${bakblk}${underlined}" "$@"
-}
-
-```
-
-#### `hl.white-on-orange`
-
-```bash
-hl.white-on-orange ()
-{
-    left "${white_on_orange}" "$@"
-}
-
-```
-
-#### `hl.white-on-salmon`
-
-```bash
-hl.white-on-salmon ()
-{
-    left "${white_on_salmon}" "$@"
 }
 
 ```
@@ -4680,7 +4705,7 @@ hl.yellow ()
 ```bash
 hl.yellow-on-gray ()
 {
-    left "${yellow_on_gray}" "$@s"
+    left "${yellow_on_gray}" "$@"
 }
 
 ```
@@ -5056,7 +5081,7 @@ success ()
 test-group ()
 {
     [[ -z ${white_on_salmon} ]] && hr;
-    hl.white-on-salmon "$@"
+    h.salmon "$@"
 }
 
 ```
@@ -7889,6 +7914,20 @@ util.checksum.files ()
 util.checksum.stdin ()
 {
     shasum | awk '{print $1}'
+}
+
+```
+
+#### `util.dev-setup.update`
+
+```bash
+util.dev-setup.update ()
+{
+    run "rm -f ~/.bashmatic/bin/.dev-setup";
+    run "dev-setup -N -h > /tmp/a";
+    run "mv /tmp/a ~/.bashmatic/bin/.dev-setup";
+    run "cd ~/.bashmatic && git add bin/.dev-setup";
+    run "cd -"
 }
 
 ```
