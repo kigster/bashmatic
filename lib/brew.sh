@@ -12,7 +12,7 @@ export LibBrew__CaskCacheList="/tmp/.lib_brew_casks.txt"
 # postgres@9.4 etc.
 brew.package.available-versions() {
   local package="$1"
-  brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr
+  brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
 }
 
 brew.cache-reset() {
@@ -52,7 +52,8 @@ brew.setup() {
 }
 
 brew.package.link() {
-  local package="${1}"; shift
+  local package="${1}"
+  shift
   [[ -n ${opts_verbose} ]] && verbose="--verbose"
   run "brew link ${verbose} ${package} $*"
 }

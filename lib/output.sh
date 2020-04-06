@@ -45,7 +45,7 @@ output.set-min-width() {
 .output.cursor-move-to-x() {
   output.is-terminal || return
   .output.cursor-left-by 1000
-  .output.cursor-right-by ${1:-0}
+  [[ -n $1 && "$1" -ne 0 ]] && .output.cursor-right-by ${1}
 }
 
 cursor.rewind() {
@@ -301,17 +301,17 @@ output.color.off() {
   local text="$*"
 
   local clean_text=$(.output.clean "${text}")
-  local width=$(($(.output.screen-width) - 2))
+  local width=$(($(.output.screen-width) - 4))
   local remaining_space_len=$((1 + ($width - ${#clean_text}) / 2))
 
   local offset=0
   [[ $(((${width} - ${#clean_text}) % 2)) == 1 ]] && offset=1
 
   printf "${color}"
-  cursor.at.x 0
+  cursor.at.x 1
   .output.repeat-char " " ${remaining_space_len}
   printf "%s" "${text}"
-  .output.repeat-char " " $((${remaining_space_len} + ${offset} - 1))
+  .output.repeat-char " " $((remaining_space_len + offset - 1))
   reset-color
   cursor.at.x 0
   echo
@@ -322,13 +322,14 @@ output.color.off() {
   shift
   local text="$*"
   echo
-  printf "${color}"
+  printf " ${color}"
   if output.is-terminal; then
-    local width=$((2 * $(.output.screen-width) / 3))
+    local width=$(($(.output.screen-width) - 2))
+    #local width=$((2 * $(.output.screen-width) / 3))
     [[ ${width} -lt 70 ]] && width="70"
-    printf -- "  %-${width}.${width}s${clr}\n\n" "« ${text} »"
+    printf -- "  %-${width}.${width}s${clr}\n\n" "❯❯ ${text} ❯❯"
   else
-    printf -- "  « ${text} »"
+    printf -- "  ❯❯ ${text} ❯❯ "
     printf -- "  ${clr}\n\n"
   fi
 }
@@ -446,29 +447,29 @@ box.magenta-in-blue() {
   .output.box "${bldblu}" "${bldpur}" "$@"
 }
 
-hl.white-on-orange() {
+test-group() {
+  [[ -z ${white_on_salmon} ]] && hr
+  h.salmon "$@"
+}
+
+h.orange-center() {
+  center "${white_on_orange}" "$@"
+}
+
+h.orange() {
   left "${white_on_orange}" "$@"
 }
 
-test-group() {
-  [[ -z ${white_on_salmon} ]] && hr
-  hl.white-on-salmon "$@"
+h.salmon-center() {
+  center "${white_on_salmon}" "$@"
 }
 
-hl.white-on-salmon() {
+h.salmon() {
   left "${white_on_salmon}" "$@"
 }
 
-hl.orange() {
-  left "${white_on_orange}" "$@"
-}
-
 hl.yellow-on-gray() {
-  left "${yellow_on_gray}" "$@s"
-}
-
-hl.yellow-on-gray() {
-  left "${yellow_on_gray}" "$@s"
+  left "${yellow_on_gray}" "$@"
 }
 
 hl.blue() {
@@ -707,7 +708,8 @@ warn() {
 
 warning() {
   header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}")
-  local first="$1"; shift
+  local first="$1"
+  shift
   box.yellow-in-yellow "${header} ${bldylw}$first" "$@" >&2
 }
 
