@@ -146,6 +146,18 @@ export DevSetup__Callbacks
   )
 }
 
+.dev-setup.js.callbacks() {
+  if [[ -f package.json ]]; then 
+    if [[ -f yarn.lock ]]; then
+      brew.install yarn
+      run "yarn install"
+    else
+      brew.install npm
+      run "npm install"
+    fi
+  fi
+} 
+
 .dev-setup.brew.js() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     node
@@ -155,9 +167,10 @@ export DevSetup__Callbacks
     phantomjs
   )
   export DevSetup__Callbacks=(${DevSetup__Callbacks[@]}
-    "[[ -f package.json ]] && npm install"
+    .dev-setup.js.callbacks
   )
 }
+
 
 .dev-setup.brew.python() {
   # List of Brew Formulas to install and l`ink
@@ -180,11 +193,15 @@ export DevSetup__Callbacks
   )
 
   export DevSetup__Callbacks=(${DevSetup__Callbacks[@]}
-    "ruby.install ${ruby_version}"
-    "rbenv global ${ruby_version}"
-    "ruby.init"
-    "ruby.bundle-install"
+    .dev-setup.ruby.callbacks
   )
+}
+
+.dev-setup.ruby.callbacks() {
+  ruby.install ${ruby_version}
+  run "rbenv global ${ruby_version}"
+  ruby.init
+  ruby.bundle-install
 }
 
 .dev-setup.brew.java() {
@@ -200,7 +217,7 @@ export DevSetup__Callbacks
 
 .dev-setup.brew.go() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
-    golang
+    go
   )
 }
 
@@ -297,9 +314,7 @@ dev-setup.parse-opts() {
     case $1 in
     -g | --groups)
       shift
-      for c in "${1}"; do
-        export components_to_install=(${components_to_install[@]} "$c")
-      done
+      export components_to_install=(${components_to_install[@]} $1)
       shift
       ;;
     -d | --no-dev)
@@ -367,6 +382,16 @@ dev-setup.parse-opts() {
       ;;
     esac
   done
+
+  array.includes "ruby" ${components_to_install[@]} && {
+    .dev-setup.detect.ruby-version
+    if [[ -z ${ruby_version} ]]; then
+      error "Can not install Ruby dependencies, without Ruby Version."
+      exit 1
+    else
+      info "Ruby dependencies will be installed for version ${ruby_version}."
+    fi
+  }
 
   [[ ${#default_components[@]} -gt 0 ]] && {
     export components_to_install=(${default_components[@]} ${components_to_install[@]})
