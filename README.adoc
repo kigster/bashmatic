@@ -120,8 +120,6 @@ In this example we'll install the above mentioned tools in one command. We'll ru
 
 This compact command line installs a ton of things, but don't take our word for it — run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
 
-NOTE: when we produced the screenshot we used `-q` flag to shorten the amount of screen output, otherwise it wouldnt' have fit onto one giant vertical monitor. But we don't recommend using `-q` when running `dev-setup` as it hides what's going on.
-
 == Installing Bashmatic
 
 Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script.
@@ -250,7 +248,7 @@ Note how we use _Bashmatic®_ helper `columnize [ columns ]` to display a long l
 array             dir               json              runtime           trap
 audio             docker            net               set               url
 aws               file              osx               set               user
-_bashmatic®_         ftrace            output            settings          util
+bashmatic         ftrace            output            settings          util
 brew              gem               pids              shell-set         vim
 caller            git-recurse-updat progress-bar      ssh               yaml
 color             git               ruby              subshell
