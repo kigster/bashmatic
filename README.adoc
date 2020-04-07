@@ -14,7 +14,7 @@ _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying
 
 *_Bashmatic®_ is meant to be used primarily with Mac OS-X, although some functions will also work under Linux.*.
 
-Start exploring _Bashmatic®_ below with our <<usage-examples-for-the-impatient,examples section>>. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:FUNCTIONS.adoc[functions index page].
+Start exploring _Bashmatic®_ below with our <<usage-examples-for-the-impatient,examples section>>. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:FUNCTIONS.md[functions index page].
 
 *For quick installation instructions, please <<installing-bashmatic,see the corresponding section>>*.
 

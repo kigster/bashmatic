@@ -139,6 +139,10 @@ gem.is-installed() {
   fi
 }
 
+gem.gemfile.bundler-version() {
+  [[ -f Gemfile.lock ]] && grep -A2 BUNDLED Gemfile.lock | tail -1 | tr -d ' '
+}
+
 # Install the gem, but use the version argument as a default. Final version
 # is determined from Gemfile.lock using the +gem.version+ above.
 gem.install() {

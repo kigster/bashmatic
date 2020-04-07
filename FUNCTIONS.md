@@ -168,6 +168,7 @@
     * [`gem.clear-cache`](#gemclear-cache)
     * [`gem.configure-cache`](#gemconfigure-cache)
     * [`gem.ensure-gem-version`](#gemensure-gem-version)
+    * [`gem.gemfile.bundler-version`](#gemgemfilebundler-version)
     * [`gem.gemfile.version`](#gemgemfileversion)
     * [`gem.global.latest-version`](#gemgloballatest-version)
     * [`gem.global.versions`](#gemglobalversions)
@@ -3007,6 +3008,16 @@ gem.ensure-gem-version ()
     else
         info "gem ${gem} version ${gem_version} is already installed.";
     fi
+}
+
+```
+
+#### `gem.gemfile.bundler-version`
+
+```bash
+gem.gemfile.bundler-version ()
+{
+    [[ -f Gemfile.lock ]] && grep -A2 BUNDLED Gemfile.lock | tail -1 | tr -d ' '
 }
 
 ```
