@@ -71,6 +71,25 @@ sig.is-valid() {
   [[ -n $(kill -l ${1} 2>/dev/null) ]]
 }
 
+pid.stop-and-kill() {
+  local pid="$1"
+  delta=1
+  sig=STOP
+  while true; do
+    pid.alive $pid || return 0
+    kill -${sig} ${pid} 2>&1 >/dev/null
+    delta=$(( delta * 2))
+    [[ ${delta} -gt 16 ]] && sig="KILL"
+    sleep "0.${delta}"
+  done
+
+  pid.alive $pid && {
+    error "PID ${pid} is miraculously still alive..." >&2
+    return 1
+  }
+}
+
+
 # Stop a running process by sending it a TERM first then KILL
 # Usage:
 #    pid.stop <pid> [ seconds-to-wait ]
