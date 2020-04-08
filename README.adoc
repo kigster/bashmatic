@@ -14,12 +14,9 @@ _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying
 
 *_Bashmatic®_ is meant to be used primarily with Mac OS-X, although some functions will also work under Linux.*.
 
-Start exploring _Bashmatic®_ below with our <<usage-examples-for-the-impatient,examples section>>. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:FUNCTIONS.md[functions index page].
-
-*For quick installation instructions, please <<installing-bashmatic,see the corresponding section>>*.
+Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:FUNCTIONS.md[functions index page].
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* 😂.
-
 
 == Project Motivation
 
@@ -213,7 +210,7 @@ The naming convention we use is a derivative of Google's Bash StyleGuide, using 
 
 === Seeing All Functions
 
-After running the above, run `bashmatic.functions` function to see all available functions. You can also open the xref:FUNCTIONS.adoc[FUNCTIONS.adoc] file to see the alphabetized list of all 422 functions.
+After running the above, run `bashmatic.functions` function to see all available functions. You can also open the xref:FUNCTIONS.md[FUNCTIONS.md] file to see the alphabetized list of all 422 functions.
 
 === Seeing Specific Functions
 
@@ -696,7 +693,7 @@ There are plenty more modules, that help with:
 
 And many more.
 
-See the full function index with the function implementation body in the xref:FUNCTIONS.adoc[FUNCTIONS.adoc] index.
+See the full function index with the function implementation body in the xref:FUNCTIONS.md[FUNCTIONS.md] index.
 
 '''
 
