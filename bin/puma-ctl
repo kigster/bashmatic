@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+#
+# An open source helper for running Puma web server in a clustered mode.
+# © 2020 Konstantin Gredeskoul, MIT License.
+# Distributed as part of Bashmatic Framework.
+
+set +e
+
+export BashMatic="${HOME}/.bashmatic"
+
+[[ -s ${BashMatic}/init.sh ]] || {
+  rm -rf "${BashMatic}" 2>/dev/null
+  bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-1-0)"
+}
+
+source ~/.bashmatic/init.sh
+
+# https://blog.phusion.nl/2017/10/13/why-ruby-app-servers-break-on-macos-high-sierra-and-what-can-be-done-about-it/
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+export RAILS_ENV="${RAILS_ENV:-"development"}"
+
+export PUMA_THREADS=1
+export PUMA_WORKERS=5
+
+# Use a conservative thread count in development environment,
+# due to Ruby and Rails's autoloading being not thread safe.
+[[ ${RAILS_ENV} == "development" ]] && export PUMA_THREADS=1
+
+# PIDS ——————————————————————————————————————————————————————————————————————
+
+puma.pids.master() {
+  ps -ef | egrep '[p]uma [0-9]' | awk '{print $2}'
+}
+
+puma.pids.count() {
+  local extra_filter="${1}"; shift
+  local extra_flag="${1}"; shift
+
+  printf "%d" "$(ps -ef | egrep '[p]uma[: ]' | egrep ${extra_flag} "${extra_filter}" | grep -v puma-ctl | wc -l | sed 's/\ //g')"
+}
+
+# STATE ——————————————————————————————————————————————————————————————————————
+
+puma.is.down() {
+  local pumas=$(puma.pids.count)
+  if [[ ${pumas} -eq 0 ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+puma.is.running() {
+  [[ $(puma.pids.count) -gt 0 ]]
+}
+
+# ACTIONS ——————————————————————————————————————————————————————————————————————
+
+puma.actions.kill() {
+  run "ps -ef | grep [p]uma | xargs kill -9"
+}
+
+puma.actions.kill-sudo() {
+  run "ps -ef | grep [p]uma | xargs sudo kill -9"
+}
+
+puma.actions.ensure-is-down() {
+  puma.is.down && return
+
+  puma.is.running && {
+    info "Detected an existing Puma Cluster — $(puma.pids.count) processes are still alive."
+    puma.actions.kill
+    sleep 3
+
+    puma.is.running && {
+      warning "Still detecting $(puma.pids.count) dangling workers?"
+      return 1
+    }
+  }
+}
+
+# STATUS ——————————————————————————————————————————————————————————————————————
+
+puma.status.header() {
+  local master=$(puma.pids.count 'worker' '-v')
+  local workers=$(puma.pids.count worker)
+  h2 "A total of ${master} master processes with ${workers} workers."
+}
+
+puma.status.listing() {
+  declare -a pumas=("$(ps -ef | egrep [p]uma | egrep -v 'puma-ctl|grep' | grep --color=always puma)")
+  [[ ${#pumas[@]} -gt 1 ]] && {
+    h2 "Currently Active Puma Processes:"
+    echo "${pumas[*]}"
+  }
+}
+
+puma.status.tree() {
+  local mpid=$(puma.pids.master)
+  if [[ -n ${mpid} ]]; then
+    pstree -g 3 -p ${mpid}
+  fi
+}
+
+# COMMANDS ——————————————————————————————————————————————————————————————————————
+
+puma.commands.status() {
+  puma.status.header
+  puma.status.listing
+  puma.status.tree
+}
+
+puma.commands.stop() {
+  puma.actions.ensure-is-down && {
+    success "Puma is down."
+    return 0
+  }
+
+  puma.is.running && {
+    error "Unable to stop Puma workers, some are still running."
+    return 1
+  }
+}
+
+puma.commands.restart() {
+  puma.commands.stop && puma.commands.start
+}
+
+puma.commands.help() {
+  printf "${bldylw}USAGE:\n"
+  printf "    ${bldgrn}bin/puma-ctl [ $(array.to.piped-list "${puma_commands[@]}") ] [ puma options ]${clr}\n\n"
+  printf "${bldylw}EXAMPLES:\n"
+  printf "    ${bldgrn}bin/puma-ctl start -d -t:1${clr}\n"
+  printf "    ${bldgrn}bin/puma-ctl stop${clr}\n\n"
+  [[ -n $(command -V puma) ]] && {
+    printf "${bldylw}PUMA OPTIONS:\n${txtcyn}"
+    puma -h | grep -v '<options>'
+    printf "${clr}"
+    echo
+  }
+}
+
+# MAIN ——————————————————————————————————————————————————————————————————————
+
+declare -a puma_commands=( $(util.functions-matching.diff "puma.commands." | tr '\n' ' ') )
+export puma_commands
+
+puma.main() {
+  local command="${1:-"help"}"
+  shift
+
+  array.includes "${command}" "${puma_commands[@]}" || {
+    error "Invalid command: ${command}"
+    puma.commands.help
+    return 1
+  }
+
+  local func="puma.commands.${command}"
+  ${func} "$@"
+  return $?
+}
+
+[[ $0 =~ "puma-ctl" ]] && puma.main "$@"
+
