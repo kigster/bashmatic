@@ -38,6 +38,56 @@ audio.make.mp3() {
   hr
 }
 
+audio.file.mp3-to-wav() {
+  local from="${1/.\//}"
+  local destination="$2"
+
+  if [[ -z ${destination} ]]; then
+    destination="$(dirname "${from}")"
+  else
+    destination="${destination}/$(dirname "${from}")"
+  fi
+
+  local to="${destination}/$(basename "${from/.mp3/.wav}")"
+
+  if [[ ${from} =~ ".mp3" ]]; then
+    h.blue "Source:      ${from}"
+    cursor.up 1
+    h.green "Destination: ${to}"
+    [[ -f "${to}" ]] && {
+      info: "File already converted."
+      return 0
+    }
+    run "mkdir -p \"${destination}\""
+    run.set-next show-output-on
+    run "lame --decode \"${from}\" \"${to}\""
+  else
+    error "File ${from} is not an MP3 file."
+    return 1
+  fi
+}
+
+# Usage: assume a folder with a bunch of MP3s in subfolders
+# audio.dir.mp3-to-wav "MP3" "/Volumes/SDCARD"
+#
+# This will process all MP3 files and decode them into the
+# same folder structure but under /Volumes/SDCARD.
+#
+audio.dir.mp3-to-wav() {
+  local from="$1"
+  local to="$2"
+
+  run "cd \"${from}\""
+
+  trap "return 1" INT
+
+  while read -d '' filename; do
+    audio.file.mp3-to-wav "${filename}" "${to}" </dev/null
+  done < <(find . -type f -name "*.mp3" -print0)
+
+  run "cd -"
+}
+
 æ.mp3() {
   audio.make.mp3 "$@"
 }
