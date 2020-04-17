@@ -699,7 +699,7 @@ inf() {
 
 debug() {
   [[ -z ${DEBUG} ]] && return
-  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakwht}[ debug ] $*  ${clr}\n"
+  printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
 }
 
 warn() {

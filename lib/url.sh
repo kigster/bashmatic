@@ -5,7 +5,7 @@ export BITLY_LOGIN
 export BITLY_API_KEY
 
 # These globals define flags used in fetching URLs.
-export LibUrl__CurlDownloaderFlags="-fsSL --connect-timeout 5 --retry-delay 10 --retry-max-time 300 --retry 15 "
+export LibUrl__CurlDownloaderFlags="-fsSL --connect-timeout 3 --retry 2 --retry-delay 1 --retry-max-time 3"
 export LibUrl__WgetDownloaderFlags="-q --connect-timeout=5 --retry-connrefused --tries 15 -O - "
 
 # Description:
@@ -26,6 +26,9 @@ export LibUrl__WgetDownloaderFlags="-q --connect-timeout=5 --retry-connrefused -
 url.shorten() {
   local longUrl="$1"
 
+  error "This function used Bitly API V3 which is now defunct."
+  return 1
+
   if [[ -z "${BITLY_LOGIN}" || -z "${BITLY_API_KEY}" ]]; then
     printf "${longUrl}"
 
@@ -37,14 +40,20 @@ url.shorten() {
       longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI.encode(str)")
     fi
 
-    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_LOGIN}" | cat -vet
-    #[[ -n ${DEBUG} ]] && echo "BITLY_LOLGIN: ${BITLY_API_KEY}" | cat -vet
-
     bitlyUrl="http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}"
+ 
+    debug "BITLY_LOLGIN : ${clr}${bldylw}${BITLY_LOGIN}" >&2
+    debug "BITLY_LOLGIN : ${clr}${bldgrn}${BITLY_API_KEY}" >&2
+    debug "BITLY_API_URL: ${clr}${undblu}${bitlyUrl}${clr}" >&2
 
-    #[[ -n ${DEBUG} ]] && debug "BitlyAPI URL is:\n${bitlyUrl}\n"
-
-    $(url.downloader) "${bitlyUrl}" | tr -d '\n' | tr -d ' '
+    local output="$( $(url.downloader) "${bitlyUrl}" 2>&1 )"
+    if [[ "${output}" =~ "INVALID" || "${output}" =~ "Server Error" ]]; then
+      error "${output}"
+      return 1
+    else
+      printf "%s" "${output}" | tr -d '\n' | tr -d ' '
+      return 0
+    fi
   fi
 }
 

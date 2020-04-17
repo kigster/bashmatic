@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+#
+# To run this script via Curl:
+#
+#    bash -c "$(curl -fsSL https://bit.ly/colorize-mysql)"
+#
+# © 2020 Konstantin Gredeskoul, distributed as part of Bashmatic Framework.
+#
 
 [[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-1-0)"
 source "${HOME}/.bashmatic/init.sh" 1>/dev/null
