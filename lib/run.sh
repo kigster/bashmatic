@@ -11,6 +11,7 @@ run() {
 # Waits until the user presses any key to continue.
 run.ui.press-any-key() {
   local prompt="$*"
+  trap 'return 1' INT
   [[ -z ${prompt} ]] && prompt="Press any key to continue..."
   br
   printf "    ${txtgrn}${italic}${prompt} ${clr}  "

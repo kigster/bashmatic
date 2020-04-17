@@ -271,6 +271,7 @@ export DevSetup__Callbacks
 .dev-setup.brew.mysql() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     "mysql@${mysql_version}"
+    grc
   )
   export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
     "mysql@${mysql_version}"

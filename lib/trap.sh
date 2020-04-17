@@ -16,6 +16,7 @@
 
 .trap-cleanup() {
   [[ -f "${__int_marker__}" ]] && rm -f "${__int_marker__}"
+  unset __int_marker__
   export __int_flag__=0
 }
 
@@ -47,7 +48,7 @@ trap-setup() {
 
 # Using a temp file
 trap-was-fired() {
-  if [[ -f ${__int_marker__} ]]; then
+  if [[ -n "${__int_marker__}" && -f "${__int_marker__}" ]]; then
     rm -f "${__int_marker__}"
     #.trap-remove
     return 0
