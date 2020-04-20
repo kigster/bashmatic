@@ -385,6 +385,18 @@ output.is-redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 
+box.white-on-blue() {
+  .output.box "${bakblu}" "${bldwht}" "$@"
+}
+
+box.white-on-green() {
+  .output.box "${bakgrn}" "${bldwht}" "$@"
+}
+
+box.yellow-on-purple() {
+  .output.box "${bakpur}" "${bldylw}" "$@"
+}
+
 box.yellow-in-red() {
   .output.box "${bldred}" "${bldylw}" "$@"
 }
@@ -540,12 +552,28 @@ h1() {
   box.blue-in-yellow "$@"
 }
 
+h1bg() {
+  box.white-on-blue "$@"
+}
+
 h2() {
   box.blue-in-green "$@"
 }
 
+h2bg() {
+  box.white-on-green "$@"
+}
+
 h3() {
-  hl.subtle "$@"
+  box.magenta-in-green "$@"
+}
+
+h3bg() {
+  box.yellow-on-purple "$@"
+}
+
+h4() {
+  box.magenta-in-green "$@"
 }
 
 hdr() {
