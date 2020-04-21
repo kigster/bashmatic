@@ -125,13 +125,20 @@ change-underscan() {
 
 # This function creates a tiny RAM disk on /var/ramdisk where the
 # decrypted settings will be stored until a reboot.
+# 
+# usage: osx.ramdisk.mount N 
+# where N is number of Mb allocated
 osx.ramdisk.mount() {
+  local size="${1:-"8"}"
+  local total=$(( size * 2 * 1024 ))
   [[ $(uname -s) != "Darwin" ]] && {
     error "This function only works on OSX"
     return 1
   }
   if [[ -z $(df -h | grep ramdisk) ]]; then
-    diskutil erasevolume HFS+ 'ramdisk' $(hdiutil attach -nomount ram://8192)
+    run.ui.ask "Creating RAM disk sized ${size}Mb"
+    run.set-next show-output-on
+    run "diskutil erasevolume HFS+ 'ramdisk' $(hdiutil attach -nomount ram://${total})"
   fi
 }
 
