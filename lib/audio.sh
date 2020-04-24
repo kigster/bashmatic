@@ -12,30 +12,34 @@ audio.file.frequency() {
 audio.make.mp3() {
   local file="$1"
   shift
+  local nfile="$2"
+  shift
 
   [[ -n "$(command -V lame)" ]] || brew.package.install lame
 
   local default_options=" -m s -r -h -b 320 --cbr "
 
   [[ -z "${file}" ]] && {
-    usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] © Convert a RAW PCM Audio to highest quality MP3" \
+    usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ] © Convert a RAW PCM Audio to highest quality MP3" \
       "You can pass additional flags to ${bldylw}lame" "" \
       "Just run ${bldylw}lame --longhelp for more info." "" \
       "Default Flags: ${default_options}" ""
     return
   }
 
-  nfile=$(echo "${file}" | sed -E 's/\.(wav|aiff?)$/\.mp3/ig')
+  [[ -z ${nfile} ]] && nfile="$(echo "${file}" | sedx 's/\.(wav|aiff?)$/\.mp3/g')"
 
   khz=$(audio.file.frequency "${file}")
+
   [[ -n ${khz} ]] && khz=" -s ${khz} "
 
-  h2 "'$(basename "${file}")' ——→ '${nfile}', sample rate: ${khz:-'Unknown'}kHz" \
+  h2 "'$(basename "${file}")' —❯ ${bldylw}${nfile}${txtgrn}, sample rate: ${khz:-'Unknown'}kHz" \
     "lame ${default_options} ${khz} $* '${file}' '${nfile}'"
 
-  run.set-next show-output-on
+  run.set-next show-output-on abort-on-error
   run "lame ${default_options} ${khz} $* '${file}' '${nfile}'"
   hr
+  success "MP3 file ${nfile} is $(file.size.mb "${nfile}")Mb"
 }
 
 audio.file.mp3-to-wav() {
