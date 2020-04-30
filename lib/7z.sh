@@ -20,16 +20,51 @@
 
 # usage  : 7z.zip folder1 folder2 file1 file2 ...
 # creates: folder1.tar.7z with all of the folders and files included.
+# 
+
 7z.zip() {
-  local archive="$1"
+  local folder="$1"
+  shift
   7z.install
-  [[ -f ${archive} || -d ${archive} ]] && archive="$(basename ${archive} | sedx 's/\./-/g').tar.7z"
+
+  local archive="${folder}"
+  [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sedx 's/\./-/g').tar.7z"
+
   [[ -f ${archive} ]] && { 
     run.set-next on-decline-return
     run.ui.ask "File ${archive} already exists. Press Y to remove it and continue." || return 1
     run "rm -f ${archive}"
   }
-  run "tar cf - $* | 7za a -si ${archive}"
+
+  local -a flags=
+  local -a args=
+  for arg in $@; do
+    if [[ ${arg:0:1} == "-" ]]; then
+      flags=( ${flags[@]} "${arg}" )
+    else
+      args=( ${args[@]} "${arg}" )
+    fi
+  done
+  printf "${bldgrn}"
+  printf "${args[*]}\n"
+  printf "${bldylw}"
+
+  set +e
+
+  local command="tar cf - ${folder} ${args[*]} | 7za a ${flags[*]} -si -bd ${archive}"
+  run.print-command "${command}"
+  eval "${command}"
+
+  local code=$?
+
+  printf "${clr}"
+
+  if [[ ${code} -eq 0 ]]; then
+    success "${archive} created."
+  else
+    error "Tar/7z Exited with code ${code}"
+    return 1
+  fi
 }
 
 7z.a() { 7z.zip "$@"; }
