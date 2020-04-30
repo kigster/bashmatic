@@ -9,36 +9,77 @@ audio.file.frequency() {
   printf ${kHz}
 }
 
+audio.make.mp3.usage() {
+  usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ] © Convert a RAW PCM Audio to highest quality MP3" \
+    "You can pass additional flags to ${bldylw}lame" "" \
+    "Just run ${bldylw}lame --longhelp for more info." "" \
+    "Default Flags: ${default_options}" ""
+}
+
+audio.make.mp3s() {
+  local dir="${1:-"."}"
+  local kHz="${2:-"48"}"
+  
+
+  local first="$(find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print | head -1)"
+  
+  if [[ -z ${first} ]]; then
+    error "No AIFF or WAV files in the folder ${bldgrn}${dir}"
+    return 1
+  fi
+
+  inf "Determining audio sampling rate (will apply the same rate to all files)... "
+  kHz=$(audio.file.frequency "${first}")
+  printf "${bldgrn} — ${kHz}kHz"
+  ok:
+
+  echo
+
+  info "Beginning conversion..."
+  printf "${txtblu}"
+
+  local command="find '${dir}' -type f -a \\( -name '*.aif*' -o -name '*.wav' \\) -print -exec lame --silent -m s -r -h -b 320 --cbr -s ${kHz} {} \;"
+  
+  h3 "Executing Command:" "${command}"
+
+  run.set-next show-output-on abort-on-error
+  run "${command}"
+
+  success 'All done.'
+}
+
 audio.make.mp3() {
   local file="$1"
   shift
   local nfile="$2"
   shift
 
+  set +e
+
   [[ -n "$(command -V lame)" ]] || brew.package.install lame
 
   local default_options=" -m s -r -h -b 320 --cbr "
 
-  [[ -z "${file}" ]] && {
-    usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ] © Convert a RAW PCM Audio to highest quality MP3" \
-      "You can pass additional flags to ${bldylw}lame" "" \
-      "Just run ${bldylw}lame --longhelp for more info." "" \
-      "Default Flags: ${default_options}" ""
-    return
+  [[ -n "${file}" ]] || {
+    audio.make.mp3.usage && return 1
   }
 
+  [[ -s "${file}" ]] || {
+    error "File '${file}' does not exist."
+    audio.make.mp3.usage && return 2
+  }
+    
   [[ -z ${nfile} ]] && nfile="$(echo "${file}" | sedx 's/\.(wav|aiff?)$/\.mp3/g')"
 
-  khz=$(audio.file.frequency "${file}")
-
+  local khz=$(audio.file.frequency "${file}")
   [[ -n ${khz} ]] && khz=" -s ${khz} "
 
-  h2 "'$(basename "${file}")' —❯ ${bldylw}${nfile}${txtgrn}, sample rate: ${khz:-'Unknown'}kHz" \
-    "lame ${default_options} ${khz} $* '${file}' '${nfile}'"
-
+  h2 "'$(basename "${file}")' —❯ ${bldylw}${nfile}${txtgrn}, sample rate: ${khz:-'Unknown'}kHz"
+  info "lame ${default_options} ${khz} $* '${file}' '${nfile}'"
   run.set-next show-output-on abort-on-error
-  run "lame ${default_options} ${khz} $* '${file}' '${nfile}'"
+  run  "echo lame ${default_options} ${khz} $* '${file}' '${nfile}'"
   hr
+
   success "MP3 file ${nfile} is $(file.size.mb "${nfile}")Mb"
 }
 
