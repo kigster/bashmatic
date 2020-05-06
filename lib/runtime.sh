@@ -140,7 +140,7 @@ export commands_completed=0
 
 run.print-command() {
   local command="$1"
-  local max_width=100
+  local max_width=${2:-"100"}
   local w
   w=$(($(.output.screen-width) - 10))
 
@@ -172,6 +172,30 @@ run.print-command() {
   fi
 }
 
+run.print-command-full-screen() {
+  run.print-long-command "$1" $(screen.width)
+}
+
+run.print-long-command() {
+  local command="$1"
+  local max_width=${2:-"80"}
+  local w
+  w=$(($(.output.screen-width) - 10))
+  [[ ${w} -gt ${max_width} ]] && w=${max_width}
+
+  export LibRun__AssignedWidth=${w}
+
+  local prefix="${LibOutput__LeftPrefix}${clr}"
+  local ascii_cmd
+  local command_prompt="${prefix}❯ "
+  local command_width=$((w - 10))
+
+  printf "${prefix}❯ ${bldylw}"
+  printf "${command}" | fold -s -w${w} | \
+    awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
+
+}
+
 #
 # This is the workhorse of the entire BASH library.
 # It basically executes a statement, while processing it's output, error output,
@@ -200,7 +224,7 @@ run.print-command() {
   while [[ -n ${LibRun__LastExitCode} && ${LibRun__LastExitCode} -ne 0 ]] &&
     [[ -n ${LibRun__RetryCount} && ${LibRun__RetryCount} -gt 0 ]]; do
 
-    [[ ${tries} -gt 1 && ${__Previous__ShowCommandOutput} -eq ${True} ]] && \
+    [[ ${tries} -gt 1 && ${__Previous__ShowCommandOutput} -eq ${True} ]] &&
       export LibRun__ShowCommandOutput=${False}
 
     .run.retry.enforce-max
