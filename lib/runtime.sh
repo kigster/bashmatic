@@ -178,9 +178,9 @@ run.print-command-full-screen() {
 
 run.print-long-command() {
   local command="$1"
-  local max_width=${2:-"80"}
+  local max_width=${2:-"150"}
   local w
-  w=$(($(.output.screen-width) - 10))
+  w=$(($(.output.screen-width) - 20))
   [[ ${w} -gt ${max_width} ]] && w=${max_width}
 
   export LibRun__AssignedWidth=${w}
