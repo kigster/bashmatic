@@ -1,0 +1,13 @@
+# Main
+regexp=^([\d:]*)\s+(sidekiq\.\d+)\s+\|\s+(.*)$
+colours=unchanged,bright_green,bright_cyan,cyan,green,purple
+-
+regexp=^([\d:]*)\s+(web\.\d+)\s+\|\s+(.*)$
+colours=unchanged,bright_green,bright_yellow,yellow
+-
+regexp=^([\d:]*)\s+(webpack\.\d+)\s+\|\s+(.*)$
+colours=unchanged,bright_green,bright_magenta,magenta
+-
+regexp=^([\d:]*)\s+(system)\s+\|\s+(.*)$
+colours=unchanged,bright_green,bright_red,red
+

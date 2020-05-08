@@ -271,11 +271,27 @@ export DevSetup__Callbacks
 .dev-setup.brew.mysql() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     "mysql@${mysql_version}"
-    grc
   )
   export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
     "mysql@${mysql_version}"
   )
+}
+
+.dev-setup.brew.grc() {
+  ${BASHMATIC_HOME}/bin/install-grc
+
+  local code=$?
+  [[ ${code} -ne 0 ]] && {
+    ((exit_on_error)) && {
+      error "GRC setup returned exit code ${code}, aborting."
+      exit 127
+    }
+
+    warning "NOTE: GRC setup returned exit code ${code}."
+    return 1
+  }
+
+  return 0
 }
 
 declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
@@ -283,6 +299,7 @@ declare -a components_to_install=()
 export show_header=1
 export run_callbacks=1
 export only_callbacks=0
+export exit_on_error=0
 
 dev-setup.parse-opts() {
   [[ -z "$1" ]] && {
@@ -354,7 +371,7 @@ dev-setup.parse-opts() {
       shift
       ;;
     -n | --dry-run)
-      run::set-all dry-run-on
+      run.set-all dry-run-on
       shift
       ;;
     -N)
@@ -362,7 +379,8 @@ dev-setup.parse-opts() {
       shift
       ;;
     -e | --exit-on-error)
-      run::set-all abort-on-error
+      run.set-all abort-on-error
+      export exit_on_error=1
       shift
       ;;
     -q | --quieter)

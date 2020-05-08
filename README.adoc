@@ -117,6 +117,17 @@ In this example we'll install the above mentioned tools in one command. We'll ru
 
 This compact command line installs a ton of things, but don't take our word for it — run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
 
+==== Example 4. The final example installs GRC Colourify Tool that makes your terminal very colorful.
+
+Run it like so:
+
+[source,bash]
+~/.bashmatic/bin/install-grc
+
+You might need to enter your password for SUDO.
+
+Once it completes, run `source ~/.bashrc` (or whatever shell you use), and type something like `ls -al` or `netstat -rn` or `ping 1.1.1.1` and notice how all of the above is nicely colored.
+
 == Installing Bashmatic
 
 Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script.

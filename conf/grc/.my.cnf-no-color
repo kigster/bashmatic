@@ -1,0 +1,10 @@
+# vim ft:conf
+[mysql]
+# (time formatted almost ISO8601, there is no day number in client)
+prompt='\Y-\o-??T\R:\m (\v)\_\u@\h:\p/\d\n>\_'
+pager=less -FXRS
+# auto completion:
+auto-rehash
+show-warnings
+
+!include ~/.my.local.cnf
