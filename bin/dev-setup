@@ -419,13 +419,6 @@ dev-setup.parse-opts() {
 }
 
 usage() {
-  if [[ -f ${BASHMATIC_HOME}/bin/.dev-setup ]]; then
-    cat ${BASHMATIC_HOME}/bin/.dev-setup
-    return 0
-  fi
-
-  dev-setup.header
-
   usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
     "-a / --all" "Installs everything" \
     "-e / --exit-on-error" "Abort if an error occurs. Default is to keep going." \
@@ -446,6 +439,8 @@ usage() {
     " " "${bldblu}$(array.to.csv ${components[@]:10:5})"
 
   output.print-at-x-y 2 4 "$(usage-box.section "GROUPS")"
+
+  dev-setup.header
 
   info "This script installs groups of Brew packages and Casks, organized by a programming "
   info "language or a stack. Each group may register some of its members as Brew services"

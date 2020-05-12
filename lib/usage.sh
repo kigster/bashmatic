@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Private
 
 .usage.setup() {
@@ -86,16 +87,15 @@ usage.set-min-flag-len() {
   .output.box-bottom
 }
 
-# Prints usage information for a command.
-#
-# usage-box "command © title" "flag1" "flag1 description" "flag2" "flag2 description"...
-#
-# eg:
-#    usage-box "/bin/ls © Command that lists all files in the current directory" \
-#              "-1" "Force output to be one entry per line." \
-#              "-A" "List all entries except for . and ...  " \
+.usage-cache-file() {
+  local script_name="${BASH_SOURCE[-1]}"
+  local script_dir="$(dirname ${script_name})"
+  local script_base="$(basename ${script_name})"
+  local script_usage_cache="${script_dir}/.${script_base}"
+  printf "%s" "${script_usage_cache}"
+}
 
-usage-box() {
+.usage.box() {
   local command
   local title
 
@@ -113,6 +113,27 @@ usage-box() {
   .usage.command "${command}"
   [[ -n ${title} ]] && .usage.title "${title}"
   [[ -n "$*" ]] && .usage.flags "$@"
+}
+
+
+# Prints usage information for a command.
+#
+# usage-box "command © title" "flag1" "flag1 description" "flag2" "flag2 description"...
+#
+# eg:
+#    usage-box "/bin/ls © Command that lists all files in the current directory" \
+#              "-1" "Force output to be one entry per line." \
+#              "-A" "List all entries except for . and ...  " \
+
+export EXPIRE_USAGE_CACHE=${EXPIRE_USAGE_CACHE:-"0"}
+
+usage-box() {
+  local backup="$(.usage-cache-file)"
+  if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
+    cat "${backup}"
+  else
+    .usage.box "$@" | tee ${backup}
+  fi
 }
 
 usage-box.section() {

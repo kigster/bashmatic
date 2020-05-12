@@ -1,0 +1,196 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+set +x
+source "${HOME}/.bashmatic/init.sh" 1>/dev/null
+
+run.set-all abort-on-error
+output.set-max-width 100
+
+export mysqlBackup=
+export ramdiskSizeMB=2048
+export force=0
+export mysqlEnclosingDir=/usr/local/var
+export ramdiskPath="/Volumes/ramdisk"
+
+em() {
+  hl.yellow-on-gray "$@"
+}
+
+function usage() {
+  usage-box "mysql-ramdisk -f mysql.tar.gz [ --force --size 3000 -d /usr/local/var ] © Creates a RAM disk and copies mysql data files there" \
+    "-f / --file" "MySQL backup file (assumed to be a .tar.gz of the ${bldblu}mysql${txtylw} folder)" \
+    "-s / --size MB" "Size in MB of the RAM disk to create. Default is ${bldblu}${ramdiskSizeMB}" \
+    "-d / --dir DIR" "Directory, under where MySQL tries to find 'mysql' folder" \
+    " " "The default folder is ${bldblu}${mysqlEnclosingDir}" \
+    "-F / --force" "If RAM disk or mysql folder already exists, delete it first and recreate." \
+    "-n / --dry-run" "Print but do not run commands" \
+    "-e / --exit-on-error" "Exit as soon as any command fails." \
+    "-h / --help" "This message." \
+    " " " " \
+    " " "${bldgrn}EXAMPLE: ${bldblu}$ mysql-ramdisk -f mysql.tar.gz --force -d /usr/local/var"
+  exit 0
+}
+
+function mysql-ramdisk.validate() {
+  local -a errors
+  [[ -z ${mysqlBackup} ]] && errors=("${errors[@]}" "-f/--file <backup.tar.gz> is a required option")
+  [[ -s ${mysqlBackup} ]] || errors=("${errors[@]}" "-f/--file <backup.tar.gz> must reference an existing file")
+  [[ ${ramdiskSizeMB} -lt 500 ]] && errors=("${errors[@]}" "-s/--size must be greater than 500MB")
+  [[ -d "${mysqlEnclosingDir}" ]] || errors=("${errors[@]}" "-d/--dir DIR must be a valid existing directory")
+
+  if [[ ${#errors} -gt 0 ]]; then
+    error "${errors[@]}"
+    return 1
+  else
+    return 0
+  fi
+}
+
+function mysql-ramdisk.parse-opts() {
+  if [[ -z "$1" ]]; then
+    usage
+    exit 0
+  fi
+
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -f | --file)
+      shift
+      local arg="$1"
+      shift
+      if [[ -f ${arg} ]]; then
+        export mysqlBackup="${arg}"
+      else
+        error "Please provide an existing MySQL backup file."
+        exit 2
+      fi
+      ;;
+    -s | --size)
+      shift
+      local arg="$1"
+      shift
+      if [[ ${arg} -gt 500 ]]; then
+        export ramdiskSizeMB=${arg}
+      else
+        error "Invalid RAM disk size arg: ${arg}. Minimum is 500Mb."
+        exit 3
+      fi
+      ;;
+    -n | --dry-run)
+      shift
+      run.set-all dry-run-on
+      ;;
+    -F | --force)
+      shift
+      export force=1
+      ;;
+    -e | --exit-on-error)
+      run.set-all abort-on-error
+      export exit_on_error=1
+      shift
+      ;;
+    -h | -\? | --help)
+      shift
+      usage
+      exit 0
+      ;;
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    -?*)
+      print 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
+    *)
+      [[ -z "$1" ]] && break
+      shift
+      ;;
+    esac
+  done
+}
+
+#export mysqlBackup=
+#export ramdiskSizeMB=2048
+#export force=0
+#export mysqlEnclosingDir=/usr/local/var
+
+function main() {
+
+  mysql-ramdisk.parse-opts "$@"
+  mysql-ramdisk.validate
+
+  h3 'Starting MySQL to Migration, please wait...'
+
+  em "Using file ${mysqlBackup}, and mysql dir ${mysqlEnclosingDir}/mysql"
+
+  # STOP MYSQL
+  em "Stopping MySQL..."
+  [[ -n "$(ps -ef | grep [m]ysqld)" ]] && {
+    info "Stopping MySQL..."
+    run "brew services stop mysql@5.6 2>/dev/null || true"
+    sleep 2
+  }
+
+  [[ -n "$(ps -ef | grep [m]ysqld)" ]] && {
+    error "MySQL is still running."
+    return 1
+  }
+
+  # FIRST WE DEAL WITH RAMDISK.
+  em "Handling the RAM disk..."
+
+  [[ -n $(df -h | grep ramdisk) ]] && {
+    if [[ ${force} -eq 0 ]]; then
+      info "Found the RAM disk, skipping recreation."
+      info "HINT: pass -r/--recreate to force"
+    else
+      info "Un-mounting the RAM disk"
+      osx.ramdisk.unmount
+    fi
+  }
+
+  [[ -d "${ramdiskPath}" ]] || {
+    info "Mounting ${ramdiskSizeMB}MB ramdisk..."
+    echo 'y' | osx.ramdisk.mount ${ramdiskSizeMB} >/dev/null
+  }
+
+  [[ -d "${ramdiskPath}/mysql" && ${force} -eq 0 ]] || {
+    info "Unpacking the Backup..."
+    run "cd ${ramdiskPath}"
+    [[ -n $(command -V gtar) ]] && brew.install.package "gnu-tar"
+
+    # This returns the path component inside the archive preceeding mysql/
+    # So, eg, for Volume/ramdisk/mysql it will return /Volume/ramdisk
+    local stripPath=$(gtar tvzf /usr/local/var/mysql-db-2020-05-12.tar.gz --wildcards '*/ib_logfile1' | awk '{print $6}' | sed 's#mysql/.*$##g')
+    local stripComponents=$(echo ${stripPath} | sed 's/[^/]*//g' | tr -d '\n' | wc -c | tr -d ' ')
+    run.set-next show-output-on
+    run "gtar --strip-components=${stripComponents} -xzf ${mysqlBackup}"
+  }
+
+  # SECOND WE DEAL WITH /usr/local/var
+  em "Handling the MySQL Folder..."
+  run "cd ${mysqlEnclosingDir} || exit 1"
+
+  [[ -L mysql ]] && run "rm -f mysql"
+  [[ -d mysql ]] && run "rm -rf mysql"
+  info "Symlinking mysql from: ${bldgrn}${ramdiskPath}/mysql ——> ${mysqlEnclosingDir}/mysql"
+  run "ln -nfs ${ramdiskPath}/mysql"
+
+  em "Starting MYSQL..."
+  run "brew services start mysql@5.6"
+
+  sleep 2
+
+  [[ -n "$(ps -ef | grep [m]ysqld)" ]] || {
+    error "MySQL failed to start."
+    return 2
+  }
+
+  success "You are running on a hot new RAM disk. Bravo!"
+}
+
+main "$@"
