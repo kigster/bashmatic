@@ -254,8 +254,9 @@ output.color.off() {
   local remaining_space_len=$(($width - ${#clean_text} - 1))
   printf "${__color_bdr}│ ${__color_fg}"
   printf -- "${text}"
-  [[ ${remaining_space_len} -gt 0 ]] && .output.repeat-char " " "${remaining_space_len}"
-  .output.cursor-left-by 1
+  [[ ${remaining_space_len} -gt 0 ]] && {
+    cursor.shift.x $((remaining_space_len - 1))
+  }
   printf "${__color_bdr}│${clr}\n"
 }
 
@@ -355,6 +356,15 @@ cursor.at.x() {
 
 cursor.at.y() {
   .output.cursor-move-to-y "$@"
+}
+
+cursor.shift.x() {
+  local shift="$1"
+  if [[ "${shift:0:1}" == "-" ]]; then
+    .output.cursor-left-by "${shift:1}"
+  else
+    .output.cursor-right-by "${shift}"
+  fi
 }
 
 screen.width() {

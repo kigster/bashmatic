@@ -73,7 +73,7 @@ export commands_completed=0
   .run.env
 
   if [[ ${LibRun__DryRun} -eq ${True} ]]; then
-    info "${clr}[dry run] ${bldgrn}${cmd}"
+    info "${clr}$(run.dry-run-prefix) ${bldgrn}${cmd}"
     return 0
   else
     export LibRun__LastExitCode=
@@ -95,7 +95,7 @@ export commands_completed=0
   .run.env
   local w=$(($(.output.screen-width) - 10))
   if [[ ${LibRun__DryRun} -eq ${True} ]]; then
-    local line="${clr}[dry run] bundle exec ${bldgrn}${cmd}"
+    local line="${clr}$(run.dry-run-prefix) bundle exec ${bldgrn}${cmd}"
     info "${line:0:${w}}..."
     return 0
   else
@@ -138,6 +138,12 @@ export commands_completed=0
   fi
 }
 
+run.dry-run-prefix() {
+  if [[ ${LibRun__DryRun} == ${True} ]]; then
+    printf "${txtcyn}${italic}« dry run »${clr} "
+  fi
+}
+
 run.print-command() {
   local command="$1"
   local max_width=${2:-"100"}
@@ -152,9 +158,8 @@ run.print-command() {
   local ascii_cmd
   local command_prompt="${prefix}❯ "
   local command_width=$((w - 30))
-
   # record length of the command
-  ascii_cmd="$(printf "${command_prompt}%-.${command_width}s " "${command:0:${command_width}}")"
+  ascii_cmd="$(printf "${command_prompt}$(run.dry-run-prefix)%-.${command_width}s " "${command:0:${command_width}}")"
 
   # if printing command output don't show dots leading to duration
   export LibRun__CommandLength=${#ascii_cmd}
@@ -180,18 +185,18 @@ run.print-long-command() {
   local command="$1"
   local max_width=${2:-"150"}
   local w
-  w=$(($(.output.screen-width) - 20))
+  w=$(($(.output.screen-width) - 10))
   [[ ${w} -gt ${max_width} ]] && w=${max_width}
 
   export LibRun__AssignedWidth=${w}
 
   local prefix="${LibOutput__LeftPrefix}${clr}"
   local ascii_cmd
-  local command_prompt="${prefix}❯ "
+  local command_prompt="${prefix}❯ $(run.dry-run-prefix)"
   local command_width=$((w - 10))
 
   printf "${prefix}❯ ${bldylw}"
-  printf "${command}" | fold -s -w${w} | \
+  printf "${command}" | fold -s -w${w} |
     awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
 
 }
@@ -373,10 +378,10 @@ run.inspect-variable() {
         value=${var_value}
         color="${bldred}"
       fi
-    elif [[ "${var_value}" == "${True}" ]]; then
+    elif [[ "${var_value}" == "${True}" || ${var_value} -eq 1 ]]; then
       value="${value_check}"
       color="${bldgrn}"
-    elif [[ "${var_value}" == "${False}" ]]; then
+    elif [[ "${var_value}" == "${False}" || ${var_value} -eq 0 ]]; then
       value="${value_off}"
       color="${bldred}"
     fi

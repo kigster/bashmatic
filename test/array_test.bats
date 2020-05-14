@@ -3,6 +3,18 @@
 load test_helper
 source lib/array.sh
 
+@test "array.eval-in-groups-of" {
+  declare -a array=(asciidoc asciidoctor autoconf automake awscli bash zsh)
+  local out
+
+  set -e
+  out="$(array.eval.in-groups-of 2 echo "${array[@]}" | tr '\n' '|')"
+  [[ "${out}" == "asciidoc asciidoctor|autoconf automake|awscli bash|zsh|" ]]
+
+  out="$(array.eval.in-groups-of 3 echo "${array[@]}" | tr '\n' '|')"
+  [[ "${out}" == "asciidoc asciidoctor autoconf|automake awscli bash|zsh|" ]]
+}
+
 @test "array.join with a pipe" {
   set -e
   declare -a array=("a string" "test2000" "hello" "one")

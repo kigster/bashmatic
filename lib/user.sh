@@ -45,3 +45,16 @@ user.host() {
   [[ -z ${host} ]] && host=$(user.my.ip)
   printf "${host}"
 }
+
+
+user.login-shell() {
+  basename $(user.login-shell-path)
+}
+
+user.login-shell-path() {
+  if [[ -n $(command -V finger) ]]; then
+    finger ${USER} | grep Shell: | sed 's/^.*Shell: //g'
+  else
+    echo $SHELL
+  fi
+}

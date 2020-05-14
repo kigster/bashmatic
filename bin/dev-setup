@@ -7,11 +7,13 @@ source "${HOME}/.bashmatic/init.sh" 1>/dev/null
 run.set-all continue-on-error
 output.set-max-width 100
 
+# This flag is from lib/brew.sh
 export opt_terse=
+
 export ruby_version=
 declare -a pg_versions
 declare -a mysql_versions
-export DevSetup__Version="0.1.1"
+export DevSetup__Version="0.2.0"
 
 .dev-setup.detect.pg-version() {
   export pg_versions=($(brew.package.available-versions postgresql))
@@ -30,6 +32,7 @@ export DevSetup__Version="0.1.1"
   [[ -f .ruby-version ]] && {
     export ruby_version="$(cat .ruby-version | tr -d '\n')"
   }
+  [[ -z ${ruby_version} ]] && export ruby_version=$(ruby.top-versions | grep -v dev | tail -1)
 }
 
 .dev-setup.ruby() {
@@ -46,13 +49,83 @@ declare -a DevSetup__Errors=()
 declare -a DevSetup__BrewPackages=()
 declare -a DevSetup__BrewCasks=()
 declare -a DevSetup__BrewServices=()
+declare -a DevSetup__BrewFonts=()
 declare -a DevSetup__Callbacks=()
 
 export DevSetup__BrewPackages
 export DevSetup__BrewCasks
 export DevSetup__BrewServices
+export DevSetup__BrewFonts
 export DevSetup__Callbacks
 
+.dev-setup.brew.fonts() {
+  export DevSetup__BrewFonts=(
+    font-advent-pro
+    font-andale-mono
+    font-anonymice-powerline
+    font-arvo
+    font-aurulentsansmono-nerd-font
+    font-average-mono
+    font-awesome-terminal-fonts
+    font-bitstreamverasansmono-nerd-font
+    font-blexmono-nerd-font
+    font-cascadia-mono
+    font-consolas-for-powerline
+    font-cousine
+    font-cutive-mono
+    font-d2coding
+    font-daddytimemono-nerd-font
+    font-dejavu-sans-mono-for-powerline
+    font-denk-one
+    font-droid-sans-mono-for-powerline
+    font-envy-code-r
+    font-everson-mono
+    font-fantasque-sans-mono
+    font-fira-mono-for-powerline
+    font-fontawesome
+    font-gomono-nerd-font
+    font-hack
+    font-ia-writer-mono
+    font-inconsolata
+    font-inconsolata-for-powerline
+    font-inconsolata-for-powerline-bold
+    font-jetbrains-mono
+    font-kawkab-mono
+    font-lekton
+    font-lekton-nerd-font
+    font-liberation-mono-for-powerline
+    font-menlo-for-powerline
+    font-meslo-for-powerline
+    font-miriam-mono-clm
+    font-monofur-for-powerline
+    font-monoid
+    font-monoisome
+    font-mononoki
+    font-monoton
+    font-noto-mono
+    font-noto-mono-for-powerline
+    font-office-code-pro
+    font-oswald
+    font-oxygen
+    font-oxygen-mono
+    font-powerline-symbols
+    font-pt-mono
+    font-roboto
+    font-roboto-condensed
+    font-roboto-mono-for-powerline
+    font-share-tech-mono
+    font-sometype-mono
+    font-source-code-pro
+    font-source-code-pro-for-powerline
+    font-source-sans-pro
+    font-space-mono
+    font-titillium
+    font-tulpen-one
+    font-ubuntu
+    font-ubuntu-mono-derivative-powerline
+    font-victor-mono
+  )
+}
 .dev-setup.brew.dev() {
   # List of Brew Formulas to install and l`ink
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
@@ -195,10 +268,29 @@ export DevSetup__Callbacks
   )
 }
 
+
+.dev-setup.install-rbenv-hook() {
+  local login_shell=$(user.login-shell)
+  local rcfile
+  local rbenv_init
+
+  if [[ ${login_shell} == "bash" ]]; then
+    rcfile="${HOME}/.bash_profile"
+    rbenv_init='eval "$(rbenv init -)"'
+  else
+    rcfile="${HOME}/.zshrc"
+    rbenv_init='eval "$(rbenv init - zsh)"'
+  fi
+
+  grep -q 'rbenv init' ${rcfile} || echo "${rbenv_init}" >> "${rcfile}"
+  grep -q -E 'PATH.*\.rbenv/bin' ${rcfile} || echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH' >> "${rcfile}"
+}
+
 .dev-setup.callbacks.ruby() {
   ruby.install "${ruby_version}"
   run "rbenv global ${ruby_version}"
   export LIBRARY_PATH=$LIBRARY_PATH:$(brew --prefix openssl)/lib
+  .dev-setup.install-rbenv-hook
   ruby.init
   ruby.bundle-install
 }
@@ -282,7 +374,7 @@ export DevSetup__Callbacks
 
   local code=$?
   [[ ${code} -ne 0 ]] && {
-    ((exit_on_error)) && {
+    ((flag_on_error_abort)) && {
       error "GRC setup returned exit code ${code}, aborting."
       exit 127
     }
@@ -296,10 +388,11 @@ export DevSetup__Callbacks
 
 declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
 declare -a components_to_install=()
-export show_header=1
-export run_callbacks=1
-export only_callbacks=0
-export exit_on_error=0
+export flag_verbose=0
+export flag_show_header=1
+export flag_run_callbacks=1
+export flag_callbacks_only=0
+export flag_on_error_abort=0
 
 dev-setup.parse-opts() {
   [[ -z "$1" ]] && {
@@ -328,11 +421,11 @@ dev-setup.parse-opts() {
       ;;
     -c | --only-callbacks)
       shift
-      export only_callbacks=1
+      export flag_callbacks_only=1
       ;;
     -C | --no-callbacks)
       shift
-      export run_callbacks=0
+      export flag_run_callbacksrun_callbacks=0
       ;;
     -d | --no-dev)
       shift
@@ -375,16 +468,20 @@ dev-setup.parse-opts() {
       shift
       ;;
     -N)
-      unset show_header
+      unset flag_show_header
       shift
       ;;
     -e | --exit-on-error)
       run.set-all abort-on-error
-      export exit_on_error=1
+      export flag_on_error_abort=1
       shift
       ;;
     -q | --quieter)
-      export opt_terse=true
+      export flag_terse_output=true
+      shift
+      ;;
+    -v | --verbose)
+      export flag_verbose=1
       shift
       ;;
     -h | -\? | --help)
@@ -421,27 +518,30 @@ dev-setup.parse-opts() {
 usage() {
   usage-box "dev-setup [ flags ] © Installs various packages via Homebrew." \
     "-a / --all" "Installs everything" \
-    "-e / --exit-on-error" "Abort if an error occurs. Default is to keep going." \
     "-g / --groups" "Installs dev + specified groups of packages and casks." \
     " " "Can be space separated array, eg -g 'ruby js monitoring'" \
+    " " "Note that ${bldblu}dev${bldylw} group is always installed, unless --no-dev." \
     "-d / --no-dev" "Skips ${bldblu}dev${txtylw} when used with -g flag." \
+    " " " " \
     "-C / --no-callbacks" "Skip executing group callbacks when installing" \
     "-c / --only-callbacks" "Skip main installers, and only run the callbacks." \
-    "-q / --quieter" "Do not print as much output." \
-    "-n / --dry-run" "Only print commands, but do not run them" \
+    " " " " \
     "-r / --ruby-version VERSION" "Ruby version, overrides defaulkt ${ruby_version}" \
     "-p / --pg-version VERSION" "PostgreSQL version, overrides ${pg_version}" \
     "-m / --mysql-version VERSION" "MySQL version, overrides ${mysql_version}" \
-    " " "Note that ${bldblu}dev${bldylw} group is always installed." \
     " " " " \
-    " " "${bldblu}$(array.to.csv ${components[@]:0:5})" \
-    " " "${bldblu}$(array.to.csv ${components[@]:5:5})" \
-    " " "${bldblu}$(array.to.csv ${components[@]:10:5})"
+    "-v / --verbose" "Print extra debugging info" \
+    "-e / --exit-on-error" "Abort if an error occurs. Default is to keep going." \
+    "-n / --dry-run" "Only print commands, but do not run them" \
+    "-q / --quiet" "Do not print as much output." \
+    " " " " \
+    "├GROUPS:" " " \
+    " " "${bldylw}$(array.to.csv ${components[@]:0:5})" \
+    " " "${bldylw}$(array.to.csv ${components[@]:5:6})" \
+    " " "${bldylw}$(array.to.csv ${components[@]:11:5})$(cursor.shift.x -1)$(cursor.shift.x 2)" \
+    " " " "
 
-  output.print-at-x-y 2 4 "$(usage-box.section "GROUPS")"
-
-  dev-setup.header
-
+  echo
   info "This script installs groups of Brew packages and Casks, organized by a programming "
   info "language or a stack. Each group may register some of its members as Brew services"
   info "to be started (such as PostgreSQL and MySQL)."
@@ -452,7 +552,16 @@ usage() {
   echo
   info "You can disable running of callbacks with -C / --no-callbacks flag."
   echo
-  success "Happy Installing!"
+
+  h3 EXAMPLES
+
+  echo
+  info "    ${bldblk}# Installs the following packages, and ruby 2.7.1 with PostgreSQL version 10"
+  info "    ${bldblu}❯ dev-setup -g 'dev caching fonts gnu grc js postgres ruby' -r 2.7.1 -p 10 "
+  echo
+  info "    ${bldblk}# Dry run to see what would be installed"
+  info "    ${bldblu}❯ dev-setup -n -g 'cpp gnu fonts load-balancing'"
+  printf "${clr}\n"
   exit 0
 }
 
@@ -487,9 +596,7 @@ dev.setup.print-versions() {
 }
 
 dev-setup.header() {
-  if [[ "${show_header}" == "1" ]]; then
-    box.magenta-in-blue "Bashmatic Mac-OSX DevSetup Installer" "Version ${DevSetup__Version}"
-  fi
+  box.magenta-in-blue "Bashmatic Mac-OSX DevSetup Installer Version ${DevSetup__Version}"
 }
 
 dev-setup.init() {
@@ -500,10 +607,16 @@ dev-setup.install.packages() {
   local command="$1"
   shift
   local errors=0
-
+  local cmd
+  local code=0
   for package in "${@}"; do
-    eval "${command} ${package}"
-    local code=$?
+    cmd="${command} ${package}"
+    if run.config.is-dry-run; then
+      run.print-long-command "$(run.dry-run-prefix)${txtylw}${cmd}" 150
+      code=$?
+    else
+      eval "${cmd}"
+    fi
 
     [[ ${code} -ne 0 ]] && {
       errors=$((errors + 1))
@@ -517,43 +630,60 @@ dev-setup.install.packages() {
 dev-setup.install() {
   local failures=0
   local total=0
+  local block_size
 
   brew.cache-reset
 
-  if [[ ${only_callbacks} -ne 1 ]]; then
-    [[ "${#DevSetup__BrewPackages[@]}" -gt 0 ]] && {
-      h2 "Installing Brew Packages"
+  if [[ ${flag_callbacks_only} -ne 1 ]]; then
+    block_size=${#DevSetup__BrewPackages[@]}
+    [[ ${block_size} -gt 0 ]] && {
+      h2 "Installing ${block_size} Brew Packages"
       dev-setup.install.packages "brew.install.package" "${DevSetup__BrewPackages[@]}" || {
         failures=$((failures + 1))
       }
-      total=$((total + 1))
+      total=$((total + block_size))
     }
 
-    [[ "${#DevSetup__BrewCasks[@]}" -gt 0 ]] && {
-      h2 "Installing Brew Casks"
+    block_size=${#DevSetup__BrewCasks[@]}
+    [[ "${block_size}" -gt 0 ]] && {
+      h2 "Installing ${block_size} Brew Casks"
       dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewCasks[@]}" || {
         failures=$((failures + 1))
       }
-      total=$((total + 1))
+      total=$((total + block_size))
     }
 
-    [[ "${#DevSetup__BrewServices[@]}" -gt 0 ]] && {
-      h2 "Starting Brew Services"
+    block_size=${#DevSetup__BrewServices[@]}
+    [[ "${block_size}" -gt 0 ]] && {
+      h2 "Starting ${block_size} Brew Services"
       dev-setup.install.packages "brew.service.up" "${DevSetup__BrewServices[@]}" || {
         failures=$((failures + 1))
       }
-      total=$((total + 1))
+      total=$((total + block_size))
+    }
+
+    block_size=${#DevSetup__BrewFonts[@]}
+    [[ "${block_size}" -gt 0 ]] && {
+      h2 "Installing ${block_size} Open Source Fonts"
+
+      run "brew tap homebrew/cask-fonts"
+      dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewFonts[@]}" || {
+        failures=$((failures + 1))
+      }
+      total=$((total + block_size))
     }
   fi
 
-  if [[ ${run_callbacks} -eq 1 ]]; then
+  if [[ ${flag_run_callbacks} -eq 1 ]]; then
     [[ "${#DevSetup__Callbacks[@]}" -gt 0 ]] && {
       h2 "Executing Callbacks"
       for command in "${DevSetup__Callbacks[@]}"; do
         if util.is-a-function "${command/ */}"; then
-          eval "${command}" || {
-            failures=$((failures + 1))
-          }
+          if run.config.is-dry-run; then
+            run.print-long-command "${command}"
+          else
+            eval "${command}" || failures=$((failures + 1))
+          fi
           total=$((total + 1))
         else
           run "${command}"
@@ -571,15 +701,17 @@ dev-setup.install() {
   else
     echo
     warning \
-      "Setup completed, but with some failures." "Total of ${failures} failures out of ${total} commands were detected and skipped."
+      "Setup completed, but with some failures." \
+      "Total of ${failures} failures out of ${total} commands were detected and skipped."
     echo
     h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
   fi
 }
 
 if [[ $0 =~ 'dev-setup' ]]; then
+  [[ "${flag_show_header}" == "1" ]] && dev-setup.header
   dev-setup.parse-opts "$@"
-  dev-setup.header
+  ((flag_verbose)) && run.inspect-variables-that-are starting-with flag_
   dev.setup.print-versions
 
   [[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})

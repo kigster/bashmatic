@@ -7,6 +7,7 @@
   export __color_cmd=${3:-${txtgrn}}
   export __color_flag=${4:-${txtpur}}
   export __color_headers=${5:-${bldred}}
+  export __color_sub_headers=${5:-${bldcyn}}
 }
 
 .usage.begin() {
@@ -74,7 +75,15 @@ usage.set-min-flag-len() {
 
   for arg in "$@"; do
     if (($(($n % 2)) == 0)); then
-      line=$(printf "   ${__color_flag}%-${l_flags}s" "${arg}")
+      local left_color=${__color_flag}
+      local left_prefix="    "
+      if [[ ${arg:0:1} == "├" ]]; then
+        .output.box-separator "${__color_bdr}"
+        arg=${arg:1}
+        left_color="${__color_sub_headers}"
+        left_prefix=""
+      fi
+      line=$(printf "${left_prefix}${left_color}%-${l_flags}s" "${arg}")
     else
       line=$(printf "%s${__color_fg}  %s\n" "${line}" "${arg}")
 
@@ -115,7 +124,6 @@ usage.set-min-flag-len() {
   [[ -n "$*" ]] && .usage.flags "$@"
 }
 
-
 # Prints usage information for a command.
 #
 # usage-box "command © title" "flag1" "flag1 description" "flag2" "flag2 description"...
@@ -139,4 +147,9 @@ usage-box() {
 usage-box.section() {
   printf "${__color_headers}"
   .usage.hdr "$*"
+}
+
+usage-box.sub-section() {
+  .output.box-separator "${__color_bdr}"
+  .output.boxed-text "${__color_bdr}" "${__color_sub_headers}" "$(.usage.hdr "$1")"
 }
