@@ -486,6 +486,10 @@ run.with.ruby-bundle-and-output() {
   .run.bundle.exec.with-output "$@"
 }
 
+run.config.is-dry-run() {
+  [[ ${LibRun__DryRun} -eq ${True} ]]
+}
+
 run.config.verbose-is-enabled() {
   [[ ${LibRun__Verbose} -eq ${True} ]]
 }
