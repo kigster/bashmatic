@@ -1,643 +1,100 @@
+= Bashmatic Functions Index
 
-# BashMatic Functions Index
+:doctype: book
+:toc:
+:toclevels: 5
+:sectnums:
 
-## Table of Contents
+== Bashmatic Modules
 
-* [Table of Contents](#table-of-contents)
-* [List of Bashmatic Modules](#list-of-bashmatic-modules)
-* [List of Bashmatic Functions](#list-of-bashmatic-functions)
-  * [Module `7z`](#module-7z)
-    * [`7z.a`](#7za)
-    * [`7z.install`](#7zinstall)
-    * [`7z.unzip`](#7zunzip)
-    * [`7z.x`](#7zx)
-    * [`7z.zip`](#7zzip)
-  * [Module `array`](#module-array)
-    * [`array.from.stdin`](#arrayfromstdin)
-    * [`array.has-element`](#arrayhas-element)
-    * [`array.includes`](#arrayincludes)
-    * [`array.includes-or-complain`](#arrayincludes-or-complain)
-    * [`array.includes-or-exit`](#arrayincludes-or-exit)
-    * [`array.join`](#arrayjoin)
-    * [`array.to.bullet-list`](#arraytobullet-list)
-    * [`array.to.csv`](#arraytocsv)
-    * [`array.to.piped-list`](#arraytopiped-list)
-  * [Module `audio`](#module-audio)
-    * [`audio.file.frequency`](#audiofilefrequency)
-    * [`audio.make.mp3`](#audiomakemp3)
-  * [Module `aws`](#module-aws)
-    * [`aws.ec2`](#awsec2)
-    * [`aws.rds.hostname`](#awsrdshostname)
-    * [`aws.s3.upload`](#awss3upload)
-  * [Module `bashmatic`](#module-bashmatic)
-    * [`bashmatic.bash.exit-unless-version-four-or-later`](#bashmaticbashexit-unless-version-four-or-later)
-    * [`bashmatic.bash.version`](#bashmaticbashversion)
-    * [`bashmatic.bash.version-four-or-later`](#bashmaticbashversion-four-or-later)
-    * [`bashmatic.cache.add-file`](#bashmaticcacheadd-file)
-    * [`bashmatic.cache.has-file`](#bashmaticcachehas-file)
-    * [`bashmatic.cache.list`](#bashmaticcachelist)
-    * [`bashmatic.functions`](#bashmaticfunctions)
-    * [`bashmatic.functions-from`](#bashmaticfunctions-from)
-    * [`bashmatic.functions.output`](#bashmaticfunctionsoutput)
-    * [`bashmatic.functions.runtime`](#bashmaticfunctionsruntime)
-    * [`bashmatic.load-at-login`](#bashmaticload-at-login)
-    * [`bashmatic.reload`](#bashmaticreload)
-    * [`bashmatic.setup`](#bashmaticsetup)
-    * [`bashmatic.source`](#bashmaticsource)
-    * [`bashmatic.source-dir`](#bashmaticsource-dir)
-    * [`bashmatic.version`](#bashmaticversion)
-  * [Module `brew`](#module-brew)
-    * [`brew.cache-reset`](#brewcache-reset)
-    * [`brew.cache-reset.delayed`](#brewcache-resetdelayed)
-    * [`brew.cask.is-installed`](#brewcaskis-installed)
-    * [`brew.cask.list`](#brewcasklist)
-    * [`brew.cask.tap`](#brewcasktap)
-    * [`brew.install`](#brewinstall)
-    * [`brew.install.cask`](#brewinstallcask)
-    * [`brew.install.package`](#brewinstallpackage)
-    * [`brew.install.packages`](#brewinstallpackages)
-    * [`brew.package.available-versions`](#brewpackageavailable-versions)
-    * [`brew.package.is-installed`](#brewpackageis-installed)
-    * [`brew.package.link`](#brewpackagelink)
-    * [`brew.package.list`](#brewpackagelist)
-    * [`brew.reinstall.package`](#brewreinstallpackage)
-    * [`brew.reinstall.packages`](#brewreinstallpackages)
-    * [`brew.relink`](#brewrelink)
-    * [`brew.service.down`](#brewservicedown)
-    * [`brew.service.restart`](#brewservicerestart)
-    * [`brew.service.up`](#brewserviceup)
-    * [`brew.setup`](#brewsetup)
-    * [`brew.uninstall.package`](#brewuninstallpackage)
-    * [`brew.uninstall.packages`](#brewuninstallpackages)
-    * [`brew.upgrade`](#brewupgrade)
-    * [`cache-or-command`](#cache-or-command)
-  * [Module `caller`](#module-caller)
-    * [`caller.stack`](#callerstack)
-    * [`stack.frame`](#stackframe)
-  * [Module `color`](#module-color)
-    * [`ansi`](#ansi)
-    * [`bold`](#bold)
-    * [`color.disable`](#colordisable)
-    * [`color.enable`](#colorenable)
-    * [`error-text`](#error-text)
-    * [`italic`](#italic)
-    * [`red`](#red)
-    * [`reset-color`](#reset-color)
-    * [`strikethrough`](#strikethrough)
-    * [`txt-err`](#txt-err)
-    * [`txt-info`](#txt-info)
-    * [`txt-warn`](#txt-warn)
-    * [`underline`](#underline)
-  * [Module `db`](#module-db)
-    * [`db.datetime`](#dbdatetime)
-    * [`db.dump`](#dbdump)
-    * [`db.num-procs`](#dbnum-procs)
-    * [`db.psql-args`](#dbpsql-args)
-    * [`db.psql.args.`](#dbpsqlargs)
-    * [`db.psql.args.default`](#dbpsqlargsdefault)
-    * [`db.psql.args.maint`](#dbpsqlargsmaint)
-    * [`db.rails.schema.checksum`](#dbrailsschemachecksum)
-    * [`db.rails.schema.file`](#dbrailsschemafile)
-    * [`db.restore`](#dbrestore)
-    * [`db.top`](#dbtop)
-    * [`db.wait-until-db-online`](#dbwait-until-db-online)
-    * [`psql.db-settings`](#psqldb-settings)
-  * [Module `deploy`](#module-deploy)
-    * [`deploy.slack`](#deployslack)
-    * [`deploy.slack-ding`](#deployslack-ding)
-    * [`deploy.validate-vpn`](#deployvalidate-vpn)
-  * [Module `dir`](#module-dir)
-    * [`dir.count-slashes`](#dircount-slashes)
-    * [`dir.expand-dir`](#direxpand-dir)
-    * [`dir.is-a-dir`](#diris-a-dir)
-  * [Module `docker`](#module-docker)
-    * [`docker.abort-if-down`](#dockerabort-if-down)
-    * [`docker.actions.build`](#dockeractionsbuild)
-    * [`docker.actions.clean`](#dockeractionsclean)
-    * [`docker.actions.pull`](#dockeractionspull)
-    * [`docker.actions.push`](#dockeractionspush)
-    * [`docker.actions.setup`](#dockeractionssetup)
-    * [`docker.actions.start`](#dockeractionsstart)
-    * [`docker.actions.stop`](#dockeractionsstop)
-    * [`docker.actions.tag`](#dockeractionstag)
-    * [`docker.actions.up`](#dockeractionsup)
-    * [`docker.actions.update`](#dockeractionsupdate)
-    * [`docker.build.container`](#dockerbuildcontainer)
-    * [`docker.containers.clean`](#dockercontainersclean)
-    * [`docker.image.inspect`](#dockerimageinspect)
-    * [`docker.image.rm`](#dockerimagerm)
-    * [`docker.images-named`](#dockerimages-named)
-    * [`docker.images.clean`](#dockerimagesclean)
-    * [`docker.images.inspect`](#dockerimagesinspect)
-    * [`docker.last-version`](#dockerlast-version)
-    * [`docker.next-version`](#dockernext-version)
-    * [`docker.set-repo`](#dockerset-repo)
-  * [Module `file`](#module-file)
-    * [`dir.find`](#dirfind)
-    * [`ff`](#ff)
-    * [`file.ask.if-exists`](#fileaskif-exists)
-    * [`file.exists-and-newer-than`](#fileexists-and-newer-than)
-    * [`file.extension`](#fileextension)
-    * [`file.extension.remove`](#fileextensionremove)
-    * [`file.extension.replace`](#fileextensionreplace)
-    * [`file.find`](#filefind)
-    * [`file.gsub`](#filegsub)
-    * [`file.install-with-backup`](#fileinstall-with-backup)
-    * [`file.last-modified-date`](#filelast-modified-date)
-    * [`file.last-modified-year`](#filelast-modified-year)
-    * [`file.list.filter-existing`](#filelistfilter-existing)
-    * [`file.list.filter-non-empty`](#filelistfilter-non-empty)
-    * [`file.size`](#filesize)
-    * [`file.size.mb`](#filesizemb)
-    * [`file.source-if-exists`](#filesource-if-exists)
-    * [`file.stat`](#filestat)
-    * [`file.strip.extension`](#filestripextension)
-    * [`files.find`](#filesfind)
-    * [`files.map`](#filesmap)
-    * [`files.map.shell-scripts`](#filesmapshell-scripts)
-  * [Module `ftrace`](#module-ftrace)
-    * [`ftrace-in`](#ftrace-in)
-    * [`ftrace-off`](#ftrace-off)
-    * [`ftrace-on`](#ftrace-on)
-    * [`ftrace-out`](#ftrace-out)
-  * [Module `gem`](#module-gem)
-    * [`g-i`](#g-i)
-    * [`g-u`](#g-u)
-    * [`gem.cache-installed`](#gemcache-installed)
-    * [`gem.cache-refresh`](#gemcache-refresh)
-    * [`gem.clear-cache`](#gemclear-cache)
-    * [`gem.configure-cache`](#gemconfigure-cache)
-    * [`gem.ensure-gem-version`](#gemensure-gem-version)
-    * [`gem.gemfile.bundler-version`](#gemgemfilebundler-version)
-    * [`gem.gemfile.version`](#gemgemfileversion)
-    * [`gem.global.latest-version`](#gemgloballatest-version)
-    * [`gem.global.versions`](#gemglobalversions)
-    * [`gem.install`](#geminstall)
-    * [`gem.is-installed`](#gemis-installed)
-    * [`gem.remote.version`](#gemremoteversion)
-    * [`gem.uninstall`](#gemuninstall)
-    * [`gem.version`](#gemversion)
-  * [Module `git`](#module-git)
-    * [`bashmatic.auto-update`](#bashmaticauto-update)
-    * [`git.configure-auto-updates`](#gitconfigure-auto-updates)
-    * [`git.last-update-at`](#gitlast-update-at)
-    * [`git.local-vs-remote`](#gitlocal-vs-remote)
-    * [`git.quiet`](#gitquiet)
-    * [`git.remotes`](#gitremotes)
-    * [`git.repo-is-clean`](#gitrepo-is-clean)
-    * [`git.save-last-update-at`](#gitsave-last-update-at)
-    * [`git.seconds-since-last-pull`](#gitseconds-since-last-pull)
-    * [`git.sync`](#gitsync)
-    * [`git.sync-remote`](#gitsync-remote)
-    * [`git.update-repo-if-needed`](#gitupdate-repo-if-needed)
-  * [Module `github`](#module-github)
-    * [`github.clone`](#githubclone)
-    * [`github.org`](#githuborg)
-    * [`github.setup`](#githubsetup)
-    * [`github.validate`](#githubvalidate)
-  * [Module `jemalloc`](#module-jemalloc)
-    * [`jm.check`](#jmcheck)
-    * [`jm.jemalloc.detect-loud`](#jmjemallocdetect-loud)
-    * [`jm.jemalloc.detect-quiet`](#jmjemallocdetect-quiet)
-    * [`jm.jemalloc.stats`](#jmjemallocstats)
-    * [`jm.ruby.detect`](#jmrubydetect)
-    * [`jm.ruby.report`](#jmrubyreport)
-    * [`jm.usage`](#jmusage)
-  * [Module `json`](#module-json)
-    * [`json.begin-array`](#jsonbegin-array)
-    * [`json.begin-hash`](#jsonbegin-hash)
-    * [`json.begin-key`](#jsonbegin-key)
-    * [`json.end-array`](#jsonend-array)
-    * [`json.end-hash`](#jsonend-hash)
-    * [`json.file-to-array`](#jsonfile-to-array)
-  * [Module `maths`](#module-maths)
-    * [`maths.eval`](#mathseval)
-  * [Module `net`](#module-net)
-    * [`net.fast-scan`](#netfast-scan)
-    * [`net.local-subnet`](#netlocal-subnet)
-  * [Module `osx`](#module-osx)
-    * [`afp.servers`](#afpservers)
-    * [`bashmatic-set-fqdn`](#bashmatic-set-fqdn)
-    * [`bashmatic-term`](#bashmatic-term)
-    * [`bashmatic-term-program`](#bashmatic-term-program)
-    * [`change-underscan`](#change-underscan)
-    * [`cookie-dump`](#cookie-dump)
-    * [`http.servers`](#httpservers)
-    * [`https.servers`](#httpsservers)
-    * [`osx.cookie-dump`](#osxcookie-dump)
-    * [`osx.env-print`](#osxenv-print)
-    * [`osx.local-servers`](#osxlocal-servers)
-    * [`osx.ramdisk.mount`](#osxramdiskmount)
-    * [`osx.ramdisk.unmount`](#osxramdiskunmount)
-    * [`osx.scutil-print`](#osxscutil-print)
-    * [`osx.set-fqdn`](#osxset-fqdn)
-    * [`ssh.servers`](#sshservers)
-  * [Module `output`](#module-output)
-    * [`abort`](#abort)
-    * [`ascii-clean`](#ascii-clean)
-    * [`ask`](#ask)
-    * [`box.blue-in-green`](#boxblue-in-green)
-    * [`box.blue-in-yellow`](#boxblue-in-yellow)
-    * [`box.green-in-cyan`](#boxgreen-in-cyan)
-    * [`box.green-in-green`](#boxgreen-in-green)
-    * [`box.green-in-magenta`](#boxgreen-in-magenta)
-    * [`box.green-in-yellow`](#boxgreen-in-yellow)
-    * [`box.magenta-in-blue`](#boxmagenta-in-blue)
-    * [`box.magenta-in-green`](#boxmagenta-in-green)
-    * [`box.red-in-magenta`](#boxred-in-magenta)
-    * [`box.red-in-red`](#boxred-in-red)
-    * [`box.red-in-yellow`](#boxred-in-yellow)
-    * [`box.yellow-in-blue`](#boxyellow-in-blue)
-    * [`box.yellow-in-red`](#boxyellow-in-red)
-    * [`box.yellow-in-yellow`](#boxyellow-in-yellow)
-    * [`br`](#br)
-    * [`center`](#center)
-    * [`columnize`](#columnize)
-    * [`command-spacer`](#command-spacer)
-    * [`cursor.at.x`](#cursoratx)
-    * [`cursor.at.y`](#cursoraty)
-    * [`cursor.down`](#cursordown)
-    * [`cursor.left`](#cursorleft)
-    * [`cursor.rewind`](#cursorrewind)
-    * [`cursor.right`](#cursorright)
-    * [`cursor.up`](#cursorup)
-    * [`debug`](#debug)
-    * [`duration`](#duration)
-    * [`err`](#err)
-    * [`error`](#error)
-    * [`error:`](#error-1)
-    * [`h.black`](#hblack)
-    * [`h.blue`](#hblue)
-    * [`h.e`](#he)
-    * [`h.green`](#hgreen)
-    * [`h.orange`](#horange)
-    * [`h.orange-center`](#horange-center)
-    * [`h.red`](#hred)
-    * [`h.salmon`](#hsalmon)
-    * [`h.salmon-center`](#hsalmon-center)
-    * [`h.yellow`](#hyellow)
-    * [`h1`](#h1)
-    * [`h1.blue`](#h1blue)
-    * [`h1.green`](#h1green)
-    * [`h1.purple`](#h1purple)
-    * [`h1.red`](#h1red)
-    * [`h1.yellow`](#h1yellow)
-    * [`h2`](#h2)
-    * [`h2.green`](#h2green)
-    * [`h3`](#h3)
-    * [`hdr`](#hdr)
-    * [`hl.blue`](#hlblue)
-    * [`hl.desc`](#hldesc)
-    * [`hl.green`](#hlgreen)
-    * [`hl.subtle`](#hlsubtle)
-    * [`hl.yellow`](#hlyellow)
-    * [`hl.yellow-on-gray`](#hlyellow-on-gray)
-    * [`hr`](#hr)
-    * [`hr.colored`](#hrcolored)
-    * [`inf`](#inf)
-    * [`info`](#info)
-    * [`info:`](#info-1)
-    * [`left`](#left)
-    * [`left-prefix`](#left-prefix)
-    * [`not-ok`](#not-ok)
-    * [`not-ok:`](#not-ok-1)
-    * [`ok`](#ok)
-    * [`ok:`](#ok-1)
-    * [`okay`](#okay)
-    * [`output.color.off`](#outputcoloroff)
-    * [`output.color.on`](#outputcoloron)
-    * [`output.is-pipe`](#outputis-pipe)
-    * [`output.is-redirect`](#outputis-redirect)
-    * [`output.is-ssh`](#outputis-ssh)
-    * [`output.is-terminal`](#outputis-terminal)
-    * [`output.is-tty`](#outputis-tty)
-    * [`output.print-at-x-y`](#outputprint-at-x-y)
-    * [`output.reset-min-max-width`](#outputreset-min-max-width)
-    * [`output.set-max-width`](#outputset-max-width)
-    * [`output.set-min-width`](#outputset-min-width)
-    * [`puts`](#puts)
-    * [`reset-color`](#reset-color-1)
-    * [`reset-color:`](#reset-color-2)
-    * [`screen-width`](#screen-width)
-    * [`screen.height`](#screenheight)
-    * [`screen.width`](#screenwidth)
-    * [`shutdown`](#shutdown)
-    * [`stderr`](#stderr)
-    * [`stdout`](#stdout)
-    * [`success`](#success)
-    * [`test-group`](#test-group)
-    * [`ui.closer.kind-of-ok`](#uicloserkind-of-ok)
-    * [`ui.closer.kind-of-ok:`](#uicloserkind-of-ok-1)
-    * [`ui.closer.not-ok`](#uiclosernot-ok)
-    * [`ui.closer.not-ok:`](#uiclosernot-ok-1)
-    * [`ui.closer.ok`](#uicloserok)
-    * [`ui.closer.ok:`](#uicloserok-1)
-    * [`warn`](#warn)
-    * [`warning`](#warning)
-    * [`warning:`](#warning-1)
-  * [Module `pids`](#module-pids)
-    * [`pall`](#pall)
-    * [`pid.alive`](#pidalive)
-    * [`pid.sig`](#pidsig)
-    * [`pid.stop`](#pidstop)
-    * [`pids-with-args`](#pids-with-args)
-    * [`pids.all`](#pidsall)
-    * [`pids.for-each`](#pidsfor-each)
-    * [`pids.matching`](#pidsmatching)
-    * [`pids.matching.regexp`](#pidsmatchingregexp)
-    * [`pids.normalize.search-string`](#pidsnormalizesearch-string)
-    * [`pids.stop`](#pidsstop)
-    * [`pstop`](#pstop)
-    * [`sig.is-valid`](#sigis-valid)
-    * [`sig.list`](#siglist)
-  * [Module `progress-bar`](#module-progress-bar)
-    * [`progress.bar.auto-run`](#progressbarauto-run)
-    * [`progress.bar.config`](#progressbarconfig)
-    * [`progress.bar.configure.color-green`](#progressbarconfigurecolor-green)
-    * [`progress.bar.configure.color-red`](#progressbarconfigurecolor-red)
-    * [`progress.bar.configure.color-yellow`](#progressbarconfigurecolor-yellow)
-    * [`progress.bar.configure.symbol-arrow`](#progressbarconfiguresymbol-arrow)
-    * [`progress.bar.configure.symbol-bar`](#progressbarconfiguresymbol-bar)
-    * [`progress.bar.configure.symbol-block`](#progressbarconfiguresymbol-block)
-    * [`progress.bar.configure.symbol-square`](#progressbarconfiguresymbol-square)
-    * [`progress.bar.launch-and-wait`](#progressbarlaunch-and-wait)
-  * [Module `repositories`](#module-repositories)
-    * [`repo.rebase`](#reporebase)
-    * [`repo.stash-and-rebase`](#repostash-and-rebase)
-    * [`repo.update`](#repoupdate)
-    * [`repos.catch-interrupt`](#reposcatch-interrupt)
-    * [`repos.init-interrupt`](#reposinit-interrupt)
-    * [`repos.recursive-update`](#reposrecursive-update)
-    * [`repos.update`](#reposupdate)
-    * [`repos.was-interrupted`](#reposwas-interrupted)
-  * [Module `ruby`](#module-ruby)
-    * [`bundle.gems-with-c-extensions`](#bundlegems-with-c-extensions)
-    * [`interrupted`](#interrupted)
-    * [`ruby.bundle-install`](#rubybundle-install)
-    * [`ruby.bundler-version`](#rubybundler-version)
-    * [`ruby.compiled-with`](#rubycompiled-with)
-    * [`ruby.default-gems`](#rubydefault-gems)
-    * [`ruby.full-version`](#rubyfull-version)
-    * [`ruby.gemfile-lock-version`](#rubygemfile-lock-version)
-    * [`ruby.gems`](#rubygems)
-    * [`ruby.gems.install`](#rubygemsinstall)
-    * [`ruby.gems.uninstall`](#rubygemsuninstall)
-    * [`ruby.init`](#rubyinit)
-    * [`ruby.install`](#rubyinstall)
-    * [`ruby.install-ruby`](#rubyinstall-ruby)
-    * [`ruby.install-ruby-with-deps`](#rubyinstall-ruby-with-deps)
-    * [`ruby.install-ruby-with-jemalloc`](#rubyinstall-ruby-with-jemalloc)
-    * [`ruby.install-upgrade-bundler`](#rubyinstall-upgrade-bundler)
-    * [`ruby.installed-gems`](#rubyinstalled-gems)
-    * [`ruby.kigs-gems`](#rubykigs-gems)
-    * [`ruby.linked-libs`](#rubylinked-libs)
-    * [`ruby.numeric-version`](#rubynumeric-version)
-    * [`ruby.rbenv`](#rubyrbenv)
-    * [`ruby.rubygems-update`](#rubyrubygems-update)
-    * [`ruby.stop`](#rubystop)
-    * [`ruby.top-versions`](#rubytop-versions)
-    * [`ruby.top-versions-as-yaml`](#rubytop-versions-as-yaml)
-    * [`ruby.validate-version`](#rubyvalidate-version)
-  * [Module `run`](#module-run)
-    * [`run`](#run)
-    * [`run.ui.ask`](#runuiask)
-    * [`run.ui.ask-user-value`](#runuiask-user-value)
-    * [`run.ui.get-user-value`](#runuiget-user-value)
-    * [`run.ui.press-any-key`](#runuipress-any-key)
-    * [`run.ui.retry-command`](#runuiretry-command)
-  * [Module `runtime-config`](#module-runtime-config)
-    * [`run.inspect`](#runinspect)
-    * [`run.set-all`](#runset-all)
-    * [`run.set-all.list`](#runset-alllist)
-    * [`run.set-next`](#runset-next)
-    * [`run.set-next.list`](#runset-nextlist)
-  * [Module `runtime`](#module-runtime)
-    * [`run`](#run-1)
-    * [`run.config.detail-is-enabled`](#runconfigdetail-is-enabled)
-    * [`run.config.verbose-is-enabled`](#runconfigverbose-is-enabled)
-    * [`run.inspect`](#runinspect-1)
-    * [`run.inspect-variable`](#runinspect-variable)
-    * [`run.inspect-variables`](#runinspect-variables)
-    * [`run.inspect-variables-that-are`](#runinspect-variables-that-are)
-    * [`run.inspect.set-skip-false-or-blank`](#runinspectset-skip-false-or-blank)
-    * [`run.on-error.ask-is-enabled`](#runon-errorask-is-enabled)
-    * [`run.print-command`](#runprint-command)
-    * [`run.print-variable`](#runprint-variable)
-    * [`run.print-variables`](#runprint-variables)
-    * [`run.ui.press-any-key`](#runuipress-any-key-1)
-    * [`run.variables-ending-with`](#runvariables-ending-with)
-    * [`run.variables-starting-with`](#runvariables-starting-with)
-    * [`run.was-successful`](#runwas-successful)
-    * [`run.with.minimum-duration`](#runwithminimum-duration)
-    * [`run.with.ruby-bundle`](#runwithruby-bundle)
-    * [`run.with.ruby-bundle-and-output`](#runwithruby-bundle-and-output)
-  * [Module `set`](#module-set)
-    * [`set-e-restore`](#set-e-restore)
-    * [`set-e-save`](#set-e-save)
-    * [`set-e-status`](#set-e-status)
-  * [Module `settings`](#module-settings)
-  * [Module `shell-set`](#module-shell-set)
-    * [`save-restore-x`](#save-restore-x)
-    * [`save-set-x`](#save-set-x)
-    * [`shell-set.init-stack`](#shell-setinit-stack)
-    * [`shell-set.is-set`](#shell-setis-set)
-    * [`shell-set.pop-stack`](#shell-setpop-stack)
-    * [`shell-set.push-stack`](#shell-setpush-stack)
-    * [`shell-set.show-stack`](#shell-setshow-stack)
-  * [Module `ssh`](#module-ssh)
-    * [`ssh.keys.generate`](#sshkeysgenerate)
-    * [`ssh.load-keys`](#sshload-keys)
-  * [Module `subshell`](#module-subshell)
-    * [`bashmatic.detect-subshell`](#bashmaticdetect-subshell)
-    * [`bashmatic.subshell-init`](#bashmaticsubshell-init)
-    * [`bashmatic.validate-sourced-in`](#bashmaticvalidate-sourced-in)
-    * [`bashmatic.validate-subshell`](#bashmaticvalidate-subshell)
-  * [Module `sym`](#module-sym)
-    * [`decrypt.secrets`](#decryptsecrets)
-    * [`dev.crypt.chef`](#devcryptchef)
-    * [`dev.decrypt.file`](#devdecryptfile)
-    * [`dev.decrypt.str`](#devdecryptstr)
-    * [`dev.edit.file`](#deveditfile)
-    * [`dev.encrypt.file`](#devencryptfile)
-    * [`dev.encrypt.str`](#devencryptstr)
-    * [`dev.sym`](#devsym)
-    * [`sym.dev.configure`](#symdevconfigure)
-    * [`sym.dev.files`](#symdevfiles)
-    * [`sym.dev.have-key`](#symdevhave-key)
-    * [`sym.dev.import`](#symdevimport)
-    * [`sym.dev.install-shell-helpers`](#symdevinstall-shell-helpers)
-    * [`sym.install.symit`](#syminstallsymit)
-  * [Module `text`](#module-text)
-    * [`text.markdown-to-asciidoc`](#textmarkdown-to-asciidoc)
-  * [Module `time`](#module-time)
-    * [`epoch`](#epoch)
-    * [`millis`](#millis)
-    * [`time.date-from-epoch`](#timedate-from-epoch)
-    * [`time.duration.humanize`](#timedurationhumanize)
-    * [`time.duration.millis-to-secs`](#timedurationmillis-to-secs)
-    * [`time.epoch-to-iso`](#timeepoch-to-iso)
-    * [`time.epoch-to-local`](#timeepoch-to-local)
-    * [`time.epoch.minutes-ago`](#timeepochminutes-ago)
-    * [`time.now.db`](#timenowdb)
-    * [`time.now.file-extension`](#timenowfile-extension)
-    * [`today`](#today)
-  * [Module `trap`](#module-trap)
-    * [`trap-setup`](#trap-setup)
-    * [`trap-was-fired`](#trap-was-fired)
-    * [`trapped`](#trapped)
-  * [Module `url`](#module-url)
-    * [`url.downloader`](#urldownloader)
-    * [`url.http-code`](#urlhttp-code)
-    * [`url.is-valid`](#urlis-valid)
-    * [`url.shorten`](#urlshorten)
-    * [`url.valid-status`](#urlvalid-status)
-  * [Module `usage`](#module-usage)
-    * [`usage-box`](#usage-box)
-    * [`usage-box.section`](#usage-boxsection)
-    * [`usage.set-min-flag-len`](#usageset-min-flag-len)
-  * [Module `user`](#module-user)
-    * [`user`](#user)
-    * [`user.finger.name`](#userfingername)
-    * [`user.first`](#userfirst)
-    * [`user.gitconfig.email`](#usergitconfigemail)
-    * [`user.gitconfig.name`](#usergitconfigname)
-    * [`user.host`](#userhost)
-    * [`user.my.ip`](#usermyip)
-    * [`user.my.reverse-ip`](#usermyreverse-ip)
-    * [`user.username`](#userusername)
-  * [Module `util`](#module-util)
-    * [`is-func`](#is-func)
-    * [`pause`](#pause)
-    * [`pause.long`](#pauselong)
-    * [`pause.medium`](#pausemedium)
-    * [`pause.short`](#pauseshort)
-    * [`sedx`](#sedx)
-    * [`util.append-to-init-files`](#utilappend-to-init-files)
-    * [`util.arch`](#utilarch)
-    * [`util.call-if-function`](#utilcall-if-function)
-    * [`util.checksum.files`](#utilchecksumfiles)
-    * [`util.checksum.stdin`](#utilchecksumstdin)
-    * [`util.dev-setup.update`](#utildev-setupupdate)
-    * [`util.functions-matching`](#utilfunctions-matching)
-    * [`util.functions-matching.diff`](#utilfunctions-matchingdiff)
-    * [`util.functions-starting-with`](#utilfunctions-starting-with)
-    * [`util.generate-password`](#utilgenerate-password)
-    * [`util.i-to-ver`](#utili-to-ver)
-    * [`util.install-direnv`](#utilinstall-direnv)
-    * [`util.is-a-function`](#utilis-a-function)
-    * [`util.is-numeric`](#utilis-numeric)
-    * [`util.is-variable-defined`](#utilis-variable-defined)
-    * [`util.lines-in-folder`](#utillines-in-folder)
-    * [`util.random-number`](#utilrandom-number)
-    * [`util.remove-from-init-files`](#utilremove-from-init-files)
-    * [`util.shell-init-files`](#utilshell-init-files)
-    * [`util.shell-name`](#utilshell-name)
-    * [`util.ver-to-i`](#utilver-to-i)
-    * [`util.whats-installed`](#utilwhats-installed)
-    * [`watch.command`](#watchcommand)
-    * [`watch.ls-al`](#watchls-al)
-    * [`watch.set-refresh`](#watchset-refresh)
-  * [Module `vim`](#module-vim)
-    * [`gvim.off`](#gvimoff)
-    * [`gvim.on`](#gvimon)
-    * [`vim.gvim-off`](#vimgvim-off)
-    * [`vim.gvim-on`](#vimgvim-on)
-    * [`vim.setup`](#vimsetup)
-  * [Module `yaml`](#module-yaml)
-    * [`yaml-diff`](#yaml-diff)
-    * [`yaml-dump`](#yaml-dump)
-    * [`yaml.diff`](#yamldiff)
-    * [`yaml.dump`](#yamldump)
-    * [`yaml.expand-aliases`](#yamlexpand-aliases)
-* [Copyright](#copyright)
-## List of Bashmatic Modules
+* xref:#module-7z[7z]
+* xref:#module-array[array]
+* xref:#module-audio[audio]
+* xref:#module-aws[aws]
+* xref:#module-bashmatic[bashmatic]
+* xref:#module-brew[brew]
+* xref:#module-caller[caller]
+* xref:#module-color[color]
+* xref:#module-db[db]
+* xref:#module-deploy[deploy]
+* xref:#module-dir[dir]
+* xref:#module-docker[docker]
+* xref:#module-file[file]
+* xref:#module-ftrace[ftrace]
+* xref:#module-gem[gem]
+* xref:#module-git[git]
+* xref:#module-github[github]
+* xref:#module-jemalloc[jemalloc]
+* xref:#module-json[json]
+* xref:#module-maths[maths]
+* xref:#module-net[net]
+* xref:#module-osx[osx]
+* xref:#module-output[output]
+* xref:#module-pids[pids]
+* xref:#module-progress-bar[progress-bar]
+* xref:#module-repositories[repositories]
+* xref:#module-ruby[ruby]
+* xref:#module-run[run]
+* xref:#module-runtime-config[runtime-config]
+* xref:#module-runtime[runtime]
+* xref:#module-set[set]
+* xref:#module-settings[settings]
+* xref:#module-shell-set[shell-set]
+* xref:#module-ssh[ssh]
+* xref:#module-subshell[subshell]
+* xref:#module-sym[sym]
+* xref:#module-text[text]
+* xref:#module-time[time]
+* xref:#module-trap[trap]
+* xref:#module-url[url]
+* xref:#module-usage[usage]
+* xref:#module-user[user]
+* xref:#module-util[util]
+* xref:#module-vim[vim]
+* xref:#module-yaml[yaml]
 
-* [7z](#module-7z)
-* [array](#module-array)
-* [audio](#module-audio)
-* [aws](#module-aws)
-* [bashmatic](#module-bashmatic)
-* [brew](#module-brew)
-* [caller](#module-caller)
-* [color](#module-color)
-* [db](#module-db)
-* [deploy](#module-deploy)
-* [dir](#module-dir)
-* [docker](#module-docker)
-* [file](#module-file)
-* [ftrace](#module-ftrace)
-* [gem](#module-gem)
-* [git](#module-git)
-* [github](#module-github)
-* [jemalloc](#module-jemalloc)
-* [json](#module-json)
-* [maths](#module-maths)
-* [net](#module-net)
-* [osx](#module-osx)
-* [output](#module-output)
-* [pids](#module-pids)
-* [progress-bar](#module-progress-bar)
-* [repositories](#module-repositories)
-* [ruby](#module-ruby)
-* [run](#module-run)
-* [runtime-config](#module-runtime-config)
-* [runtime](#module-runtime)
-* [set](#module-set)
-* [settings](#module-settings)
-* [shell-set](#module-shell-set)
-* [ssh](#module-ssh)
-* [subshell](#module-subshell)
-* [sym](#module-sym)
-* [text](#module-text)
-* [time](#module-time)
-* [trap](#module-trap)
-* [url](#module-url)
-* [usage](#module-usage)
-* [user](#module-user)
-* [util](#module-util)
-* [vim](#module-vim)
-* [yaml](#module-yaml)
-
-## List of Bashmatic Functions
+== List of Bashmatic Functions
 
 
+=== Module `7z`
 
-### Module `7z`
+==== `7z.a`
 
-#### `7z.a`
-
-```bash
-7z.a ()
-{
+[source,bash]
+----
+7z.a () 
+{ 
     7z.zip "$@"
 }
 
-```
+----
 
-#### `7z.install`
+==== `7z.install`
 
-```bash
-7z.install ()
-{
+[source,bash]
+----
+7z.install () 
+{ 
     [[ -n $(which 7z) ]] || run "brew install p7zip";
-    [[ -n $(which 7z) ]] || {
+    [[ -n $(which 7z) ]] || { 
         error "7z is not found after installation";
         return 1
     };
     return 0
 }
 
-```
+----
 
-#### `7z.unzip`
+==== `7z.unzip`
 
-```bash
-7z.unzip ()
-{
+[source,bash]
+----
+7z.unzip () 
+{ 
     7z.install;
     local archive="$1";
     [[ -f ${archive} ]] || archive="${archive}.tar.7z";
-    [[ -f ${archive} ]] || {
+    [[ -f ${archive} ]] || { 
         error "Neither $1 nor ${archive} were found.";
         return 1
     };
@@ -646,65 +103,121 @@
     run "7za x -so ${archive} | tar xfv -"
 }
 
-```
+----
 
-#### `7z.x`
+==== `7z.x`
 
-```bash
-7z.x ()
-{
+[source,bash]
+----
+7z.x () 
+{ 
     7z.unzip "$@"
 }
 
-```
+----
 
-#### `7z.zip`
+==== `7z.zip`
 
-```bash
-7z.zip ()
-{
-    local archive="$1";
+[source,bash]
+----
+7z.zip () 
+{ 
+    local folder="$1";
+    shift;
     7z.install;
-    [[ -f ${archive} || -d ${archive} ]] && archive="$(basename ${archive} | sedx 's/\./-/g').tar.7z";
-    [[ -f ${archive} ]] && {
+    local archive="${folder}";
+    [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sedx 's/\./-/g').tar.7z";
+    [[ -f ${archive} ]] && { 
         run.set-next on-decline-return;
         run.ui.ask "File ${archive} already exists. Press Y to remove it and continue." || return 1;
         run "rm -f ${archive}"
     };
-    run "tar cf - $* | 7za a -si ${archive}"
+    local -a flags=;
+    local -a args=;
+    for arg in $@;
+    do
+        if [[ ${arg:0:1} == "-" ]]; then
+            flags=(${flags[@]} "${arg}");
+        else
+            args=(${args[@]} "${arg}");
+        fi;
+    done;
+    printf "${bldgrn}";
+    printf "${args[*]}\n";
+    printf "${bldylw}";
+    set +e;
+    local command="tar cf - ${folder} ${args[*]} | 7za a ${flags[*]} -si -bd ${archive}";
+    run.print-command "${command}";
+    eval "${command}";
+    local code=$?;
+    printf "${clr}";
+    if [[ ${code} -eq 0 ]]; then
+        success "${archive} created.";
+    else
+        error "Tar/7z Exited with code ${code}";
+        return 1;
+    fi
 }
 
-```
+----
 
 
----
+=== Module `array`
 
+==== `array.eval.in-groups-of`
 
-### Module `array`
+[source,bash]
+----
+array.eval.in-groups-of () 
+{ 
+    local chunk="$1";
+    shift;
+    local function="$1";
+    shift;
+    local -a group;
+    for item in "$@";
+    do
+        index="$(( index + 1 ))";
+        if [[ ${#group[@]} -eq ${chunk} ]]; then
+            ${function} "${group[@]}";
+            group=("${item}");
+        else
+            group=("${group[@]}" "${item}");
+        fi;
+    done;
+    if [[ ${#group[@]} -gt 0 ]]; then
+        ${function} "${group[@]}";
+    fi;
+    return 0
+}
 
-#### `array.from.stdin`
+----
 
-```bash
-array.from.stdin ()
-{
+==== `array.from.stdin`
+
+[source,bash]
+----
+array.from.stdin () 
+{ 
     local array_name=$1;
     shift;
     local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)";
     eval "${script}"
 }
 
-```
+----
 
-#### `array.has-element`
+==== `array.has-element`
 
-```bash
-array.has-element ()
-{
+[source,bash]
+----
+array.has-element () 
+{ 
     local search="$1";
     shift;
     local r="false";
     local e;
-    [[ "$*" =~ ${search} ]] || {
+    [[ "$*" =~ ${search} ]] || { 
         echo -n $r;
         return 1
     };
@@ -717,33 +230,35 @@ array.has-element ()
     return 0
 }
 
-```
+----
 
-#### `array.includes`
+==== `array.includes`
 
-```bash
-array.includes ()
-{
+[source,bash]
+----
+array.includes () 
+{ 
     local search="$1";
     shift;
     [[ "$*" =~ ${search} ]] || return 1;
     for e in "${@}";
     do
-        [[ "$e" == "${search}" ]] && {
+        [[ "$e" == "${search}" ]] && { 
             return 0
         };
     done;
     return 1
 }
 
-```
+----
 
-#### `array.includes-or-complain`
+==== `array.includes-or-complain`
 
-```bash
-array.includes-or-complain ()
-{
-    array.includes "$@" || {
+[source,bash]
+----
+array.includes-or-complain () 
+{ 
+    array.includes "$@" || { 
         element="$1";
         shift;
         local -a output=();
@@ -767,23 +282,25 @@ array.includes-or-complain ()
     return 1
 }
 
-```
+----
 
-#### `array.includes-or-exit`
+==== `array.includes-or-exit`
 
-```bash
-array.includes-or-exit ()
-{
+[source,bash]
+----
+array.includes-or-exit () 
+{ 
     array.includes-or-complain "$@" || exit 1
 }
 
-```
+----
 
-#### `array.join`
+==== `array.join`
 
-```bash
-array.join ()
-{
+[source,bash]
+----
+array.join () 
+{ 
     local sep="$1";
     shift;
     local lines="$1";
@@ -808,49 +325,68 @@ array.join ()
     done
 }
 
-```
+----
 
-#### `array.to.bullet-list`
+==== `array.to.bullet-list`
 
-```bash
-array.to.bullet-list ()
-{
+[source,bash]
+----
+array.to.bullet-list () 
+{ 
     array.join ' • ' true "$@"
 }
 
-```
+----
 
-#### `array.to.csv`
+==== `array.to.csv`
 
-```bash
-array.to.csv ()
-{
+[source,bash]
+----
+array.to.csv () 
+{ 
     array.join ', ' false "$@"
 }
 
-```
+----
 
-#### `array.to.piped-list`
+==== `array.to.piped-list`
 
-```bash
-array.to.piped-list ()
-{
+[source,bash]
+----
+array.to.piped-list () 
+{ 
     array.join ' | ' false "$@"
 }
 
-```
+----
 
 
----
+=== Module `audio`
 
+==== `audio.dir.mp3-to-wav`
 
-### Module `audio`
+[source,bash]
+----
+audio.dir.mp3-to-wav () 
+{ 
+    local from="$1";
+    local to="$2";
+    run "cd \"${from}\"";
+    trap "return 1" INT;
+    while read -d '' filename; do
+        audio.file.mp3-to-wav "${filename}" "${to}" < /dev/null;
+    done < <(find . -type f -name "*.mp3" -print0);
+    run "cd -"
+}
 
-#### `audio.file.frequency`
+----
 
-```bash
-audio.file.frequency ()
-{
+==== `audio.file.frequency`
+
+[source,bash]
+----
+audio.file.frequency () 
+{ 
     local file="$1";
     [[ -z $(command -V mdls) ]] && return 1;
     local frequency=$(mdls "${file}" | grep kMDItemAudioSampleRate | sed 's/.*= //g');
@@ -859,46 +395,149 @@ audio.file.frequency ()
     printf ${kHz}
 }
 
-```
+----
 
-#### `audio.make.mp3`
+==== `audio.file.mp3-to-wav`
 
-```bash
-audio.make.mp3 ()
-{
-    local file="$1";
-    shift;
-    [[ -n "$(command -V lame)" ]] || brew.package.install lame;
-    local default_options=" -m s -r -h -b 320 --cbr ";
-    [[ -z "${file}" ]] && {
-        usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] © Convert a RAW PCM Audio to highest quality MP3" "You can pass additional flags to ${bldylw}lame" "" "Just run ${bldylw}lame --longhelp for more info." "" "Default Flags: ${default_options}" "";
-        return
-    };
-    nfile=$(echo "${file}" | sed -E 's/\.(wav|aiff?)$/\.mp3/ig');
-    khz=$(audio.file.frequency "${file}");
-    [[ -n ${khz} ]] && khz=" -s ${khz} ";
-    h2 "'$(basename "${file}")' ——→ '${nfile}', sample rate: ${khz:-'Unknown'}kHz" "lame ${default_options} ${khz} $* '${file}' '${nfile}'";
-    run.set-next show-output-on;
-    run "lame ${default_options} ${khz} $* '${file}' '${nfile}'";
-    hr
+[source,bash]
+----
+audio.file.mp3-to-wav () 
+{ 
+    local from="${1/.\//}";
+    local destination="$2";
+    if [[ -z ${destination} ]]; then
+        destination="$(dirname "${from}")";
+    else
+        destination="${destination}/$(dirname "${from}")";
+    fi;
+    local to="${destination}/$(basename "${from/.mp3/.wav}")";
+    if [[ ${from} =~ ".mp3" ]]; then
+        h.blue "Source:      ${from}";
+        cursor.up 1;
+        h.green "Destination: ${to}";
+        [[ -f "${to}" ]] && { 
+            info: "File already converted.";
+            return 0
+        };
+        run "mkdir -p \"${destination}\"";
+        run.set-next show-output-on;
+        run "lame --decode \"${from}\" \"${to}\"";
+    else
+        error "File ${from} is not an MP3 file.";
+        return 1;
+    fi
 }
 
-```
+----
+
+==== `audio.make.mp3`
+
+[source,bash]
+----
+audio.make.mp3 () 
+{ 
+    local file="$1";
+    shift;
+    local nfile="$2";
+    shift;
+    set +e;
+    [[ -n "$(command -V lame)" ]] || brew.package.install lame;
+    local default_options=" -m s -b 320 ";
+    [[ -n "${file}" ]] || { 
+        audio.make.mp3.usage && return 1
+    };
+    [[ -s "${file}" ]] || { 
+        error "File '${file}' does not exist.";
+        audio.make.mp3.usage && return 2
+    };
+    [[ -z ${nfile} ]] && nfile="$(echo "${file}" | sedx 's/\.(wav|aiff?)$/\.mp3/g')";
+    local khz=$(audio.file.frequency "${file}");
+    h2 "'$(basename "${file}")' —❯ ${txtylw}${nfile}${txtgrn}, sample rate: ${khz:-'Unknown'}kHz";
+    info "lame ${default_options} $* '${file}' '${nfile}'";
+    run.set-next show-output-on abort-on-error;
+    run "lame ${default_options}  $* '${file}' '${nfile}'";
+    hr;
+    success "MP3 file ${nfile} is $(file.size.mb "${nfile}")Mb"
+}
+
+----
+
+==== `audio.make.mp3.usage`
+
+[source,bash]
+----
+audio.make.mp3.usage () 
+{ 
+    usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ] © Convert a RAW PCM Audio to highest quality MP3" "You can pass additional flags to ${txtylw}lame" "" "Just run ${txtylw}lame --longhelp for more info." "" "Default Flags: ${default_options}" ""
+}
+
+----
+
+==== `audio.make.mp3s`
+
+[source,bash]
+----
+audio.make.mp3s () 
+{ 
+    local dir="${1:-"."}";
+    local kHz="${2:-"48"}";
+    local first="$(find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print | head -1)";
+    h3 "Converting WAV and AIF files to MP3 in ${txtylw}${dir}.";
+    if [[ -z ${first} ]]; then
+        error "No AIFF or WAV files in the folder ${bldgrn}${dir}";
+        return 1;
+    fi;
+    inf "Determining audio sampling rate (will apply the same rate to all files)... ";
+    kHz=$(audio.file.frequency "${first}");
+    printf "${bldgrn} — ${kHz}kHz";
+    ok:;
+    SAVEIFS=$IFS;
+    run.set-all show-command-on show-output-off abort-on-error;
+    find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print0 | while read -d '' file; do
+        local fn=$(ascii-clean "${file}");
+        mp3=$(echo "${file}" | sedx -E 's/\.(wav|aiff?)$/.mp3/g');
+        inf "checking ${txtylw}${file} $(txt-info) ... ";
+        if [[ -f "${mp3}" && -z "${FORCE}" ]]; then
+            printf "${bldgrn} OK, already converted. Use FORCE=1 to overwrite. ${clr}";
+            ok:;
+            continue;
+        fi;
+        printf "${txtcyn} Transcoding...${clr}";
+        ui.closer.kind-of-ok:;
+        inf "❯ ${txtylw}lame --silent -m s -b 320  \"${file}\"";
+        trap _term SIGINT;
+        lame --silent -m s -b 320 "${fn}" & child_pid=$!;
+        wait "$child_pid";
+        code=$?;
+        if [[ ${code} -ne 0 ]]; then
+            ui.closer.not-ok:;
+            info "${bakred}${bldwht}  ERROR: lame exited with an error code ${code}. Aborting!  ";
+            [[ -f "${mp3}" ]] && { 
+                info "NOTE: removing unfinished MP3 file ${mp3}.";
+                rm -f "${mp3}" 1>&2 > /dev/null
+            };
+            break;
+        else
+            ok:;
+        fi;
+    done;
+    success 'All done.'
+}
+
+----
 
 
----
+=== Module `aws`
 
+==== `aws.ec2`
 
-### Module `aws`
-
-#### `aws.ec2`
-
-```bash
-aws.ec2 ()
-{
+[source,bash]
+----
+aws.ec2 () 
+{ 
     local cmd="$1";
     local command="$cmd";
-    case $command in
+    case $command in 
         list | show | ls)
             __utf_table "$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{name: Name, instance_id: InstanceId, ip_address: PrivateIpAddress, state: State.Name}' --output table 2>/dev/null)";
             return $?
@@ -910,13 +549,14 @@ aws.ec2 ()
     esac
 }
 
-```
+----
 
-#### `aws.rds.hostname`
+==== `aws.rds.hostname`
 
-```bash
-aws.rds.hostname ()
-{
+[source,bash]
+----
+aws.rds.hostname () 
+{ 
     local name=${1};
     [[ -z $(which jq) ]] && out=$(brew.install.package jq 2>/dev/null 1>/dev/null);
     [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2>/dev/null 1>/dev/null);
@@ -924,13 +564,14 @@ aws.rds.hostname ()
     [[ -z ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g'
 }
 
-```
+----
 
-#### `aws.s3.upload`
+==== `aws.s3.upload`
 
-```bash
-aws.s3.upload ()
-{
+[source,bash]
+----
+aws.s3.upload () 
+{ 
     local pathname="$1";
     shift;
     local skip_file_modification="$1";
@@ -950,7 +591,7 @@ aws.s3.upload ()
     local date=$(file.last-modified-date "${pathname}");
     [[ -z ${year} ]] && year=$(date +'%Y');
     [[ -z ${date} ]] && date=$(today);
-    ${skip_file_modification} || {
+    ${skip_file_modification} || { 
         [[ "${remote_file}" =~ "${date}" ]] && remote_file=$(echo "${remote_file}" | sedx "s/[_\.-]?${date}[_\.-]//g");
         [[ "${remote_file}" =~ "${date}" ]] || remote_file="${date}.${remote_file}"
     };
@@ -971,63 +612,65 @@ aws.s3.upload ()
     return ${LibRun__LastExitCode}
 }
 
-```
+----
 
 
----
+=== Module `bashmatic`
 
+==== `bashmatic.bash.exit-unless-version-four-or-later`
 
-### Module `bashmatic`
-
-#### `bashmatic.bash.exit-unless-version-four-or-later`
-
-```bash
-bashmatic.bash.exit-unless-version-four-or-later ()
-{
-    bashmatic.bash.version-four-or-later || {
+[source,bash]
+----
+bashmatic.bash.exit-unless-version-four-or-later () 
+{ 
+    bashmatic.bash.version-four-or-later || { 
         error "Sorry, this functionality requires BASH version 4 or later.";
         exit 1 > /dev/null
     }
 }
 
-```
+----
 
-#### `bashmatic.bash.version`
+==== `bashmatic.bash.version`
 
-```bash
-bashmatic.bash.version ()
-{
+[source,bash]
+----
+bashmatic.bash.version () 
+{ 
     echo "${BASH_VERSION}" | cut -d '.' -f 1
 }
 
-```
+----
 
-#### `bashmatic.bash.version-four-or-later`
+==== `bashmatic.bash.version-four-or-later`
 
-```bash
-bashmatic.bash.version-four-or-later ()
-{
+[source,bash]
+----
+bashmatic.bash.version-four-or-later () 
+{ 
     [[ $(bashmatic.bash.version) -gt 3 ]]
 }
 
-```
+----
 
-#### `bashmatic.cache.add-file`
+==== `bashmatic.cache.add-file`
 
-```bash
-bashmatic.cache.add-file ()
-{
+[source,bash]
+----
+bashmatic.cache.add-file () 
+{ 
     bashmatic.bash.version-four-or-later || return 1;
     [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
 }
 
-```
+----
 
-#### `bashmatic.cache.has-file`
+==== `bashmatic.cache.has-file`
 
-```bash
-bashmatic.cache.has-file ()
-{
+[source,bash]
+----
+bashmatic.cache.has-file () 
+{ 
     local file="$1";
     bashmatic.bash.version-four-or-later || return 1;
     test -z "$file" && return 1;
@@ -1038,13 +681,14 @@ bashmatic.cache.has-file ()
     fi
 }
 
-```
+----
 
-#### `bashmatic.cache.list`
+==== `bashmatic.cache.list`
 
-```bash
-bashmatic.cache.list ()
-{
+[source,bash]
+----
+bashmatic.cache.list () 
+{ 
     bashmatic.bash.version-four-or-later || return 1;
     for f in "${!BashMatic__LoadCache[@]}";
     do
@@ -1052,23 +696,25 @@ bashmatic.cache.list ()
     done
 }
 
-```
+----
 
-#### `bashmatic.functions`
+==== `bashmatic.functions`
 
-```bash
-bashmatic.functions ()
-{
+[source,bash]
+----
+bashmatic.functions () 
+{ 
     bashmatic.functions-from '*.sh' "$@"
 }
 
-```
+----
 
-#### `bashmatic.functions-from`
+==== `bashmatic.functions-from`
 
-```bash
-bashmatic.functions-from ()
-{
+[source,bash]
+----
+bashmatic.functions-from () 
+{ 
     local pattern="${1}";
     [[ -n ${pattern} ]] && shift;
     [[ -z ${pattern} ]] && pattern="*.sh";
@@ -1081,44 +727,47 @@ bashmatic.functions-from ()
     cd - > /dev/null || return 1
 }
 
-```
+----
 
-#### `bashmatic.functions.output`
+==== `bashmatic.functions.output`
 
-```bash
-bashmatic.functions.output ()
-{
+[source,bash]
+----
+bashmatic.functions.output () 
+{ 
     bashmatic.functions-from 'output.sh' "$@"
 }
 
-```
+----
 
-#### `bashmatic.functions.runtime`
+==== `bashmatic.functions.runtime`
 
-```bash
-bashmatic.functions.runtime ()
-{
+[source,bash]
+----
+bashmatic.functions.runtime () 
+{ 
     bashmatic.functions-from 'run*.sh' "$@"
 }
 
-```
+----
 
-#### `bashmatic.load-at-login`
+==== `bashmatic.load-at-login`
 
-```bash
-bashmatic.load-at-login ()
-{
+[source,bash]
+----
+bashmatic.load-at-login () 
+{ 
     local init_file="${1}";
     local -a init_files=(~/.bashrc ~/.bash_profile ~/.profile);
     [[ -n "${init_file}" && -f "${init_file}" ]] && init_files=("${init_file}");
     for file in "${init_files[@]}";
     do
         if [[ -f "${file}" ]]; then
-            grep -q bashmatic "${file}" && {
+            grep -q bashmatic "${file}" && { 
                 success "BashMatic is already loaded from ${bldblu}${file}";
                 return 0
             };
-            grep -q bashmatic "${file}" || {
+            grep -q bashmatic "${file}" || { 
                 h2 "Adding BashMatic auto-loader to ${bldgrn}${file}...";
                 echo "source ${BASHMATIC_HOME}/init.sh" >> "${file}"
             };
@@ -1128,23 +777,25 @@ bashmatic.load-at-login ()
     done
 }
 
-```
+----
 
-#### `bashmatic.reload`
+==== `bashmatic.reload`
 
-```bash
-bashmatic.reload ()
-{
+[source,bash]
+----
+bashmatic.reload () 
+{ 
     source "${BASHMATIC_INIT}"
 }
 
-```
+----
 
-#### `bashmatic.setup`
+==== `bashmatic.setup`
 
-```bash
-bashmatic.setup ()
-{
+[source,bash]
+----
+bashmatic.setup () 
+{ 
     [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 ";
     [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - ";
     if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
@@ -1156,18 +807,19 @@ bashmatic.setup ()
     bashmatic.auto-update
 }
 
-```
+----
 
-#### `bashmatic.source`
+==== `bashmatic.source`
 
-```bash
-bashmatic.source ()
-{
+[source,bash]
+----
+bashmatic.source () 
+{ 
     local path="${BASHMATIC_LIBDIR}";
     for file in "${@}";
     do
         [[ "${file}" =~ "/" ]] || file="${path}/${file}";
-        [[ -s "${file}" ]] || {
+        [[ -s "${file}" ]] || { 
             echo "Can't source file ${file} — fils is invalid.";
             return 1
         };
@@ -1183,13 +835,14 @@ bashmatic.source ()
     return 0
 }
 
-```
+----
 
-#### `bashmatic.source-dir`
+==== `bashmatic.source-dir`
 
-```bash
-bashmatic.source-dir ()
-{
+[source,bash]
+----
+bashmatic.source-dir () 
+{ 
     local folder="${1}";
     local loaded=false;
     local file;
@@ -1205,7 +858,7 @@ bashmatic.source-dir ()
         bashmatic.source "${file}" && loaded=true;
     done;
     unset files;
-    ${loaded} || {
+    ${loaded} || { 
         .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIBDIR}";
         return 1
     };
@@ -1217,82 +870,86 @@ bashmatic.source-dir ()
     fi
 }
 
-```
+----
 
-#### `bashmatic.version`
+==== `bashmatic.version`
 
-```bash
-bashmatic.version ()
-{
+[source,bash]
+----
+bashmatic.version () 
+{ 
     cat $(dirname "${BASHMATIC_INIT}")/.version
 }
 
-```
+----
 
 
----
+=== Module `brew`
 
+==== `brew.cache-reset`
 
-### Module `brew`
-
-#### `brew.cache-reset`
-
-```bash
-brew.cache-reset ()
-{
+[source,bash]
+----
+brew.cache-reset () 
+{ 
     rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}
 }
 
-```
+----
 
-#### `brew.cache-reset.delayed`
+==== `brew.cache-reset.delayed`
 
-```bash
-brew.cache-reset.delayed ()
-{
+[source,bash]
+----
+brew.cache-reset.delayed () 
+{ 
     ((${BASH_IN_SUBSHELL})) || brew.cache-reset;
     ((${BASH_IN_SUBSHELL})) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
 }
 
-```
+----
 
-#### `brew.cask.is-installed`
+==== `brew.cask.is-installed`
 
-```bash
-brew.cask.is-installed ()
-{
+[source,bash]
+----
+brew.cask.is-installed () 
+{ 
     local cask="${1}";
     local -a installed_casks=($(brew.cask.list));
     array.has-element $(basename "${cask}") "${installed_casks[@]}"
 }
 
-```
+----
 
-#### `brew.cask.list`
+==== `brew.cask.list`
 
-```bash
-brew.cask.list ()
-{
+[source,bash]
+----
+brew.cask.list () 
+{ 
     cache-or-command "${LibBrew__CaskCacheList}" 30 "brew cask ls -1"
 }
 
-```
+----
 
-#### `brew.cask.tap`
+==== `brew.cask.tap`
 
-```bash
-brew.cask.tap ()
-{
+[source,bash]
+----
+brew.cask.tap () 
+{ 
     run "brew tap homebrew/cask-cask"
 }
 
-```
+----
 
-#### `brew.install`
+==== `brew.install`
 
-```bash
-brew.install ()
-{
+[source,bash]
+----
+brew.install () 
+{ 
     local brew=$(which brew 2>/dev/null);
     if [[ -z "${brew}" ]]; then
         info "Installing Homebrew, please wait...";
@@ -1302,13 +959,14 @@ brew.install ()
     fi
 }
 
-```
+----
 
-#### `brew.install.cask`
+==== `brew.install.cask`
 
-```bash
-brew.install.cask ()
-{
+[source,bash]
+----
+brew.install.cask () 
+{ 
     local cask=$1;
     local force=;
     local verbose=;
@@ -1329,13 +987,14 @@ brew.install.cask ()
     brew.cache-reset.delayed
 }
 
-```
+----
 
-#### `brew.install.package`
+==== `brew.install.package`
 
-```bash
-brew.install.package ()
-{
+[source,bash]
+----
+brew.install.package () 
+{ 
     local package=$1;
     local force=;
     local verbose=;
@@ -1354,7 +1013,7 @@ brew.install.package ()
             ( brew install ${package} ${force} ${verbose} ) 2>&1 | cat > /dev/null;
             local code=$?;
         fi;
-        [[ ${code} -eq 0 || ${LibRun__LastExitCode} -eq 0 ]] || {
+        [[ ${code} -eq 0 || ${LibRun__LastExitCode} -eq 0 ]] || { 
             brew.reinstall.package "${package}"
         };
         brew.cache-reset.delayed;
@@ -1369,13 +1028,14 @@ brew.install.package ()
     return ${LibRun__LastExitCode}
 }
 
-```
+----
 
-#### `brew.install.packages`
+==== `brew.install.packages`
 
-```bash
-brew.install.packages ()
-{
+[source,bash]
+----
+brew.install.packages () 
+{ 
     local force=;
     [[ -n ${opts_force} ]] && force="--force";
     for package in "$@";
@@ -1384,59 +1044,64 @@ brew.install.packages ()
     done
 }
 
-```
+----
 
-#### `brew.package.available-versions`
+==== `brew.package.available-versions`
 
-```bash
-brew.package.available-versions ()
-{
+[source,bash]
+----
+brew.package.available-versions () 
+{ 
     local package="$1";
     brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
 }
 
-```
+----
 
-#### `brew.package.is-installed`
+==== `brew.package.is-installed`
 
-```bash
-brew.package.is-installed ()
-{
+[source,bash]
+----
+brew.package.is-installed () 
+{ 
     local package="${1}";
     local -a installed_packages=($(brew.package.list));
     array.has-element $(basename "${package}") "${installed_packages[@]}"
 }
 
-```
+----
 
-#### `brew.package.link`
+==== `brew.package.link`
 
-```bash
-brew.package.link ()
-{
+[source,bash]
+----
+brew.package.link () 
+{ 
     local package="${1}";
     shift;
     [[ -n ${opts_verbose} ]] && verbose="--verbose";
     run "brew link ${verbose} ${package} $*"
 }
 
-```
+----
 
-#### `brew.package.list`
+==== `brew.package.list`
 
-```bash
-brew.package.list ()
-{
+[source,bash]
+----
+brew.package.list () 
+{ 
     cache-or-command "${LibBrew__PackageCacheList}" 30 "brew ls -1"
 }
 
-```
+----
 
-#### `brew.reinstall.package`
+==== `brew.reinstall.package`
 
-```bash
-brew.reinstall.package ()
-{
+[source,bash]
+----
+brew.reinstall.package () 
+{ 
     local package="${1}";
     local force=;
     local verbose=;
@@ -1449,13 +1114,14 @@ brew.reinstall.package ()
     brew.cache-reset.delayed
 }
 
-```
+----
 
-#### `brew.reinstall.packages`
+==== `brew.reinstall.packages`
 
-```bash
-brew.reinstall.packages ()
-{
+[source,bash]
+----
+brew.reinstall.packages () 
+{ 
     local force=;
     [[ -n ${opts_force} ]] && force="--force";
     for package in "$@";
@@ -1465,69 +1131,75 @@ brew.reinstall.packages ()
     done
 }
 
-```
+----
 
-#### `brew.relink`
+==== `brew.relink`
 
-```bash
-brew.relink ()
-{
+[source,bash]
+----
+brew.relink () 
+{ 
     local package=${1};
     local verbose=;
     [[ -n ${opts_verbose} ]] && verbose="--verbose";
     run "brew link ${verbose} ${package} --overwrite"
 }
 
-```
+----
 
-#### `brew.service.down`
+==== `brew.service.down`
 
-```bash
-brew.service.down ()
-{
+[source,bash]
+----
+brew.service.down () 
+{ 
     local svc="$1";
     run "brew services stop ${svc}"
 }
 
-```
+----
 
-#### `brew.service.restart`
+==== `brew.service.restart`
 
-```bash
-brew.service.restart ()
-{
+[source,bash]
+----
+brew.service.restart () 
+{ 
     local svc="$1";
     run "brew services restart ${svc}"
 }
 
-```
+----
 
-#### `brew.service.up`
+==== `brew.service.up`
 
-```bash
-brew.service.up ()
-{
+[source,bash]
+----
+brew.service.up () 
+{ 
     local svc="$1";
     run "brew services start ${svc}"
 }
 
-```
+----
 
-#### `brew.setup`
+==== `brew.setup`
 
-```bash
-brew.setup ()
-{
+[source,bash]
+----
+brew.setup () 
+{ 
     brew.upgrade
 }
 
-```
+----
 
-#### `brew.uninstall.package`
+==== `brew.uninstall.package`
 
-```bash
-brew.uninstall.package ()
-{
+[source,bash]
+----
+brew.uninstall.package () 
+{ 
     local package=$1;
     local force=;
     local verbose=;
@@ -1540,13 +1212,14 @@ brew.uninstall.package ()
     brew.cache-reset.delayed
 }
 
-```
+----
 
-#### `brew.uninstall.packages`
+==== `brew.uninstall.packages`
 
-```bash
-brew.uninstall.packages ()
-{
+[source,bash]
+----
+brew.uninstall.packages () 
+{ 
     local force=;
     [[ -n ${opts_force} ]] && force="--force";
     for package in $@;
@@ -1555,13 +1228,14 @@ brew.uninstall.packages ()
     done
 }
 
-```
+----
 
-#### `brew.upgrade`
+==== `brew.upgrade`
 
-```bash
-brew.upgrade ()
-{
+[source,bash]
+----
+brew.upgrade () 
+{ 
     brew.install;
     if [[ -z "$(which brew)" ]]; then
         warn "brew is not installed....";
@@ -1572,19 +1246,20 @@ brew.upgrade ()
     run "brew cleanup -s"
 }
 
-```
+----
 
-#### `cache-or-command`
+==== `cache-or-command`
 
-```bash
-cache-or-command ()
-{
+[source,bash]
+----
+cache-or-command () 
+{ 
     local file="$1";
     shift;
     local stale_minutes="$1";
     shift;
     local command="$*";
-    file.exists-and-newer-than "${file}" ${stale_minutes} && {
+    file.exists-and-newer-than "${file}" ${stale_minutes} && { 
         cat "${file}";
         return 0
     };
@@ -1592,19 +1267,17 @@ cache-or-command ()
     eval "${command}" | tee -a "${file}"
 }
 
-```
+----
 
 
----
+=== Module `caller`
 
+==== `caller.stack`
 
-### Module `caller`
-
-#### `caller.stack`
-
-```bash
-caller.stack ()
-{
+[source,bash]
+----
+caller.stack () 
+{ 
     local index=${1:-"-1"};
     while true; do
         index=$((index + 1));
@@ -1614,49 +1287,50 @@ caller.stack ()
     done
 }
 
-```
+----
 
-#### `stack.frame`
+==== `stack.frame`
 
-```bash
-stack.frame ()
-{
+[source,bash]
+----
+stack.frame () 
+{ 
     caller.stack 0
 }
 
-```
+----
 
 
----
+=== Module `color`
 
+==== `ansi`
 
-### Module `color`
-
-#### `ansi`
-
-```bash
-ansi ()
-{
+[source,bash]
+----
+ansi () 
+{ 
     echo -e "\e[${1}m${*:2}\e[0m"
 }
 
-```
+----
 
-#### `bold`
+==== `bold`
 
-```bash
-bold ()
-{
+[source,bash]
+----
+bold () 
+{ 
     ansi 1 "$@"
 }
 
-```
+----
 
-#### `color.disable`
+==== `color.disable`
 
-```bash
-color.disable ()
-{
+[source,bash]
+----
+color.disable () 
+{ 
     export clr='\e[0m';
     unset txtblk;
     unset txtred;
@@ -1704,13 +1378,14 @@ color.disable ()
     export AppColorsLoaded=1
 }
 
-```
+----
 
-#### `color.enable`
+==== `color.enable`
 
-```bash
-color.enable ()
-{
+[source,bash]
+----
+color.enable () 
+{ 
     if [[ -z "${AppColorsLoaded}" ]]; then
         export txtblk='\e[0;30m';
         export txtred='\e[0;31m';
@@ -1763,126 +1438,134 @@ color.enable ()
     fi
 }
 
-```
+----
 
-#### `error-text`
+==== `error-text`
 
-```bash
-error-text ()
-{
+[source,bash]
+----
+error-text () 
+{ 
     printf "${txtred}"
 }
 
-```
+----
 
-#### `italic`
+==== `italic`
 
-```bash
-italic ()
-{
+[source,bash]
+----
+italic () 
+{ 
     ansi 3 "$@"
 }
 
-```
+----
 
-#### `red`
+==== `red`
 
-```bash
-red ()
-{
+[source,bash]
+----
+red () 
+{ 
     ansi 31 "$@"
 }
 
-```
+----
 
-#### `reset-color`
+==== `reset-color`
 
-```bash
-reset-color ()
-{
+[source,bash]
+----
+reset-color () 
+{ 
     printf "${clr}\n"
 }
 
-```
+----
 
-#### `strikethrough`
+==== `strikethrough`
 
-```bash
-strikethrough ()
-{
+[source,bash]
+----
+strikethrough () 
+{ 
     ansi 9 "$@"
 }
 
-```
+----
 
-#### `txt-err`
+==== `txt-err`
 
-```bash
-txt-err ()
-{
+[source,bash]
+----
+txt-err () 
+{ 
     printf "${clr}${bldylw}${bakred}"
 }
 
-```
+----
 
-#### `txt-info`
+==== `txt-info`
 
-```bash
-txt-info ()
-{
+[source,bash]
+----
+txt-info () 
+{ 
     printf "${clr}${txtblu}"
 }
 
-```
+----
 
-#### `txt-warn`
+==== `txt-warn`
 
-```bash
-txt-warn ()
-{
+[source,bash]
+----
+txt-warn () 
+{ 
     printf "${clr}${bldylw}"
 }
 
-```
+----
 
-#### `underline`
+==== `underline`
 
-```bash
-underline ()
-{
+[source,bash]
+----
+underline () 
+{ 
     ansi 4 "$@"
 }
 
-```
+----
 
 
----
+=== Module `db`
 
+==== `db.datetime`
 
-### Module `db`
-
-#### `db.datetime`
-
-```bash
-db.datetime ()
-{
+[source,bash]
+----
+db.datetime () 
+{ 
     date '+%Y%m%d-%H%M%S'
 }
 
-```
+----
 
-#### `db.dump`
+==== `db.dump`
 
-```bash
-db.dump ()
-{
+[source,bash]
+----
+db.dump () 
+{ 
     local dbname=${1};
     shift;
     local psql_args="$*";
     [[ -z "${psql_args}" ]] && psql_args="-U postgres -h localhost";
     local filename=$(.db.backup-filename ${dbname});
     [[ $? != 0 ]] && return;
-    [[ ${LibRun__Verbose} -eq ${True} ]] && {
+    [[ ${LibRun__Verbose} -eq ${True} ]] && { 
         info "dumping from: ${bldylw}${dbname}";
         info "saving to...: ${bldylw}${filename}"
     };
@@ -1899,63 +1582,69 @@ db.dump ()
     fi
 }
 
-```
+----
 
-#### `db.num-procs`
+==== `db.num-procs`
 
-```bash
-db.num-procs ()
-{
+[source,bash]
+----
+db.num-procs () 
+{ 
     ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
 }
 
-```
+----
 
-#### `db.psql-args`
+==== `db.psql-args`
 
-```bash
-db.psql-args ()
-{
+[source,bash]
+----
+db.psql-args () 
+{ 
     db.psql.args. "$@"
 }
 
-```
+----
 
-#### `db.psql.args.`
+==== `db.psql.args.`
 
-```bash
-db.psql.args. ()
-{
+[source,bash]
+----
+db.psql.args. () 
+{ 
     printf -- "-U ${AppPostgresUsername} -h ${AppPostgresHostname} $*"
 }
 
-```
+----
 
-#### `db.psql.args.default`
+==== `db.psql.args.default`
 
-```bash
-db.psql.args.default ()
-{
+[source,bash]
+----
+db.psql.args.default () 
+{ 
     printf -- "-U postgres -h localhost $*"
 }
 
-```
+----
 
-#### `db.psql.args.maint`
+==== `db.psql.args.maint`
 
-```bash
-db.psql.args.maint ()
-{
+[source,bash]
+----
+db.psql.args.maint () 
+{ 
     printf -- "-U postgres -h localhost --maintenance-db=postgres $*"
 }
 
-```
+----
 
-#### `db.rails.schema.checksum`
+==== `db.rails.schema.checksum`
 
-```bash
-db.rails.schema.checksum ()
-{
+[source,bash]
+----
+db.rails.schema.checksum () 
+{ 
     if [[ -d db/migrate ]]; then
         find db/migrate -type f -ls | awk '{printf("%10d-%s\n",$7,$11)}' | sort | shasum | awk '{print $1}';
     else
@@ -1965,13 +1654,14 @@ db.rails.schema.checksum ()
     fi
 }
 
-```
+----
 
-#### `db.rails.schema.file`
+==== `db.rails.schema.file`
 
-```bash
-db.rails.schema.file ()
-{
+[source,bash]
+----
+db.rails.schema.file () 
+{ 
     if [[ -f "${RAILS_SCHEMA_RB}" && -f "${RAILS_SCHEMA_SQL}" ]]; then
         if [[ "${RAILS_SCHEMA_RB}" -nt "${RAILS_SCHEMA_SQL}" ]]; then
             printf "${RAILS_SCHEMA_RB}";
@@ -1989,23 +1679,24 @@ db.rails.schema.file ()
     fi
 }
 
-```
+----
 
-#### `db.restore`
+==== `db.restore`
 
-```bash
-db.restore ()
-{
+[source,bash]
+----
+db.restore () 
+{ 
     local dbname="$1";
     shift;
     local filename="$1";
     [[ -n ${filename} ]] && shift;
     [[ -z ${filename} ]] && filename=$(.db.backup-filename ${dbname});
-    [[ dbname =~ 'production' ]] && {
+    [[ dbname =~ 'production' ]] && { 
         error 'This script is not meant for production';
         return 1
     };
-    [[ -s ${filename} ]] || {
+    [[ -s ${filename} ]] || { 
         error "can't find valid backup file in ${bldylw}${filename}";
         return 2
     };
@@ -2014,7 +1705,7 @@ db.restore ()
     run "dropdb ${maint_args} ${dbname} 2>/dev/null; true";
     export LibRun__AbortOnError=${True};
     run "createdb ${maint_args} ${dbname} ${psql_args}";
-    [[ ${LibRun__Verbose} -eq ${True} ]] && {
+    [[ ${LibRun__Verbose} -eq ${True} ]] && { 
         info "restoring from..: ${bldylw}${filename}";
         info "restoring to....: ${bldylw}${dbname}"
     };
@@ -2027,13 +1718,14 @@ db.restore ()
     return ${LibRun__LastExitCode}
 }
 
-```
+----
 
-#### `db.top`
+==== `db.top`
 
-```bash
-db.top ()
-{
+[source,bash]
+----
+db.top () 
+{ 
     local dbnames=$@;
     h1 "Please wait while we resolve DB names using AWSCLI...";
     local db;
@@ -2116,13 +1808,14 @@ db.top ()
     done
 }
 
-```
+----
 
-#### `db.wait-until-db-online`
+==== `db.wait-until-db-online`
 
-```bash
-db.wait-until-db-online ()
-{
+[source,bash]
+----
+db.wait-until-db-online () 
+{ 
     local db=${1};
     inf 'waiting for the database to come up...';
     while true; do
@@ -2137,35 +1830,34 @@ db.wait-until-db-online ()
     return 0
 }
 
-```
+----
 
-#### `psql.db-settings`
+==== `psql.db-settings`
 
-```bash
-psql.db-settings ()
-{
+[source,bash]
+----
+psql.db-settings () 
+{ 
     psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
-```
+----
 
 
----
+=== Module `deploy`
 
+==== `deploy.slack`
 
-### Module `deploy`
-
-#### `deploy.slack`
-
-```bash
-deploy.slack ()
-{
+[source,bash]
+----
+deploy.slack () 
+{ 
     local original_text="$*";
     [[ -z ${LibDeploy__SlackHookUrl} ]] && return 1;
     local text=$(echo "${original_text}" | sed -E 's/"/\"/g' | sed -E "s/'/\'/g");
     local json="{\"text\": \"$text\"}";
     local slack_url="${LibDeploy__SlackHookUrl}";
-    [[ ${LibRun__DryRun} -eq ${False} ]] && {
+    [[ ${LibRun__DryRun} -eq ${False} ]] && { 
         if ${LibDeploy__NoSlack}; then
             hl.green "${original_text}";
         else
@@ -2180,50 +1872,51 @@ deploy.slack ()
     [[ ${LibRun__DryRun} -eq ${True} ]] && run "send to slack [${text}]"
 }
 
-```
+----
 
-#### `deploy.slack-ding`
+==== `deploy.slack-ding`
 
-```bash
-deploy.slack-ding ()
-{
+[source,bash]
+----
+deploy.slack-ding () 
+{ 
     deploy.slack "<!here> $@"
 }
 
-```
+----
 
-#### `deploy.validate-vpn`
+==== `deploy.validate-vpn`
 
-```bash
-deploy.validate-vpn ()
-{
+[source,bash]
+----
+deploy.validate-vpn () 
+{ 
     .deploy.check-vpn "$@" || .deploy.vpn-error "$@"
 }
 
-```
+----
 
 
----
+=== Module `dir`
 
+==== `dir.count-slashes`
 
-### Module `dir`
-
-#### `dir.count-slashes`
-
-```bash
-dir.count-slashes ()
-{
+[source,bash]
+----
+dir.count-slashes () 
+{ 
     local dir="${1}";
     echo "${dir}" | sed 's/[^/]//g' | tr -d '\n' | wc -c | tr -d ' '
 }
 
-```
+----
 
-#### `dir.expand-dir`
+==== `dir.expand-dir`
 
-```bash
-dir.expand-dir ()
-{
+[source,bash]
+----
+dir.expand-dir () 
+{ 
     local dir="${1}";
     if [[ "${dir:0:1}" != "/" && "${dir:0:1}" != "~" ]]; then
         dir="$(pwd)/${dir}";
@@ -2235,30 +1928,29 @@ dir.expand-dir ()
     printf "${dir}"
 }
 
-```
+----
 
-#### `dir.is-a-dir`
+==== `dir.is-a-dir`
 
-```bash
-dir.is-a-dir ()
-{
+[source,bash]
+----
+dir.is-a-dir () 
+{ 
     local dir="${1}";
     [[ -d "${dir}" ]]
 }
 
-```
+----
 
 
----
+=== Module `docker`
 
+==== `docker.abort-if-down`
 
-### Module `docker`
-
-#### `docker.abort-if-down`
-
-```bash
-docker.abort-if-down ()
-{
+[source,bash]
+----
+docker.abort-if-down () 
+{ 
     local should_exit="${1:-true}";
     inf 'Checking if Docker is running...';
     docker ps 2> /dev/null > /dev/null;
@@ -2273,45 +1965,49 @@ docker.abort-if-down ()
     fi
 }
 
-```
+----
 
-#### `docker.actions.build`
+==== `docker.actions.build`
 
-```bash
-docker.actions.build ()
-{
+[source,bash]
+----
+docker.actions.build () 
+{ 
     docker.build.container "$@"
 }
 
-```
+----
 
-#### `docker.actions.clean`
+==== `docker.actions.clean`
 
-```bash
-docker.actions.clean ()
-{
+[source,bash]
+----
+docker.actions.clean () 
+{ 
     .docker.exec "docker-compose rm"
 }
 
-```
+----
 
-#### `docker.actions.pull`
+==== `docker.actions.pull`
 
-```bash
-docker.actions.pull ()
-{
+[source,bash]
+----
+docker.actions.pull () 
+{ 
     local tag=${1:-'latest'};
     .docker.check-repo "${2}" || return 1;
     .docker.exec "docker pull ${AppDockerRepo}:${tag}"
 }
 
-```
+----
 
-#### `docker.actions.push`
+==== `docker.actions.push`
 
-```bash
-docker.actions.push ()
-{
+[source,bash]
+----
+docker.actions.push () 
+{ 
     local tag=${1:-$(.docker.next-version)};
     .docker.check-repo "${2}" || return 1;
     docker.actions.tag latest;
@@ -2321,125 +2017,136 @@ docker.actions.push ()
     [[ ${tag} != 'latest' ]] && .docker.exec docker push "${AppDockerRepo}:latest"
 }
 
-```
+----
 
-#### `docker.actions.setup`
+==== `docker.actions.setup`
 
-```bash
-docker.actions.setup ()
-{
+[source,bash]
+----
+docker.actions.setup () 
+{ 
     setup.docker;
     docker.pull;
     docker.build
 }
 
-```
+----
 
-#### `docker.actions.start`
+==== `docker.actions.start`
 
-```bash
-docker.actions.start ()
-{
+[source,bash]
+----
+docker.actions.start () 
+{ 
     .docker.exec "docker-compose start"
 }
 
-```
+----
 
-#### `docker.actions.stop`
+==== `docker.actions.stop`
 
-```bash
-docker.actions.stop ()
-{
+[source,bash]
+----
+docker.actions.stop () 
+{ 
     .docker.exec "docker-compose stop"
 }
 
-```
+----
 
-#### `docker.actions.tag`
+==== `docker.actions.tag`
 
-```bash
-docker.actions.tag ()
-{
+[source,bash]
+----
+docker.actions.tag () 
+{ 
     local tag=${1};
     [[ -z ${tag} ]] && return 1;
     .docker.check-repo "${2}" || return 1;
     .docker.exec docker tag "${AppDockerRepo}" "${AppDockerRepo}:${tag}"
 }
 
-```
+----
 
-#### `docker.actions.up`
+==== `docker.actions.up`
 
-```bash
-docker.actions.up ()
-{
+[source,bash]
+----
+docker.actions.up () 
+{ 
     .docker.exec "docker-compose up"
 }
 
-```
+----
 
-#### `docker.actions.update`
+==== `docker.actions.update`
 
-```bash
-docker.actions.update ()
-{
+[source,bash]
+----
+docker.actions.update () 
+{ 
     docker.build;
     docker.push
 }
 
-```
+----
 
-#### `docker.build.container`
+==== `docker.build.container`
 
-```bash
-docker.build.container ()
-{
+[source,bash]
+----
+docker.build.container () 
+{ 
     .docker.check-repo "${1}" || return 1;
     local tag=${AppDockerRepo};
     .docker.exec "docker build -m 3G -c 4 --pull -t ${tag} . $*"
 }
 
-```
+----
 
-#### `docker.containers.clean`
+==== `docker.containers.clean`
 
-```bash
-docker.containers.clean ()
-{
+[source,bash]
+----
+docker.containers.clean () 
+{ 
     local -a args=("$@");
     run "docker rm $(docker ps -q -a) ${args[*]}"
 }
 
-```
+----
 
-#### `docker.image.inspect`
+==== `docker.image.inspect`
 
-```bash
-docker.image.inspect ()
-{
+[source,bash]
+----
+docker.image.inspect () 
+{ 
     run.set-next show-output-on;
     local jq=" | jq";
     [[ -z $(command -v jq) ]] && jq=;
     run "docker image inspect ${*} $jq"
 }
 
-```
+----
 
-#### `docker.image.rm`
+==== `docker.image.rm`
 
-```bash
-docker.image.rm ()
-{
+[source,bash]
+----
+docker.image.rm () 
+{ 
     run "docker image rm ${*}"
 }
 
-```
+----
 
-#### `docker.images-named`
+==== `docker.images-named`
 
-```bash
-docker.images-named ()
-{
+[source,bash]
+----
+docker.images-named () 
+{ 
     local name="${1}";
     local func="${2}";
     docker.abort-if-down false || return 127;
@@ -2448,101 +2155,106 @@ docker.images-named ()
     ${func} ${images}
 }
 
-```
+----
 
-#### `docker.images.clean`
+==== `docker.images.clean`
 
-```bash
-docker.images.clean ()
-{
+[source,bash]
+----
+docker.images.clean () 
+{ 
     local name=${1:-"<none>"};
     docker.images-named "${name}" "docker.image.rm"
 }
 
-```
+----
 
-#### `docker.images.inspect`
+==== `docker.images.inspect`
 
-```bash
-docker.images.inspect ()
-{
+[source,bash]
+----
+docker.images.inspect () 
+{ 
     local name=${1:-"<none>"};
     docker.images-named "${name}" "docker.image.inspect"
 }
 
-```
+----
 
-#### `docker.last-version`
+==== `docker.last-version`
 
-```bash
-docker.last-version ()
-{
+[source,bash]
+----
+docker.last-version () 
+{ 
     .docker.check-repo "${1}" || return 1;
-    [[ -z ${AppDockerRepo} ]] && {
+    [[ -z ${AppDockerRepo} ]] && { 
         error "usage: docker.last-version organization/reponame:version";
         return 1
     };
     .docker.last-version "$@"
 }
 
-```
+----
 
-#### `docker.next-version`
+==== `docker.next-version`
 
-```bash
-docker.next-version ()
-{
+[source,bash]
+----
+docker.next-version () 
+{ 
     .docker.check-repo "${1}" || return 1;
-    [[ -z ${AppDockerRepo} ]] && {
+    [[ -z ${AppDockerRepo} ]] && { 
         error "usage: docker.next-version [ organization/repo-name:version ]";
         return 1
     };
     .docker.next-version "$@"
 }
 
-```
+----
 
-#### `docker.set-repo`
+==== `docker.set-repo`
 
-```bash
-docker.set-repo ()
-{
+[source,bash]
+----
+docker.set-repo () 
+{ 
     [[ -n "$1" ]] && export AppDockerRepo="$1"
 }
 
-```
+----
 
 
----
+=== Module `file`
 
+==== `dir.find`
 
-### Module `file`
-
-#### `dir.find`
-
-```bash
-dir.find ()
-{
+[source,bash]
+----
+dir.find () 
+{ 
     find . -name "*$1*" -type d -print
 }
 
-```
+----
 
-#### `ff`
+==== `ff`
 
-```bash
-ff ()
-{
+[source,bash]
+----
+ff () 
+{ 
     file.find "$@"
 }
 
-```
+----
 
-#### `file.ask.if-exists`
+==== `file.ask.if-exists`
 
-```bash
-file.ask.if-exists ()
-{
+[source,bash]
+----
+file.ask.if-exists () 
+{ 
     local file="$1";
     shift;
     local message="$*";
@@ -2554,13 +2266,14 @@ file.ask.if-exists ()
     return 0
 }
 
-```
+----
 
-#### `file.exists-and-newer-than`
+==== `file.exists-and-newer-than`
 
-```bash
-file.exists-and-newer-than ()
-{
+[source,bash]
+----
+file.exists-and-newer-than () 
+{ 
     local file="${1}";
     shift;
     local minutes="${1}";
@@ -2572,38 +2285,41 @@ file.exists-and-newer-than ()
     fi
 }
 
-```
+----
 
-#### `file.extension`
+==== `file.extension`
 
-```bash
-file.extension ()
-{
+[source,bash]
+----
+file.extension () 
+{ 
     local filename="$1";
     printf "${filename##*.}"
 }
 
-```
+----
 
-#### `file.extension.remove`
+==== `file.extension.remove`
 
-```bash
-file.extension.remove ()
-{
+[source,bash]
+----
+file.extension.remove () 
+{ 
     local filename="$1";
     printf "${filename%.*}"
 }
 
-```
+----
 
-#### `file.extension.replace`
+==== `file.extension.replace`
 
-```bash
-file.extension.replace ()
-{
+[source,bash]
+----
+file.extension.replace () 
+{ 
     local ext="$1";
     shift;
-    [[ -z "$1" ]] && {
+    [[ -z "$1" ]] && { 
         info "USAGE: file.extension.replace <new-extension> file1 file2 ... ";
         return 1
     };
@@ -2617,23 +2333,25 @@ file.extension.replace ()
     done
 }
 
-```
+----
 
-#### `file.find`
+==== `file.find`
 
-```bash
-file.find ()
-{
+[source,bash]
+----
+file.find () 
+{ 
     find . -name "*$1*" -type f -print
 }
 
-```
+----
 
-#### `file.gsub`
+==== `file.gsub`
 
-```bash
-file.gsub ()
-{
+[source,bash]
+----
+file.gsub () 
+{ 
     local file="$1";
     shift;
     local find="$1";
@@ -2641,7 +2359,7 @@ file.gsub ()
     local replace="$1";
     shift;
     local runtime_options="$*";
-    [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && {
+    [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && { 
         error "Invalid usage of file.sub — " "USAGE: file.gsub <file>    <find-regex>        <replace-regex>" "EG:    file.gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'";
         return 1
     };
@@ -2650,13 +2368,14 @@ file.gsub ()
     run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
 }
 
-```
+----
 
-#### `file.install-with-backup`
+==== `file.install-with-backup`
 
-```bash
-file.install-with-backup ()
-{
+[source,bash]
+----
+file.install-with-backup () 
+{ 
     local source=$1;
     local dest=$2;
     if [[ ! -f ${source} ]]; then
@@ -2668,7 +2387,7 @@ file.install-with-backup ()
             info: "${dest} is up to date";
             return 0;
         else
-            ((${LibFile__ForceOverwrite})) || {
+            ((${LibFile__ForceOverwrite})) || { 
                 info "file ${dest} already exists, skipping (use -f to overwrite)";
                 return 0
             };
@@ -2680,59 +2399,64 @@ file.install-with-backup ()
     run "mkdir -p $(dirname ${dest}) && cp ${source} ${dest}"
 }
 
-```
+----
 
-#### `file.last-modified-date`
+==== `file.last-modified-date`
 
-```bash
-file.last-modified-date ()
-{
+[source,bash]
+----
+file.last-modified-date () 
+{ 
     stat -f "%Sm" -t "%Y-%m-%d" "$1"
 }
 
-```
+----
 
-#### `file.last-modified-year`
+==== `file.last-modified-year`
 
-```bash
-file.last-modified-year ()
-{
+[source,bash]
+----
+file.last-modified-year () 
+{ 
     stat -f "%Sm" -t "%Y" "$1"
 }
 
-```
+----
 
-#### `file.list.filter-existing`
+==== `file.list.filter-existing`
 
-```bash
-file.list.filter-existing ()
-{
+[source,bash]
+----
+file.list.filter-existing () 
+{ 
     for file in $@;
     do
         [[ -f ${file} ]] && echo "${file}";
     done
 }
 
-```
+----
 
-#### `file.list.filter-non-empty`
+==== `file.list.filter-non-empty`
 
-```bash
-file.list.filter-non-empty ()
-{
+[source,bash]
+----
+file.list.filter-non-empty () 
+{ 
     for file in $@;
     do
         [[ -s ${file} ]] && echo "${file}";
     done
 }
 
-```
+----
 
-#### `file.size`
+==== `file.size`
 
-```bash
-file.size ()
-{
+[source,bash]
+----
+file.size () 
+{ 
     AppCurrentOS=${AppCurrentOS:-$(uname -s)};
     if [[ "Linux" == ${AppCurrentOS} ]]; then
         stat -c %s "$1";
@@ -2741,13 +2465,14 @@ file.size ()
     fi
 }
 
-```
+----
 
-#### `file.size.mb`
+==== `file.size.mb`
 
-```bash
-file.size.mb ()
-{
+[source,bash]
+----
+file.size.mb () 
+{ 
     local file="$1";
     shift;
     local s=$(file.size ${file});
@@ -2755,13 +2480,14 @@ file.size.mb ()
     printf "%.2f MB" ${mb}
 }
 
-```
+----
 
-#### `file.source-if-exists`
+==== `file.source-if-exists`
 
-```bash
-file.source-if-exists ()
-{
+[source,bash]
+----
+file.source-if-exists () 
+{ 
     local file;
     for file in "$@";
     do
@@ -2769,21 +2495,22 @@ file.source-if-exists ()
     done
 }
 
-```
+----
 
-#### `file.stat`
+==== `file.stat`
 
-```bash
-file.stat ()
-{
+[source,bash]
+----
+file.stat () 
+{ 
     local file="$1";
     local field="$2";
-    [[ -f ${file} ]] || {
+    [[ -f ${file} ]] || { 
         error "file ${file} is not found. Usage: file.stat <filename> <stat-field-name>";
         info "eg: ${bldylw}file.stat README.md st_size";
         return 1
     };
-    [[ -n ${field} ]] || {
+    [[ -n ${field} ]] || { 
         error "Second argument field is required.";
         info "eg: ${bldylw}file.stat README.md st_size";
         return 2
@@ -2792,39 +2519,42 @@ file.stat ()
     echo ${!field}
 }
 
-```
+----
 
-#### `file.strip.extension`
+==== `file.strip.extension`
 
-```bash
-file.strip.extension ()
-{
+[source,bash]
+----
+file.strip.extension () 
+{ 
     file.extension.remove "$@"
 }
 
-```
+----
 
-#### `files.find`
+==== `files.find`
 
-```bash
-files.find ()
-{
+[source,bash]
+----
+files.find () 
+{ 
     local folder="$1";
     local pattern="${2}";
-    [[ -z ${folder} || -z ${pattern} ]] && {
+    [[ -z ${folder} || -z ${pattern} ]] && { 
         echo "usage: files.find <folder> <pattern>" 1>&2;
         return 1
     };
     find "$1" -name "${pattern}"
 }
 
-```
+----
 
-#### `files.map`
+==== `files.map`
 
-```bash
-files.map ()
-{
+[source,bash]
+----
+files.map () 
+{ 
     local folder="${1}";
     local pattern="${2}";
     local array="${3}";
@@ -2844,29 +2574,28 @@ files.map ()
     fi
 }
 
-```
+----
 
-#### `files.map.shell-scripts`
+==== `files.map.shell-scripts`
 
-```bash
-files.map.shell-scripts ()
-{
+[source,bash]
+----
+files.map.shell-scripts () 
+{ 
     files.map "$1" '*.sh' "$2"
 }
 
-```
+----
 
 
----
+=== Module `ftrace`
 
+==== `ftrace-in`
 
-### Module `ftrace`
-
-#### `ftrace-in`
-
-```bash
-ftrace-in ()
-{
+[source,bash]
+----
+ftrace-in () 
+{ 
     local func=$1;
     shift;
     local args="$*";
@@ -2875,33 +2604,36 @@ ftrace-in ()
     printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' ${func} "${args}" 1>&2
 }
 
-```
+----
 
-#### `ftrace-off`
+==== `ftrace-off`
 
-```bash
-ftrace-off ()
-{
+[source,bash]
+----
+ftrace-off () 
+{ 
     unset TraceON
 }
 
-```
+----
 
-#### `ftrace-on`
+==== `ftrace-on`
 
-```bash
-ftrace-on ()
-{
+[source,bash]
+----
+ftrace-on () 
+{ 
     export TraceON=true
 }
 
-```
+----
 
-#### `ftrace-out`
+==== `ftrace-out`
 
-```bash
-ftrace-out ()
-{
+[source,bash]
+----
+ftrace-out () 
+{ 
     local func=$1;
     shift;
     local code=$1;
@@ -2914,74 +2646,77 @@ ftrace-out ()
     export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} - 1 ))
 }
 
-```
+----
 
 
----
+=== Module `gem`
 
+==== `g-i`
 
-### Module `gem`
-
-#### `g-i`
-
-```bash
-g-i ()
-{
+[source,bash]
+----
+g-i () 
+{ 
     gem.install "$@"
 }
 
-```
+----
 
-#### `g-u`
+==== `g-u`
 
-```bash
-g-u ()
-{
+[source,bash]
+----
+g-u () 
+{ 
     gem.uninstall "$@"
 }
 
-```
+----
 
-#### `gem.cache-installed`
+==== `gem.cache-installed`
 
-```bash
-gem.cache-installed ()
-{
+[source,bash]
+----
+gem.cache-installed () 
+{ 
     gem.configure-cache;
     if [[ ! -s "${LibGem__GemListCache}" || -z $(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null) ]]; then
         run "gem list > ${LibGem__GemListCache}" > /dev/null;
     fi
 }
 
-```
+----
 
-#### `gem.cache-refresh`
+==== `gem.cache-refresh`
 
-```bash
-gem.cache-refresh ()
-{
+[source,bash]
+----
+gem.cache-refresh () 
+{ 
     ( gem.configure-cache;
     gem.clear-cache;
     gem.cache-installed ) > /dev/null
 }
 
-```
+----
 
-#### `gem.clear-cache`
+==== `gem.clear-cache`
 
-```bash
-gem.clear-cache ()
-{
+[source,bash]
+----
+gem.clear-cache () 
+{ 
     rm -f "${LibGem__GemListCache}" > /dev/null
 }
 
-```
+----
 
-#### `gem.configure-cache`
+==== `gem.configure-cache`
 
-```bash
-gem.configure-cache ()
-{
+[source,bash]
+----
+gem.configure-cache () 
+{ 
     export LibGem__GemListCacheBase=/tmp/.bashmatic/.gem/gem.list;
     export LibGem__GemListCache=;
     export LibGem__GemInstallFlags=" -N --force --quiet ";
@@ -2991,13 +2726,14 @@ gem.configure-cache ()
     [[ -d ${dir} ]] || run "mkdir -p ${dir}" > /dev/null
 }
 
-```
+----
 
-#### `gem.ensure-gem-version`
+==== `gem.ensure-gem-version`
 
-```bash
-gem.ensure-gem-version ()
-{
+[source,bash]
+----
+gem.ensure-gem-version () 
+{ 
     local gem=$1;
     local gem_version=$2;
     [[ -z ${gem} || -z ${gem_version} ]] && return;
@@ -3010,23 +2746,25 @@ gem.ensure-gem-version ()
     fi
 }
 
-```
+----
 
-#### `gem.gemfile.bundler-version`
+==== `gem.gemfile.bundler-version`
 
-```bash
-gem.gemfile.bundler-version ()
-{
+[source,bash]
+----
+gem.gemfile.bundler-version () 
+{ 
     [[ -f Gemfile.lock ]] && grep -A2 BUNDLED Gemfile.lock | tail -1 | tr -d ' '
 }
 
-```
+----
 
-#### `gem.gemfile.version`
+==== `gem.gemfile.version`
 
-```bash
-gem.gemfile.version ()
-{
+[source,bash]
+----
+gem.gemfile.version () 
+{ 
     local gem=$1;
     [[ -z ${gem} ]] && return;
     if [[ -f Gemfile.lock ]]; then
@@ -3034,13 +2772,14 @@ gem.gemfile.version ()
     fi
 }
 
-```
+----
 
-#### `gem.global.latest-version`
+==== `gem.global.latest-version`
 
-```bash
-gem.global.latest-version ()
-{
+[source,bash]
+----
+gem.global.latest-version () 
+{ 
     local gem="$1";
     [[ -z ${gem} ]] && return;
     declare -a versions=($(gem.global.versions ${gem}));
@@ -3057,26 +2796,28 @@ gem.global.latest-version ()
     printf "%s" "${max_version}"
 }
 
-```
+----
 
-#### `gem.global.versions`
+==== `gem.global.versions`
 
-```bash
-gem.global.versions ()
-{
+[source,bash]
+----
+gem.global.versions () 
+{ 
     local gem=$1;
     [[ -z ${gem} ]] && return;
     gem.cache-installed;
     cat "${LibGem__GemListCache}" | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
-```
+----
 
-#### `gem.install`
+==== `gem.install`
 
-```bash
-gem.install ()
-{
+[source,bash]
+----
+gem.install () 
+{ 
     .gem.verify-name "$@" || return 1;
     local gem_name="$1";
     local gem_version="$2";
@@ -3105,13 +2846,14 @@ gem.install ()
     fi
 }
 
-```
+----
 
-#### `gem.is-installed`
+==== `gem.is-installed`
 
-```bash
-gem.is-installed ()
-{
+[source,bash]
+----
+gem.is-installed () 
+{ 
     local gem=$1;
     local version=$2;
     gem.cache-installed > /dev/null;
@@ -3122,28 +2864,30 @@ gem.is-installed ()
     fi
 }
 
-```
+----
 
-#### `gem.remote.version`
+==== `gem.remote.version`
 
-```bash
-gem.remote.version ()
-{
+[source,bash]
+----
+gem.remote.version () 
+{ 
     [[ -z "$1" ]] && return;
     gem query "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
 }
 
-```
+----
 
-#### `gem.uninstall`
+==== `gem.uninstall`
 
-```bash
-gem.uninstall ()
-{
+[source,bash]
+----
+gem.uninstall () 
+{ 
     .gem.verify-name "$@" || return 1;
     local gem_name=$1;
     local gem_version=$2;
-    gem.is-installed "${gem_name}" "${gem_version}" || {
+    gem.is-installed "${gem_name}" "${gem_version}" || { 
         info "gem ${bldylw}${gem_name}${txtblu} is not installed";
         return
     };
@@ -3158,13 +2902,14 @@ gem.uninstall ()
     return ${LibRun__LastExitCode}
 }
 
-```
+----
 
-#### `gem.version`
+==== `gem.version`
 
-```bash
-gem.version ()
-{
+[source,bash]
+----
+gem.version () 
+{ 
     local gem="$1";
     local default="$2";
     [[ -z ${gem} ]] && return;
@@ -3181,23 +2926,21 @@ gem.version ()
     printf "%s" "${version}"
 }
 
-```
+----
 
 
----
+=== Module `git`
 
+==== `bashmatic.auto-update`
 
-### Module `git`
-
-#### `bashmatic.auto-update`
-
-```bash
-bashmatic.auto-update ()
-{
+[source,bash]
+----
+bashmatic.auto-update () 
+{ 
     [[ ${Bashmatic__Test} -eq 1 ]] && return 0;
     git.configure-auto-updates;
-    git.repo-is-clean || {
-        output.is-ssh || {
+    git.repo-is-clean || { 
+        output.is-ssh || { 
             h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up."
         };
         return 1
@@ -3205,25 +2948,27 @@ bashmatic.auto-update ()
     git.sync
 }
 
-```
+----
 
-#### `git.configure-auto-updates`
+==== `git.configure-auto-updates`
 
-```bash
-git.configure-auto-updates ()
-{
+[source,bash]
+----
+git.configure-auto-updates () 
+{ 
     export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}";
     export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | util.checksum.stdin)";
     mkdir -p $(dirname ${LibGit__LastUpdateTimestampFile})
 }
 
-```
+----
 
-#### `git.last-update-at`
+==== `git.last-update-at`
 
-```bash
-git.last-update-at ()
-{
+[source,bash]
+----
+git.last-update-at () 
+{ 
     git.configure-auto-updates;
     local file="${1:-"${LibGit__LastUpdateTimestampFile}"}";
     local last_update=0;
@@ -3231,13 +2976,14 @@ git.last-update-at ()
     printf "%d" ${last_update}
 }
 
-```
+----
 
-#### `git.local-vs-remote`
+==== `git.local-vs-remote`
 
-```bash
-git.local-vs-remote ()
-{
+[source,bash]
+----
+git.local-vs-remote () 
+{ 
     local upstream=${1:-'@{u}'};
     local local_repo=$(git rev-parse @);
     local remote_repo=$(git rev-parse "$upstream");
@@ -3271,33 +3017,36 @@ git.local-vs-remote ()
     return 1
 }
 
-```
+----
 
-#### `git.quiet`
+==== `git.quiet`
 
-```bash
-git.quiet ()
-{
+[source,bash]
+----
+git.quiet () 
+{ 
     [[ -n ${LibGit__QuietUpdate} ]]
 }
 
-```
+----
 
-#### `git.remotes`
+==== `git.remotes`
 
-```bash
-git.remotes ()
-{
+[source,bash]
+----
+git.remotes () 
+{ 
     git remote -v | awk '{print $2}' | uniq
 }
 
-```
+----
 
-#### `git.repo-is-clean`
+==== `git.repo-is-clean`
 
-```bash
-git.repo-is-clean ()
-{
+[source,bash]
+----
+git.repo-is-clean () 
+{ 
     local repo="${1:-${BASHMATIC_HOME}}";
     cd "${repo}" > /dev/null;
     if [[ -z $(git status -s) ]]; then
@@ -3309,38 +3058,41 @@ git.repo-is-clean ()
     fi
 }
 
-```
+----
 
-#### `git.save-last-update-at`
+==== `git.save-last-update-at`
 
-```bash
-git.save-last-update-at ()
-{
+[source,bash]
+----
+git.save-last-update-at () 
+{ 
     echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
 }
 
-```
+----
 
-#### `git.seconds-since-last-pull`
+==== `git.seconds-since-last-pull`
 
-```bash
-git.seconds-since-last-pull ()
-{
+[source,bash]
+----
+git.seconds-since-last-pull () 
+{ 
     local last_update="$1";
     local now=$(epoch);
     printf $((now - last_update))
 }
 
-```
+----
 
-#### `git.sync`
+==== `git.sync`
 
-```bash
-git.sync ()
-{
+[source,bash]
+----
+git.sync () 
+{ 
     local dir="$(pwd)";
     cd "${BASHMATIC_HOME}" > /dev/null;
-    git.repo-is-clean || {
+    git.repo-is-clean || { 
         warning "${bldylw}${BASHMATIC_HOME} has locally modified files." "Please commit or stash them to allow auto-upgrade to function as designed." 1>&2;
         cd "${dir}" > /dev/null;
         return 1
@@ -3350,13 +3102,14 @@ git.sync ()
     return 0
 }
 
-```
+----
 
-#### `git.sync-remote`
+==== `git.sync-remote`
 
-```bash
-git.sync-remote ()
-{
+[source,bash]
+----
+git.sync-remote () 
+{ 
     if git.quiet; then
         ( git remote update && git fetch ) 2>&1 > /dev/null;
     else
@@ -3380,13 +3133,14 @@ git.sync-remote ()
     return 0
 }
 
-```
+----
 
-#### `git.update-repo-if-needed`
+==== `git.update-repo-if-needed`
 
-```bash
-git.update-repo-if-needed ()
-{
+[source,bash]
+----
+git.update-repo-if-needed () 
+{ 
     local last_update_at=$(git.last-update-at);
     local second_since_update=$(git.seconds-since-last-pull ${last_update_at});
     local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60));
@@ -3399,29 +3153,28 @@ git.update-repo-if-needed ()
     fi
 }
 
-```
+----
 
 
----
+=== Module `github`
 
+==== `github.clone`
 
-### Module `github`
-
-#### `github.clone`
-
-```bash
-github.clone ()
-{
+[source,bash]
+----
+github.clone () 
+{ 
     test -n "$1" && github.validate && run "git clone git@github.com:$(github.org)/$1"
 }
 
-```
+----
 
-#### `github.org`
+==== `github.org`
 
-```bash
-github.org ()
-{
+[source,bash]
+----
+github.org () 
+{ 
     local namespace="$1";
     if [[ -z ${namespace} ]]; then
         git config --global --get user.github;
@@ -3431,13 +3184,14 @@ github.org ()
     fi
 }
 
-```
+----
 
-#### `github.setup`
+==== `github.setup`
 
-```bash
-github.setup ()
-{
+[source,bash]
+----
+github.setup () 
+{ 
     local namespace="$(github.org)";
     if [[ -z "${namespace}" ]]; then
         unset GITHUB_ORG;
@@ -3450,13 +3204,14 @@ github.setup ()
     github.org > /dev/null
 }
 
-```
+----
 
-#### `github.validate`
+==== `github.validate`
 
-```bash
-github.validate ()
-{
+[source,bash]
+----
+github.validate () 
+{ 
     inf "Validating Github Configuration...";
     if github.org > /dev/null; then
         ok:;
@@ -3468,24 +3223,22 @@ github.validate ()
     fi
 }
 
-```
+----
 
 
----
+=== Module `jemalloc`
 
+==== `jm.check`
 
-### Module `jemalloc`
-
-#### `jm.check`
-
-```bash
-jm.check ()
-{
+[source,bash]
+----
+jm.check () 
+{ 
     local JM_Quiet=false;
     local JM_Ruby=false;
     local JM_Stats=false;
     while :; do
-        case $1 in
+        case $1 in 
             -q | --quiet)
                 shift;
                 export JM_Quiet=true
@@ -3513,29 +3266,30 @@ jm.check ()
             ;;
         esac;
     done;
-    ${JM_Ruby} && {
+    ${JM_Ruby} && { 
         jm.ruby.report;
         exit 0
     };
-    ${JM_Quiet} && {
+    ${JM_Quiet} && { 
         jm.jemalloc.detect-quiet;
         code=$?;
         exit ${code}
     };
-    ${JM_Stats} && {
+    ${JM_Stats} && { 
         jm.jemalloc.stats;
         exit 0
     };
     jm.jemalloc.detect-loud
 }
 
-```
+----
 
-#### `jm.jemalloc.detect-loud`
+==== `jm.jemalloc.detect-loud`
 
-```bash
-jm.jemalloc.detect-loud ()
-{
+[source,bash]
+----
+jm.jemalloc.detect-loud () 
+{ 
     jm.jemalloc.detect-quiet;
     local code=$?;
     local local_ruby=$(jm.ruby.detect);
@@ -3549,38 +3303,41 @@ jm.jemalloc.detect-loud ()
     return ${code}
 }
 
-```
+----
 
-#### `jm.jemalloc.detect-quiet`
+==== `jm.jemalloc.detect-quiet`
 
-```bash
-jm.jemalloc.detect-quiet ()
-{
+[source,bash]
+----
+jm.jemalloc.detect-quiet () 
+{ 
     MALLOC_CONF=stats_print:true ruby -e "exit" 2>&1 | grep -q "jemalloc statistics";
     return $?
 }
 
-```
+----
 
-#### `jm.jemalloc.stats`
+==== `jm.jemalloc.stats`
 
-```bash
-jm.jemalloc.stats ()
-{
-    jm.jemalloc.detect-quiet || {
+[source,bash]
+----
+jm.jemalloc.stats () 
+{ 
+    jm.jemalloc.detect-quiet || { 
         printf "No Jemalloc was found for the curent ruby $(jm.ruby.detect)\n";
         return 1
     };
     MALLOC_CONF=stats_print:true ruby -e "exit" 2>&1 | less -S
 }
 
-```
+----
 
-#### `jm.ruby.detect`
+==== `jm.ruby.detect`
 
-```bash
-jm.ruby.detect ()
-{
+[source,bash]
+----
+jm.ruby.detect () 
+{ 
     local ruby_loc;
     if [[ -n $(which rbenv) ]]; then
         ruby_loc=$(rbenv versions | grep '*' | awk '{print $2}');
@@ -3591,23 +3348,25 @@ jm.ruby.detect ()
     printf "%s" "${ruby_loc}"
 }
 
-```
+----
 
-#### `jm.ruby.report`
+==== `jm.ruby.report`
 
-```bash
-jm.ruby.report ()
-{
+[source,bash]
+----
+jm.ruby.report () 
+{ 
     printf "Ruby version being tested:\n  →  ${ColorBlue}$(which ruby) ${ColorYellow}$(jm.ruby.detect)${ColorReset}\n"
 }
 
-```
+----
 
-#### `jm.usage`
+==== `jm.usage`
 
-```bash
-jm.usage ()
-{
+[source,bash]
+----
+jm.usage () 
+{ 
     printf "
 ${ColorBlue}USAGE:${ColorReset}
   $(basename $0) [ -q/--quiet ]
@@ -3629,99 +3388,100 @@ ${ColorBlue}OPTIONS${ColorReset}
     exit 0
 }
 
-```
+----
 
 
----
+=== Module `json`
 
+==== `json.begin-array`
 
-### Module `json`
-
-#### `json.begin-array`
-
-```bash
-json.begin-array ()
-{
+[source,bash]
+----
+json.begin-array () 
+{ 
     [[ -n "$1" ]] && json.begin-key "$1";
     echo " ["
 }
 
-```
+----
 
-#### `json.begin-hash`
+==== `json.begin-hash`
 
-```bash
-json.begin-hash ()
-{
+[source,bash]
+----
+json.begin-hash () 
+{ 
     [[ -n "$1" ]] && json.begin-key "$1";
     echo "{"
 }
 
-```
+----
 
-#### `json.begin-key`
+==== `json.begin-key`
 
-```bash
-json.begin-key ()
-{
+[source,bash]
+----
+json.begin-key () 
+{ 
     if [[ -n "$1" ]]; then
         printf "\"${1}\": ";
     fi
 }
 
-```
+----
 
-#### `json.end-array`
+==== `json.end-array`
 
-```bash
-json.end-array ()
-{
+[source,bash]
+----
+json.end-array () 
+{ 
     printf "]";
     [[ "$1" == "true" ]] && printf ",";
     echo
 }
 
-```
+----
 
-#### `json.end-hash`
+==== `json.end-hash`
 
-```bash
-json.end-hash ()
-{
+[source,bash]
+----
+json.end-hash () 
+{ 
     printf "}";
     [[ "$1" == "true" ]] && printf ",";
     echo
 }
 
-```
+----
 
-#### `json.file-to-array`
+==== `json.file-to-array`
 
-```bash
-json.file-to-array ()
-{
+[source,bash]
+----
+json.file-to-array () 
+{ 
     json.begin-array "$1";
     cat $2 | tr -d '\r' | tr -d '\015' | sed 's/^/"/g;s/$/",/g' | tail -r | awk -F, '{if (FNR!=1) print; else print $1} ' | tail -r;
     json.end-array $3
 }
 
-```
+----
 
 
----
+=== Module `maths`
 
+==== `maths.eval`
 
-### Module `maths`
-
-#### `maths.eval`
-
-```bash
-maths.eval ()
-{
+[source,bash]
+----
+maths.eval () 
+{ 
     local __math_chars=(!²³¹¼½¾×÷ΠΣ⁰ⁱ⁴⁵⁶⁷⁸⁹ⁿ⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞∅∈∉√∛∜∞∩∪∿⊂⊃⟌τ𝛕𝜏𝝉𝞃𝞽०१२३४५६७८९ℯ𝐞𝑒𝒆𝖾𝗲𝘦𝙚𝚎ｅπϖ𝛑𝛡𝜋𝜛𝝅𝝕𝝿𝞏𝞹𝟉𝐢𝑖𝒊𝒾𝓲𝔦𝕚𝖎𝗂𝗶𝘪𝙞𝚒);
     local -a __math_chars_array=($(echo "${__math_chars}" | sedx -E 's/(.)/\1 /g'));
     local __math_chars_array;
-    [[ -z "$1" ]] && {
+    [[ -z "$1" ]] && { 
         output.set-max-width 100;
         output.set-min-width 40;
         usage-box "maths.eval 'expression' [ floating precitions [ total width ] © Computes a mathematical expression with UTF support" "Example 1." "maths.eval '√(57)*⅓×(sin(π÷(1.3)))' => 1.66882" "Example 2." "maths.eval '5!×(ｅ)' => 326.19382" "Special Characters:" "" " 0 through 23" "${__math_chars_array[*]:0:24}" "24 through 48" "${__math_chars_array[*]:24:24}" "48 through 72" "${__math_chars_array[*]:48:24}" "72 through 96" "${__math_chars_array[*]:72:24}";
@@ -3742,7 +3502,7 @@ maths.eval ()
     temp_file="$(mktemp)";
     ruby -r 'unicode_math' -e "${ruby_script}" 2> "${temp_file}";
     local code="$?";
-    [[ ${code} -ne 0 ]] && {
+    [[ ${code} -ne 0 ]] && { 
         error "Unable to perform an arithmetic expression:" "${bldylw}${ruby_script}" 1>&2;
         info "Error: \n${bldylw}$(cat "${temp_file}")";
         return 1
@@ -3751,19 +3511,17 @@ maths.eval ()
     return 0
 }
 
-```
+----
 
 
----
+=== Module `net`
 
+==== `net.fast-scan`
 
-### Module `net`
-
-#### `net.fast-scan`
-
-```bash
-net.fast-scan ()
-{
+[source,bash]
+----
+net.fast-scan () 
+{ 
     local subnet="${1:-"$(...net.local-subnet)"}";
     local out=$(mktemp);
     run.set-next show-output-on;
@@ -3775,13 +3533,14 @@ net.fast-scan ()
     bash ${colored}
 }
 
-```
+----
 
-#### `net.local-subnet`
+==== `net.local-subnet`
 
-```bash
-net.local-subnet ()
-{
+[source,bash]
+----
+net.local-subnet () 
+{ 
     local subnet="$(ifconfig -a |
     grep 'inet ' |
     egrep -v 'inet 169|inet 127' |
@@ -3793,49 +3552,50 @@ net.local-subnet ()
     printf '%s' ${subnet}
 }
 
-```
+----
 
 
----
+=== Module `osx`
 
+==== `afp.servers`
 
-### Module `osx`
-
-#### `afp.servers`
-
-```bash
-afp.servers ()
-{
+[source,bash]
+----
+afp.servers () 
+{ 
     osx.local-servers afp
 }
 
-```
+----
 
-#### `bashmatic-set-fqdn`
+==== `bashmatic-set-fqdn`
 
-```bash
-bashmatic-set-fqdn ()
-{
+[source,bash]
+----
+bashmatic-set-fqdn () 
+{ 
     osx.set-fqdn "$@"
 }
 
-```
+----
 
-#### `bashmatic-term`
+==== `bashmatic-term`
 
-```bash
-bashmatic-term ()
-{
+[source,bash]
+----
+bashmatic-term () 
+{ 
     open $(bashmatic-term-program)
 }
 
-```
+----
 
-#### `bashmatic-term-program`
+==== `bashmatic-term-program`
 
-```bash
-bashmatic-term-program ()
-{
+[source,bash]
+----
+bashmatic-term-program () 
+{ 
     if [[ -d /Applications/iTerm.app ]]; then
         printf '%s' /Applications/iTerm.app;
     else
@@ -3847,13 +3607,14 @@ bashmatic-term-program ()
     fi
 }
 
-```
+----
 
-#### `change-underscan`
+==== `change-underscan`
 
-```bash
-change-underscan ()
-{
+[source,bash]
+----
+change-underscan () 
+{ 
     set +e;
     local amount_percentage="$1";
     if [[ -z "${amount_percentage}" ]]; then
@@ -3887,7 +3648,7 @@ change-underscan ()
     if [[ "${line}" -gt 0 ]]; then
         line_pscn_key=$(($line - 4));
         line_pscn_value=$(($line - 3));
-        ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && {
+        ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && { 
             value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}');
             [[ -n $DEBUG ]] && info "current value is ${value}"
         };
@@ -3920,43 +3681,47 @@ change-underscan ()
     fi
 }
 
-```
+----
 
-#### `cookie-dump`
+==== `cookie-dump`
 
-```bash
-cookie-dump ()
-{
+[source,bash]
+----
+cookie-dump () 
+{ 
     osx.cookie-dump "$@"
 }
 
-```
+----
 
-#### `http.servers`
+==== `http.servers`
 
-```bash
-http.servers ()
-{
+[source,bash]
+----
+http.servers () 
+{ 
     osx.local-servers http
 }
 
-```
+----
 
-#### `https.servers`
+==== `https.servers`
 
-```bash
-https.servers ()
-{
+[source,bash]
+----
+https.servers () 
+{ 
     osx.local-servers https
 }
 
-```
+----
 
-#### `osx.cookie-dump`
+==== `osx.cookie-dump`
 
-```bash
-osx.cookie-dump ()
-{
+[source,bash]
+----
+osx.cookie-dump () 
+{ 
     local file="$1";
     local tmp;
     if [[ ! -s ${file} ]]; then
@@ -3980,79 +3745,104 @@ osx.cookie-dump ()
     [[ -z ${tmp} ]] || rm -f ${tmp}
 }
 
-```
+----
 
-#### `osx.env-print`
+==== `osx.env-print`
 
-```bash
-osx.env-print ()
-{
+[source,bash]
+----
+osx.env-print () 
+{ 
     local var="$1";
     printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} ${!var}
 }
 
-```
+----
 
-#### `osx.local-servers`
+==== `osx.local-servers`
 
-```bash
-osx.local-servers ()
-{
+[source,bash]
+----
+osx.local-servers () 
+{ 
     local protocol="${1:-"ssh"}";
     run.set-next show-output-on;
     run "timeout 20 dns-sd -B _${protocol}._tcp ."
 }
 
-```
+----
 
-#### `osx.ramdisk.mount`
+==== `osx.ramdisk.mount`
 
-```bash
-osx.ramdisk.mount ()
-{
-    [[ $(uname -s) != "Darwin" ]] && {
+[source,bash]
+----
+osx.ramdisk.mount () 
+{ 
+    local size="${1:-"8"}";
+    local diskname="${2:-"ramdisk"}";
+    local total=$((size * 2 * 1024));
+    [[ $(uname -s) != "Darwin" ]] && { 
         error "This function only works on OSX";
         return 1
     };
-    if [[ -z $(df -h | grep ramdisk) ]]; then
-        diskutil erasevolume HFS+ 'ramdisk' $(hdiutil attach -nomount ram://8192);
+    if [[ "${diskname}" =~ ' ' ]]; then
+        error "Disk name can not contain spaces.";
+        return 1;
+    fi;
+    local path="/Volumes/${diskname}";
+    if ( mount | egrep -q "/[V]olumes/${diskname}" ); then
+        info "Looks like RAM disk already exists at ${path}...";
+        return 1;
+    else
+        run.ui.ask "Creating RAM disk sized ${size}Mb at ${path}";
+        run.set-next show-output-on;
+        run "diskutil erasevolume HFS+ '${diskname}' $(hdiutil attach -nomount ram://${total})";
     fi
 }
 
-```
+----
 
-#### `osx.ramdisk.unmount`
+==== `osx.ramdisk.unmount`
 
-```bash
-osx.ramdisk.unmount ()
-{
-    [[ $(uname -s) != "Darwin" ]] && {
+[source,bash]
+----
+osx.ramdisk.unmount () 
+{ 
+    local diskname="${2:-"ramdisk"}";
+    [[ $(uname -s) != "Darwin" ]] && { 
         error "This function only works on OSX";
         return 1
     };
-    if [[ -n $(df -h | grep ramdisk) ]]; then
-        umount /Volumes/ramdisk;
+    local path="/Volumes/${diskname}";
+    if ( mount | egrep -q "/[V]olumes/${diskname}" ); then
+        run.ui.ask "Unmount RAM disk at ${path}? ";
+        run "umount ${path}";
+    else
+        info "Couldn't find volume ${bldylw}${path}. Does the RAM disk exist?";
+        return 1;
     fi
 }
 
-```
+----
 
-#### `osx.scutil-print`
+==== `osx.scutil-print`
 
-```bash
-osx.scutil-print ()
-{
+[source,bash]
+----
+osx.scutil-print () 
+{ 
     local var="$1";
     printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} $(sudo scutil --get ${var} | tr -d '\n')
 }
 
-```
+----
 
-#### `osx.set-fqdn`
+==== `osx.set-fqdn`
 
-```bash
-osx.set-fqdn ()
-{
+[source,bash]
+----
+osx.set-fqdn () 
+{ 
     local fqdn="$1";
     local domain=$(echo ${fqdn} | sed -E 's/^[^.]*\.//g');
     local host=$(echo ${fqdn} | sed -E 's/\..*//g');
@@ -4066,7 +3856,7 @@ osx.set-fqdn ()
     run.ui.ask "Does that look correct to you?";
     echo;
     inf "Now, please provide your SUDO password, if asked: ";
-    sudo printf '' || {
+    sudo printf '' || { 
         ui.closer.not-ok:;
         exit 1
     };
@@ -4085,234 +3875,286 @@ osx.set-fqdn ()
     hr
 }
 
-```
+----
 
-#### `ssh.servers`
+==== `ssh.servers`
 
-```bash
-ssh.servers ()
-{
+[source,bash]
+----
+ssh.servers () 
+{ 
     osx.local-servers ssh
 }
 
-```
+----
 
 
----
+=== Module `output`
 
+==== `abort`
 
-### Module `output`
-
-#### `abort`
-
-```bash
-abort ()
-{
+[source,bash]
+----
+abort () 
+{ 
     printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2;
     echo
 }
 
-```
+----
 
-#### `ascii-clean`
+==== `ascii-clean`
 
-```bash
-ascii-clean ()
-{
+[source,bash]
+----
+ascii-clean () 
+{ 
     .output.clean "$@"
 }
 
-```
+----
 
-#### `ask`
+==== `ask`
 
-```bash
-ask ()
-{
+[source,bash]
+----
+ask () 
+{ 
     printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}";
     printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
 }
 
-```
+----
 
-#### `box.blue-in-green`
+==== `box.blue-in-green`
 
-```bash
-box.blue-in-green ()
-{
+[source,bash]
+----
+box.blue-in-green () 
+{ 
     .output.box "${bldblu}" "${bldgrn}" "$@"
 }
 
-```
+----
 
-#### `box.blue-in-yellow`
+==== `box.blue-in-yellow`
 
-```bash
-box.blue-in-yellow ()
-{
+[source,bash]
+----
+box.blue-in-yellow () 
+{ 
     .output.box "${bldylw}" "${bldblu}" "$@"
 }
 
-```
+----
 
-#### `box.green-in-cyan`
+==== `box.green-in-cyan`
 
-```bash
-box.green-in-cyan ()
-{
+[source,bash]
+----
+box.green-in-cyan () 
+{ 
     .output.box "${bldgrn}" "${bldcyn}" "$@"
 }
 
-```
+----
 
-#### `box.green-in-green`
+==== `box.green-in-green`
 
-```bash
-box.green-in-green ()
-{
+[source,bash]
+----
+box.green-in-green () 
+{ 
     .output.box "${bldgrn}" "${bldgrn}" "$@"
 }
 
-```
+----
 
-#### `box.green-in-magenta`
+==== `box.green-in-magenta`
 
-```bash
-box.green-in-magenta ()
-{
+[source,bash]
+----
+box.green-in-magenta () 
+{ 
     .output.box "${bldgrn}" "${bldpur}" "$@"
 }
 
-```
+----
 
-#### `box.green-in-yellow`
+==== `box.green-in-yellow`
 
-```bash
-box.green-in-yellow ()
-{
+[source,bash]
+----
+box.green-in-yellow () 
+{ 
     .output.box "${bldgrn}" "${bldylw}" "$@"
 }
 
-```
+----
 
-#### `box.magenta-in-blue`
+==== `box.magenta-in-blue`
 
-```bash
-box.magenta-in-blue ()
-{
+[source,bash]
+----
+box.magenta-in-blue () 
+{ 
     .output.box "${bldblu}" "${bldpur}" "$@"
 }
 
-```
+----
 
-#### `box.magenta-in-green`
+==== `box.magenta-in-green`
 
-```bash
-box.magenta-in-green ()
-{
+[source,bash]
+----
+box.magenta-in-green () 
+{ 
     .output.box "${bldpur}" "${bldgrn}" "$@"
 }
 
-```
+----
 
-#### `box.red-in-magenta`
+==== `box.red-in-magenta`
 
-```bash
-box.red-in-magenta ()
-{
+[source,bash]
+----
+box.red-in-magenta () 
+{ 
     .output.box "${bldred}" "${bldpur}" "$@"
 }
 
-```
+----
 
-#### `box.red-in-red`
+==== `box.red-in-red`
 
-```bash
-box.red-in-red ()
-{
+[source,bash]
+----
+box.red-in-red () 
+{ 
     .output.box "${bldred}" "${txtred}" "$@"
 }
 
-```
+----
 
-#### `box.red-in-yellow`
+==== `box.red-in-yellow`
 
-```bash
-box.red-in-yellow ()
-{
+[source,bash]
+----
+box.red-in-yellow () 
+{ 
     .output.box "${bldred}" "${bldylw}" "$@"
 }
 
-```
+----
 
-#### `box.yellow-in-blue`
+==== `box.white-on-blue`
 
-```bash
-box.yellow-in-blue ()
-{
+[source,bash]
+----
+box.white-on-blue () 
+{ 
+    .output.box "${bakblu}" "${bldwht}" "$@"
+}
+
+----
+
+==== `box.white-on-green`
+
+[source,bash]
+----
+box.white-on-green () 
+{ 
+    .output.box "${bakgrn}" "${bldwht}" "$@"
+}
+
+----
+
+==== `box.yellow-in-blue`
+
+[source,bash]
+----
+box.yellow-in-blue () 
+{ 
     .output.box "${bldylw}" "${bldblu}" "$@"
 }
 
-```
+----
 
-#### `box.yellow-in-red`
+==== `box.yellow-in-red`
 
-```bash
-box.yellow-in-red ()
-{
+[source,bash]
+----
+box.yellow-in-red () 
+{ 
     .output.box "${bldred}" "${bldylw}" "$@"
 }
 
-```
+----
 
-#### `box.yellow-in-yellow`
+==== `box.yellow-in-yellow`
 
-```bash
-box.yellow-in-yellow ()
-{
+[source,bash]
+----
+box.yellow-in-yellow () 
+{ 
     .output.box "${bldylw}" "${txtylw}" "$@"
 }
 
-```
+----
 
-#### `br`
+==== `box.yellow-on-purple`
 
-```bash
-br ()
-{
+[source,bash]
+----
+box.yellow-on-purple () 
+{ 
+    .output.box "${bakpur}" "${bldylw}" "$@"
+}
+
+----
+
+==== `br`
+
+[source,bash]
+----
+br () 
+{ 
     echo
 }
 
-```
+----
 
-#### `center`
+==== `center`
 
-```bash
-center ()
-{
+[source,bash]
+----
+center () 
+{ 
     .output.center "$@"
 }
 
-```
+----
 
-#### `columnize`
+==== `columnize`
 
-```bash
-columnize ()
-{
+[source,bash]
+----
+columnize () 
+{ 
     local columns="${1:-2}";
     local sw=${SCREEN_WIDTH:-120};
     [[ -z ${sw} ]] && sw=$(screen-width);
     pr -l 10000 -${columns} -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
 }
 
-```
+----
 
-#### `command-spacer`
+==== `command-spacer`
 
-```bash
-command-spacer ()
-{
+[source,bash]
+----
+command-spacer () 
+{ 
     local color="${txtgrn}";
     [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}";
     [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return;
@@ -4321,95 +4163,120 @@ command-spacer ()
     [[ ${__width} -gt 0 ]] && .output.replicate-to "▪" "${__width}"
 }
 
-```
+----
 
-#### `cursor.at.x`
+==== `cursor.at.x`
 
-```bash
-cursor.at.x ()
-{
+[source,bash]
+----
+cursor.at.x () 
+{ 
     .output.cursor-move-to-x "$@"
 }
 
-```
+----
 
-#### `cursor.at.y`
+==== `cursor.at.y`
 
-```bash
-cursor.at.y ()
-{
+[source,bash]
+----
+cursor.at.y () 
+{ 
     .output.cursor-move-to-y "$@"
 }
 
-```
+----
 
-#### `cursor.down`
+==== `cursor.down`
 
-```bash
-cursor.down ()
-{
+[source,bash]
+----
+cursor.down () 
+{ 
     .output.cursor-down-by "$@"
 }
 
-```
+----
 
-#### `cursor.left`
+==== `cursor.left`
 
-```bash
-cursor.left ()
-{
+[source,bash]
+----
+cursor.left () 
+{ 
     .output.cursor-left-by "$@"
 }
 
-```
+----
 
-#### `cursor.rewind`
+==== `cursor.rewind`
 
-```bash
-cursor.rewind ()
-{
+[source,bash]
+----
+cursor.rewind () 
+{ 
     local x=${1:-0};
     .output.cursor-move-to-x ${x}
 }
 
-```
+----
 
-#### `cursor.right`
+==== `cursor.right`
 
-```bash
-cursor.right ()
-{
+[source,bash]
+----
+cursor.right () 
+{ 
     .output.cursor-right-by "$@"
 }
 
-```
+----
 
-#### `cursor.up`
+==== `cursor.shift.x`
 
-```bash
-cursor.up ()
-{
+[source,bash]
+----
+cursor.shift.x () 
+{ 
+    local shift="$1";
+    if [[ "${shift:0:1}" == "-" ]]; then
+        .output.cursor-left-by "${shift:1}";
+    else
+        .output.cursor-right-by "${shift}";
+    fi
+}
+
+----
+
+==== `cursor.up`
+
+[source,bash]
+----
+cursor.up () 
+{ 
     .output.cursor-up-by "$@"
 }
 
-```
+----
 
-#### `debug`
+==== `debug`
 
-```bash
-debug ()
-{
+[source,bash]
+----
+debug () 
+{ 
     [[ -z ${DEBUG} ]] && return;
-    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakwht}[ debug ] $*  ${clr}\n"
+    printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
 }
 
-```
+----
 
-#### `duration`
+==== `duration`
 
-```bash
-duration ()
-{
+[source,bash]
+----
+duration () 
+{ 
     local millis="$1";
     local exit_code="$2";
     [[ -n $(which bc) ]] || return;
@@ -4425,508 +4292,601 @@ duration ()
     fi
 }
 
-```
+----
 
-#### `err`
+==== `err`
 
-```bash
-err ()
-{
+[source,bash]
+----
+err () 
+{ 
     printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" 1>&2
 }
 
-```
+----
 
-#### `error`
+==== `error`
 
-```bash
-error ()
-{
+[source,bash]
+----
+error () 
+{ 
     header=$(printf -- "${txtblk}${bakred} « ERROR » ${clr}");
     box.red-in-red "${header} ${bldylw}$@" 1>&2
 }
 
-```
+----
 
-#### `error:`
+==== `error:`
 
-```bash
-error: ()
-{
+[source,bash]
+----
+error: () 
+{ 
     err $*;
     ui.closer.not-ok:
 }
 
-```
+----
 
-#### `h.black`
+==== `h.black`
 
-```bash
-h.black ()
-{
+[source,bash]
+----
+h.black () 
+{ 
     center "${bldylw}${bakblk}" "$@"
 }
 
-```
+----
 
-#### `h.blue`
+==== `h.blue`
 
-```bash
-h.blue ()
-{
+[source,bash]
+----
+h.blue () 
+{ 
     center "${txtblk}${bakblu}" "$@"
 }
 
-```
+----
 
-#### `h.e`
+==== `h.e`
 
-```bash
-h.e ()
-{
+[source,bash]
+----
+h.e () 
+{ 
     local header="$1";
     shift;
     box.red-in-red "${bakred}${bldwht} ${bldylw}${header}" "$@" 1>&2
 }
 
-```
+----
 
-#### `h.green`
+==== `h.green`
 
-```bash
-h.green ()
-{
+[source,bash]
+----
+h.green () 
+{ 
     center "${txtblk}${bakgrn}" "$@"
 }
 
-```
+----
 
-#### `h.orange`
+==== `h.orange`
 
-```bash
-h.orange ()
-{
+[source,bash]
+----
+h.orange () 
+{ 
     left "${white_on_orange}" "$@"
 }
 
-```
+----
 
-#### `h.orange-center`
+==== `h.orange-center`
 
-```bash
-h.orange-center ()
-{
+[source,bash]
+----
+h.orange-center () 
+{ 
     center "${white_on_orange}" "$@"
 }
 
-```
+----
 
-#### `h.red`
+==== `h.red`
 
-```bash
-h.red ()
-{
+[source,bash]
+----
+h.red () 
+{ 
     center "${txtblk}${bakred}" "$@"
 }
 
-```
+----
 
-#### `h.salmon`
+==== `h.salmon`
 
-```bash
-h.salmon ()
-{
+[source,bash]
+----
+h.salmon () 
+{ 
     left "${white_on_salmon}" "$@"
 }
 
-```
+----
 
-#### `h.salmon-center`
+==== `h.salmon-center`
 
-```bash
-h.salmon-center ()
-{
+[source,bash]
+----
+h.salmon-center () 
+{ 
     center "${white_on_salmon}" "$@"
 }
 
-```
+----
 
-#### `h.yellow`
+==== `h.yellow`
 
-```bash
-h.yellow ()
-{
+[source,bash]
+----
+h.yellow () 
+{ 
     center "${txtblk}${bakylw}" "$@"
 }
 
-```
+----
 
-#### `h1`
+==== `h1`
 
-```bash
-h1 ()
-{
+[source,bash]
+----
+h1 () 
+{ 
     box.blue-in-yellow "$@"
 }
 
-```
+----
 
-#### `h1.blue`
+==== `h1.blue`
 
-```bash
-h1.blue ()
-{
+[source,bash]
+----
+h1.blue () 
+{ 
     box.magenta-in-blue "$@"
 }
 
-```
+----
 
-#### `h1.green`
+==== `h1.green`
 
-```bash
-h1.green ()
-{
+[source,bash]
+----
+h1.green () 
+{ 
     box.green-in-magenta "$@"
 }
 
-```
+----
 
-#### `h1.purple`
+==== `h1.purple`
 
-```bash
-h1.purple ()
-{
+[source,bash]
+----
+h1.purple () 
+{ 
     box.magenta-in-green "$@"
 }
 
-```
+----
 
-#### `h1.red`
+==== `h1.red`
 
-```bash
-h1.red ()
-{
+[source,bash]
+----
+h1.red () 
+{ 
     box.red-in-red "$@"
 }
 
-```
+----
 
-#### `h1.yellow`
+==== `h1.yellow`
 
-```bash
-h1.yellow ()
-{
+[source,bash]
+----
+h1.yellow () 
+{ 
     box.yellow-in-red "$@"
 }
 
-```
+----
 
-#### `h2`
+==== `h1bg`
 
-```bash
-h2 ()
-{
+[source,bash]
+----
+h1bg () 
+{ 
+    box.white-on-blue "$@"
+}
+
+----
+
+==== `h2`
+
+[source,bash]
+----
+h2 () 
+{ 
     box.blue-in-green "$@"
 }
 
-```
+----
 
-#### `h2.green`
+==== `h2.green`
 
-```bash
-h2.green ()
-{
+[source,bash]
+----
+h2.green () 
+{ 
     box.green-in-cyan "$@"
 }
 
-```
+----
 
-#### `h3`
+==== `h2bg`
 
-```bash
-h3 ()
-{
-    hl.subtle "$@"
+[source,bash]
+----
+h2bg () 
+{ 
+    box.white-on-green "$@"
 }
 
-```
+----
 
-#### `hdr`
+==== `h3`
 
-```bash
-hdr ()
-{
+[source,bash]
+----
+h3 () 
+{ 
+    box.magenta-in-green "$@"
+}
+
+----
+
+==== `h3bg`
+
+[source,bash]
+----
+h3bg () 
+{ 
+    box.yellow-on-purple "$@"
+}
+
+----
+
+==== `h4`
+
+[source,bash]
+----
+h4 () 
+{ 
+    box.magenta-in-green "$@"
+}
+
+----
+
+==== `hdr`
+
+[source,bash]
+----
+hdr () 
+{ 
     h1 "$@"
 }
 
-```
+----
 
-#### `hl.blue`
+==== `hl.blue`
 
-```bash
-hl.blue ()
-{
+[source,bash]
+----
+hl.blue () 
+{ 
     left "${bldwht}${bakpur}" "$@"
 }
 
-```
+----
 
-#### `hl.desc`
+==== `hl.desc`
 
-```bash
-hl.desc ()
-{
+[source,bash]
+----
+hl.desc () 
+{ 
     left "${bakylw}${txtblk}${bakylw}" "$@"
 }
 
-```
+----
 
-#### `hl.green`
+==== `hl.green`
 
-```bash
-hl.green ()
-{
+[source,bash]
+----
+hl.green () 
+{ 
     left "${txtblk}${bakgrn}" "$@"
 }
 
-```
+----
 
-#### `hl.subtle`
+==== `hl.subtle`
 
-```bash
-hl.subtle ()
-{
+[source,bash]
+----
+hl.subtle () 
+{ 
     left "${bldwht}${bakblk}${underlined}" "$@"
 }
 
-```
+----
 
-#### `hl.yellow`
+==== `hl.yellow`
 
-```bash
-hl.yellow ()
-{
+[source,bash]
+----
+hl.yellow () 
+{ 
     left "${bakylw}${txtblk}" "$@"
 }
 
-```
+----
 
-#### `hl.yellow-on-gray`
+==== `hl.yellow-on-gray`
 
-```bash
-hl.yellow-on-gray ()
-{
+[source,bash]
+----
+hl.yellow-on-gray () 
+{ 
     left "${yellow_on_gray}" "$@"
 }
 
-```
+----
 
-#### `hr`
+==== `hr`
 
-```bash
-hr ()
-{
+[source,bash]
+----
+hr () 
+{ 
     [[ -z "$*" ]] || printf "$*";
     .output.hr
 }
 
-```
+----
 
-#### `hr.colored`
+==== `hr.colored`
 
-```bash
-hr.colored ()
-{
+[source,bash]
+----
+hr.colored () 
+{ 
     local color="$*";
     [[ -z ${color} ]] && color="${bldred}";
     .output.hr "$(screen-width)" "—" "${*}"
 }
 
-```
+----
 
-#### `inf`
+==== `inf`
 
-```bash
-inf ()
-{
+[source,bash]
+----
+inf () 
+{ 
     printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
 }
 
-```
+----
 
-#### `info`
+==== `info`
 
-```bash
-info ()
-{
+[source,bash]
+----
+info () 
+{ 
     inf $@;
     echo
 }
 
-```
+----
 
-#### `info:`
+==== `info:`
 
-```bash
-info: ()
-{
+[source,bash]
+----
+info: () 
+{ 
     inf $*;
     ui.closer.ok:
 }
 
-```
+----
 
-#### `left`
+==== `left`
 
-```bash
-left ()
-{
+[source,bash]
+----
+left () 
+{ 
     .output.left-justify "$@"
 }
 
-```
+----
 
-#### `left-prefix`
+==== `left-prefix`
 
-```bash
-left-prefix ()
-{
-    [[ -z ${LibOutput__LeftPrefix} ]] && {
+[source,bash]
+----
+left-prefix () 
+{ 
+    [[ -z ${LibOutput__LeftPrefix} ]] && { 
         export LibOutput__LeftPrefix=$(.output.replicate-to " " "${LibOutput__LeftPrefixLen}")
     };
     printf "${LibOutput__LeftPrefix}"
 }
 
-```
+----
 
-#### `not-ok`
+==== `not-ok`
 
-```bash
-not-ok ()
-{
+[source,bash]
+----
+not-ok () 
+{ 
     ui.closer.not-ok "$@"
 }
 
-```
+----
 
-#### `not-ok:`
+==== `not-ok:`
 
-```bash
-not-ok: ()
-{
+[source,bash]
+----
+not-ok: () 
+{ 
     ui.closer.not-ok: "$@"
 }
 
-```
+----
 
-#### `ok`
+==== `ok`
 
-```bash
-ok ()
-{
+[source,bash]
+----
+ok () 
+{ 
     ui.closer.ok "$@"
 }
 
-```
+----
 
-#### `ok:`
+==== `ok:`
 
-```bash
-ok: ()
-{
+[source,bash]
+----
+ok: () 
+{ 
     ui.closer.ok: "$@"
 }
 
-```
+----
 
-#### `okay`
+==== `okay`
 
-```bash
-okay ()
-{
+[source,bash]
+----
+okay () 
+{ 
     printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" 1>&2;
     echo
 }
 
-```
+----
 
-#### `output.color.off`
+==== `output.color.off`
 
-```bash
-output.color.off ()
-{
+[source,bash]
+----
+output.color.off () 
+{ 
     reset-color: 1>&2;
     reset-color: 1>&1
 }
 
-```
+----
 
-#### `output.color.on`
+==== `output.color.on`
 
-```bash
-output.color.on ()
-{
+[source,bash]
+----
+output.color.on () 
+{ 
     printf "${bldred}" 1>&2;
     printf "${bldblu}" 1>&1
 }
 
-```
+----
 
-#### `output.is-pipe`
+==== `output.is-pipe`
 
-```bash
-output.is-pipe ()
-{
+[source,bash]
+----
+output.is-pipe () 
+{ 
     [[ -p /dev/stdout ]]
 }
 
-```
+----
 
-#### `output.is-redirect`
+==== `output.is-redirect`
 
-```bash
-output.is-redirect ()
-{
+[source,bash]
+----
+output.is-redirect () 
+{ 
     [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 
-```
+----
 
-#### `output.is-ssh`
+==== `output.is-ssh`
 
-```bash
-output.is-ssh ()
-{
+[source,bash]
+----
+output.is-ssh () 
+{ 
     [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]
 }
 
-```
+----
 
-#### `output.is-terminal`
+==== `output.is-terminal`
 
-```bash
-output.is-terminal ()
-{
+[source,bash]
+----
+output.is-terminal () 
+{ 
     output.is-tty || output.is-redirect || output.is-pipe || output.is-ssh
 }
 
-```
+----
 
-#### `output.is-tty`
+==== `output.is-tty`
 
-```bash
-output.is-tty ()
-{
+[source,bash]
+----
+output.is-tty () 
+{ 
     [[ -t 1 ]]
 }
 
-```
+----
 
-#### `output.print-at-x-y`
+==== `output.print-at-x-y`
 
-```bash
-output.print-at-x-y ()
-{
+[source,bash]
+----
+output.print-at-x-y () 
+{ 
     local x=$1;
     shift;
     local y=$1;
@@ -4938,104 +4898,114 @@ output.print-at-x-y ()
     .output.cursor-move-to-x 0
 }
 
-```
+----
 
-#### `output.reset-min-max-width`
+==== `output.reset-min-max-width`
 
-```bash
-output.reset-min-max-width ()
-{
+[source,bash]
+----
+output.reset-min-max-width () 
+{ 
     export LibOutput__MinWidth=${LibOutput__MinWidth__Default};
     export LibOutput__MaxWidth=${LibOutput__MaxWidth__Default}
 }
 
-```
+----
 
-#### `output.set-max-width`
+==== `output.set-max-width`
 
-```bash
-output.set-max-width ()
-{
+[source,bash]
+----
+output.set-max-width () 
+{ 
     export LibOutput__MaxWidth="$1"
 }
 
-```
+----
 
-#### `output.set-min-width`
+==== `output.set-min-width`
 
-```bash
-output.set-min-width ()
-{
+[source,bash]
+----
+output.set-min-width () 
+{ 
     export LibOutput__MinWidth="$1"
 }
 
-```
+----
 
-#### `puts`
+==== `puts`
 
-```bash
-puts ()
-{
+[source,bash]
+----
+puts () 
+{ 
     printf "  ⇨ ${txtwht}$*${clr}"
 }
 
-```
+----
 
-#### `reset-color`
+==== `reset-color`
 
-```bash
-reset-color ()
-{
+[source,bash]
+----
+reset-color () 
+{ 
     printf "${clr}\n"
 }
 
-```
+----
 
-#### `reset-color:`
+==== `reset-color:`
 
-```bash
-reset-color: ()
-{
+[source,bash]
+----
+reset-color: () 
+{ 
     printf "${clr}"
 }
 
-```
+----
 
-#### `screen-width`
+==== `screen-width`
 
-```bash
-screen-width ()
-{
+[source,bash]
+----
+screen-width () 
+{ 
     .output.screen-width
 }
 
-```
+----
 
-#### `screen.height`
+==== `screen.height`
 
-```bash
-screen.height ()
-{
+[source,bash]
+----
+screen.height () 
+{ 
     .output.screen-height
 }
 
-```
+----
 
-#### `screen.width`
+==== `screen.width`
 
-```bash
-screen.width ()
-{
+[source,bash]
+----
+screen.width () 
+{ 
     .output.screen-width
 }
 
-```
+----
 
-#### `shutdown`
+==== `shutdown`
 
-```bash
-shutdown ()
-{
+[source,bash]
+----
+shutdown () 
+{ 
     local message=${1:-"Shutting down..."};
     echo;
     box.red-in-red "${message}";
@@ -5043,13 +5013,14 @@ shutdown ()
     exit 1
 }
 
-```
+----
 
-#### `stderr`
+==== `stderr`
 
-```bash
-stderr ()
-{
+[source,bash]
+----
+stderr () 
+{ 
     local file=$1;
     hl.subtle STDERR;
     printf "${txtred}";
@@ -5057,13 +5028,14 @@ stderr ()
     reset-color
 }
 
-```
+----
 
-#### `stdout`
+==== `stdout`
 
-```bash
-stdout ()
-{
+[source,bash]
+----
+stdout () 
+{ 
     local file=$1;
     hl.subtle STDOUT;
     printf "${clr}";
@@ -5071,184 +5043,195 @@ stdout ()
     reset-color
 }
 
-```
+----
 
-#### `success`
+==== `success`
 
-```bash
-success ()
-{
+[source,bash]
+----
+success () 
+{ 
     echo;
     printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2;
     echo;
     echo
 }
 
-```
+----
 
-#### `test-group`
+==== `test-group`
 
-```bash
-test-group ()
-{
+[source,bash]
+----
+test-group () 
+{ 
     [[ -z ${white_on_salmon} ]] && hr;
     h.salmon "$@"
 }
 
-```
+----
 
-#### `ui.closer.kind-of-ok`
+==== `ui.closer.kind-of-ok`
 
-```bash
-ui.closer.kind-of-ok ()
-{
+[source,bash]
+----
+ui.closer.kind-of-ok () 
+{ 
     .output.cursor-left-by 1000;
     printf " ${bakylw}${bldwht} ❖ ${clr} "
 }
 
-```
+----
 
-#### `ui.closer.kind-of-ok:`
+==== `ui.closer.kind-of-ok:`
 
-```bash
-ui.closer.kind-of-ok: ()
-{
+[source,bash]
+----
+ui.closer.kind-of-ok: () 
+{ 
     ui.closer.kind-of-ok $@;
     echo
 }
 
-```
+----
 
-#### `ui.closer.not-ok`
+==== `ui.closer.not-ok`
 
-```bash
-ui.closer.not-ok ()
-{
+[source,bash]
+----
+ui.closer.not-ok () 
+{ 
     .output.cursor-left-by 1000;
     printf " ${bakred}${bldwht} ✘ ${clr} "
 }
 
-```
+----
 
-#### `ui.closer.not-ok:`
+==== `ui.closer.not-ok:`
 
-```bash
-ui.closer.not-ok: ()
-{
+[source,bash]
+----
+ui.closer.not-ok: () 
+{ 
     ui.closer.not-ok $@;
     echo
 }
 
-```
+----
 
-#### `ui.closer.ok`
+==== `ui.closer.ok`
 
-```bash
-ui.closer.ok ()
-{
+[source,bash]
+----
+ui.closer.ok () 
+{ 
     .output.cursor-left-by 1000;
     printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
 }
 
-```
+----
 
-#### `ui.closer.ok:`
+==== `ui.closer.ok:`
 
-```bash
-ui.closer.ok: ()
-{
+[source,bash]
+----
+ui.closer.ok: () 
+{ 
     ui.closer.ok "$@";
     echo
 }
 
-```
+----
 
-#### `warn`
+==== `warn`
 
-```bash
-warn ()
-{
+[source,bash]
+----
+warn () 
+{ 
     printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" 1>&2
 }
 
-```
+----
 
-#### `warning`
+==== `warning`
 
-```bash
-warning ()
-{
+[source,bash]
+----
+warning () 
+{ 
     header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}");
     local first="$1";
     shift;
     box.yellow-in-yellow "${header} ${bldylw}$first" "$@" 1>&2
 }
 
-```
+----
 
-#### `warning:`
+==== `warning:`
 
-```bash
-warning: ()
-{
+[source,bash]
+----
+warning: () 
+{ 
     warn $*;
     ui.closer.kind-of-ok:
 }
 
-```
+----
 
 
----
+=== Module `pids`
 
+==== `pall`
 
-### Module `pids`
-
-#### `pall`
-
-```bash
-pall ()
-{
+[source,bash]
+----
+pall () 
+{ 
     pids.all "$@"
 }
 
-```
+----
 
-#### `pid.alive`
+==== `pid.alive`
 
-```bash
-pid.alive ()
-{
+[source,bash]
+----
+pid.alive () 
+{ 
     local pid="$1";
-    util.is-numeric || {
+    util.is-numeric || { 
         error "First argument to pid.alive must be numeric.";
         return 1
     };
     [[ -n "${pid}" && -n $(ps -p "${pid}" | grep -v TTY) ]]
 }
 
-```
+----
 
-#### `pid.sig`
+==== `pid.sig`
 
-```bash
-pid.sig ()
-{
+[source,bash]
+----
+pid.sig () 
+{ 
     local pid="${1}";
     shift;
     local signal="${1}";
     shift;
-    [[ -z "${pid}" || -z "${signal}" ]] && {
+    [[ -z "${pid}" || -z "${signal}" ]] && { 
         printf "
 USAGE:
   pid.sig pid signal
 ";
         return 1
     };
-    util.is-numeric ${pid} || {
+    util.is-numeric ${pid} || { 
         error "First argument to pid.sig must be numeric.";
         return 1
     };
-    util.is-numeric ${signal} || sig.is-valid ${signal} || {
+    util.is-numeric ${signal} || sig.is-valid ${signal} || { 
         error "First argument to pid.sig must be numeric.";
         return 1
     };
@@ -5261,13 +5244,14 @@ USAGE:
     fi
 }
 
-```
+----
 
-#### `pid.stop`
+==== `pid.stop`
 
-```bash
-pid.stop ()
-{
+[source,bash]
+----
+pid.stop () 
+{ 
     local pid=${1};
     shift;
     local delay=${1:-"0.3"};
@@ -5291,13 +5275,38 @@ EXAMPLES:
     pid.alive "${pid}" && pid.sig "${pid}" "KILL"
 }
 
-```
+----
 
-#### `pids-with-args`
+==== `pid.stop-and-kill`
 
-```bash
-pids-with-args ()
-{
+[source,bash]
+----
+pid.stop-and-kill () 
+{ 
+    local pid="$1";
+    delta=1;
+    sig=STOP;
+    while true; do
+        pid.alive $pid || return 0;
+        kill -${sig} ${pid} 2>&1 > /dev/null;
+        delta=$(( delta * 2));
+        [[ ${delta} -gt 16 ]] && sig="KILL";
+        sleep "0.${delta}";
+    done;
+    pid.alive $pid && { 
+        error "PID ${pid} is miraculously still alive..." 1>&2;
+        return 1
+    }
+}
+
+----
+
+==== `pids-with-args`
+
+[source,bash]
+----
+pids-with-args () 
+{ 
     local -a permitted=("%cpu" "%mem" acflag acflg args blocked caught comm command cpu cputime etime f flags gid group ignored inblk inblock jobc ktrace ktracep lim login logname lstart majflt minflt msgrcv msgsnd ni nice nivcsw nsignals nsigs nswap nvcsw nwchan oublk oublock p_ru paddr pagein pcpu pending pgid pid pmem ppid pri pstime putime re rgid rgroup rss ruid ruser sess sig sigmask sl start stat state stime svgid svuid tdev time tpgid tsess tsiz tt tty ucomm uid upr user usrpri utime vsize vsz wchan wq wqb wql wqr xstat);
     local -a additional=();
     local -a matching=();
@@ -5313,13 +5322,14 @@ pids-with-args ()
     pids.matching.regexp "${matching[*]}" | xargs /bin/ps -www -o"${columns}" -p
 }
 
-```
+----
 
-#### `pids.all`
+==== `pids.all`
 
-```bash
-pids.all ()
-{
+[source,bash]
+----
+pids.all () 
+{ 
     if [[ -z "${1}" ]]; then
         printf "
 DESCRIPTION:
@@ -5338,13 +5348,14 @@ EXAMPLES:
     ps -ef | egrep "${pattern}" | egrep -v grep
 }
 
-```
+----
 
-#### `pids.for-each`
+==== `pids.for-each`
 
-```bash
-pids.for-each ()
-{
+[source,bash]
+----
+pids.for-each () 
+{ 
     if [[ -z "${1}" || -z "${2}" ]]; then
         printf "
 DESCRIPTION:
@@ -5374,13 +5385,14 @@ EXAMPLES:
     done
 }
 
-```
+----
 
-#### `pids.matching`
+==== `pids.matching`
 
-```bash
-pids.matching ()
-{
+[source,bash]
+----
+pids.matching () 
+{ 
     local pattern="${1}";
     if [[ -z "${pattern}" ]]; then
         printf "
@@ -5399,13 +5411,14 @@ EXAMPLES:
     pids.matching.regexp "${pattern}"
 }
 
-```
+----
 
-#### `pids.matching.regexp`
+==== `pids.matching.regexp`
 
-```bash
-pids.matching.regexp ()
-{
+[source,bash]
+----
+pids.matching.regexp () 
+{ 
     local pattern="${1}";
     if [[ -z "${pattern}" ]]; then
         printf "
@@ -5423,25 +5436,27 @@ EXAMPLES:
     ps -ef | egrep "${pattern}" | egrep -v grep | awk '{print $2}' | sort -n
 }
 
-```
+----
 
-#### `pids.normalize.search-string`
+==== `pids.normalize.search-string`
 
-```bash
-pids.normalize.search-string ()
-{
+[source,bash]
+----
+pids.normalize.search-string () 
+{ 
     local pattern="$*";
     [[ "${pattern:0:1}" == '[' ]] || pattern="[${pattern:0:1}]${pattern:1}";
     printf "${pattern}"
 }
 
-```
+----
 
-#### `pids.stop`
+==== `pids.stop`
 
-```bash
-pids.stop ()
-{
+[source,bash]
+----
+pids.stop () 
+{ 
     if [[ -z "${1}" ]]; then
         printf "
 DESCRIPTION:
@@ -5458,49 +5473,50 @@ EXAMPLES:
     pids.for-each "${1}" "pid.stop"
 }
 
-```
+----
 
-#### `pstop`
+==== `pstop`
 
-```bash
-pstop ()
-{
+[source,bash]
+----
+pstop () 
+{ 
     pids.stop "$@"
 }
 
-```
+----
 
-#### `sig.is-valid`
+==== `sig.is-valid`
 
-```bash
-sig.is-valid ()
-{
+[source,bash]
+----
+sig.is-valid () 
+{ 
     [[ -n $(kill -l ${1} 2>/dev/null) ]]
 }
 
-```
+----
 
-#### `sig.list`
+==== `sig.list`
 
-```bash
-sig.list ()
-{
+[source,bash]
+----
+sig.list () 
+{ 
     /bin/kill -l | sed -E 's/([ 0-9][0-9]\) SIG)//g; s/\s+/\n/g' | tr 'a-z' 'A-Z' | sort
 }
 
-```
+----
 
 
----
+=== Module `progress-bar`
 
+==== `progress.bar.auto-run`
 
-### Module `progress-bar`
-
-#### `progress.bar.auto-run`
-
-```bash
-progress.bar.auto-run ()
-{
+[source,bash]
+----
+progress.bar.auto-run () 
+{ 
     .progress.reset;
     .progress.bar "$@";
     code=$?;
@@ -5511,13 +5527,14 @@ progress.bar.auto-run ()
     return 0
 }
 
-```
+----
 
-#### `progress.bar.config`
+==== `progress.bar.config`
 
-```bash
-progress.bar.config ()
-{
+[source,bash]
+----
+progress.bar.config () 
+{ 
     while true; do
         local setting="$1";
         shift;
@@ -5528,83 +5545,91 @@ progress.bar.config ()
     done
 }
 
-```
+----
 
-#### `progress.bar.configure.color-green`
+==== `progress.bar.configure.color-green`
 
-```bash
-progress.bar.configure.color-green ()
-{
+[source,bash]
+----
+progress.bar.configure.color-green () 
+{ 
     progress.bar.config BarColor=${bldgrn}
 }
 
-```
+----
 
-#### `progress.bar.configure.color-red`
+==== `progress.bar.configure.color-red`
 
-```bash
-progress.bar.configure.color-red ()
-{
+[source,bash]
+----
+progress.bar.configure.color-red () 
+{ 
     progress.bar.config BarColor=${bldred}
 }
 
-```
+----
 
-#### `progress.bar.configure.color-yellow`
+==== `progress.bar.configure.color-yellow`
 
-```bash
-progress.bar.configure.color-yellow ()
-{
+[source,bash]
+----
+progress.bar.configure.color-yellow () 
+{ 
     progress.bar.config BarColor=${bldylw}
 }
 
-```
+----
 
-#### `progress.bar.configure.symbol-arrow`
+==== `progress.bar.configure.symbol-arrow`
 
-```bash
-progress.bar.configure.symbol-arrow ()
-{
+[source,bash]
+----
+progress.bar.configure.symbol-arrow () 
+{ 
     progress.bar.config BarChar="❯"
 }
 
-```
+----
 
-#### `progress.bar.configure.symbol-bar`
+==== `progress.bar.configure.symbol-bar`
 
-```bash
-progress.bar.configure.symbol-bar ()
-{
+[source,bash]
+----
+progress.bar.configure.symbol-bar () 
+{ 
     progress.bar.config BarChar="█"
 }
 
-```
+----
 
-#### `progress.bar.configure.symbol-block`
+==== `progress.bar.configure.symbol-block`
 
-```bash
-progress.bar.configure.symbol-block ()
-{
+[source,bash]
+----
+progress.bar.configure.symbol-block () 
+{ 
     progress.bar.config BarChar="${LibProgress__BarChar__Default}"
 }
 
-```
+----
 
-#### `progress.bar.configure.symbol-square`
+==== `progress.bar.configure.symbol-square`
 
-```bash
-progress.bar.configure.symbol-square ()
-{
+[source,bash]
+----
+progress.bar.configure.symbol-square () 
+{ 
     progress.bar.config BarChar="◼︎"
 }
 
-```
+----
 
-#### `progress.bar.launch-and-wait`
+==== `progress.bar.launch-and-wait`
 
-```bash
-progress.bar.launch-and-wait ()
-{
+[source,bash]
+----
+progress.bar.launch-and-wait () 
+{ 
     local command="$*";
     run.print-command "${command}\n";
     ${command} > /dev/null 2>&1 & local pid=$!;
@@ -5617,46 +5642,46 @@ progress.bar.launch-and-wait ()
     return 0
 }
 
-```
+----
 
 
----
+=== Module `repositories`
 
+==== `repo.rebase`
 
-### Module `repositories`
-
-#### `repo.rebase`
-
-```bash
-repo.rebase ()
-{
+[source,bash]
+----
+repo.rebase () 
+{ 
     run "git pull origin master --rebase"
 }
 
-```
+----
 
-#### `repo.stash-and-rebase`
+==== `repo.stash-and-rebase`
 
-```bash
-repo.stash-and-rebase ()
-{
+[source,bash]
+----
+repo.stash-and-rebase () 
+{ 
     run "git stash >/dev/null";
     run "git reset --hard";
     repo.rebase
 }
 
-```
+----
 
-#### `repo.update`
+==== `repo.update`
 
-```bash
-repo.update ()
-{
+[source,bash]
+----
+repo.update () 
+{ 
     local folder="$1";
     h2 "Entering repo ► ${bldgren}${folder}";
     [[ -d "${folder}" ]] || return 1;
     [[ -d "${folder}/.git" ]] || return 1;
-    [[ "$(pwd)" != "${folder}" ]] && {
+    [[ "$(pwd)" != "${folder}" ]] && { 
         cd "${folder}" || return 2
     };
     if [[ -z "$(git status -s)" ]]; then
@@ -5666,34 +5691,37 @@ repo.update ()
     fi
 }
 
-```
+----
 
-#### `repos.catch-interrupt`
+==== `repos.catch-interrupt`
 
-```bash
-repos.catch-interrupt ()
-{
+[source,bash]
+----
+repos.catch-interrupt () 
+{ 
     export LibRepo__Interrupted=true
 }
 
-```
+----
 
-#### `repos.init-interrupt`
+==== `repos.init-interrupt`
 
-```bash
-repos.init-interrupt ()
-{
+[source,bash]
+----
+repos.init-interrupt () 
+{ 
     export LibRepo__Interrupted=false;
     trap 'repos.catch-interrupt' SIGINT
 }
 
-```
+----
 
-#### `repos.recursive-update`
+==== `repos.recursive-update`
 
-```bash
-repos.recursive-update ()
-{
+[source,bash]
+----
+repos.recursive-update () 
+{ 
     local repo="${1}";
     run.set-all show-output-off;
     if [[ ${LibRepo__Interrupted} == true ]]; then
@@ -5720,13 +5748,14 @@ repos.recursive-update ()
     fi
 }
 
-```
+----
 
-#### `repos.update`
+==== `repos.update`
 
-```bash
-repos.update ()
-{
+[source,bash]
+----
+repos.update () 
+{ 
     export root_folder="$(pwd)";
     bash -c "
     [[ -d ~/.bashmatic ]] || {
@@ -5739,62 +5768,64 @@ repos.update ()
   "
 }
 
-```
+----
 
-#### `repos.was-interrupted`
+==== `repos.was-interrupted`
 
-```bash
-repos.was-interrupted ()
-{
+[source,bash]
+----
+repos.was-interrupted () 
+{ 
     [[ ${LibRepo__Interrupted} == true ]]
 }
 
-```
+----
 
 
----
+=== Module `ruby`
 
+==== `bundle.gems-with-c-extensions`
 
-### Module `ruby`
-
-#### `bundle.gems-with-c-extensions`
-
-```bash
-bundle.gems-with-c-extensions ()
-{
+[source,bash]
+----
+bundle.gems-with-c-extensions () 
+{ 
     run.set-next show-output-on;
     run "bundle show --paths | ruby -e \"STDIN.each_line {|dep| puts dep.split('/').last if File.directory?(File.join(dep.chomp, 'ext')) }\""
 }
 
-```
+----
 
-#### `interrupted`
+==== `interrupted`
 
-```bash
-interrupted ()
-{
+[source,bash]
+----
+interrupted () 
+{ 
     export BashMatic__Interrupted=true
 }
 
-```
+----
 
-#### `ruby.bundle-install`
+==== `ruby.bundle-install`
 
-```bash
-ruby.bundle-install ()
-{
+[source,bash]
+----
+ruby.bundle-install () 
+{ 
     if [[ -f Gemfile.lock ]]; then
         run "bundle install";
     fi
 }
 
-```
+----
 
-#### `ruby.bundler-version`
+==== `ruby.bundler-version`
 
-```bash
-ruby.bundler-version ()
-{
+[source,bash]
+----
+ruby.bundler-version () 
+{ 
     if [[ ! -f Gemfile.lock ]]; then
         error "Can not find Gemfile.lock";
         return 1;
@@ -5802,13 +5833,14 @@ ruby.bundler-version ()
     tail -1 Gemfile.lock | sedx 's/ //g'
 }
 
-```
+----
 
-#### `ruby.compiled-with`
+==== `ruby.compiled-with`
 
-```bash
-ruby.compiled-with ()
-{
+[source,bash]
+----
+ruby.compiled-with () 
+{ 
     if [[ -z "$*" ]]; then
         error "usage: ruby.compiled-with <library>";
         return 1;
@@ -5816,35 +5848,38 @@ ruby.compiled-with ()
     ruby -r rbconfig -e "puts RbConfig.CONFIG['LIBS']" | grep -q "$*"
 }
 
-```
+----
 
-#### `ruby.default-gems`
+==== `ruby.default-gems`
 
-```bash
-ruby.default-gems ()
-{
+[source,bash]
+----
+ruby.default-gems () 
+{ 
     declare -a DEFAULT_RUBY_GEMS=(bundler rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools);
     export DEFAULT_RUBY_GEMS;
     printf "${DEFAULT_RUBY_GEMS[*]}"
 }
 
-```
+----
 
-#### `ruby.full-version`
+==== `ruby.full-version`
 
-```bash
-ruby.full-version ()
-{
+[source,bash]
+----
+ruby.full-version () 
+{ 
     /usr/bin/env ruby --version
 }
 
-```
+----
 
-#### `ruby.gemfile-lock-version`
+==== `ruby.gemfile-lock-version`
 
-```bash
-ruby.gemfile-lock-version ()
-{
+[source,bash]
+----
+ruby.gemfile-lock-version () 
+{ 
     local gem=${1};
     if [[ ! -f Gemfile.lock ]]; then
         error "Can not find Gemfile.lock";
@@ -5853,28 +5888,30 @@ ruby.gemfile-lock-version ()
     egrep " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
 }
 
-```
+----
 
-#### `ruby.gems`
+==== `ruby.gems`
 
-```bash
-ruby.gems ()
-{
+[source,bash]
+----
+ruby.gems () 
+{ 
     ruby.gems.install "$@"
 }
 
-```
+----
 
-#### `ruby.gems.install`
+==== `ruby.gems.install`
 
-```bash
-ruby.gems.install ()
-{
+[source,bash]
+----
+ruby.gems.install () 
+{ 
     local -a gems=($@);
     gem.clear-cache;
     [[ ${#gems[@]} -eq 0 ]] && gems=($(ruby.default-gems));
     local -a existing=($(ruby.installed-gems));
-    [[ ${#gems[@]} -eq 0 ]] && {
+    [[ ${#gems[@]} -eq 0 ]] && { 
         error 'Unable to determine what gems to install. ' "Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" "USAGE: ${bldgrn}ruby.gems ${bldred} rails rubocop puma pry";
         return 1
     };
@@ -5913,18 +5950,19 @@ ruby.gems.install ()
     echo
 }
 
-```
+----
 
-#### `ruby.gems.uninstall`
+==== `ruby.gems.uninstall`
 
-```bash
-ruby.gems.uninstall ()
-{
+[source,bash]
+----
+ruby.gems.uninstall () 
+{ 
     local -a gems=($@);
     gem.clear-cache;
     [[ ${#gems[@]} -eq 0 ]] && declare -a gems=($(ruby.default-gems));
     local -a existing=($(ruby.installed-gems));
-    [[ ${#gems[@]} -eq 0 ]] && {
+    [[ ${#gems[@]} -eq 0 ]] && { 
         error "Unable to determine what gems to remove. Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" "USAGE: ${bldgrn}ruby.gems.uninstall ${bldred} rails rubocop puma pry";
         return 1
     };
@@ -5947,13 +5985,14 @@ ruby.gems.uninstall ()
     echo
 }
 
-```
+----
 
-#### `ruby.init`
+==== `ruby.init`
 
-```bash
-ruby.init ()
-{
+[source,bash]
+----
+ruby.init () 
+{ 
     h1 "Installing Critical Gems for Your Glove, Thanos...";
     ruby.rubygems-update;
     ruby.install-upgrade-bundler;
@@ -5961,23 +6000,25 @@ ruby.init ()
     ruby.kigs-gems
 }
 
-```
+----
 
-#### `ruby.install`
+==== `ruby.install`
 
-```bash
-ruby.install ()
-{
+[source,bash]
+----
+ruby.install () 
+{ 
     ruby.install-ruby "$@"
 }
 
-```
+----
 
-#### `ruby.install-ruby`
+==== `ruby.install-ruby`
 
-```bash
-ruby.install-ruby ()
-{
+[source,bash]
+----
+ruby.install-ruby () 
+{ 
     local version="$1";
     shift;
     local version_source="provided as an argument";
@@ -5985,7 +6026,7 @@ ruby.install-ruby ()
         version="$(cat .ruby-version | tr -d '\n')";
         version_source="auto-detected from .ruby-version file";
     fi;
-    [[ -z ${version} ]] && {
+    [[ -z ${version} ]] && { 
         error "USAGE: ruby.install-ruby VERSION" "Or, you can create a local .ruby-version file";
         return 1
     };
@@ -6005,98 +6046,106 @@ ruby.install-ruby ()
     return "${LibRun__LastExitCode:-"0"}"
 }
 
-```
+----
 
-#### `ruby.install-ruby-with-deps`
+==== `ruby.install-ruby-with-deps`
 
-```bash
-ruby.install-ruby-with-deps ()
-{
+[source,bash]
+----
+ruby.install-ruby-with-deps () 
+{ 
     local version="$1";
     declare -a packages=(cask bash bash-completion git go haproxy htop jemalloc libxslt jq libiconv libzip netcat nginx openssl pcre pstree p7zip rbenv redis ruby_build tree vim watch wget zlib);
     run.set-next show-output-on;
     run "brew install --display-times ${packages[*]}"
 }
 
-```
+----
 
-#### `ruby.install-ruby-with-jemalloc`
+==== `ruby.install-ruby-with-jemalloc`
 
-```bash
-ruby.install-ruby-with-jemalloc ()
-{
+[source,bash]
+----
+ruby.install-ruby-with-jemalloc () 
+{ 
     export RUBY_CONFIGURE_OPTS="--with-jemalloc";
     ruby.install-ruby "$1" jemalloc
 }
 
-```
+----
 
-#### `ruby.install-upgrade-bundler`
+==== `ruby.install-upgrade-bundler`
 
-```bash
-ruby.install-upgrade-bundler ()
-{
+[source,bash]
+----
+ruby.install-upgrade-bundler () 
+{ 
     gem.install bundler;
     run "bundle --update bundler || true"
 }
 
-```
+----
 
-#### `ruby.installed-gems`
+==== `ruby.installed-gems`
 
-```bash
-ruby.installed-gems ()
-{
+[source,bash]
+----
+ruby.installed-gems () 
+{ 
     gem list | cut -d ' ' -f 1 | uniq
 }
 
-```
+----
 
-#### `ruby.kigs-gems`
+==== `ruby.kigs-gems`
 
-```bash
-ruby.kigs-gems ()
-{
+[source,bash]
+----
+ruby.kigs-gems () 
+{ 
     if [[ -z $(type wd 2>/dev/null) && -n $(command -v warp-dir) ]]; then
-        [[ -f ~/.bash_wd ]] || {
+        [[ -f ~/.bash_wd ]] || { 
             warp-dir install --dotfile ~/.bashrc > /dev/null;
             source ~/.bash_wd
         };
     fi;
-    [[ -n $(command -v sym) ]] && {
-        [[ -f ~/.sym.completion.bash ]] || {
+    [[ -n $(command -v sym) ]] && { 
+        [[ -f ~/.sym.completion.bash ]] || { 
             sym -B ~/.bashrc
         }
     }
 }
 
-```
+----
 
-#### `ruby.linked-libs`
+==== `ruby.linked-libs`
 
-```bash
-ruby.linked-libs ()
-{
+[source,bash]
+----
+ruby.linked-libs () 
+{ 
     ruby -r rbconfig -e "puts RbConfig.CONFIG['LIBS']"
 }
 
-```
+----
 
-#### `ruby.numeric-version`
+==== `ruby.numeric-version`
 
-```bash
-ruby.numeric-version ()
-{
+[source,bash]
+----
+ruby.numeric-version () 
+{ 
     /usr/bin/env ruby --version | sed 's/^ruby //g; s/ (.*//g'
 }
 
-```
+----
 
-#### `ruby.rbenv`
+==== `ruby.rbenv`
 
-```bash
-ruby.rbenv ()
-{
+[source,bash]
+----
+ruby.rbenv () 
+{ 
     if [[ -n "$*" ]]; then
         rbenv $*;
     else
@@ -6105,28 +6154,31 @@ ruby.rbenv ()
     run "rbenv rehash"
 }
 
-```
+----
 
-#### `ruby.rubygems-update`
+==== `ruby.rubygems-update`
 
-```bash
-ruby.rubygems-update ()
-{
-    info "This might take a little white, darling. Smoke a spliff, would you?";
+[source,bash]
+----
+ruby.rubygems-update () 
+{ 
+    info "Updating RubyGems...";
+    run.set-next show-output-on;
     run "gem update --system";
     gem.clear-cache
 }
 
-```
+----
 
-#### `ruby.stop`
+==== `ruby.stop`
 
-```bash
-ruby.stop ()
-{
+[source,bash]
+----
+ruby.stop () 
+{ 
     local regex='/[r]uby| [p]uma| [i]rb| [r]ails | [b]undle| [u]nicorn| [r]ake';
     local procs=$(ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | wc -l);
-    [[ ${procs} -eq 0 ]] && {
+    [[ ${procs} -eq 0 ]] && { 
         info: "No ruby processes were found.";
         return 0
     };
@@ -6141,13 +6193,14 @@ ruby.stop ()
     ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
 }
 
-```
+----
 
-#### `ruby.top-versions`
+==== `ruby.top-versions`
 
-```bash
-ruby.top-versions ()
-{
+[source,bash]
+----
+ruby.top-versions () 
+{ 
     local platform="${1:-"2\."}";
     rbenv install --list | egrep "^${platform}" | ruby -e '
       last_v = nil;
@@ -6163,61 +6216,62 @@ ruby.top-versions ()
       puts last_m if last_m'
 }
 
-```
+----
 
-#### `ruby.top-versions-as-yaml`
+==== `ruby.top-versions-as-yaml`
 
-```bash
-ruby.top-versions-as-yaml ()
-{
+[source,bash]
+----
+ruby.top-versions-as-yaml () 
+{ 
     ruby.top-versions | sed 's/^/ - /g'
 }
 
-```
+----
 
-#### `ruby.validate-version`
+==== `ruby.validate-version`
 
-```bash
-ruby.validate-version ()
-{
+[source,bash]
+----
+ruby.validate-version () 
+{ 
     local version="$1";
     local -a ruby_versions=();
     run "brew upgrade ruby-build || true";
-    [[ -d ~/.rbenv/plugins/ruby-build ]] && {
+    [[ -d ~/.rbenv/plugins/ruby-build ]] && { 
         run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
     };
     array.from.stdin ruby_versions 'rbenv install --list | sed -E "s/\s+//g"';
-    array.includes "${version}" "${ruby_versions[@]}" || {
+    array.includes "${version}" "${ruby_versions[@]}" || { 
         error "Ruby Version provided was found by rbenv: ${bldylw}${version}";
         return 1
     };
     return 0
 }
 
-```
+----
 
 
----
+=== Module `run`
 
+==== `run`
 
-### Module `run`
-
-#### `run`
-
-```bash
-run ()
-{
+[source,bash]
+----
+run () 
+{ 
     .run "$@";
     return ${LibRun__LastExitCode}
 }
 
-```
+----
 
-#### `run.ui.ask`
+==== `run.ui.ask`
 
-```bash
-run.ui.ask ()
-{
+[source,bash]
+----
+run.ui.ask () 
+{ 
     local question=$*;
     local func="${LibRun__AskDeclineFunction}";
     export LibRun__AskDeclineFunction="${LibRun__AskDeclineFunction__Default}";
@@ -6243,13 +6297,14 @@ run.ui.ask ()
     fi
 }
 
-```
+----
 
-#### `run.ui.ask-user-value`
+==== `run.ui.ask-user-value`
 
-```bash
-run.ui.ask-user-value ()
-{
+[source,bash]
+----
+run.ui.ask-user-value () 
+{ 
     local variable="$1";
     shift;
     local text="$*";
@@ -6266,23 +6321,25 @@ run.ui.ask-user-value ()
     fi
 }
 
-```
+----
 
-#### `run.ui.get-user-value`
+==== `run.ui.get-user-value`
 
-```bash
-run.ui.get-user-value ()
-{
+[source,bash]
+----
+run.ui.get-user-value () 
+{ 
     run.ui.retry-command run.ui.ask-user-value "${@}"
 }
 
-```
+----
 
-#### `run.ui.press-any-key`
+==== `run.ui.press-any-key`
 
-```bash
-run.ui.press-any-key ()
-{
+[source,bash]
+----
+run.ui.press-any-key () 
+{ 
     local prompt="$*";
     [[ -z ${prompt} ]] && prompt="Press any key to continue...";
     br;
@@ -6295,13 +6352,14 @@ run.ui.press-any-key ()
     echo
 }
 
-```
+----
 
-#### `run.ui.retry-command`
+==== `run.ui.retry-command`
 
-```bash
-run.ui.retry-command ()
-{
+[source,bash]
+----
+run.ui.retry-command () 
+{ 
     local command="$*";
     local retries=5;
     n=0;
@@ -6313,19 +6371,17 @@ run.ui.retry-command ()
     done
 }
 
-```
+----
 
 
----
+=== Module `runtime-config`
 
+==== `run.inspect`
 
-### Module `runtime-config`
-
-#### `run.inspect`
-
-```bash
-run.inspect ()
-{
+[source,bash]
+----
+run.inspect () 
+{ 
     if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
         run.inspect-variables-that-are starting-with LibRun;
     fi;
@@ -6342,90 +6398,119 @@ run.inspect ()
     reset-color
 }
 
-```
+----
 
-#### `run.set-all`
+==== `run.set-all`
 
-```bash
-run.set-all ()
-{
+[source,bash]
+----
+run.set-all () 
+{ 
     ____run.configure all "$@"
 }
 
-```
+----
 
-#### `run.set-all.list`
+==== `run.set-all.list`
 
-```bash
-run.set-all.list ()
-{
+[source,bash]
+----
+run.set-all.list () 
+{ 
     set | egrep '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
-```
+----
 
-#### `run.set-next`
+==== `run.set-next`
 
-```bash
-run.set-next ()
-{
+[source,bash]
+----
+run.set-next () 
+{ 
     ____run.configure next "$@"
 }
 
-```
+----
 
-#### `run.set-next.list`
+==== `run.set-next.list`
 
-```bash
-run.set-next.list ()
-{
+[source,bash]
+----
+run.set-next.list () 
+{ 
     set | egrep '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
-```
+----
 
 
----
+=== Module `runtime`
 
+==== `run`
 
-### Module `runtime`
-
-#### `run`
-
-```bash
-run ()
-{
+[source,bash]
+----
+run () 
+{ 
     .run "$@";
     return ${LibRun__LastExitCode}
 }
 
-```
+----
 
-#### `run.config.detail-is-enabled`
+==== `run.config.detail-is-enabled`
 
-```bash
-run.config.detail-is-enabled ()
-{
+[source,bash]
+----
+run.config.detail-is-enabled () 
+{ 
     [[ ${LibRun__Detail} -eq ${True} ]]
 }
 
-```
+----
 
-#### `run.config.verbose-is-enabled`
+==== `run.config.is-dry-run`
 
-```bash
-run.config.verbose-is-enabled ()
-{
+[source,bash]
+----
+run.config.is-dry-run () 
+{ 
+    [[ ${LibRun__DryRun} -eq ${True} ]]
+}
+
+----
+
+==== `run.config.verbose-is-enabled`
+
+[source,bash]
+----
+run.config.verbose-is-enabled () 
+{ 
     [[ ${LibRun__Verbose} -eq ${True} ]]
 }
 
-```
+----
 
-#### `run.inspect`
+==== `run.dry-run-prefix`
 
-```bash
-run.inspect ()
-{
+[source,bash]
+----
+run.dry-run-prefix () 
+{ 
+    if [[ ${LibRun__DryRun} == ${True} ]]; then
+        printf "${txtcyn}${italic}« dry run »${clr} ";
+    fi
+}
+
+----
+
+==== `run.inspect`
+
+[source,bash]
+----
+run.inspect () 
+{ 
     if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
         run.inspect-variables-that-are starting-with LibRun;
     fi;
@@ -6442,13 +6527,14 @@ run.inspect ()
     reset-color
 }
 
-```
+----
 
-#### `run.inspect-variable`
+==== `run.inspect-variable`
 
-```bash
-run.inspect-variable ()
-{
+[source,bash]
+----
+run.inspect-variable () 
+{ 
     local var_name=${1};
     local var_value=${!var_name};
     local value="";
@@ -6471,11 +6557,11 @@ run.inspect-variable ()
                 color="${bldred}";
             fi;
         else
-            if [[ "${var_value}" == "${True}" ]]; then
+            if [[ "${var_value}" == "${True}" || ${var_value} -eq 1 ]]; then
                 value="${value_check}";
                 color="${bldgrn}";
             else
-                if [[ "${var_value}" == "${False}" ]]; then
+                if [[ "${var_value}" == "${False}" || ${var_value} -eq 0 ]]; then
                     value="${value_off}";
                     color="${bldred}";
                 fi;
@@ -6512,13 +6598,14 @@ run.inspect-variable ()
     echo
 }
 
-```
+----
 
-#### `run.inspect-variables`
+==== `run.inspect-variables`
 
-```bash
-run.inspect-variables ()
-{
+[source,bash]
+----
+run.inspect-variables () 
+{ 
     local title=${1};
     shift;
     hl.subtle "${title}";
@@ -6528,49 +6615,53 @@ run.inspect-variables ()
     done
 }
 
-```
+----
 
-#### `run.inspect-variables-that-are`
+==== `run.inspect-variables-that-are`
 
-```bash
-run.inspect-variables-that-are ()
-{
+[source,bash]
+----
+run.inspect-variables-that-are () 
+{ 
     local pattern_type="${1}";
     local pattern="${2}";
     run.inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"
 }
 
-```
+----
 
-#### `run.inspect.set-skip-false-or-blank`
+==== `run.inspect.set-skip-false-or-blank`
 
-```bash
-run.inspect.set-skip-false-or-blank ()
-{
+[source,bash]
+----
+run.inspect.set-skip-false-or-blank () 
+{ 
     local value="${1}";
     [[ -n "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${value};
     [[ -z "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${True}
 }
 
-```
+----
 
-#### `run.on-error.ask-is-enabled`
+==== `run.on-error.ask-is-enabled`
 
-```bash
-run.on-error.ask-is-enabled ()
-{
+[source,bash]
+----
+run.on-error.ask-is-enabled () 
+{ 
     [[ ${LibRun__AskOnError} -eq ${True} ]]
 }
 
-```
+----
 
-#### `run.print-command`
+==== `run.print-command`
 
-```bash
-run.print-command ()
-{
+[source,bash]
+----
+run.print-command () 
+{ 
     local command="$1";
-    local max_width=100;
+    local max_width=${2:-"100"};
     local w;
     w=$(($(.output.screen-width) - 10));
     [[ ${w} -gt ${max_width} ]] && w=${max_width};
@@ -6579,9 +6670,9 @@ run.print-command ()
     local ascii_cmd;
     local command_prompt="${prefix}❯ ";
     local command_width=$((w - 30));
-    ascii_cmd="$(printf "${command_prompt}%-.${command_width}s " "${command:0:${command_width}}")";
+    ascii_cmd="$(printf "${command_prompt}$(run.dry-run-prefix)%-.${command_width}s " "${command:0:${command_width}}")";
     export LibRun__CommandLength=${#ascii_cmd};
-    [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && {
+    [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && { 
         export LibRun__AssignedWidth=$((w - 3));
         export LibRun__CommandLength=1;
         printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"
@@ -6593,23 +6684,58 @@ run.print-command ()
     fi
 }
 
-```
+----
 
-#### `run.print-variable`
+==== `run.print-command-full-screen`
 
-```bash
-run.print-variable ()
-{
+[source,bash]
+----
+run.print-command-full-screen () 
+{ 
+    run.print-long-command "$1" $(screen.width)
+}
+
+----
+
+==== `run.print-long-command`
+
+[source,bash]
+----
+run.print-long-command () 
+{ 
+    local command="$1";
+    local max_width=${2:-"150"};
+    local w;
+    w=$(($(.output.screen-width) - 10));
+    [[ ${w} -gt ${max_width} ]] && w=${max_width};
+    export LibRun__AssignedWidth=${w};
+    local prefix="${LibOutput__LeftPrefix}${clr}";
+    local ascii_cmd;
+    local command_prompt="${prefix}❯ $(run.dry-run-prefix)";
+    local command_width=$((w - 10));
+    printf "${prefix}❯ ${bldylw}";
+    printf "${command}" | fold -s -w${w} | awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
+}
+
+----
+
+==== `run.print-variable`
+
+[source,bash]
+----
+run.print-variable () 
+{ 
     run.inspect-variable $1
 }
 
-```
+----
 
-#### `run.print-variables`
+==== `run.print-variables`
 
-```bash
-run.print-variables ()
-{
+[source,bash]
+----
+run.print-variables () 
+{ 
     local title=${1};
     shift;
     hl.yellow "${title}";
@@ -6619,13 +6745,14 @@ run.print-variables ()
     done
 }
 
-```
+----
 
-#### `run.ui.press-any-key`
+==== `run.ui.press-any-key`
 
-```bash
-run.ui.press-any-key ()
-{
+[source,bash]
+----
+run.ui.press-any-key () 
+{ 
     local prompt="$*";
     [[ -z ${prompt} ]] && prompt="Press any key to continue...";
     br;
@@ -6638,45 +6765,49 @@ run.ui.press-any-key ()
     echo
 }
 
-```
+----
 
-#### `run.variables-ending-with`
+==== `run.variables-ending-with`
 
-```bash
-run.variables-ending-with ()
-{
+[source,bash]
+----
+run.variables-ending-with () 
+{ 
     local suffix="${1}";
     env | egrep ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
 }
 
-```
+----
 
-#### `run.variables-starting-with`
+==== `run.variables-starting-with`
 
-```bash
-run.variables-starting-with ()
-{
+[source,bash]
+----
+run.variables-starting-with () 
+{ 
     local prefix="${1}";
     env | egrep "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
-```
+----
 
-#### `run.was-successful`
+==== `run.was-successful`
 
-```bash
-run.was-successful ()
-{
+[source,bash]
+----
+run.was-successful () 
+{ 
     [[ ${LibRun__LastExitCode} -eq 0 ]]
 }
 
-```
+----
 
-#### `run.with.minimum-duration`
+==== `run.with.minimum-duration`
 
-```bash
-run.with.minimum-duration ()
-{
+[source,bash]
+----
+run.with.minimum-duration () 
+{ 
     local min_duration=$1;
     shift;
     local command="$*";
@@ -6697,40 +6828,40 @@ run.with.minimum-duration ()
     return ${result}
 }
 
-```
+----
 
-#### `run.with.ruby-bundle`
+==== `run.with.ruby-bundle`
 
-```bash
-run.with.ruby-bundle ()
-{
+[source,bash]
+----
+run.with.ruby-bundle () 
+{ 
     .run.bundle.exec "$@"
 }
 
-```
+----
 
-#### `run.with.ruby-bundle-and-output`
+==== `run.with.ruby-bundle-and-output`
 
-```bash
-run.with.ruby-bundle-and-output ()
-{
+[source,bash]
+----
+run.with.ruby-bundle-and-output () 
+{ 
     .run.bundle.exec.with-output "$@"
 }
 
-```
+----
 
 
----
+=== Module `set`
 
+==== `set-e-restore`
 
-### Module `set`
-
-#### `set-e-restore`
-
-```bash
-set-e-restore ()
-{
-    [[ -f ${__bash_set_errexit_status} ]] && {
+[source,bash]
+----
+set-e-restore () 
+{ 
+    [[ -f ${__bash_set_errexit_status} ]] && { 
         error "You must first save it with the function:s ${bldgrn}set-e-save";
         return 1
     };
@@ -6743,79 +6874,79 @@ set-e-restore ()
     rm -f ${__bash_set_errexit_status} 2> /dev/null
 }
 
-```
+----
 
-#### `set-e-save`
+==== `set-e-save`
 
-```bash
-set-e-save ()
-{
+[source,bash]
+----
+set-e-save () 
+{ 
     export __bash_set_errexit_status=$(mktemp -t 'errexit');
     rm -f ${__bash_set_errexit_status} 2> /dev/null;
     set-e-status > ${__bash_set_errexit_status}
 }
 
-```
+----
 
-#### `set-e-status`
+==== `set-e-status`
 
-```bash
-set-e-status ()
-{
+[source,bash]
+----
+set-e-status () 
+{ 
     set -o | grep errexit | awk '{print $2}'
 }
 
-```
+----
 
 
----
+=== Module `settings`
 
 
-### Module `settings`
+=== Module `shell-set`
 
+==== `save-restore-x`
 
----
-
-
-### Module `shell-set`
-
-#### `save-restore-x`
-
-```bash
-save-restore-x ()
-{
+[source,bash]
+----
+save-restore-x () 
+{ 
     shell-set.pop-stack x
 }
 
-```
+----
 
-#### `save-set-x`
+==== `save-set-x`
 
-```bash
-save-set-x ()
-{
+[source,bash]
+----
+save-set-x () 
+{ 
     shell-set.push-stack x
 }
 
-```
+----
 
-#### `shell-set.init-stack`
+==== `shell-set.init-stack`
 
-```bash
-shell-set.init-stack ()
-{
+[source,bash]
+----
+shell-set.init-stack () 
+{ 
     unset SetOptsStack;
     declare -a SetOptsStack=();
     export SetOptsStack
 }
 
-```
+----
 
-#### `shell-set.is-set`
+==== `shell-set.is-set`
 
-```bash
-shell-set.is-set ()
-{
+[source,bash]
+----
+shell-set.is-set () 
+{ 
     local v="$1";
     local is_set=${-//[^${v}]/};
     if [[ -n ${is_set} ]]; then
@@ -6825,13 +6956,14 @@ shell-set.is-set ()
     fi
 }
 
-```
+----
 
-#### `shell-set.pop-stack`
+==== `shell-set.pop-stack`
 
-```bash
-shell-set.pop-stack ()
-{
+[source,bash]
+----
+shell-set.pop-stack () 
+{ 
     local value="$1";
     local len=${#SetOptsStack[@]};
     local last_index=$((len - 1));
@@ -6846,13 +6978,14 @@ shell-set.pop-stack ()
     eval "set ${last}"
 }
 
-```
+----
 
-#### `shell-set.push-stack`
+==== `shell-set.push-stack`
 
-```bash
-shell-set.push-stack ()
-{
+[source,bash]
+----
+shell-set.push-stack () 
+{ 
     local value="$1";
     local is_set=${-//[^${value}]/};
     shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}");
@@ -6860,31 +6993,30 @@ shell-set.push-stack ()
     [[ -n ${DEBUG} ]] && shell-set-show
 }
 
-```
+----
 
-#### `shell-set.show-stack`
+==== `shell-set.show-stack`
 
-```bash
-shell-set.show-stack ()
-{
+[source,bash]
+----
+shell-set.show-stack () 
+{ 
     info "Current Shell Set Stack: ${bldylw}[${SetOptsStack[*]}]"
 }
 
-```
+----
 
 
----
+=== Module `ssh`
 
+==== `ssh.keys.generate`
 
-### Module `ssh`
-
-#### `ssh.keys.generate`
-
-```bash
-ssh.keys.generate ()
-{
+[source,bash]
+----
+ssh.keys.generate () 
+{ 
     local email="$(user.gitconfig.email)";
-    [[ -z ${email} ]] && {
+    [[ -z ${email} ]] && { 
         info "Couldnt' get your email from ~/.gitconfig...";
         run.ui.ask-user-value email "What's the email you'd like to use with this key?"
     };
@@ -6901,37 +7033,36 @@ ssh.keys.generate ()
     run "ssh-keygen -t rsa -b 4096 -C ${email}"
 }
 
-```
+----
 
-#### `ssh.load-keys`
+==== `ssh.load-keys`
 
-```bash
-ssh.load-keys ()
-{
+[source,bash]
+----
+ssh.load-keys () 
+{ 
     local pattern="$1";
     find ${HOME}/.ssh -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \;
 }
 
-```
+----
 
 
----
+=== Module `subshell`
 
+==== `bashmatic.detect-subshell`
 
-### Module `subshell`
-
-#### `bashmatic.detect-subshell`
-
-```bash
-bashmatic.detect-subshell ()
-{
+[source,bash]
+----
+bashmatic.detect-subshell () 
+{ 
     bashmatic.subshell-init;
     [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && return ${BASH_IN_SUBSHELL};
     unset BASH_IN_SUBSHELL;
     export BASH_SUBSHELL_DETECTED=true;
     local len="${#BASH_SOURCE[@]}";
     local last_index=$((len - 1));
-    [[ -n ${DEBUG} ]] && {
+    [[ -n ${DEBUG} ]] && { 
         echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2;
         echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2;
         echo "\$0            = $0" 1>&2
@@ -6944,185 +7075,196 @@ bashmatic.detect-subshell ()
     return ${BASH_IN_SUBSHELL}
 }
 
-```
+----
 
-#### `bashmatic.subshell-init`
+==== `bashmatic.subshell-init`
 
-```bash
-bashmatic.subshell-init ()
-{
+[source,bash]
+----
+bashmatic.subshell-init () 
+{ 
     export BASH_SUBSHELL_DETECTED=
 }
 
-```
+----
 
-#### `bashmatic.validate-sourced-in`
+==== `bashmatic.validate-sourced-in`
 
-```bash
-bashmatic.validate-sourced-in ()
-{
+[source,bash]
+----
+bashmatic.validate-sourced-in () 
+{ 
     bashmatic.detect-subshell;
-    [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || {
+    [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || { 
         echo "This script to be sourced in, not run in a subshell." 1>&2;
         return 1
     };
     return 0
 }
 
-```
+----
 
-#### `bashmatic.validate-subshell`
+==== `bashmatic.validate-subshell`
 
-```bash
-bashmatic.validate-subshell ()
-{
+[source,bash]
+----
+bashmatic.validate-subshell () 
+{ 
     bashmatic.detect-subshell;
-    [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || {
+    [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || { 
         echo "This script to be run, not sourced-in" 1>&2;
         return 1
     };
     return 0
 }
 
-```
+----
 
 
----
+=== Module `sym`
 
+==== `decrypt.secrets`
 
-### Module `sym`
-
-#### `decrypt.secrets`
-
-```bash
-decrypt.secrets ()
-{
+[source,bash]
+----
+decrypt.secrets () 
+{ 
     ./bin/decrypt;
     local code=$?;
-    [[ ${code} != 0 ]] && {
+    [[ ${code} != 0 ]] && { 
         error "bin/decrypt returned non-zero exit status ${code}";
         echo;
         exit ${code}
     }
 }
 
-```
+----
 
-#### `dev.crypt.chef`
+==== `dev.crypt.chef`
 
-```bash
-dev.crypt.chef ()
-{
+[source,bash]
+----
+dev.crypt.chef () 
+{ 
     sym -ck APP_CHEF_SYM_KEY $*
 }
 
-```
+----
 
-#### `dev.decrypt.file`
+==== `dev.decrypt.file`
 
-```bash
-dev.decrypt.file ()
-{
-    [[ -f ${1} ]] || {
+[source,bash]
+----
+dev.decrypt.file () 
+{ 
+    [[ -f ${1} ]] || { 
         error 'usage: dev.decrypt.file <filename.enc>';
         return
     };
     sym -ck APP_SYM_KEY -n "${1}"
 }
 
-```
+----
 
-#### `dev.decrypt.str`
+==== `dev.decrypt.str`
 
-```bash
-dev.decrypt.str ()
-{
-    [[ -z ${1} ]] && {
+[source,bash]
+----
+dev.decrypt.str () 
+{ 
+    [[ -z ${1} ]] && { 
         error 'usage: dev.decrypt.str "string to decrypt"';
         return
     };
     sym -ck APP_SYM_KEY -d -s "$*"
 }
 
-```
+----
 
-#### `dev.edit.file`
+==== `dev.edit.file`
 
-```bash
-dev.edit.file ()
-{
-    [[ -f ${1} ]] || {
+[source,bash]
+----
+dev.edit.file () 
+{ 
+    [[ -f ${1} ]] || { 
         error 'usage: dev.edit.file <filename>';
         return
     };
     sym -ck APP_SYM_KEY -t "${1}"
 }
 
-```
+----
 
-#### `dev.encrypt.file`
+==== `dev.encrypt.file`
 
-```bash
-dev.encrypt.file ()
-{
-    [[ -f ${1} ]] || {
+[source,bash]
+----
+dev.encrypt.file () 
+{ 
+    [[ -f ${1} ]] || { 
         error 'usage: dev.encrypt.file <filename>';
         return
     };
     sym -ck APP_SYM_KEY -e -f "${1}" -o "${1}.enc"
 }
 
-```
+----
 
-#### `dev.encrypt.str`
+==== `dev.encrypt.str`
 
-```bash
-dev.encrypt.str ()
-{
-    [[ -z "${1}" ]] && {
+[source,bash]
+----
+dev.encrypt.str () 
+{ 
+    [[ -z "${1}" ]] && { 
         error 'usage: dev.encrypt.str "string to encrypt"';
         return
     };
     sym -ck APP_SYM_KEY -e -s "$*"
 }
 
-```
+----
 
-#### `dev.sym`
+==== `dev.sym`
 
-```bash
-dev.sym ()
-{
+[source,bash]
+----
+dev.sym () 
+{ 
     sym -cqk APP_SYM_KEY $*
 }
 
-```
+----
 
-#### `sym.dev.configure`
+==== `sym.dev.configure`
 
-```bash
-sym.dev.configure ()
-{
+[source,bash]
+----
+sym.dev.configure () 
+{ 
     export SYMIT__KEY="APP_SYM_KEY"
 }
 
-```
+----
 
-#### `sym.dev.files`
+==== `sym.dev.files`
 
-```bash
-sym.dev.files ()
-{
+[source,bash]
+----
+sym.dev.files () 
+{ 
     find . -name '*.enc' -type f
 }
 
-```
+----
 
-#### `sym.dev.have-key`
+==== `sym.dev.have-key`
 
-```bash
-sym.dev.have-key ()
-{
+[source,bash]
+----
+sym.dev.have-key () 
+{ 
     sym.dev.configure;
     if [[ -z ${CI} ]]; then
         [[ -z "$(keychain ${SYMIT__KEY} find 2>/dev/null)" ]] || printf "yes";
@@ -7131,13 +7273,14 @@ sym.dev.have-key ()
     fi
 }
 
-```
+----
 
-#### `sym.dev.import`
+==== `sym.dev.import`
 
-```bash
-sym.dev.import ()
-{
+[source,bash]
+----
+sym.dev.import () 
+{ 
     local skip_instructions=${1:-0};
     if [[ ${AppCurrentOS} != 'Darwin' ]]; then
         error 'This is only meant to run on Mac OS-X';
@@ -7176,7 +7319,7 @@ sym.dev.import ()
     hr;
     sym -iqpx APP_SYM_KEY;
     code=$?;
-    [[ ${code} != 0 ]] && {
+    [[ ${code} != 0 ]] && { 
         error "Sym exited with error code ${code}";
         return ${code}
     };
@@ -7197,20 +7340,21 @@ sym.dev.import ()
     echo
 }
 
-```
+----
 
-#### `sym.dev.install-shell-helpers`
+==== `sym.dev.install-shell-helpers`
 
-```bash
-sym.dev.install-shell-helpers ()
-{
+[source,bash]
+----
+sym.dev.install-shell-helpers () 
+{ 
     local found=;
     declare -a init_files=($(util.shell-init-files));
     for file in ${init_files[@]};
     do
         f=${HOME}/${file};
         [[ ! -f "${f}" ]] && continue;
-        [[ -n $(grep sym.symit ${f}) ]] && {
+        [[ -n $(grep sym.symit ${f}) ]] && { 
             found=${f};
             break
         };
@@ -7229,13 +7373,14 @@ sym.dev.install-shell-helpers ()
     fi
 }
 
-```
+----
 
-#### `sym.install.symit`
+==== `sym.install.symit`
 
-```bash
-sym.install.symit ()
-{
+[source,bash]
+----
+sym.install.symit () 
+{ 
     if [[ ! -f config.ru ]]; then
         error "Please run this command from the RAILS_ROOT folder";
         return 1;
@@ -7257,19 +7402,17 @@ sym.install.symit ()
     sym.dev.install-shell-helpers
 }
 
-```
+----
 
 
----
+=== Module `text`
 
+==== `text.markdown-to-asciidoc`
 
-### Module `text`
-
-#### `text.markdown-to-asciidoc`
-
-```bash
-text.markdown-to-asciidoc ()
-{
+[source,bash]
+----
+text.markdown-to-asciidoc () 
+{ 
     local file="$1";
     shift;
     local default_flags="--imagesdir=/assets/images --no-html-to-native";
@@ -7282,13 +7425,13 @@ text.markdown-to-asciidoc ()
         printf "${clr}\n";
         return 0;
     fi;
-    [[ -f ${file} && $(file.extension "${file}") == "md" ]] || {
+    [[ -f ${file} && $(file.extension "${file}") == "md" ]] || { 
         error "File ${file} either does not exist, or is not markdown.";
         run.set-all on-decline-return;
         run.ui.ask "Convert anyway?"
     };
     local target="$(file.extension.replace adoc "${file}")";
-    file.ask.if-exists "${target}" || {
+    file.ask.if-exists "${target}" || { 
         info "Aborting conversion, leaving ${target} in place.";
         return 1
     };
@@ -7302,39 +7445,39 @@ text.markdown-to-asciidoc ()
     run "kramdoc -o ${target} ${args} ${file}"
 }
 
-```
+----
 
 
----
+=== Module `time`
 
+==== `epoch`
 
-### Module `time`
-
-#### `epoch`
-
-```bash
-epoch ()
-{
+[source,bash]
+----
+epoch () 
+{ 
     date +%s
 }
 
-```
+----
 
-#### `millis`
+==== `millis`
 
-```bash
-millis ()
-{
+[source,bash]
+----
+millis () 
+{ 
     .run.millis
 }
 
-```
+----
 
-#### `time.date-from-epoch`
+==== `time.date-from-epoch`
 
-```bash
-time.date-from-epoch ()
-{
+[source,bash]
+----
+time.date-from-epoch () 
+{ 
     local epoch_ts="$1";
     if [[ "${AppCurrentOS}" == "Darwin" ]]; then
         printf "date -r ${epoch_ts}";
@@ -7343,39 +7486,41 @@ time.date-from-epoch ()
     fi
 }
 
-```
+----
 
-#### `time.duration.humanize`
+==== `time.duration.humanize`
 
-```bash
-time.duration.humanize ()
-{
+[source,bash]
+----
+time.duration.humanize () 
+{ 
     local seconds=${1};
     local hours=$((${seconds} / 3600));
     local remainder=$((${seconds} - ${hours} * 3600));
     local mins=$((${remainder} / 60));
     local secs=$((${seconds} - ${hours} * 3600 - ${mins} * 60));
     local prefixed=0;
-    [[ ${hours} -gt 0 ]] && {
+    [[ ${hours} -gt 0 ]] && { 
         printf "%02dh:" ${hours};
         prefixed=1
     };
-    [[ ${mins} -gt 0 || ${prefixed} == 1 ]] && {
+    [[ ${mins} -gt 0 || ${prefixed} == 1 ]] && { 
         printf "%02dm:" ${mins};
         prefixed=1
     };
-    {
+    { 
         printf "%02ds" ${secs}
     }
 }
 
-```
+----
 
-#### `time.duration.millis-to-secs`
+==== `time.duration.millis-to-secs`
 
-```bash
-time.duration.millis-to-secs ()
-{
+[source,bash]
+----
+time.duration.millis-to-secs () 
+{ 
     local duration="$1";
     local format="${2:-"%d.%d"}";
     local seconds=$((duration / 1000));
@@ -7383,36 +7528,39 @@ time.duration.millis-to-secs ()
     printf "${format}" ${seconds} ${leftover}
 }
 
-```
+----
 
-#### `time.epoch-to-iso`
+==== `time.epoch-to-iso`
 
-```bash
-time.epoch-to-iso ()
-{
+[source,bash]
+----
+time.epoch-to-iso () 
+{ 
     local epoch_ts=$1;
     eval "$(time.date-from-epoch ${epoch_ts}) -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
 }
 
-```
+----
 
-#### `time.epoch-to-local`
+==== `time.epoch-to-local`
 
-```bash
-time.epoch-to-local ()
-{
+[source,bash]
+----
+time.epoch-to-local () 
+{ 
     local epoch_ts=$1;
     [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch);
     eval "$(time.date-from-epoch ${epoch_ts}) \"+%m/%d/%Y, %r\""
 }
 
-```
+----
 
-#### `time.epoch.minutes-ago`
+==== `time.epoch.minutes-ago`
 
-```bash
-time.epoch.minutes-ago ()
-{
+[source,bash]
+----
+time.epoch.minutes-ago () 
+{ 
     local mins=${1};
     [[ -z ${mins} ]] && mins=1;
     local seconds=$((${mins} * 60));
@@ -7420,76 +7568,79 @@ time.epoch.minutes-ago ()
     echo $((${epoch} - ${seconds}))
 }
 
-```
+----
 
-#### `time.now.db`
+==== `time.now.db`
 
-```bash
-time.now.db ()
-{
+[source,bash]
+----
+time.now.db () 
+{ 
     date '+%F.%T' | tr -d '[-.:]'
 }
 
-```
+----
 
-#### `time.now.file-extension`
+==== `time.now.file-extension`
 
-```bash
-time.now.file-extension ()
-{
+[source,bash]
+----
+time.now.file-extension () 
+{ 
     time.now.db
 }
 
-```
+----
 
-#### `today`
+==== `today`
 
-```bash
-today ()
-{
+[source,bash]
+----
+today () 
+{ 
     date +'%Y-%m-%d'
 }
 
-```
+----
 
 
----
+=== Module `trap`
 
+==== `trap-setup`
 
-### Module `trap`
-
-#### `trap-setup`
-
-```bash
-trap-setup ()
-{
+[source,bash]
+----
+trap-setup () 
+{ 
     .trap-remove;
     local signal="${1:-"SIGINT"}";
     trap '.trap-catch' "${signal}";
     export __int_signal__="${signal}"
 }
 
-```
+----
 
-#### `trap-was-fired`
+==== `trap-was-fired`
 
-```bash
-trap-was-fired ()
-{
-    if [[ -f ${__int_marker__} ]]; then
+[source,bash]
+----
+trap-was-fired () 
+{ 
+    if [[ -n "${__int_marker__}" && -f "${__int_marker__}" ]]; then
         rm -f "${__int_marker__}";
         return 0;
     fi;
     return 1
 }
 
-```
+----
 
-#### `trapped`
+==== `trapped`
 
-```bash
-trapped ()
-{
+[source,bash]
+----
+trapped () 
+{ 
     if [[ ${__int_flag__} -eq 1 ]]; then
         unset __int__flag__;
         return 0;
@@ -7497,24 +7648,22 @@ trapped ()
     return 1
 }
 
-```
+----
 
 
----
+=== Module `url`
 
+==== `url.downloader`
 
-### Module `url`
-
-#### `url.downloader`
-
-```bash
-url.downloader ()
-{
+[source,bash]
+----
+url.downloader () 
+{ 
     local downloader=;
     if [[ -z "${LibUrl__Downloader}" ]]; then
         [[ -z "${downloader}" && -n $(which curl) ]] && downloader="$(which curl) ${LibUrl__CurlDownloaderFlags}";
         [[ -z "${downloader}" && -n $(which wget) ]] && downloader="$(which wget) ${LibUrl__WgetDownloaderFlags}";
-        [[ -z "${downloader}" ]] && {
+        [[ -z "${downloader}" ]] && { 
             error "Neither Curl nor WGet appear in the \$PATH... HALP?";
             return 1
         };
@@ -7523,22 +7672,23 @@ url.downloader ()
     printf "${LibUrl__Downloader}"
 }
 
-```
+----
 
-#### `url.http-code`
+==== `url.http-code`
 
-```bash
-url.http-code ()
-{
+[source,bash]
+----
+url.http-code () 
+{ 
     local url="$1";
     local quiet="${2:-false}";
-    [[ -z $(which wget) ]] && {
+    [[ -z $(which wget) ]] && { 
         echo 1>&2;
         err "This function currently only supports ${bldylw}wget.\n" 1>&2;
         echo 1>&2;
         return 100
     };
-    url.is-valid "$url" || {
+    url.is-valid "$url" || { 
         echo 1>&2;
         err "The URL provided is not a valid URL: ${bldylw}${url}\n" 1>&2;
         echo 1>&2;
@@ -7557,13 +7707,14 @@ url.http-code ()
     fi
 }
 
-```
+----
 
-#### `url.is-valid`
+==== `url.is-valid`
 
-```bash
-url.is-valid ()
-{
+[source,bash]
+----
+url.is-valid () 
+{ 
     local url="$1";
     if [[ $(url.valid-status "$url") = "ok" ]]; then
         return 0;
@@ -7572,14 +7723,17 @@ url.is-valid ()
     fi
 }
 
-```
+----
 
-#### `url.shorten`
+==== `url.shorten`
 
-```bash
-url.shorten ()
-{
+[source,bash]
+----
+url.shorten () 
+{ 
     local longUrl="$1";
+    error "This function used Bitly API V3 which is now defunct.";
+    return 1;
     if [[ -z "${BITLY_LOGIN}" || -z "${BITLY_API_KEY}" ]]; then
         printf "${longUrl}";
     else
@@ -7589,17 +7743,28 @@ url.shorten ()
             longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI.encode(str)");
         fi;
         bitlyUrl="http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}";
-        $(url.downloader) "${bitlyUrl}" | tr -d '\n' | tr -d ' ';
+        debug "BITLY_LOLGIN : ${clr}${bldylw}${BITLY_LOGIN}" 1>&2;
+        debug "BITLY_LOLGIN : ${clr}${bldgrn}${BITLY_API_KEY}" 1>&2;
+        debug "BITLY_API_URL: ${clr}${undblu}${bitlyUrl}${clr}" 1>&2;
+        local output="$( $(url.downloader) "${bitlyUrl}" 2>&1 )";
+        if [[ "${output}" =~ "INVALID" || "${output}" =~ "Server Error" ]]; then
+            error "${output}";
+            return 1;
+        else
+            printf "%s" "${output}" | tr -d '\n' | tr -d ' ';
+            return 0;
+        fi;
     fi
 }
 
-```
+----
 
-#### `url.valid-status`
+==== `url.valid-status`
 
-```bash
-url.valid-status ()
-{
+[source,bash]
+----
+url.valid-status () 
+{ 
     local url="$1";
     echo "${url}" | ruby -ne '
     require "uri"
@@ -7611,69 +7776,71 @@ url.valid-status ()
     end'
 }
 
-```
+----
 
 
----
+=== Module `usage`
 
+==== `usage-box`
 
-### Module `usage`
-
-#### `usage-box`
-
-```bash
-usage-box ()
-{
-    local command;
-    local title;
-    if [[ "${1}" =~ "©" ]]; then
-        command="${1/ © */}";
-        title="${1/* © /}";
+[source,bash]
+----
+usage-box () 
+{ 
+    local backup="$(.usage-cache-file)";
+    if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
+        cat "${backup}";
     else
-        command="$1";
-        title=;
-    fi;
-    shift;
-    .usage.begin;
-    .usage.command "${command}";
-    [[ -n ${title} ]] && .usage.title "${title}";
-    [[ -n "$*" ]] && .usage.flags "$@"
+        .usage.box "$@" | tee ${backup};
+    fi
 }
 
-```
+----
 
-#### `usage-box.section`
+==== `usage-box.section`
 
-```bash
-usage-box.section ()
-{
+[source,bash]
+----
+usage-box.section () 
+{ 
     printf "${__color_headers}";
     .usage.hdr "$*"
 }
 
-```
+----
 
-#### `usage.set-min-flag-len`
+==== `usage-box.sub-section`
 
-```bash
-usage.set-min-flag-len ()
-{
+[source,bash]
+----
+usage-box.sub-section () 
+{ 
+    .output.box-separator "${__color_bdr}";
+    .output.boxed-text "${__color_bdr}" "${__color_sub_headers}" "$(.usage.hdr "$1")"
+}
+
+----
+
+==== `usage.set-min-flag-len`
+
+[source,bash]
+----
+usage.set-min-flag-len () 
+{ 
     export LibUsage__MinFlagLen="${1}"
 }
 
-```
+----
 
 
----
+=== Module `user`
 
+==== `user`
 
-### Module `user`
-
-#### `user`
-
-```bash
-user ()
-{
+[source,bash]
+----
+user () 
+{ 
     local user;
     user=$(user.finger.name);
     [[ -z "${user}" ]] && user="$(user.gitconfig.name)";
@@ -7682,156 +7849,193 @@ user ()
     echo "${user}"
 }
 
-```
+----
 
-#### `user.finger.name`
+==== `user.finger.name`
 
-```bash
-user.finger.name ()
-{
+[source,bash]
+----
+user.finger.name () 
+{ 
     [[ -n $(which finge) ]] && finger ${USER} | head -1 | sedx 's/.*Name: //g'
 }
 
-```
+----
 
-#### `user.first`
+==== `user.first`
 
-```bash
-user.first ()
-{
+[source,bash]
+----
+user.first () 
+{ 
     user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'
 }
 
-```
+----
 
-#### `user.gitconfig.email`
+==== `user.gitconfig.email`
 
-```bash
-user.gitconfig.email ()
-{
+[source,bash]
+----
+user.gitconfig.email () 
+{ 
     if [[ -s ${HOME}/.gitconfig ]]; then
         grep email ${HOME}/.gitconfig | sedx 's/.*=\s?//g';
     fi
 }
 
-```
+----
 
-#### `user.gitconfig.name`
+==== `user.gitconfig.name`
 
-```bash
-user.gitconfig.name ()
-{
+[source,bash]
+----
+user.gitconfig.name () 
+{ 
     if [[ -s ${HOME}/.gitconfig ]]; then
         grep name ${HOME}/.gitconfig | sedx 's/.*=\s?//g';
     fi
 }
 
-```
+----
 
-#### `user.host`
+==== `user.host`
 
-```bash
-user.host ()
-{
+[source,bash]
+----
+user.host () 
+{ 
     local host=;
     host=$(user.my.reverse-ip);
     [[ -z ${host} ]] && host=$(user.my.ip);
     printf "${host}"
 }
 
-```
+----
 
-#### `user.my.ip`
+==== `user.login-shell`
 
-```bash
-user.my.ip ()
-{
+[source,bash]
+----
+user.login-shell () 
+{ 
+    basename $(user.login-shell-path)
+}
+
+----
+
+==== `user.login-shell-path`
+
+[source,bash]
+----
+user.login-shell-path () 
+{ 
+    if [[ -n $(command -V finger) ]]; then
+        finger ${USER} | grep Shell: | sed 's/^.*Shell: //g';
+    else
+        echo $SHELL;
+    fi
+}
+
+----
+
+==== `user.my.ip`
+
+[source,bash]
+----
+user.my.ip () 
+{ 
     dig +short myip.opendns.com @resolver1.opendns.com
 }
 
-```
+----
 
-#### `user.my.reverse-ip`
+==== `user.my.reverse-ip`
 
-```bash
-user.my.reverse-ip ()
-{
+[source,bash]
+----
+user.my.reverse-ip () 
+{ 
     nslookup $(user.my.ip) | grep 'name =' | sedx 's/.*name = //g'
 }
 
-```
+----
 
-#### `user.username`
+==== `user.username`
 
-```bash
-user.username ()
-{
+[source,bash]
+----
+user.username () 
+{ 
     echo ${USER:-$(whoami)}
 }
 
-```
+----
 
 
----
+=== Module `util`
 
+==== `is-func`
 
-### Module `util`
-
-#### `is-func`
-
-```bash
-is-func ()
-{
+[source,bash]
+----
+is-func () 
+{ 
     util.is-a-function "$@"
 }
 
-```
+----
 
-#### `pause`
+==== `pause`
 
-```bash
-pause ()
-{
+[source,bash]
+----
+pause () 
+{ 
     sleep "${1:-1}"
 }
 
-```
+----
 
-#### `pause.long`
+==== `pause.long`
 
-```bash
-pause.long ()
-{
+[source,bash]
+----
+pause.long () 
+{ 
     sleep "${1:-10}"
 }
 
-```
+----
 
-#### `pause.medium`
+==== `pause.medium`
 
-```bash
-pause.medium ()
-{
+[source,bash]
+----
+pause.medium () 
+{ 
     sleep "${1:-0.3}"
 }
 
-```
+----
 
-#### `pause.short`
+==== `pause.short`
 
-```bash
-pause.short ()
-{
+[source,bash]
+----
+pause.short () 
+{ 
     sleep "${1:-0.1}"
 }
 
-```
+----
 
-#### `sedx`
+==== `sedx`
 
-```bash
-sedx ()
-{
+[source,bash]
+----
+sedx () 
+{ 
     local current=$(which sed);
     local latest=${LibSed__latestVersion:-'/usr/local/bin/gsed'};
     local os=$(uname -s);
@@ -7850,13 +8054,14 @@ sedx ()
     ${latest} -E "$@"
 }
 
-```
+----
 
-#### `util.append-to-init-files`
+==== `util.append-to-init-files`
 
-```bash
-util.append-to-init-files ()
-{
+[source,bash]
+----
+util.append-to-init-files () 
+{ 
     local string="$1";
     local search="${2:-$1}";
     is_installed=;
@@ -7864,7 +8069,7 @@ util.append-to-init-files ()
     for init_file in ${shell_files[@]};
     do
         file=${HOME}/${init_file};
-        [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && {
+        [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && { 
             is_installed=${file};
             break
         };
@@ -7873,7 +8078,7 @@ util.append-to-init-files ()
         for init_file in ${shell_files[@]};
         do
             file=${HOME}/${init_file};
-            [[ -f ${file} ]] && {
+            [[ -f ${file} ]] && { 
                 echo "${string}" >> ${file};
                 is_installed="${file}";
                 break
@@ -7883,57 +8088,62 @@ util.append-to-init-files ()
     printf "${is_installed}"
 }
 
-```
+----
 
-#### `util.arch`
+==== `util.arch`
 
-```bash
-util.arch ()
-{
+[source,bash]
+----
+util.arch () 
+{ 
     echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'
 }
 
-```
+----
 
-#### `util.call-if-function`
+==== `util.call-if-function`
 
-```bash
-util.call-if-function ()
-{
+[source,bash]
+----
+util.call-if-function () 
+{ 
     local func="$1";
     shift;
-    util.is-a-function "${func}" && {
+    util.is-a-function "${func}" && { 
         ${func} "$@"
     }
 }
 
-```
+----
 
-#### `util.checksum.files`
+==== `util.checksum.files`
 
-```bash
-util.checksum.files ()
-{
+[source,bash]
+----
+util.checksum.files () 
+{ 
     cat $* | shasum | awk '{print $1}'
 }
 
-```
+----
 
-#### `util.checksum.stdin`
+==== `util.checksum.stdin`
 
-```bash
-util.checksum.stdin ()
-{
+[source,bash]
+----
+util.checksum.stdin () 
+{ 
     shasum | awk '{print $1}'
 }
 
-```
+----
 
-#### `util.dev-setup.update`
+==== `util.dev-setup.update`
 
-```bash
-util.dev-setup.update ()
-{
+[source,bash]
+----
+util.dev-setup.update () 
+{ 
     run "rm -f ~/.bashmatic/bin/.dev-setup";
     run "dev-setup -N -h > /tmp/a";
     run "mv /tmp/a ~/.bashmatic/bin/.dev-setup";
@@ -7941,74 +8151,80 @@ util.dev-setup.update ()
     run "cd -"
 }
 
-```
+----
 
-#### `util.functions-matching`
+==== `util.functions-matching`
 
-```bash
-util.functions-matching ()
-{
+[source,bash]
+----
+util.functions-matching () 
+{ 
     local prefix="${1}";
     local extra_command=${2:-"cat"};
     set | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
 }
 
-```
+----
 
-#### `util.functions-matching.diff`
+==== `util.functions-matching.diff`
 
-```bash
-util.functions-matching.diff ()
-{
+[source,bash]
+----
+util.functions-matching.diff () 
+{ 
     for e in $(util.functions-matching "${1}");
     do
         echo ${e/${1}/};
     done
 }
 
-```
+----
 
-#### `util.functions-starting-with`
+==== `util.functions-starting-with`
 
-```bash
-util.functions-starting-with ()
-{
+[source,bash]
+----
+util.functions-starting-with () 
+{ 
     local prefix="${1}";
     local extra_command=${2:-"cat"};
     set | egrep '()' | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
 }
 
-```
+----
 
-#### `util.generate-password`
+==== `util.generate-password`
 
-```bash
-util.generate-password ()
-{
+[source,bash]
+----
+util.generate-password () 
+{ 
     local len=${1:-32};
     local val=$(($(date '+%s') - 100000 * $RANDOM));
     [[ ${val:0:1} == "-" ]] && val=${val/-//};
     printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c ${len})"
 }
 
-```
+----
 
-#### `util.i-to-ver`
+==== `util.i-to-ver`
 
-```bash
-util.i-to-ver ()
-{
+[source,bash]
+----
+util.i-to-ver () 
+{ 
     version=${1};
     /usr/bin/env ruby -e "ver='${version}'; printf %Q{%d.%d.%d}, ver[1..2].to_i, ver[3..5].to_i, ver[6..8].to_i"
 }
 
-```
+----
 
-#### `util.install-direnv`
+==== `util.install-direnv`
 
-```bash
-util.install-direnv ()
-{
+[source,bash]
+----
+util.install-direnv () 
+{ 
     [[ -n $(which direnv) ]] || brew.install.package direnv;
     local init_file=;
     local init_file=$(util.append-to-init-files 'eval "$(direnv hook bash)"; export DIRENV_LOG_FORMAT=' 'direnv hook');
@@ -8020,66 +8236,72 @@ util.install-direnv ()
     eval "$(direnv hook bash)"
 }
 
-```
+----
 
-#### `util.is-a-function`
+==== `util.is-a-function`
 
-```bash
-util.is-a-function ()
-{
+[source,bash]
+----
+util.is-a-function () 
+{ 
     type "$1" 2> /dev/null | head -1 | grep -q 'is a function'
 }
 
-```
+----
 
-#### `util.is-numeric`
+==== `util.is-numeric`
 
-```bash
-util.is-numeric ()
-{
+[source,bash]
+----
+util.is-numeric () 
+{ 
     [[ -z $(echo ${1} | sed -E 's/^[0-9]+$//g') ]]
 }
 
-```
+----
 
-#### `util.is-variable-defined`
+==== `util.is-variable-defined`
 
-```bash
-util.is-variable-defined ()
-{
+[source,bash]
+----
+util.is-variable-defined () 
+{ 
     local var_name="$1";
     [[ -n ${!var_name+x} ]]
 }
 
-```
+----
 
-#### `util.lines-in-folder`
+==== `util.lines-in-folder`
 
-```bash
-util.lines-in-folder ()
-{
+[source,bash]
+----
+util.lines-in-folder () 
+{ 
     local folder=${1:-'.'};
     find ${folder} -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
 }
 
-```
+----
 
-#### `util.random-number`
+==== `util.random-number`
 
-```bash
-util.random-number ()
-{
+[source,bash]
+----
+util.random-number () 
+{ 
     local limit="${1:-"1000000"}";
     printf $(((RANDOM % ${limit})))
 }
 
-```
+----
 
-#### `util.remove-from-init-files`
+==== `util.remove-from-init-files`
 
-```bash
-util.remove-from-init-files ()
-{
+[source,bash]
+----
+util.remove-from-init-files () 
+{ 
     local search="${1}";
     local backup_extension="${2}";
     [[ -z ${backup_extension} ]] && backup_extension="$(epoch).backup";
@@ -8108,13 +8330,14 @@ util.remove-from-init-files ()
     return ${LibRun__LastExitCode}
 }
 
-```
+----
 
-#### `util.shell-init-files`
+==== `util.shell-init-files`
 
-```bash
-util.shell-init-files ()
-{
+[source,bash]
+----
+util.shell-init-files () 
+{ 
     shell_name=$(util.shell-name);
     if [[ ${shell_name} == "bash" ]]; then
         echo ".bash_${USER} .bash_profile .bashrc .profile";
@@ -8125,34 +8348,37 @@ util.shell-init-files ()
     fi
 }
 
-```
+----
 
-#### `util.shell-name`
+==== `util.shell-name`
 
-```bash
-util.shell-name ()
-{
+[source,bash]
+----
+util.shell-name () 
+{ 
     echo $(basename $(printf $SHELL))
 }
 
-```
+----
 
-#### `util.ver-to-i`
+==== `util.ver-to-i`
 
-```bash
-util.ver-to-i ()
-{
+[source,bash]
+----
+util.ver-to-i () 
+{ 
     version=${1};
     echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
 }
 
-```
+----
 
-#### `util.whats-installed`
+==== `util.whats-installed`
 
-```bash
-util.whats-installed ()
-{
+[source,bash]
+----
+util.whats-installed () 
+{ 
     declare -a hb_aliases=($(alias | grep -E 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'));
     h2 "Installed app aliases:" ' ' "${hb_aliases[@]}";
     h2 "Installed DB Functions:";
@@ -8160,13 +8386,14 @@ util.whats-installed ()
     info "hb.ssh <server-name-substring>, eg hb.ssh web"
 }
 
-```
+----
 
-#### `watch.command`
+==== `watch.command`
 
-```bash
-watch.command ()
-{
+[source,bash]
+----
+watch.command () 
+{ 
     [[ -z "$1" ]] && return 1;
     trap "return 1" SIGINT;
     while true; do
@@ -8181,13 +8408,14 @@ watch.command ()
     done
 }
 
-```
+----
 
-#### `watch.ls-al`
+==== `watch.ls-al`
 
-```bash
-watch.ls-al ()
-{
+[source,bash]
+----
+watch.ls-al () 
+{ 
     while true; do
         ls -al;
         sleep ${LibUtil__WatchRefreshSeconds};
@@ -8195,49 +8423,50 @@ watch.ls-al ()
     done
 }
 
-```
+----
 
-#### `watch.set-refresh`
+==== `watch.set-refresh`
 
-```bash
-watch.set-refresh ()
-{
+[source,bash]
+----
+watch.set-refresh () 
+{ 
     export LibUtil__WatchRefreshSeconds="${1:-"0.5"}"
 }
 
-```
+----
 
 
----
+=== Module `vim`
 
+==== `gvim.off`
 
-### Module `vim`
-
-#### `gvim.off`
-
-```bash
-gvim.off ()
-{
+[source,bash]
+----
+gvim.off () 
+{ 
     vim.gvim-off
 }
 
-```
+----
 
-#### `gvim.on`
+==== `gvim.on`
 
-```bash
-gvim.on ()
-{
+[source,bash]
+----
+gvim.on () 
+{ 
     vim.gvim-on
 }
 
-```
+----
 
-#### `vim.gvim-off`
+==== `vim.gvim-off`
 
-```bash
-vim.gvim-off ()
-{
+[source,bash]
+----
+vim.gvim-off () 
+{ 
     vim.setup;
     [[ "${EDITOR}" == "vim" ]] && return 0;
     local regex_from='^export EDITOR=.*$';
@@ -8254,13 +8483,14 @@ vim.gvim-off ()
   "
 }
 
-```
+----
 
-#### `vim.gvim-on`
+==== `vim.gvim-on`
 
-```bash
-vim.gvim-on ()
-{
+[source,bash]
+----
+vim.gvim-on () 
+{ 
     vim.setup;
     [[ "${EDITOR}" == "gvim" ]] && return 0;
     local regex_from='^export EDITOR=.*$';
@@ -8277,57 +8507,58 @@ vim.gvim-on ()
   "
 }
 
-```
+----
 
-#### `vim.setup`
+==== `vim.setup`
 
-```bash
-vim.setup ()
-{
+[source,bash]
+----
+vim.setup () 
+{ 
     export LibVim__initFile="${HOME}/.bash_profile";
     export LibVim__editorVi="vi";
     export LibVim__editorGvimOn="gvim";
     export LibVim__editorGvimOff="vim"
 }
 
-```
+----
 
 
----
+=== Module `yaml`
 
+==== `yaml-diff`
 
-### Module `yaml`
-
-#### `yaml-diff`
-
-```bash
-yaml-diff ()
-{
+[source,bash]
+----
+yaml-diff () 
+{ 
     yaml.diff "$@"
 }
 
-```
+----
 
-#### `yaml-dump`
+==== `yaml-dump`
 
-```bash
-yaml-dump ()
-{
+[source,bash]
+----
+yaml-dump () 
+{ 
     yaml.dump "$@"
 }
 
-```
+----
 
-#### `yaml.diff`
+==== `yaml.diff`
 
-```bash
-yaml.diff ()
-{
+[source,bash]
+----
+yaml.diff () 
+{ 
     local f1="$1";
     shift;
     local f2="$1";
     shift;
-    [[ -f "$f1" && -f "$f2" ]] || {
+    [[ -f "$f1" && -f "$f2" ]] || { 
         h2 "USAGE: ${bldylw}yaml-diff file1.yml file2.yml [ ydiff-options ]";
         return 1
     };
@@ -8343,16 +8574,17 @@ yaml.diff ()
     run "rm -rf ${t1} ${t2}"
 }
 
-```
+----
 
-#### `yaml.dump`
+==== `yaml.dump`
 
-```bash
-yaml.dump ()
-{
+[source,bash]
+----
+yaml.dump () 
+{ 
     local f1="$1";
     shift;
-    [[ -f "$f1" ]] || {
+    [[ -f "$f1" ]] || { 
         h2 "USAGE: ${bldylw}yaml-dump file.yml";
         return 1
     };
@@ -8363,24 +8595,22 @@ yaml.dump ()
     run "rm -rf ${t1}"
 }
 
-```
+----
 
-#### `yaml.expand-aliases`
+==== `yaml.expand-aliases`
 
-```bash
-yaml.expand-aliases ()
-{
+[source,bash]
+----
+yaml.expand-aliases () 
+{ 
     ruby -e "require 'yaml'; require 'json'; puts YAML.dump(JSON.parse(JSON.pretty_generate(YAML.load(File.read('${1}')))))"
 }
 
-```
-
-
----
+----
 
 
 
-## Copyright
+== Copyright
 
 
 

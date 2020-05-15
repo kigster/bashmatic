@@ -9,41 +9,45 @@ list.modules() {
 
 generate() {
   h1 "Generating FUNCTIONS.md..."
-  local temp=/tmp/FUNCTIONS.md
+  local temp=/tmp/FUNCTIONS.adoc
   run "rm -f ${temp} && touch ${temp}"
 
-  printf "\n# BashMatic Functions Index\n\n" >>${temp}
+  printf "= Bashmatic Functions Index\n\n" >>"${temp}"
+  cat <<-HEADER >>"${temp}"
+:doctype: book
+:toc:
+:toclevels: 5
+:sectnums:
+HEADER
 
-  printf "\n## Table of Contents\n\n" >>${temp}
-
-  printf "\n## List of Bashmatic Modules\n\n" >>${temp}
+  printf "\n== Bashmatic Modules\n\n" >>"${temp}"
   for module in $(list.modules); do
-    printf "* %s\n" "[${module}](#module-${module})" >>${temp}
+    printf "* %s\n" "xref:#module-${module}[${module}]" >>"${temp}"
   done
-  printf "\n## List of Bashmatic Functions\n\n\n" >>${temp}
-  local code='```'
+  printf "\n== List of Bashmatic Functions\n\n" >>"${temp}"
+  local code_on="[source,bash]"
+  local code_off="----"
 
   for module in $(list.modules); do
-    printf "${bldblu}—————————————————————— ${module} ——————————————————————————\n"
-    printf "\n%s\n\n" "### Module \`${module}\`" >>${temp}
-    printf "${bldgrn}❯"
+    printf "${txtylw}(${module}) ${bldgrn}"
+
+    printf "\n=== Module \`%s\`\n\n" "${module}" >>"${temp}"
     for function in $(bashmatic.functions-from ${module} 1); do
-      printf "❯"
-      echo '#### `'$function'`' >>$temp
-      printf "\n%sbash\n" ${code} >>${temp}
-      type ${function} | tail +2 >>${temp}
-      printf "\n%s\n\n" ${code} >>${temp}
+      printf "•"
+      (
+        printf "==== \`%s\`\n" "${function}"
+        printf "\n%s\n%s\n" "${code_on}" "${code_off}"
+        type "${function}" | tail +2
+        printf "\n%s\n\n" "${code_off}"
+      ) >>"${temp}"
     done
-
-    printf "\n%s\n\n" "---" >>${temp}
-    printf "${clr}\n"
   done
 
-  printf "\n\n## Copyright\n\n" >>${temp}
+  printf "\n\n== Copyright\n\n" >>${temp}
   printf "\n\n© 2020 Konstantin Gredeskoul, All rights reserved, MIT License." >>${temp}
 
   run "mv ${temp} ${HOME}/.bashmatic"
-  eval "code ~/.bashmatic/FUNCTIONS.md"
+  eval "code ~/.bashmatic/FUNCTIONS.adoc"
 }
 
 generate

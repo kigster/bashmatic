@@ -125,32 +125,54 @@ change-underscan() {
 
 # This function creates a tiny RAM disk on /var/ramdisk where the
 # decrypted settings will be stored until a reboot.
-# 
-# usage: osx.ramdisk.mount N 
+#
+# usage: osx.ramdisk.mount N
 # where N is number of Mb allocated
 osx.ramdisk.mount() {
   local size="${1:-"8"}"
-  local total=$(( size * 2 * 1024 ))
+  local diskname="${2:-"ramdisk"}"
+
+  local total=$((size * 2 * 1024))
   [[ $(uname -s) != "Darwin" ]] && {
     error "This function only works on OSX"
     return 1
   }
-  if [[ -z $(df -h | grep ramdisk) ]]; then
-    run.ui.ask "Creating RAM disk sized ${size}Mb"
+
+  if [[ "${diskname}" =~ ' ' ]]; then
+    error "Disk name can not contain spaces."
+    return 1
+  fi
+
+  local path="/Volumes/${diskname}"
+
+  if (mount | egrep -q "/[V]olumes/${diskname}"); then
+    info "Looks like RAM disk already exists at ${path}..."
+    return 1
+  else
+    run.ui.ask "Creating RAM disk sized ${size}Mb at ${path}"
     run.set-next show-output-on
-    run "diskutil erasevolume HFS+ 'ramdisk' $(hdiutil attach -nomount ram://${total})"
+    run "diskutil erasevolume HFS+ '${diskname}' $(hdiutil attach -nomount ram://${total})"
   fi
 }
 
 # This function creates a tiny RAM disk on /var/ramdisk where the
 # decrypted settings will be stored until a reboot.
 osx.ramdisk.unmount() {
+  local diskname="${2:-"ramdisk"}"
+
   [[ $(uname -s) != "Darwin" ]] && {
     error "This function only works on OSX"
     return 1
   }
-  if [[ -n $(df -h | grep ramdisk) ]]; then
-    umount /Volumes/ramdisk
+
+  local path="/Volumes/${diskname}"
+
+  if (mount | egrep -q "/[V]olumes/${diskname}"); then
+    run.ui.ask "Unmount RAM disk at ${path}? "
+    run "umount ${path}"
+  else
+    info "Couldn't find volume ${bldylw}${path}. Does the RAM disk exist?"
+    return 1
   fi
 }
 
