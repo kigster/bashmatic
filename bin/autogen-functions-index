@@ -12,12 +12,11 @@ generate() {
   local temp=/tmp/FUNCTIONS.adoc
   run "rm -f ${temp} && touch ${temp}"
 
-  printf "= Bashmatic Functions Index\n\n" >>"${temp}"
+  printf "= Bashmatic Functions Index\n" >>"${temp}"
   cat <<-HEADER >>"${temp}"
 :doctype: book
-:toc:
 :toclevels: 5
-:sectnums:
+:toc:
 HEADER
 
   printf "\n== Bashmatic Modules\n\n" >>"${temp}"

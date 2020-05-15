@@ -1,9 +1,7 @@
 = Bashmatic Functions Index
-
 :doctype: book
-:toc:
 :toclevels: 5
-:sectnums:
+:toc:
 
 == Bashmatic Modules
 
