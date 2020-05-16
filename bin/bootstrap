@@ -47,6 +47,7 @@ bashmatic.git.sync() {
   cd - >/dev/null
 }
 
+export HOME=${HOME:-"/"}
 export BASHMATIC_HOME="${HOME}/.bashmatic"
 export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
 export BASHMATIC_URL="https://github.com/kigster/bashmatic"
