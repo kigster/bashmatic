@@ -1,11 +1,26 @@
 #!/usr/bin/env bash
 # vi: ft=sh
 
+export RUBY_CONFIGURE_OPTS="${RUBY_CONFIGURE_OPTS:-""}"
+
 # This function can be used to generate a YAML array of the latest minor ruby versions
 # against each major version. The output should be compatible with .travis.yml format
 ruby.top-versions-as-yaml() {
   ruby.top-versions |
     sed 's/^/ - /g'
+}
+
+# i
+.ruby.ruby-build-updated() {
+  rbenv install --version | awk '{ if($2 >= 20200518) exit(0); else exit(1); }'
+}
+
+.ruby.ruby-build.list-argument() {
+  local arg="--list"
+  if .ruby.ruby-build-updated; then
+    arg="--list-all"
+  fi
+  printf -- '%s' "${arg}"
 }
 
 # Usage: ruby.top-versions [ platform ]
@@ -14,7 +29,9 @@ ruby.top-versions-as-yaml() {
 #    eg: ruby.top-versions rbx
 ruby.top-versions() {
   local platform="${1:-"2\."}"
-  rbenv install --list |
+  local arg="$(.ruby.ruby-build.list-argument)"
+
+  rbenv install ${arg} |
     egrep "^${platform}" |
     ruby -e '
       last_v = nil;
@@ -108,7 +125,7 @@ ruby.gems.install() {
     fi
     printf "   ${gem_info}"
   done
-  
+
   if [[ ${#gems_to_be_installed[@]} -eq 0 ]]; then
     info "All gems are already installed. 👍🏼"
     return 0
@@ -238,7 +255,7 @@ ruby.install-ruby-with-deps() {
   declare -a packages=(
     cask bash bash-completion git go haproxy htop jemalloc
     libxslt jq libiconv libzip netcat nginx openssl pcre
-    pstree p7zip rbenv redis ruby_build
+    pstree p7zip rbenv redis ruby_build readline
     tree vim watch wget zlib
   )
 
@@ -246,9 +263,14 @@ ruby.install-ruby-with-deps() {
   run "brew install --display-times ${packages[*]}"
 }
 
+ruby.install-ruby-with-readline-and-openssl() {
+  local version="$1"
+  shift
+  ruby.install-ruby ${version} openssl readline "$@"
+}
+
 ##—————————————————————————————————————————————————————————————
 # usage: ruby.install-ruby RUBY_VERSION
-#
 ruby.install-ruby() {
   local version="$1"
   shift
@@ -264,25 +286,47 @@ ruby.install-ruby() {
     return 1
   }
 
-  hl.subtle "Installing Ruby Version ${version} ${version_source}."
+  local -a required_packages
+  required_packages=(rbenv ruby-build)
+
+  h3 "Installing Ruby Version ${bldpur}${version} ${bldblu}${version_source}."
+
   ruby.validate-version "${version}" || return 1
-  brew.install.packages rbenv ruby-build
+  brew.install.packages "${required_packages[@]}"
+  brew.upgrade.packages "${required_packages[@]}"
+
   if [[ -n "$*" ]]; then
     info "Attemping to install additional packages via Brew:"
+
     for package in "$@"; do
       run.set-next abort-on-error
-      brew.install.package ${package}
+      brew.install.package "${package}"
+
+      local func=".ruby.configure-with.${package}"
+      util.is-a-function "${func}" && ${func}
     done
   fi
+
   eval "$(rbenv init -)"
-  run "rbenv install -s ${version}"
+  h2 "RUBY_CONFIGURE_OPTS: ${bldgrn}${RUBY_CONFIGURE_OPTS}"
+  run "RUBY_CONFIGURE_OPTS=\"${RUBY_CONFIGURE_OPTS}\" rbenv install -s ${version}"
+
   return "${LibRun__LastExitCode:-"0"}"
 }
 
-# Installs Ruby with jemalloc
-ruby.install-ruby-with-jemalloc() {
-  export RUBY_CONFIGURE_OPTS="--with-jemalloc"
-  ruby.install-ruby "$1" jemalloc
+# Configures Ruby with jemalloc
+.ruby.configure-with.jemalloc() {
+  export RUBY_CONFIGURE_OPTS="--with-jemalloc ${RUBY_CONFIGURE_OPTS}"
+}
+
+# Configures Ruby with readline
+.ruby.configure-with.readline() {
+  export RUBY_CONFIGURE_OPTS="--with-readline-dir=$(brew --prefix readline) ${RUBY_CONFIGURE_OPTS}"
+}
+
+# Configures Ruby with openssl
+.ruby.configure-with.openssl() {
+  export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl) ${RUBY_CONFIGURE_OPTS}"
 }
 
 ##————————————————————————————————————————————————————————————————
@@ -297,12 +341,18 @@ ruby.validate-version() {
     run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
   }
 
-  array.from.stdin ruby_versions 'rbenv install --list | sed -E "s/\s+//g"'
+  local arg="$(.ruby.ruby-build.list-argument)"
+  array.from.stdin ruby_versions "rbenv install ${arg} | sed -E \"s/\s+//g\""
+
+  inf "Validating ruby version: ${version}"
 
   array.includes "${version}" "${ruby_versions[@]}" || {
-    error "Ruby Version provided was found by rbenv: ${bldylw}${version}"
+    not-ok:
+    error "Ruby Version provided was NOT found by rbenv: ${bldylw}${version}" "Found a total of ${bldgrn}${#ruby_versions[*]} ruby versions."
     return 1
   }
+
+  ok:
 
   return 0
 }

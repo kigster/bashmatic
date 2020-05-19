@@ -24,14 +24,22 @@ brew.cache-reset.delayed() {
   ((${BASH_IN_SUBSHELL})) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
 }
 
+brew.upgrade.packages() {
+  [[ -z "$(which brew)" ]] || brew.install
+  [[ -z  $1 ]] && { 
+    error "usage: brew.upgrade.packages package1 package2 ..."
+    return 1
+  }
+
+  run "brew upgrade $@"
+}
+
 brew.upgrade() {
   brew.install
-
   if [[ -z "$(which brew)" ]]; then
     warn "brew is not installed...."
     return 1
   fi
-
   run "brew update --force"
   run "brew upgrade"
   run "brew cleanup -s"
