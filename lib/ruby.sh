@@ -265,6 +265,10 @@ ruby.install-ruby-with-deps() {
 
 ruby.install-ruby-with-readline-and-openssl() {
   local version="$1"
+  [[ -z ${version} ]] && { 
+    error "usage: ruby.install-ruby-with-readline-and-openssl ruby-version"
+    return 1
+  }
   shift
   ruby.install-ruby ${version} openssl readline "$@"
 }
