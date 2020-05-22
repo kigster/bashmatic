@@ -134,11 +134,11 @@ Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping sc
 
 === Bootstrapping _Bashmatic®_ using `curl`
 
-First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-1-0 to a version you'd like to install):
+First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-2-0 to a version you'd like to install):
 
 [source,bash]
 ----
-❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-1-0)"
+❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-2-0)"
 ----
 
 This not only will check out _bashmatic®_ into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
