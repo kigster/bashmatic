@@ -136,10 +136,22 @@ bashmatic.auto-update() {
   git.repo-is-clean || {
     output.is-ssh || {
       h1 "${BASHMATIC_HOME} has locally modified changes." \
-         "Will wait with auto-update until it's sync'd up."
+        "Will wait with auto-update until it's sync'd up."
     }
     return 1
   }
 
   git.sync
+}
+
+git.commits.last.sha() {
+  git log --pretty=format:"%H" -1
+}
+
+git.commits.last.message() {
+  git log --pretty=format:"%s" -1
+}
+
+git.branch.current() {
+  git rev-parse --abbrev-ref HEAD
 }

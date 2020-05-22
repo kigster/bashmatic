@@ -19,9 +19,9 @@ load test_helper
 
 source lib/file.sh
 source lib/util.sh
+source lib/bashmatic.sh
 
 set -e
-
 
 @test "file.source-if-exists()" {
   set -e
@@ -34,7 +34,7 @@ set -e
 
   declare -a files_array
   eval "$(files.map.shell-scripts test/fixtures files_array)"
-  [[ ${#files_array[@]} -eq 2 ]]
+  [[ ${#files_array[@]} -gt 2 ]]
 }
 
 @test "file.size()" {

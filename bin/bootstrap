@@ -23,14 +23,21 @@ err() {
   done
 }
 
-which -s git || {
-  puts "Please install xcode command line tools, "
-  puts "by running: xcode-select --install"
+command -v git >/dev/null || {
+  OS="$(uname -s)"
+  if [[ "${OS}" == "Darwin" ]]; then
+    puts "Please install xcode command line tools, "
+    puts "by running: xcode-select --install"
+  elif [[ "${OS}" == "Linux" ]]; then
+    puts "Please install Git."
+    puts "eg. apt-get install git"
+  fi
   exit 1
 }
 
 bashmatic.git.sync() {
   cd "${BASHMATIC_HOME}" >/dev/null
+  [[ -d ".git" ]] || return
 
   if [[ -n $(git status -s) ]]; then
     err "Looks like your .bashmatic folder exists, and has some locally modified files." \

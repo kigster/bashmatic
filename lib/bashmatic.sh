@@ -193,5 +193,5 @@ bashmatic.setup() {
 
   bashmatic.source util.sh git.sh file.sh color.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
-  bashmatic.auto-update
+  [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
 }

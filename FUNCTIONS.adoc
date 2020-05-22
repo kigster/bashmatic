@@ -29,6 +29,7 @@
 * xref:#module-osx[osx]
 * xref:#module-output[output]
 * xref:#module-pids[pids]
+* xref:#module-pipe[pipe]
 * xref:#module-progress-bar[progress-bar]
 * xref:#module-repositories[repositories]
 * xref:#module-ruby[ruby]
@@ -802,7 +803,7 @@ bashmatic.setup ()
     fi;
     bashmatic.source util.sh git.sh file.sh color.sh;
     bashmatic.source-dir "${BASHMATIC_LIBDIR}";
-    bashmatic.auto-update
+    [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
 }
 
 ----
@@ -1242,6 +1243,22 @@ brew.upgrade ()
     run "brew update --force";
     run "brew upgrade";
     run "brew cleanup -s"
+}
+
+----
+
+==== `brew.upgrade.packages`
+
+[source,bash]
+----
+brew.upgrade.packages () 
+{ 
+    [[ -z "$(which brew)" ]] || brew.install;
+    [[ -z $1 ]] && { 
+        error "usage: brew.upgrade.packages package1 package2 ...";
+        return 1
+    };
+    run "brew upgrade $@"
 }
 
 ----
@@ -2944,6 +2961,39 @@ bashmatic.auto-update ()
         return 1
     };
     git.sync
+}
+
+----
+
+==== `git.branch.current`
+
+[source,bash]
+----
+git.branch.current () 
+{ 
+    git rev-parse --abbrev-ref HEAD
+}
+
+----
+
+==== `git.commits.last.message`
+
+[source,bash]
+----
+git.commits.last.message () 
+{ 
+    git log --pretty=format:"%s" -1
+}
+
+----
+
+==== `git.commits.last.sha`
+
+[source,bash]
+----
+git.commits.last.sha () 
+{ 
+    git log --pretty=format:"%H" -1
 }
 
 ----
@@ -5507,6 +5557,42 @@ sig.list ()
 ----
 
 
+=== Module `pipe`
+
+==== `pipe.extract-variables`
+
+[source,bash]
+----
+pipe.extract-variables () 
+{ 
+    sed -E '/^\(\s*\)#.*$/D;/^\s*$/D;/^[^A-Z].*$/D;s/export //gi;' | cut -d '=' -f 1
+}
+
+----
+
+==== `pipe.remove-blank-lines`
+
+[source,bash]
+----
+pipe.remove-blank-lines () 
+{ 
+    sed -E '/^$/D'
+}
+
+----
+
+==== `pipe.remove-hash-comments`
+
+[source,bash]
+----
+pipe.remove-hash-comments () 
+{ 
+    sed -E '/^\(\s*\)?#.*$/D; s/#.*$//g;'
+}
+
+----
+
+
 === Module `progress-bar`
 
 ==== `progress.bar.auto-run`
@@ -6028,19 +6114,25 @@ ruby.install-ruby ()
         error "USAGE: ruby.install-ruby VERSION" "Or, you can create a local .ruby-version file";
         return 1
     };
-    hl.subtle "Installing Ruby Version ${version} ${version_source}.";
+    local -a required_packages;
+    required_packages=(rbenv ruby-build);
+    h3 "Installing Ruby Version ${bldpur}${version} ${bldblu}${version_source}.";
     ruby.validate-version "${version}" || return 1;
-    brew.install.packages rbenv ruby-build;
+    brew.install.packages "${required_packages[@]}";
+    brew.upgrade.packages "${required_packages[@]}";
     if [[ -n "$*" ]]; then
         info "Attemping to install additional packages via Brew:";
         for package in "$@";
         do
             run.set-next abort-on-error;
-            brew.install.package ${package};
+            brew.install.package "${package}";
+            local func=".ruby.configure-with.${package}";
+            util.is-a-function "${func}" && ${func};
         done;
     fi;
     eval "$(rbenv init -)";
-    run "rbenv install -s ${version}";
+    h2 "RUBY_CONFIGURE_OPTS: ${bldgrn}${RUBY_CONFIGURE_OPTS}";
+    run "RUBY_CONFIGURE_OPTS=\"${RUBY_CONFIGURE_OPTS}\" rbenv install -s ${version}";
     return "${LibRun__LastExitCode:-"0"}"
 }
 
@@ -6053,21 +6145,26 @@ ruby.install-ruby ()
 ruby.install-ruby-with-deps () 
 { 
     local version="$1";
-    declare -a packages=(cask bash bash-completion git go haproxy htop jemalloc libxslt jq libiconv libzip netcat nginx openssl pcre pstree p7zip rbenv redis ruby_build tree vim watch wget zlib);
+    declare -a packages=(cask bash bash-completion git go haproxy htop jemalloc libxslt jq libiconv libzip netcat nginx openssl pcre pstree p7zip rbenv redis ruby_build readline tree vim watch wget zlib);
     run.set-next show-output-on;
     run "brew install --display-times ${packages[*]}"
 }
 
 ----
 
-==== `ruby.install-ruby-with-jemalloc`
+==== `ruby.install-ruby-with-readline-and-openssl`
 
 [source,bash]
 ----
-ruby.install-ruby-with-jemalloc () 
+ruby.install-ruby-with-readline-and-openssl () 
 { 
-    export RUBY_CONFIGURE_OPTS="--with-jemalloc";
-    ruby.install-ruby "$1" jemalloc
+    local version="$1";
+    [[ -z ${version} ]] && { 
+        error "usage: ruby.install-ruby-with-readline-and-openssl ruby-version";
+        return 1
+    };
+    shift;
+    ruby.install-ruby ${version} openssl readline "$@"
 }
 
 ----
@@ -6200,7 +6297,8 @@ ruby.stop ()
 ruby.top-versions () 
 { 
     local platform="${1:-"2\."}";
-    rbenv install --list | egrep "^${platform}" | ruby -e '
+    local arg="$(.ruby.ruby-build.list-argument)";
+    rbenv install ${arg} | egrep "^${platform}" | ruby -e '
       last_v = nil;
       last_m = nil;
       ARGF.each do |line|
@@ -6239,11 +6337,15 @@ ruby.validate-version ()
     [[ -d ~/.rbenv/plugins/ruby-build ]] && { 
         run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
     };
-    array.from.stdin ruby_versions 'rbenv install --list | sed -E "s/\s+//g"';
+    local arg="$(.ruby.ruby-build.list-argument)";
+    array.from.stdin ruby_versions "rbenv install ${arg} | sed -E \"s/\s+//g\"";
+    inf "Validating ruby version: ${version}";
     array.includes "${version}" "${ruby_versions[@]}" || { 
-        error "Ruby Version provided was found by rbenv: ${bldylw}${version}";
+        not-ok:;
+        error "Ruby Version provided was NOT found by rbenv: ${bldylw}${version}" "Found a total of ${bldgrn}${#ruby_versions[*]} ruby versions.";
         return 1
     };
+    ok:;
     return 0
 }
 
