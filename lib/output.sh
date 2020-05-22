@@ -220,21 +220,13 @@ output.color.off() {
   printf "┘${clr}\n"
 }
 
-.output.which-ruby() {
-  if [[ -n $(which rbenv) && -n $(rbenv which ruby) ]]; then
-    rbenv which ruby
-  elif [[ -x /usr/bin/ruby ]]; then
-    printf /usr/bin/ruby
-  elif [[ -x /usr/local/bin/ruby ]]; then
-    printf /usr/local/bin/ruby
-  else
-    which ruby
-  fi
+.output.clean.pipe() {
+  sed -E 's/\x1b\[[0-9]*;?[0-9]+m//g' | tr -cd '\000-\177'
 }
 
 .output.clean() {
   local text="$*"
-  $(.output.which-ruby) -e "input=\"${text}\"; " -e 'puts input.gsub(/\e\[[;m\d]+/, "")'
+  printf -- '%s' "${text}" | .output.clean.pipe
 }
 
 .output.boxed-text() {
