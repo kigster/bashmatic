@@ -138,7 +138,7 @@ First, make sure that you have Curl installed, run `which curl` to see. Then cop
 
 [source,bash]
 ----
-❯ bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-2-0)"
+❯ bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)"
 ----
 
 This not only will check out _bashmatic®_ into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
