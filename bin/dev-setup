@@ -5,8 +5,8 @@ set +x
 source "${HOME}/.bashmatic/init.sh" 1>/dev/null
 
 export DEFAULT_RUBY_VERSION="2.7.1"
-export DEFAULT_POSTGRESQL_VERSION="11"
-export DEFAULT_MYSQL_VERSION="11"
+export DEFAULT_POSTGRESQL_VERSION=
+export DEFAULT_MYSQL_VERSION=
 
 run.set-all continue-on-error
 output.set-max-width 100
@@ -26,18 +26,17 @@ declare -a mysql_versions
 export DevSetup__Version="0.2.0"
 
 .dev-setup.detect.pg-version() {
-  export pg_versions=($(brew.package.available-versions postgresql))
-  export latest_postgres_version=${pg_versions[0]}
-  export postgres_version=${postgres_version:-${latest_postgres_version}}
   export postgres_version=${postgres_version:-${DEFAULT_POSTGRESQL_VERSION}}
+  [[ -n ${postgres_version} ]] || return 0
   info "Using PostgreSQL version ${bldylw}${postgres_version}">&2
+  [[ ${postgres_version} =~ '@' ]] || export postgres_version="\@${mysql_version}"
 }
 
 .dev-setup.detect.mysql-version() {
-  export mysql_versions=($(brew.package.available-versions mysql))
-  export latest_mysql_version="${mysql_versions[0]}"
-  export mysql_version=${mysql_version:-${latest_mysql_version}}
   export mysql_version=${mysql_version:-${DEFAULT_MYSQL_VERSION}}
+  [[ -n ${mysql_version} ]] || return 0
+  info "Using MySQL version ${bldylw}${mysql_version}">&2
+  [[ ${mysql_version} =~ '@' ]] || export mysql_version="\@${mysql_version}"
 }
 
 .dev-setup.detect.ruby-version() {
@@ -368,19 +367,19 @@ export DevSetup__Callbacks
 
 .dev-setup.brew.postgres() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
-    "postgresql@${postgres_version}"
+    "postgresql${postgres_version}"
   )
   export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
-    "postgresql@${postgres_version}"
+    "postgresql${postgres_version}"
   )
 }
 
 .dev-setup.brew.mysql() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
-    "mysql@${mysql_version}"
+    "mysql${mysql_version}"
   )
   export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
-    "mysql@${mysql_version}"
+    "mysql${mysql_version}"
   )
 }
 
@@ -594,8 +593,7 @@ dev.setup.print-versions() {
   array.includes "postgres" "${components_to_install[@]}" && {
     .dev-setup.detect.pg-version
     if [[ -z ${postgres_version} ]]; then
-      error "Missing PostgreSQL version!"
-      exit 1
+      h.salmon-center "Installing the latest PostgreSQL version..."
     else
       h.salmon-center "Using PostgreSQL version ${postgres_version}..."
     fi
@@ -604,8 +602,7 @@ dev.setup.print-versions() {
   array.includes "mysql" "${components_to_install[@]}" && {
     .dev-setup.detect.mysql-version
     if [[ -z ${mysql_version} ]]; then
-      error "Missing MySQL version!"
-      exit 1
+      h.salmon-center "Installing the latest MySQL version..."
     else
       h.salmon-center "Using MySQL version ${mysql_version}..."
     fi
