@@ -3,6 +3,27 @@
 
 export RUBY_CONFIGURE_OPTS="${RUBY_CONFIGURE_OPTS:-""}"
 
+ruby.ensure-rbenv() {
+  [[ -n $(command -v rbenv) ]] && return 0
+
+  brew.install
+  brew.install.package rbenv ruby-build
+
+  grep -q "rbenv init" ~/.bash_profile && echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+
+  [[ -n $(command -V rbenv) ]] && return 0
+
+  return 1
+}
+
+ruby.ensure-rbenv-or-complain() {
+  ruby.ensure-rbenv || { 
+    error "Can't install rbenv via HomeBrew, please try manually."
+    return 1
+  }
+  return 0
+}
+
 # This function can be used to generate a YAML array of the latest minor ruby versions
 # against each major version. The output should be compatible with .travis.yml format
 ruby.top-versions-as-yaml() {
@@ -12,6 +33,8 @@ ruby.top-versions-as-yaml() {
 
 # i
 .ruby.ruby-build-updated() {
+  ruby.ensure-rbenv-or-complain || return 1
+
   rbenv install --version | awk '{ if($2 >= 20200518) exit(0); else exit(1); }'
 }
 
@@ -81,6 +104,7 @@ ruby.default-gems() {
 ## description: Initialize rbenv
 ##
 ruby.rbenv() {
+  ruby.ensure-rbenv-or-complain || return 1
   if [[ -n "$*" ]]; then
     rbenv $*
   else
