@@ -2715,6 +2715,17 @@ gem.cache-refresh ()
 
 ----
 
+==== `gem.cache-reset`
+
+[source,bash]
+----
+gem.cache-reset () 
+{ 
+    gem.cache-refresh
+}
+
+----
+
 ==== `gem.clear-cache`
 
 [source,bash]
@@ -2783,7 +2794,7 @@ gem.gemfile.version ()
     local gem=$1;
     [[ -z ${gem} ]] && return;
     if [[ -f Gemfile.lock ]]; then
-        egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9]\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g';
+        egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g';
     fi
 }
 
@@ -5565,7 +5576,7 @@ sig.list ()
 ----
 pipe.extract-variables () 
 { 
-    sed -E '/^\(\s*\)#.*$/D;/^\s*$/D;/^[^A-Z].*$/D;s/export //gi;' | cut -d '=' -f 1
+    sedx -E '/^\(\s*\)#.*$/D;/^\s*$/D;/^[^A-Z].*$/D;s/export //gi;' | cut -d '=' -f 1
 }
 
 ----
@@ -5576,7 +5587,7 @@ pipe.extract-variables ()
 ----
 pipe.remove-blank-lines () 
 { 
-    sed -E '/^$/D'
+    sedx -E '/^$/D'
 }
 
 ----
@@ -5587,7 +5598,7 @@ pipe.remove-blank-lines ()
 ----
 pipe.remove-hash-comments () 
 { 
-    sed -E '/^\(\s*\)?#.*$/D; s/#.*$//g;'
+    sedx -E '/^\(\s*\)?#.*$/D; s/#.*$//g;'
 }
 
 ----
@@ -5947,6 +5958,37 @@ ruby.default-gems ()
 
 ----
 
+==== `ruby.ensure-rbenv`
+
+[source,bash]
+----
+ruby.ensure-rbenv () 
+{ 
+    [[ -n $(command -v rbenv) ]] && return 0;
+    brew.install;
+    brew.install.package rbenv ruby-build;
+    grep -q "rbenv init" ~/.bash_profile && echo 'eval "$(rbenv init -)"' >> ~/.bash_profile;
+    [[ -n $(command -V rbenv) ]] && return 0;
+    return 1
+}
+
+----
+
+==== `ruby.ensure-rbenv-or-complain`
+
+[source,bash]
+----
+ruby.ensure-rbenv-or-complain () 
+{ 
+    ruby.ensure-rbenv || { 
+        error "Can't install rbenv via HomeBrew, please try manually.";
+        return 1
+    };
+    return 0
+}
+
+----
+
 ==== `ruby.full-version`
 
 [source,bash]
@@ -6241,6 +6283,7 @@ ruby.numeric-version ()
 ----
 ruby.rbenv () 
 { 
+    ruby.ensure-rbenv-or-complain || return 1;
     if [[ -n "$*" ]]; then
         rbenv $*;
     else
