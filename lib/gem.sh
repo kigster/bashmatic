@@ -86,7 +86,7 @@ gem.gemfile.version() {
   local gem=$1
   [[ -z ${gem} ]] && return
   if [[ -f Gemfile.lock ]]; then
-    egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9]\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
+    egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
   fi
 }
 
@@ -108,6 +108,10 @@ gem.cache-refresh() {
     gem.clear-cache
     gem.cache-installed
   ) >/dev/null
+}
+
+gem.cache-reset() {
+  gem.cache-refresh
 }
 
 gem.ensure-gem-version() {

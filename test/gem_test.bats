@@ -6,16 +6,18 @@ source lib/ruby.sh
 source lib/gem.sh
 source lib/util.sh
 
-@test "gem.gemfile.version returns correct version" {
-  set -e
-  gem.configure-cache
+@test "gem.gemfile.version returns correct 4-part version" {
   gem.cache-refresh
-  rm -f ${LibGem__GemListCache}
-  mkdir -p $(dirname ${LibGem__GemListCache})
-  touch ${LibGem__GemListCache}
-  cp -f test/Gemfile.lock .
-  result=$(gem.gemfile.version activesupport)
-  [[ -d test && -f Gemfile.lock ]] && ( rm -f Gemfile.lock ; true )
-  [[ "${result}" == "6.0.2" ]]
+  set -e
+  cp test/Gemfile.lock .
+  result="$(gem.gemfile.version activesupport)"
+  [ "${result}" = "6.0.3.1" ]
 }
 
+@test "gem.gemfile.version returns correct 3-part version" {
+  gem.cache-refresh
+  set -e
+  cp test/Gemfile.lock .
+  result="$(gem.gemfile.version simple-feed)"
+  [ "${result}" = "3.0.0" ]
+}
