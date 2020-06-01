@@ -91,6 +91,12 @@ ruby.default-gems() {
     travis
     awscli
     irbtools
+    kramdown-asciidoc
+    asciidoctor
+    kramdown
+    gemsmith
+    rspec
+    rspec-its
   )
 
   export DEFAULT_RUBY_GEMS
