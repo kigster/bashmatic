@@ -1,8 +1,0 @@
-{
-  "cmd": "bin/specs",
-  "__comment": {
-    "name": "Run bat",
-    "sh": true,
-    "errorMatch": "^regexp$"
-  }
-}

@@ -1,6 +1,8 @@
 #/usr/bin/env bash
 # Private functions
 
+# shellcheck disable=SC2155
+
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
@@ -151,8 +153,12 @@ output.color.off() {
   printf -- $(($h - 2))
 }
 
+.output.width() {
+  printf '%d' "$(($(.output.screen-width) - 2))"
+}
+
 .output.line() {
-  .output.repeat-char "─" $(($(.output.screen-width) - 2))
+  .output.repeat-char "─" $(.output.width)
 }
 
 .output.hr() {
@@ -221,7 +227,7 @@ output.color.off() {
 }
 
 .output.clean.pipe() {
-  sed -E 's/\x1b\[[0-9]*;?[0-9]+m//g' | tr -cd '\000-\177'
+  sedx -E 's/(\x1b|\\\e)\[[0-9]*;?[0-9]+m//g' # | tr -cd '\000-\177'
 }
 
 .output.clean() {
@@ -241,15 +247,15 @@ output.color.off() {
     return
   }
 
-  local clean_text=$(.output.clean "${text}")
-  local width=$(($(.output.screen-width) - 2))
-  local remaining_space_len=$(($width - ${#clean_text} - 1))
-  printf "${__color_bdr}│ ${__color_fg}"
-  printf -- "${text}"
-  [[ ${remaining_space_len} -gt 0 ]] && {
-    cursor.shift.x $((remaining_space_len - 1))
-  }
-  printf "${__color_bdr}│${clr}\n"
+  local clean_text="$(.output.clean "${text}")"
+  local clean_text_len="${#clean_text}"
+  local width="$(.output.width)"
+  local remaining_space_len=$((width - clean_text_len - 1))
+
+  printf "${__color_bdr}%s ${__color_fg}" '│'
+  printf "${text}%s" ''
+  [[ ${remaining_space_len} -gt 0 ]] && cursor.shift.x $((remaining_space_len - 1))
+  printf "${__color_bdr}%s${clr}\n" '│'
 }
 
 #
@@ -424,7 +430,7 @@ box.red-in-yellow() {
 }
 
 box.red-in-red() {
-  .output.box "${bldred}" "${txtred}" "$@"
+  .output.box "${txtred}" "${txtred}" "$@"
 }
 
 h.e() {
@@ -753,7 +759,7 @@ info() {
 }
 
 error() {
-  header=$(printf -- "${txtblk}${bakred} « ERROR » ${clr}")
+  header=$(printf -- "${bldwht}${bakred} « ERROR » ${clr}")
   box.red-in-red "${header} ${bldylw}$@" >&2
 }
 
