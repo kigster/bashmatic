@@ -227,7 +227,7 @@ output.color.off() {
 }
 
 .output.clean.pipe() {
-  sedx -E 's/(\x1b|\\\e)\[[0-9]*;?[0-9]+m//g' # | tr -cd '\000-\177'
+  sed -E 's/(\x1b|\\\e)\[[0-9]*;?[0-9]+m//g' # | tr -cd '\000-\177'
 }
 
 .output.clean() {
