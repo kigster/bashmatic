@@ -1,8 +1,9 @@
-MIT License
+= LICENSE
+:doctype: book
 
-Copyright (c) 2017-2019 Konstantin Gredeskoul
+== Copyright © 2017-2020 Konstantin Gredeskoul
 
-Parts of the codebase are Copyright (c) 2018 Pioneerworks, Inc, but were
+Parts of the codebase are Copyright © 2018 PioneerWorks, Inc, but have were
 authored by Konstantin Gredeskoul as part of the open source initiative.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -15,10 +16,10 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+SOFTWARE.**

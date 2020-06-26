@@ -11,9 +11,10 @@ NOTICE:
 ====
 * _Bashmatic®_ is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
 
-* You can also download the https://raw.githubusercontent.com/kigster/bashmatic/master/README.pdf[PDF version of this document] which is better for print. 
+* You can also download the xref:README.pdf[PDF version of this document] which is better for print. 
 
-* Additionally please checkout the https://raw.githubusercontent.com/kigster/bashmatic/master/CHANGELOG.md[CHANGELOG] and the https://raw.githubusercontent.com/kigster/bashmatic/master/LICENSE[LICENSE]
+* Additionally please checkout the xref:CHANGELOG.md[CHANGELOG] and the xref:LICENSE.adoc[LICENSE].
+
 ====
 
 _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
