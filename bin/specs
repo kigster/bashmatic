@@ -8,6 +8,7 @@ export TERM=${TERM:-xterm-256color}
 export MIN_WIDTH=${MIN_WIDTH:-"100"}
 
 export ProjectRoot=$(pwd -P)
+trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT 
 export BatsRoot="${ProjectRoot}/.bats-sources"
 export BatsPrefix="${ProjectRoot}/.bats-install"
 

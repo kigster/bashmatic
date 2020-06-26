@@ -19,5 +19,5 @@ source lib/util.sh
   set -e
   cp test/Gemfile.lock .
   result="$(gem.gemfile.version simple-feed)"
-  [ "${result}" = "3.0.0" ]
+  [ "${result}" = "3.0.1" ]
 }
