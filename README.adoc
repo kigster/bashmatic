@@ -1,14 +1,20 @@
+= Bashmatic™ — BASH primitives for humans, and for fun.
 :doctype: book
-:pp: {plus}{plus}
 :toc:
-
+:toclevels: 3
+:sectnums:
 
 image:https://travis-ci.org/kigster/bashmatic.svg?branch=master[Build Status,link=https://travis-ci.org/kigster/bashmatic]
 image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI]
 
-NOTE: _Bashmatic®_ is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
+NOTICE: 
+====
+* _Bashmatic®_ is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
 
-= Bashmatic
+* You can also download the https://raw.githubusercontent.com/kigster/bashmatic/master/README.pdf[PDF version of this document] which is better for print. 
+
+* Additionally please checkout the https://raw.githubusercontent.com/kigster/bashmatic/master/CHANGELOG.md[CHANGELOG] and the https://raw.githubusercontent.com/kigster/bashmatic/master/LICENSE[LICENSE]
+====
 
 _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
 
@@ -33,15 +39,13 @@ Despite the above points, it is also generally accepted that:
 
 IMPORTANT: _Bashmatic_'s goal is to make BASH programming both fun, consistent, and provide plenty of visible output to the user so that there is no mystery as to what is going on.
 
-== What's The Fuss? Another BASH framework?
+== Three Examples to Showcase Bashmatic
 
-BASH is know to be too verbose and unreliable. We beg to differ.
+**Why do we need another BASH framework?**
 
-This is why we wanted to start this README with a couple of examples.
+BASH is know to be too verbose and unreliable. We beg to differ. This is why we wanted to start this README with a couple of examples.
 
-=== Usage Examples
-
-==== Example 1. Gem and Brew Install Script
+=== Example A: Install Gems via Homebrew
 
 Just look at this tiny, five-line script:
 
@@ -52,6 +56,7 @@ source ~/.bashmatic/init.sh
 
 h2 "Installing ruby gem sym and brew package curl..." \
    "Please standby..."
+
 gem.install "sym" && brew.install.package "curl" && \
   success "installed sym ruby gem, version $(gem.version sym)"
 ----
@@ -68,7 +73,9 @@ Still not convinced?
 
 Take a look at a more comprehensive example next.
 
-=== Example 2. Installing `kubectl` and `minikube` into `/usr/local/bin`
+=== Example B: Download and install binaries.
+
+In this example, we'll download and install binaries `kubectl` and `minikube` binaries into `/usr/local/bin`
 
 We provided an example script in link:examples/k8s-installer.sh[`examples/k8s-installer.sh`]. Please click and take a look at the source.
 
@@ -90,7 +97,7 @@ NOTE: If you need to create a BASH installer, _Bashmatic®_ offers some incredib
 
 Let's get back to the Earth, and talk about how to install Bashmatic, and how to use it in more detail right after.
 
-=== Example 3. Mac OSX Developer Setup Script
+=== Example C: Developer Environment Bootstrap Script
 
 This final and most feature-rich example is not just an example -- **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
 
@@ -100,11 +107,18 @@ It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`
 
 image::.dev-setup.png[dev-setup.png,width=80%]
 
-Here are a couple of ways to run it:
+In the example below we'll use `dev-setup` script to install the following:
+ 
+* Dev Tools
+* PostgreSQL 
+* Redis
+* Memcached 
+* Ruby 2.7.1
+* NodeJS/NPM/Yarn
 
-==== Example 3.1 Dev Tools + PostgreSQL + Redis/Memcached + Ruby 2.7.1 + NodeJS/NPM/Yarn
+Despite that this is a long list, we can install it all in one command.
 
-In this example we'll install the above mentioned tools in one command. We'll run this from a folder where our application is installed, because then the Ruby Version will be auto-detected from our `.ruby-version` file, and in addition to installing all the dependencies the script will also run `bundle install` and `npm install` (or `yarn install`). Not bad, huh?
+We'll run this from a folder where our application is installed, because then the Ruby Version will be auto-detected from our `.ruby-version` file, and in addition to installing all the dependencies the script will also run `bundle install` and `npm install` (or `yarn install`). Not bad, huh?
 
 [source,bash]
 ----
@@ -117,7 +131,9 @@ In this example we'll install the above mentioned tools in one command. We'll ru
 
 This compact command line installs a ton of things, but don't take our word for it — run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
 
-==== Example 4. The final example installs GRC Colourify Tool that makes your terminal very colorful.
+=== Example D: Installing GRC Colourify Tool
+
+This is a great tool that colorizes nearly any other tool's output.
 
 Run it like so:
 
@@ -435,9 +451,9 @@ Components are BASH functions that draw something concrete on the screen. For in
 ----
 ❯ h1 Hello
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ Hello                                                                           │
-└─────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│ Hello                                        │
+└──────────────────────────────────────────────┘
 ----
 
 These are often named after HTML elements, such as `hr`, `h1`, `h2`, etc.
