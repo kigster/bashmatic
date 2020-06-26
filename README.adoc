@@ -1,4 +1,5 @@
 = Bashmatic™ — BASH primitives for humans, and for fun.
+:allow-uri-read:
 :doctype: book
 :toc:
 :toclevels: 3
@@ -64,7 +65,7 @@ gem.install "sym" && brew.install.package "curl" && \
 
 Results in this detailed and, let's be honest, _gorgeous_ ASCII output:
 
-image::.bashmatic-example.png[example,width=80%]
+image::.bashmatic-example.png[example,width=100%]
 
 Tell me you are not at all excited to start writing complex installation flows in BASH right away?
 
@@ -82,7 +83,7 @@ We provided an example script in link:examples/k8s-installer.sh[`examples/k8s-in
 
 Here is the output of running this script:
 
-image::.k8installer.png[.k8installer.png,width=80%]
+image::.k8installer.png[.k8installer.png,width=100%]
 
 Why do we think this type of installer is pretty awesome, compared to a silent but deadly shell script that "Jim-in-the-corner" wrote and now nobody understands?
 
@@ -106,7 +107,7 @@ NOTE: the script relies on Homebrew behind the scenes, and therefore would not w
 
 It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
-image::.dev-setup.png[dev-setup.png,width=80%]
+image::.dev-setup.png[dev-setup.png,width=100%]
 
 In the example below we'll use `dev-setup` script to install the following:
  
@@ -155,7 +156,7 @@ First, make sure that you have Curl installed, run `which curl` to see. Then cop
 
 [source,bash]
 ----
-❯ bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)"
+$ bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)"
 ----
 
 This not only will check out _bashmatic®_ into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
@@ -164,7 +165,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 
 [source,bash]
 ----
-❯ bashmatic.version
+$ bashmatic.version
 1.0.0
 ----
 
@@ -218,7 +219,7 @@ For instance:
 
 [source,bash]
 ----
-❯ gem.install
+$ gem.install
 ┌──────────────────────────────────────────────────────────────────┐
 │  « ERROR »  Error — gem name is required as an argument          │
 └──────────────────────────────────────────────────────────────────┘
@@ -228,10 +229,10 @@ Now let's run it properly:
 
 [source,bash]
 ----
-❯ gem.install simple-feed
+$ gem.install simple-feed
        installing simple-feed (latest)...
-  ✔︎    ❯ gem install simple-feed   ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔   5685 ms 〕    0
-  ✔︎    ❯ gem list > /tmp/.bashmatic/.gem/gem.list ▪▪▪▪▪▪〔    503 ms 〕    0
+  ✔︎    $ gem install simple-feed   ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔   5685 ms 〕    0
+  ✔︎    $ gem list > /tmp/.bashmatic/.gem/gem.list ▪▪▪▪▪▪〔    503 ms 〕    0
 ----
 
 The naming convention we use is a derivative of Google's Bash StyleGuide, using `.` to separate BASH function namespaces instead of much more verbose `::`.
@@ -246,14 +247,14 @@ To get a list of module or pattern-specific functions installed by the framework
 
 [source,bash]
 ----
-❯ bashmatic.functions-from pattern [ columns ]
+$ bashmatic.functions-from pattern [ columns ]
 ----
 
 For instance:
 
 [source,bash]
 ----
-❯ bashmatic.functions-from docker 2
+$ bashmatic.functions-from docker 2
 docker.abort-if-down                    docker.build.container
 docker.actions.build                    docker.containers.clean
 .......
@@ -268,7 +269,7 @@ Note how we use _Bashmatic®_ helper `columnize [ columns ]` to display a long l
 
 [source,bash]
 ----
-❯ ls -1 ~/.bashmatic/lib | sed 's/\.sh//g' | columnize 5
+$ ls -1 ~/.bashmatic/lib | sed 's/\.sh//g' | columnize 5
 7z                deploy            jemalloc          runtime-config    time
 array             dir               json              runtime           trap
 audio             docker            net               set               url
@@ -296,7 +297,7 @@ These collectively offer the following functions:
 
 [source,bash]
 ----
-❯ bashmatic.functions-from 'run*'
+$ bashmatic.functions-from 'run*'
 
 run                                            run.set-next
 run.config.detail-is-enabled                   run.set-next.list
@@ -368,7 +369,7 @@ Here is the list of functions in this module:
 
 [source,bash]
 ----
-❯ bashmatic.functions-from output 3
+$ bashmatic.functions-from output 3
 abort                          error:                         left-prefix
 ascii-clean                    h.black                        ok
 box.blue-in-green              h.blue                         okay
@@ -423,7 +424,7 @@ When you run this, you should see something like this:
 
 [source,bash]
 ----
- ❯ verify-cask TextMate
+ $ verify-cask TextMate
   ✔︎    verifying brew cask TextMate....
 ----
 
@@ -440,7 +441,7 @@ Then this is what we'd see:
 
 [source,bash]
 ----
-❯ verify-cask TextMate
+$ verify-cask TextMate
   ✘    verifying brew cask TextMate....
 ----
 
@@ -450,7 +451,7 @@ Components are BASH functions that draw something concrete on the screen. For in
 
 [source,bash]
 ----
-❯ h1 Hello
+$ h1 Hello
 
 ┌──────────────────────────────────────────────┐
 │ Hello                                        │
@@ -510,7 +511,7 @@ Then you can run it like so:
 
 [source,bash]
 ----
-❯ url.shorten https://raw.githubusercontent.com/kigster/bashmatic/master/bin/install
+$ url.shorten https://raw.githubusercontent.com/kigster/bashmatic/master/bin/install
 # http://bit.ly/2IIPNE1
 ----
 
@@ -520,19 +521,19 @@ There are a couple of Github-specific helpers:
 
 [source,bash]
 ----
-github.clone                                   github.setup
-github.org                                     github.validate
+github.clone                  github.setup
+github.org                    github.validate
 ----
 
 For instance:
 
 [source,bash]
 ----
-❯ github.clone sym
+$ github.clone sym
   ✘    Validating Github Configuration...
 
        Please enter the name of your Github Organization:
-       ❯ kigster
+       $ kigster
 
 ┌───────────────────────────────────────────────────────────────────────────────────┐
 │ Your github organization was saved in your ~/.gitconfig file.                     │
@@ -540,20 +541,20 @@ For instance:
 │ To change it in the future, run: github.org new-organization                      │
 └───────────────────────────────────────────────────────────────────────────────────┘
 
-  ✔︎    ❯ git clone git@github.com:kigster/sym ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔    931 ms 〕    0
+  ✔︎    $ git clone git@github.com:kigster/sym ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔    931 ms 〕    0
 ----
 
 ==== 5. File Helpers
 
 [source,bash]
 ----
-❯ bashmatic.functions-from file
+$ bashmatic.functions-from file
 
-file.exists_and_newer_than                    file.list.filter-non-empty
-file.gsub                                     file.size
-file.install-with-backup                      file.size.mb
-file.last-modified-date                       file.source-if-exists
-file.last-modified-year                       file.stat
+file.exists_and_newer_than     file.list.filter-non-empty
+file.gsub                      file.size
+file.install-with-backup       file.size.mb
+file.last-modified-date        file.source-if-exists
+file.last-modified-year        file.stat
 file.list.filter-existing
 ----
 
@@ -561,7 +562,7 @@ For instance, `file.stat` offers access to the `fstat()` C-function:
 
 [source,bash]
 ----
- ❯ file.stat README.md st_size
+ $ file.stat README.md st_size
 22799
 ----
 
@@ -569,13 +570,13 @@ For instance, `file.stat` offers access to the `fstat()` C-function:
 
 [source,bash]
 ----
-❯ bashmatic.functions-from array
+$ bashmatic.functions-from array
 
-array.to.bullet-list                             array.includes
-array.has-element                        array.includes-or-exit
-array.to.csv                                     array.from.stdin
-array-join                                    array.join
-array-piped                                   array.to.piped-list
+array.to.bullet-list         array.includes
+array.has-element            array.includes-or-exit
+array.to.csv                 array.from.stdin
+array-join                   array.join
+array-piped                  array.to.piped-list
 array.includes-or-complain
 ----
 
@@ -583,15 +584,15 @@ For instance:
 
 [source,bash]
 ----
-❯ declare -a farm_animals=(chicken duck rooster pig)
-❯ array.to.bullet-list ${farm_animals[@]}
+$ declare -a farm_animals=(chicken duck rooster pig)
+$ array.to.bullet-list ${farm_animals[@]}
  • chicken
  • duck
  • rooster
  • pig
-❯ array.includes "duck" "${farm_animals[@]}" && echo Yes || echo No
+$ array.includes "duck" "${farm_animals[@]}" && echo Yes || echo No
 Yes
-❯ array.includes  "cow" "${farm_animals[@]}" && echo Yes || echo No
+$ array.includes  "cow" "${farm_animals[@]}" && echo Yes || echo No
 No
 ----
 
@@ -601,18 +602,18 @@ The utilities module has the following functions:
 
 [source,bash]
 ----
-❯ bashmatic.functions-from util
+$ bashmatic.functions-from util
 
 pause.long                                    util.install-direnv
 pause                                         util.is-a-function
 pause.short                                   util.is-numeric
-pause.medium                                util.is-variable-defined
+pause.medium                                  util.is-variable-defined
 util.append-to-init-files                     util.lines-in-folder
 util.arch                                     util.remove-from-init-files
 util.call-if-function                         util.shell-init-files
 util.checksum.files                           util.shell-name
 util.checksum.stdin                           util.ver-to-i
-util.functions-starting-with                       util.whats-installed
+util.functions-starting-with                  util.whats-installed
 util.generate-password                        watch.ls-al
 ----
 
@@ -620,9 +621,9 @@ For example, version helpers can be very handy in automated version detection, s
 
 [source,bash]
 ----
-❯ util.ver-to-i '12.4.9'
+$ util.ver-to-i '12.4.9'
 112004009
-❯ util.i-to-ver $(util.ver-to-i '12.4.9')
+$ util.i-to-ver $(util.ver-to-i '12.4.9')
 12.4.9
 ----
 
@@ -632,7 +633,7 @@ Ruby helpers abound:
 
 [source,bash]
 ----
-❯ bashmatic.functions-from ruby
+$ bashmatic.functions-from ruby
 
 bundle.gems-with-c-extensions                 ruby.install-ruby-with-deps
 interrupted                                   ruby.install-upgrade-bundler
@@ -653,7 +654,7 @@ From the obvious `ruby.install-ruby <version>` to incredibly useful `ruby.top-ve
 
 [source,bash]
 ----
-❯ ruby.top-versions
+$ ruby.top-versions
 2.0.0-p648
 2.1.10
 2.2.10
@@ -664,7 +665,7 @@ From the obvious `ruby.install-ruby <version>` to incredibly useful `ruby.top-ve
 2.7.0
 2.8.0-dev
 
-❯ ruby.top-versions jruby
+$ ruby.top-versions jruby
 jruby-1.5.6
 jruby-1.6.8
 jruby-1.7.27
@@ -672,7 +673,7 @@ jruby-9.0.5.0
 jruby-9.1.17.0
 jruby-9.2.10.0
 
-❯ ruby.top-versions mruby
+$ ruby.top-versions mruby
 mruby-dev
 mruby-1.0.0
 mruby-1.1.0
@@ -689,7 +690,7 @@ These are fun helpers to assist in scripting gem management.
 
 [source,bash]
 ----
-❯ bashmatic.functions-from gem
+$ bashmatic.functions-from gem
 
 g-i                                           gem.gemfile.version
 g-u                                           gem.global.latest-version
@@ -704,9 +705,9 @@ For instance
 
 [source,bash]
 ----
-❯ g-i awesome_print
+$ g-i awesome_print
   ✔︎    gem awesome_print (1.8.0) is already installed
-❯ gem.version awesome_print
+$ gem.version awesome_print
 1.8.0
 ----
 

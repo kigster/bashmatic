@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+source ~/.bashmatic/init.sh
+
+main() {
+  local file="${1:-"README.adoc"}"
+  [[ -f ${file} ]] || file="${file}.adoc"
+  [[ -f ${file} ]] || {
+    error "Cant' find file $1 or ${file}..."
+    return 1
+  }
+
+  gem.install asciidoctor asciidoc asciidoctor-pdf
+  brew.install.package imagemagick@6
+
+  export INCLUDE_DIR="$(brew --prefix imagemagick@6)/include/ImageMagick-6"
+
+  local target=${file/adoc/pdf}
+
+  run "gem install prawn-gmagick -- --with-opt-include=${INCLUDE_DIR}"
+  run "rm -f ${target}"
+  run "asciidoctor-pdf -v -a allow-uri-read ${file}"
+  run "open ${target}"
+
+  if [[ -s ${target} ]]; then
+    success "File ${target} has been re-generated."
+  fi
+}
+
+main "$@"
