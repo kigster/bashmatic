@@ -28,6 +28,7 @@
 * xref:#module-net[net]
 * xref:#module-osx[osx]
 * xref:#module-output[output]
+* xref:#module-pdf[pdf]
 * xref:#module-pids[pids]
 * xref:#module-pipe[pipe]
 * xref:#module-progress-bar[progress-bar]
@@ -4090,7 +4091,7 @@ box.red-in-magenta ()
 ----
 box.red-in-red () 
 { 
-    .output.box "${bldred}" "${txtred}" "$@"
+    .output.box "${txtred}" "${txtred}" "$@"
 }
 
 ----
@@ -4370,7 +4371,7 @@ err ()
 ----
 error () 
 { 
-    header=$(printf -- "${txtblk}${bakred} « ERROR » ${clr}");
+    header=$(printf -- "${bldwht}${bakred} « ERROR » ${clr}");
     box.red-in-red "${header} ${bldylw}$@" 1>&2
 }
 
@@ -5240,6 +5241,39 @@ warning: ()
 ----
 
 
+=== Module `pdf`
+
+==== `pdf.combine`
+
+[source,bash]
+----
+pdf.combine () 
+{ 
+    local merged="${1}";
+    shift;
+    local files="";
+    for f in "$@";
+    do
+        [[ -f "${f}" ]] && { 
+            info "Appending file ${bldylw}${f}";
+            files="${files} '${f}'"
+        };
+    done;
+    [[ -s "${merged}" ]] && { 
+        warning "Merged file ${merged} already exists, removing...";
+        run "rm -f \"${merged}\""
+    };
+    unalias gs 2> /dev/null;
+    [[ -n $(command -V gs) ]] || brew.install.package gs;
+    run "mkdir -p $(dirname "${merged}")";
+    info "Please wait while GhostScript combines your PDFs into";
+    info "destination file: ${bldylw}${merged}";
+    run "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${merged} ${files}"
+}
+
+----
+
+
 === Module `pids`
 
 ==== `pall`
@@ -5576,7 +5610,7 @@ sig.list ()
 ----
 pipe.extract-variables () 
 { 
-    sedx -E '/^\(\s*\)#.*$/D;/^\s*$/D;/^[^A-Z].*$/D;s/export //gi;' | cut -d '=' -f 1
+    sedx '/^\(\s*\)#.*$/D; /^\s*$/D; /^[^A-Z].*$/D' | sedx 's/export //ig' | cut -d '=' -f 1
 }
 
 ----
@@ -5587,7 +5621,7 @@ pipe.extract-variables ()
 ----
 pipe.remove-blank-lines () 
 { 
-    sedx -E '/^$/D'
+    sedx '/^$/D'
 }
 
 ----
@@ -5598,7 +5632,7 @@ pipe.remove-blank-lines ()
 ----
 pipe.remove-hash-comments () 
 { 
-    sedx -E '/^\(\s*\)?#.*$/D; s/#.*$//g;'
+    sedx '/^\(\s*\)?#.*$/D; s/#.*$//g;'
 }
 
 ----
@@ -5951,7 +5985,7 @@ ruby.compiled-with ()
 ----
 ruby.default-gems () 
 { 
-    declare -a DEFAULT_RUBY_GEMS=(bundler rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools);
+    declare -a DEFAULT_RUBY_GEMS=(bundler rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools kramdown-asciidoc asciidoctor kramdown gemsmith rspec rspec-its);
     export DEFAULT_RUBY_GEMS;
     printf "${DEFAULT_RUBY_GEMS[*]}"
 }
