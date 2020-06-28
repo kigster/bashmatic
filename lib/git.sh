@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# @file Bashmatic Utilities and aliases for Git revision control system.
+# @brief Lots of useful utilities and helpers.
+
 git.configure-auto-updates() {
   # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
@@ -154,4 +157,23 @@ git.commits.last.message() {
 
 git.branch.current() {
   git rev-parse --abbrev-ref HEAD
+}
+
+# @description Reads the remote of a repo by name provided as
+#   an argument (or defaults to "origin") and opens it in the browser.
+#
+# @example
+#   git clone git@github.com:kigster/bashmatic.git
+#   cd bashmatic
+#   source init.sh
+#   git.open
+#   git.open origin # same thing
+#
+# @arg $1 optional name of the remote to open, defaults to "orogin"
+#
+git.open() {
+  local remote="${1:-"origin"}"
+  local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
+  info "Opening URL ${bldylw}${url}"
+  open -a 'Google Chrome' ${url}
 }

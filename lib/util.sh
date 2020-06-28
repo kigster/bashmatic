@@ -253,7 +253,7 @@ watch.command() {
 }
 
 util.dev-setup.update() {
-  run "rm -f ~/.bashmatic/bin/.dev-setup"
+  r un "rm -f ~/.bashmatic/bin/.dev-setup"
   run "dev-setup -N -h > /tmp/a"
   run "mv /tmp/a ~/.bashmatic/bin/.dev-setup"
   run "cd ~/.bashmatic && git add bin/.dev-setup"

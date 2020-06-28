@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# vim: ft=sh
+# Bashmatic Utilities
+# © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
+# Distributed under the MIT LICENSE.
+
+source ${BASHMATIC_INIT}
+
+function setup() {
+  [[ -n $(command -V gawk) ]] || brew.install.package gawk
+  [[ -n $(command -V kramdoc) ]] || gem.install kramdoc
+}
+
+function generate() {
+  local out=USAGE.md
+  echo "# Bashmatic© Version $(cat .version)" >$out
+
+  for file in $(ls -1 lib/*.sh); do
+    lib=$(echo $file | sed 's/lib\///g;s/\.sh$//g')
+    printf "\n%s\n" "## \`${lib}\`" >>${out}
+    cat ${file} | bin/shdoc >>${out}
+    printf "${txtgrn}%s" "❯"
+  done
+  echo
+
+  printf \
+    "\n\n----\n" \
+    "## Copyright & License\n\n" \
+    " * Copyright © 2017-2020 Konstantin Gredeskoul, All rights reserved.\n" \
+    " * Distributed under MIT License.\n\n" >>$out
+
+  adoc="${out/md/adoc}"
+  run "rm -f ${adoc}"
+  run "kramdoc ${out}"
+  [[ -f ${adoc} ]] && run "rm -f ${out}"
+
+  append.adoc.metadata "${adoc}"
+}
+
+function append.adoc.metadata() {
+  local adoc="${1}"
+  local temp=$(mktemp -t adoc)
+  run "head -1 ${adoc} >${temp}"
+  printf ":allow-uri-read:\n:toc:\n:toclevels: 4\n:sectnums:\n:showtitle:\n" >>"${temp}"
+  run "tail +3 ${adoc} | sed 's/^= /> /g' >>${temp}"
+  run "mv ${temp} ${adoc}"
+  run "asciidoctor-pdf ${adoc}"
+}
+
+main() {
+  setup
+  generate
+}
+
+main "$@"

@@ -14,6 +14,10 @@ NOTICE:
 
 * You can also download the xref:README.pdf[PDF version of this document] which is better for print. 
 
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the xref:USAGE.adoc[USAGE.adoc] file, or it's xref:USAGE.pdf[PDF version].
+
+* There is also an auto-generated file listing the source of every function and module. You can find it xref:FUNCTIONS.adoc[FUNCTIONS.adoc].
+
 * Additionally please checkout the xref:CHANGELOG.md[CHANGELOG] and the xref:LICENSE.adoc[LICENSE].
 
 ====

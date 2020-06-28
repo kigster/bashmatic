@@ -1,0 +1,150 @@
+= Bashmatic© Version 1.2.1
+:allow-uri-read:
+:toc:
+:toclevels: 4
+:sectnums:
+:showtitle:
+
+== `7z`
+
+== `array`
+
+== `audio`
+
+== `aws`
+
+== `bashmatic`
+
+== `brew`
+
+== `caller`
+
+== `color`
+
+== `db`
+
+== `deploy`
+
+== `dir`
+
+== `docker`
+
+== `file`
+
+== `ftrace`
+
+== `gem`
+
+== `git`
+
+> Bashmatic Utilities and aliases for Git revision control system.
+
+Lots of useful utilities and helpers.
+
+* <<gitopen,git.open()>>
+
+== git.open()
+
+Reads the remote of a repo by name provided as
+  an argument (or defaults to "origin") and opens it in the browser.
+
+=== Example
+
+[source,bash]
+----
+git clone git@github.com:kigster/bashmatic.git
+cd bashmatic
+source init.sh
+git.open
+git.open origin # same thing
+----
+
+=== Arguments
+
+* *$1* (optional): name of the remote to open, defaults to "orogin"
+
+== `github`
+
+== `jemalloc`
+
+== `json`
+
+== `maths`
+
+== `net`
+
+== `osx`
+
+== `output`
+
+== `pdf`
+
+> Bashmatic Utilities for PDF file handling
+
+Install and uses GhostScript to manipulate PDFs.
+
+* <<pdfcombine,pdf.combine()>>
+
+== pdf.combine()
+
+Combine multiple PDFs into a single one using ghostscript.
+
+=== Example
+
+[source,bash]
+----
+pdf.combine ~/merged.pdf 'my-book-chapter*'
+----
+
+=== Arguments
+
+* *$1* (pathname): to the merged file
+* *...* (the): rest of the PDF files to combine
+
+== `pids`
+
+== `pipe`
+
+== `progress-bar`
+
+== `repositories`
+
+== `ruby`
+
+== `run`
+
+== `runtime-config`
+
+== `runtime`
+
+== `set`
+
+== `settings`
+
+== `shell-set`
+
+== `ssh`
+
+== `subshell`
+
+== `sym`
+
+== `text`
+
+== `time`
+
+== `trap`
+
+== `url`
+
+== `usage`
+
+== `user`
+
+== `util`
+
+== `vim`
+
+== `yaml`
+
+'''
