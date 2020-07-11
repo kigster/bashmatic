@@ -1,4 +1,4 @@
-#!/usr/bin/env #!/usr/bin/env bash
+#!/usr/bin/env bash
 #
 # Created: Sun Oct  7 17:45:18 PDT 2018
 # Author: Konstantin Gredeskoul
@@ -30,11 +30,11 @@ run.set-all() {
 }
 
 run.set-next.list() {
-  set | egrep '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+  set | grep -Ee '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 run.set-all.list() {
-  set | egrep '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+  set | grep -Ee '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 run.inspect() {
@@ -69,7 +69,6 @@ ____run.set.next.show-detail-on() {
 ____run.set.next.show-detail-off() {
   export LibRun__Detail=${False}
 }
-
 
 ### show details
 ____run.set.next.show-output-on() {
@@ -183,7 +182,7 @@ ____run.configure() {
 ____run.list-options() {
   local type=$1
   local func="run.set-${type}.list"
-  local -a features=( $(eval "$func") )
+  local -a features=($(eval "$func"))
 
   h2 "List of available configuration features for ${type} command(s):"
 

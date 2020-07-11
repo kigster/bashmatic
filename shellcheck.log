@@ -1,0 +1,4364 @@
+
+[1mIn ./test/fixtures/b.sh line 1:[0m
+[0mexport BBB=1[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[31m^-- SC2148: Tips depend on target shell and yours is unknown. Add a shebang or a 'shell' directive.[0m
+
+
+[1mIn ./test/fixtures/script-with-comments.sh line 1:[0m
+[0m#!/usr/env/bin bash[0m
+[31m^-- SC1008: This shebang was unrecognized. ShellCheck only supports sh/bash/dash/ksh. Add a 'shell' directive to specify.[0m
+
+
+[1mIn ./test/fixtures/script-with-comments.sh line 6:[0m
+[0mORGAN=HEART[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[33m^---^ SC2034: ORGAN appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./test/fixtures/script-with-comments.sh line 7:[0m
+[0mDONATE=YES[0m
+[33m^----^ SC2034: DONATE appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./test/fixtures/a.sh line 1:[0m
+[0mexport AAA=1[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[31m^-- SC2148: Tips depend on target shell and yours is unknown. Add a shebang or a 'shell' directive.[0m
+
+
+[1mIn ./test/helpers/test-source.sh line 3:[0m
+[0msource "${BASHMATIC_INIT}"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[33m       ^-----------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./test/helpers/test-subshell.sh line 3:[0m
+[0msource "${BASHMATIC_INIT}"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[33m       ^-----------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./init.sh line 5:[0m
+[0mexport BASHMATIC_URL="https://github.com/kigster/bashmatic"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./init.sh line 19:[0m
+[0mexport BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | head -1)"[0m
+[32m                                ^--------------------------^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+
+[1mIn ./examples/ui-showcase.sh line 3:[0m
+[0mif [[ -f "${BASHMATIC_INIT}" ]]; then source "${BASHMATIC_INIT}"; else source ~/.bashmatic/init.sh; fi[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[33m                                             ^-----------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+[33m                                                                              ^------------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./examples/ui-showcase.sh line 7:[0m
+[0mh1 "Welcome to My Awesome Script" "${bldylw}Version 1.0.1" \[0m
+[33m                                   ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./examples/ui-showcase.sh line 18:[0m
+[0minfo "colors inside, such as ${bldred}RED$(txt-info) just reset it afterwards."[0m
+[33m                             ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./examples/ui-showcase.sh line 66:[0m
+[0mwarning "A Warning is usually yellow and indicates something is awry, no? ⚠️  ${clr}"[0m
+[33m                                                                              ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./examples/ui-showcase.sh line 70:[0m
+[0m  "With many lines, ${bakblu}${bldwht}if your heart so desires!${clr}"[0m
+[33m                    ^-------^ SC2154: bakblu is referenced but not assigned.[0m
+[33m                             ^-------^ SC2154: bldwht is referenced but not assigned.[0m
+
+
+[1mIn ./examples/ui-showcase.sh line 76:[0m
+[0mexport temp_file=$(mktemp)[0m
+[33m       ^-------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./examples/k8s-installer.sh line 8:[0m
+[0m[[ -d ${HOME}/.bashmatic ]] || bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-1)"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./examples/k8s-installer.sh line 14:[0m
+[0msource ${HOME}/.bashmatic/init.sh[0m
+[33m       ^------------------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+[32m       ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+source "${HOME}"/.bashmatic/init.sh
+
+
+[1mIn ./examples/k8s-installer.sh line 21:[0m
+[0m  [[ $(brew.package.is-installed ${package}) == "false" ]][0m
+[32m                                 ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ $(brew.package.is-installed "${package}") == "false" ]]
+
+
+[1mIn ./examples/k8s-installer.sh line 25:[0m
+[0m  local kubectl_version="$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"[0m
+[33m        ^-------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./examples/k8s-installer.sh line 34:[0m
+[0m    "${bldylw}Press any key to continue, or Ctrl-C to abort."[0m
+[33m     ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./examples/k8s-installer.sh line 41:[0m
+[0m  local current_dir=$(pwd -P)[0m
+[33m        ^---------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./examples/k8s-installer.sh line 42:[0m
+[0m  trap "cd ${current_dir}" EXIT[0m
+[33m           ^------------^ SC2064: Use single quotes, otherwise this expands now rather than when signalled.[0m
+
+
+[1mIn ./examples/k8s-installer.sh line 71:[0m
+[0m      error "${binary} is found in an unexpected location: ${bldwht}$(command -v ${binary})."[0m
+[33m                                                           ^-------^ SC2154: bldwht is referenced but not assigned.[0m
+
+
+[1mIn ./lib/trap.sh line 17:[0m
+[0m.trap-cleanup() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/trap.sh line 24:[0m
+[0m  export __int_marker__=$(mktemp -t "interrupt.$$")[0m
+[33m         ^------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/file.sh line 7:[0m
+[0m.file.make_executable() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/file.sh line 10:[0m
+[0m  if [[ -f ${file} && -n $(head -1 $1 | grep -Ee '#!.*(bash|ruby|env)') ]]; then[0m
+[32m                      ^-- SC2143: Use grep -q instead of comparing output with [ -n .. ].[0m
+[32m                                   ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  if [[ -f ${file} && -n $(head -1 "$1" | grep -Ee '#!.*(bash|ruby|env)') ]]; then
+
+
+[1mIn ./lib/file.sh line 11:[0m
+[0m    printf "making file ${bldgrn}${file}${clr} executable since it's a script...\n"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                        ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+[33m                                        ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/file.sh line 12:[0m
+[0m    chmod 755 ${file}[0m
+[32m              ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    chmod 755 "${file}"
+
+
+[1mIn ./lib/file.sh line 21:[0m
+[0m  printf $(($(curl -sI $url | grep -i 'Content-Length' | awk '{print $2}') + 0))[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                       ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf $(($(curl -sI "$url" | grep -i 'Content-Length' | awk '{print $2}') + 0))
+
+
+[1mIn ./lib/file.sh line 26:[0m
+[0m  printf $(($(wc -c <$file) + 0))[0m
+[32m         ^----------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                     ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf $(($(wc -c <"$file") + 0))
+
+
+[1mIn ./lib/file.sh line 49:[0m
+[0m  [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options}[0m
+[32m                                                ^----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -z "${runtime_options}" ]] || run.set-next "${runtime_options}"
+
+
+[1mIn ./lib/file.sh line 61:[0m
+[0m  if [[ -n "$(find ${file} -mmin -${minutes} -print 2>/dev/null)" ]]; then[0m
+[32m                   ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                  ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  if [[ -n "$(find "${file}" -mmin -"${minutes}" -print 2>/dev/null)" ]]; then
+
+
+[1mIn ./lib/file.sh line 86:[0m
+[0m    return -1[0m
+[31m           ^-- SC2152: Can only return 0-255. Other data should be written to stdout.[0m
+
+
+[1mIn ./lib/file.sh line 90:[0m
+[0m    if [[ -z $(diff ${dest} ${source} 2>/dev/null) ]]; then[0m
+[32m                    ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                            ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    if [[ -z $(diff "${dest}" "${source}" 2>/dev/null) ]]; then
+
+
+[1mIn ./lib/file.sh line 94:[0m
+[0m      ((${LibFile__ForceOverwrite})) || {[0m
+[33m        ^------------------------^ SC2154: LibFile__ForceOverwrite is referenced but not assigned.[0m
+[32m        ^------------------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/file.sh line 104:[0m
+[0m  run "mkdir -p $(dirname ${dest}) && cp ${source} ${dest}"[0m
+[32m                          ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  run "mkdir -p $(dirname "${dest}") && cp ${source} ${dest}"
+
+
+[1mIn ./lib/file.sh line 122:[0m
+[0m    info "eg: ${bldylw}file.stat README.md st_size"[0m
+[33m              ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/file.sh line 133:[0m
+[0m  eval $(stat -s ${file} | tr ' ' '\n' | sed 's/^/local /g')[0m
+[33m       ^-- SC2046: Quote this to prevent word splitting.[0m
+[32m                 ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  eval $(stat -s "${file}" | tr ' ' '\n' | sed 's/^/local /g')
+
+
+[1mIn ./lib/file.sh line 134:[0m
+[0m  echo ${!field}[0m
+[32m       ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  echo "${!field}"
+
+
+[1mIn ./lib/file.sh line 139:[0m
+[0m  if [[ "Linux" == ${AppCurrentOS} ]]; then[0m
+[33m                   ^-------------^ SC2053: Quote the right-hand side of == in [[ ]] to prevent glob matching.[0m
+
+
+[1mIn ./lib/file.sh line 149:[0m
+[0m  local s=$(file.size ${file})[0m
+[33m        ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                      ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local s=$(file.size "${file}")
+
+
+[1mIn ./lib/file.sh line 150:[0m
+[0m  local mb=$(echo $(($s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')[0m
+[33m        ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                     ^-- SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/file.sh line 151:[0m
+[0m  printf "%.2f MB" ${mb}[0m
+[32m                   ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "%.2f MB" "${mb}"
+
+
+[1mIn ./lib/file.sh line 155:[0m
+[0m  for file in $@; do[0m
+[31m              ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/file.sh line 161:[0m
+[0m  for file in $@; do[0m
+[31m              ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/file.sh line 169:[0m
+[0m    [[ -f "${file}" ]] && source "${file}"[0m
+[33m                                 ^-------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./lib/file.sh line 229:[0m
+[0m  printf "${filename%.*}"[0m
+[32m         ^--------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/file.sh line 238:[0m
+[0m  printf "${filename##*.}"[0m
+[32m         ^---------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/file.sh line 254:[0m
+[0m  ext=".$(echo ${ext} | tr -d '.')"[0m
+[32m               ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  ext=".$(echo "${ext}" | tr -d '.')"
+
+
+[1mIn ./lib/url.sh line 4:[0m
+[0mexport BITLY_LOGIN[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/url.sh line 33:[0m
+[0m    printf "${longUrl}"[0m
+[32m           ^----------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/url.sh line 36:[0m
+[0m    export BITLY_LOGIN=$(printf '%s' "${BITLY_LOGIN}" | tr -d '\r' | tr -d '\n')[0m
+[33m           ^---------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/url.sh line 37:[0m
+[0m    export BITLY_API_KEY=$(printf '%s' "${BITLY_API_KEY}" | tr -d '\r' | tr -d '\n')[0m
+[33m           ^-----------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/url.sh line 45:[0m
+[0m    debug "BITLY_LOLGIN : ${clr}${bldylw}${BITLY_LOGIN}" >&2[0m
+[33m                          ^----^ SC2154: clr is referenced but not assigned.[0m
+[33m                                ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/url.sh line 46:[0m
+[0m    debug "BITLY_LOLGIN : ${clr}${bldgrn}${BITLY_API_KEY}" >&2[0m
+[33m                                ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/url.sh line 47:[0m
+[0m    debug "BITLY_API_URL: ${clr}${undblu}${bitlyUrl}${clr}" >&2[0m
+[33m                                ^-------^ SC2154: undblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/url.sh line 49:[0m
+[0m    local output="$( $(url.downloader) "${bitlyUrl}" 2>&1 )"[0m
+[33m          ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/url.sh line 75:[0m
+[0m  printf "${LibUrl__Downloader}"[0m
+[32m         ^---------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/url.sh line 82:[0m
+[0m  echo "${url}" | ruby -ne '[0m
+[32m                           ^-- SC2016: Expressions don't expand in single quotes, use double quotes for that.[0m
+
+
+[1mIn ./lib/url.sh line 128:[0m
+[0m  local result=$(wget -v --spider "${url}" 2>&1 | grep -Ee "response" | awk '{print $6}' | tr -d ' ' | tail -1)[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/url.sh line 140:[0m
+[0m    [[ -n "${result}" ]] && printf ${result} || printf "404"[0m
+[32m                                   ^-------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                                   ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    [[ -n "${result}" ]] && printf "${result}" || printf "404"
+
+
+[1mIn ./lib/yaml.sh line 3:[0m
+[0mexport BashMatic__DiffTool="ydiff"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/yaml.sh line 16:[0m
+[0m    h2 "USAGE: ${bldylw}yaml-diff file1.yml file2.yml [ ydiff-options ]"[0m
+[33m               ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/yaml.sh line 22:[0m
+[0m  local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"[0m
+[33m        ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                      ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local t1="/tmp/${RANDOM}.$(basename "${f1}").$$.yml"
+
+
+[1mIn ./lib/yaml.sh line 23:[0m
+[0m  local t2="/tmp/${RANDOM}.$(basename ${f2}).$$.yml"[0m
+[33m        ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                      ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local t2="/tmp/${RANDOM}.$(basename "${f2}").$$.yml"
+
+
+[1mIn ./lib/yaml.sh line 49:[0m
+[0m  local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"[0m
+[33m        ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                      ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local t1="/tmp/${RANDOM}.$(basename "${f1}").$$.yml"
+
+
+[1mIn ./lib/repositories.sh line 3:[0m
+[0mexport LibRepo__Interrupted=false[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/repositories.sh line 4:[0m
+[0msource "${BASH_SOURCE%/*}/color.sh"[0m
+[33m       ^--------------------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./lib/repositories.sh line 20:[0m
+[0m  h2 "Entering repo ► ${bldgren}${folder}"[0m
+[33m                      ^--------^ SC2154: bldgren is referenced but not assigned.[0m
+
+
+[1mIn ./lib/repositories.sh line 49:[0m
+[0m    for dir in $(find . -type d -name '.git'); do[0m
+[33m               ^----------------------------^ SC2044: For loops over find output are fragile. Use find -exec or a while read loop.[0m
+
+
+[1mIn ./lib/repositories.sh line 50:[0m
+[0m      local subdir=$(dirname "$dir")[0m
+[33m            ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/repositories.sh line 51:[0m
+[0m      [[ -n "${DEBUG}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."[0m
+[33m                                                           ^-------^ SC2154: bldcyn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/repositories.sh line 54:[0m
+[0m        error "folder ${bldylw}${subdir}${bldred} return error!"[0m
+[33m                      ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[33m                                        ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/repositories.sh line 67:[0m
+[0m  export root_folder="$(pwd)"[0m
+[33m         ^---------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/vim.sh line 3:[0m
+[0mvim.setup() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/vim.sh line 23:[0m
+[0m  grep -Ee -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >>${LibVim__initFile}[0m
+[32m                             ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                                         ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  grep -Ee -q "${regex_from}" "${LibVim__initFile}" || echo "${regex_to}" >>"${LibVim__initFile}"
+
+
+[1mIn ./lib/vim.sh line 24:[0m
+[0m  grep -Ee -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >>${LibVim__initFile}[0m
+[32m                        ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                                 ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  grep -Ee -q "^gvim\.o" "${LibVim__initFile}" || echo "gvim.off" >>"${LibVim__initFile}"
+
+
+[1mIn ./lib/vim.sh line 47:[0m
+[0m  grep -Ee -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >>${LibVim__initFile}[0m
+[32m                             ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                                         ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  grep -Ee -q "${regex_from}" "${LibVim__initFile}" || echo "${regex_to}" >>"${LibVim__initFile}"
+
+
+[1mIn ./lib/vim.sh line 48:[0m
+[0m  grep -Ee -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >>${LibVim__initFile}[0m
+[32m                          ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                                  ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  grep -Ee -q "^gvim\.o.*" "${LibVim__initFile}" || echo "gvim.on" >>"${LibVim__initFile}"
+
+
+[1mIn ./lib/settings.sh line 3:[0m
+[0mexport True="1"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/settings.sh line 6:[0m
+[0mexport AppCurrentOS=$(uname -s)[0m
+[33m       ^----------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/pids.sh line 10:[0m
+[0mpid.alive() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/pids.sh line 17:[0m
+[0m  [[ -n "${pid}" && -n $(ps -p "${pid}" | grep -v TTY) ]][0m
+[32m                    ^-- SC2143: Use grep -q instead of comparing output with [ -n .. ].[0m
+[32m                         ^-- SC2009: Consider using pgrep instead of grepping ps output.[0m
+
+
+[1mIn ./lib/pids.sh line 35:[0m
+[0m  util.is-numeric ${pid} || {[0m
+[32m                  ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  util.is-numeric "${pid}" || {
+
+
+[1mIn ./lib/pids.sh line 40:[0m
+[0m  util.is-numeric ${signal} || sig.is-valid ${signal} || {[0m
+[32m                  ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                            ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  util.is-numeric "${signal}" || sig.is-valid "${signal}" || {
+
+
+[1mIn ./lib/pids.sh line 45:[0m
+[0m  if pid.alive ${pid}; then[0m
+[32m               ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  if pid.alive "${pid}"; then
+
+
+[1mIn ./lib/pids.sh line 46:[0m
+[0m    info "sending ${bldred}${signal}$(txt-info) to ${bldylw}${pid}..."[0m
+[33m                  ^-------^ SC2154: bldred is referenced but not assigned.[0m
+[33m                                                   ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/pids.sh line 47:[0m
+[0m    /bin/kill -s ${signal} ${pid} 2>&1 | cat >/dev/null[0m
+[32m                 ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                           ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    /bin/kill -s "${signal}" "${pid}" 2>&1 | cat >/dev/null
+
+
+[1mIn ./lib/pids.sh line 65:[0m
+[0m  /bin/kill -l | sed -E 's/([ 0-9][0-9]\) SIG)//g; s/\s+/\n/g' | tr 'a-z' 'A-Z' | sort[0m
+[32m                                                                    ^---^ SC2018: Use '[:lower:]' to support accents and foreign alphabets.[0m
+[32m                                                                          ^---^ SC2019: Use '[:upper:]' to support accents and foreign alphabets.[0m
+
+
+[1mIn ./lib/pids.sh line 71:[0m
+[0m  [[ -n $(kill -l ${1} 2>/dev/null) ]][0m
+[32m                  ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -n $(kill -l "${1}" 2>/dev/null) ]]
+
+
+[1mIn ./lib/pids.sh line 79:[0m
+[0m    pid.alive $pid || return 0[0m
+[32m              ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    pid.alive "$pid" || return 0
+
+
+[1mIn ./lib/pids.sh line 80:[0m
+[0m    kill -${sig} ${pid} 2>&1 >/dev/null[0m
+[32m                 ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[33m                        ^--^ SC2069: To redirect stdout+stderr, 2>&1 must be last (or use '{ cmd > file; } 2>&1' to clarify).[0m
+
+[1mDid you mean: [0m
+    kill -${sig} "${pid}" 2>&1 >/dev/null
+
+
+[1mIn ./lib/pids.sh line 86:[0m
+[0m  pid.alive $pid && {[0m
+[32m            ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  pid.alive "$pid" && {
+
+
+[1mIn ./lib/pids.sh line 104:[0m
+[0m    printf "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/pids.sh line 110:[0m
+[0m  ${bldgrn}pid.stop pid${clr}[0m
+[33m  ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+[33m                       ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/pids.sh line 121:[0m
+[0m    sleep ${delay}[0m
+[32m          ^------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    sleep "${delay}"
+
+
+[1mIn ./lib/pids.sh line 133:[0m
+[0m  printf "${pattern}"[0m
+[32m         ^----------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/pids.sh line 140:[0m
+[0m    printf "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/pids.sh line 153:[0m
+[0m  pattern="$(pids.normalize.search-string ${pattern})"[0m
+[32m                                          ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  pattern="$(pids.normalize.search-string "${pattern}")"
+
+
+[1mIn ./lib/pids.sh line 161:[0m
+[0m    printf "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/pids.sh line 174:[0m
+[0m  ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep | awk '{print $2}' | sort -n[0m
+[32m  ^-- SC2009: Consider using pgrep instead of grepping ps output.[0m
+
+
+[1mIn ./lib/pids.sh line 190:[0m
+[0m  for arg in $@; do[0m
+[31m             ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/pids.sh line 191:[0m
+[0m    array.includes "${arg}" "${permitted[@]}" && additional=(${additional[@]} $arg) && continue[0m
+[33m                                                             ^--------------^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+[33m                                                                              ^--^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/pids.sh line 205:[0m
+[0m    printf "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/pids.sh line 218:[0m
+[0m  local pattern="$(pids.normalize.search-string "$1")"[0m
+[33m        ^-----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/pids.sh line 220:[0m
+[0m  ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep[0m
+[32m  ^-- SC2009: Consider using pgrep instead of grepping ps output.[0m
+
+
+[1mIn ./lib/pids.sh line 229:[0m
+[0m    printf "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/pids.sh line 243:[0m
+[0m  local pattern="$(pids.normalize.search-string "$1")"[0m
+[33m        ^-----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/pids.sh line 247:[0m
+[0m  if [[ -z $(which ${func}) && -z $(type ${func} 2>/dev/null) ]]; then[0m
+[32m                   ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                         ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  if [[ -z $(which "${func}") && -z $(type "${func}" 2>/dev/null) ]]; then
+
+
+[1mIn ./lib/pids.sh line 253:[0m
+[0m    local -a pids=($(pids.matching "${pattern}"))[0m
+[33m                   ^---------------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/pids.sh line 267:[0m
+[0m    printf "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/text.sh line 1:[0m
+[0m[0m
+[31m^-- SC2148: Tips depend on target shell and yours is unknown. Add a shebang or a 'shell' directive.[0m
+
+
+[1mIn ./lib/text.sh line 2:[0m
+[0mtext.markdown-to-asciidoc() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/text.sh line 11:[0m
+[0m      " " "Default flags: ${bldcyn}${default_flags}" \[0m
+[33m                          ^-------^ SC2154: bldcyn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/text.sh line 12:[0m
+[0m      " " "To override pass any flags that are supported by ${bldred}kramdoc${bldylw}, see below:"[0m
+[33m                                                            ^-------^ SC2154: bldred is referenced but not assigned.[0m
+[33m                                                                            ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/text.sh line 14:[0m
+[0m    printf "\n${txtblu}"[0m
+[32m           ^-----------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m              ^-------^ SC2154: txtblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/text.sh line 16:[0m
+[0m    printf "${clr}\n"[0m
+[32m           ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m            ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/text.sh line 26:[0m
+[0m  local target="$(file.extension.replace adoc "${file}")"[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/gem.sh line 9:[0m
+[0m.gem.verify-name() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/gem.sh line 23:[0m
+[0m  local ruby_version=$(ruby.numeric-version)[0m
+[33m        ^----------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/gem.sh line 27:[0m
+[0m  local dir=$(dirname ${LibGem__GemListCache})[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                      ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local dir=$(dirname "${LibGem__GemListCache}")
+
+
+[1mIn ./lib/gem.sh line 59:[0m
+[0m  cat "${LibGem__GemListCache}" | grep -Ee "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"[0m
+[32m      ^-----------------------^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+
+[1mIn ./lib/gem.sh line 72:[0m
+[0m  declare -a versions=($(gem.global.versions ${gem}))[0m
+[33m                       ^---------------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+[32m                                             ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  declare -a versions=($(gem.global.versions "${gem}"))
+
+
+[1mIn ./lib/gem.sh line 125:[0m
+[0m  if [[ -z $(cat ${LibGem__GemListCache} | grep "${gem} (${gem_version})") ]]; then[0m
+[32m        ^-- SC2143: Use ! grep -q instead of comparing output with [ -z .. ].[0m
+[32m                 ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                 ^---------------------^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+[1mDid you mean: [0m
+  if [[ -z $(cat "${LibGem__GemListCache}" | grep "${gem} (${gem_version})") ]]; then
+
+
+[1mIn ./lib/gem.sh line 126:[0m
+[0m    gem.uninstall ${gem}[0m
+[32m                  ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    gem.uninstall "${gem}"
+
+
+[1mIn ./lib/gem.sh line 127:[0m
+[0m    gem.install ${gem} ${gem_version}[0m
+[32m                ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                       ^------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    gem.install "${gem}" "${gem_version}"
+
+
+[1mIn ./lib/gem.sh line 160:[0m
+[0m  gem_version=${gem_version:-$(gem.version ${gem_name})}[0m
+[32m                                           ^---------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  gem_version=${gem_version:-$(gem.version "${gem_name}")}
+
+
+[1mIn ./lib/gem.sh line 170:[0m
+[0m  if gem.is-installed ${gem_name} ${gem_version}; then[0m
+[32m                      ^---------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                  ^------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  if gem.is-installed "${gem_name}" "${gem_version}"; then
+
+
+[1mIn ./lib/gem.sh line 171:[0m
+[0m    info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed"[0m
+[33m               ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[33m                                     ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+[33m                                                                           ^-------^ SC2154: txtblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/gem.sh line 175:[0m
+[0m    if [[ ${LibRun__LastExitCode} -eq 0 ]]; then[0m
+[33m          ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+
+
+[1mIn ./lib/gem.sh line 181:[0m
+[0m    return ${LibRun__LastExitCode}[0m
+[32m           ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/gem.sh line 204:[0m
+[0m  return ${LibRun__LastExitCode}[0m
+[32m         ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/subshell.sh line 20:[0m
+[0mbashmatic.subshell-init() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/subshell.sh line 28:[0m
+[0m    return ${BASH_IN_SUBSHELL}[0m
+[32m           ^-----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    return "${BASH_IN_SUBSHELL}"
+
+
+[1mIn ./lib/set.sh line 10:[0m
+[0mset-e-status() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/set.sh line 15:[0m
+[0m  export __bash_set_errexit_status=$(mktemp -t 'errexit')[0m
+[33m         ^-----------------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/set.sh line 16:[0m
+[0m  rm -f ${__bash_set_errexit_status} 2>/dev/null[0m
+[32m        ^--------------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  rm -f "${__bash_set_errexit_status}" 2>/dev/null
+
+
+[1mIn ./lib/set.sh line 17:[0m
+[0m  set-e-status >${__bash_set_errexit_status}[0m
+[32m                ^--------------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  set-e-status >"${__bash_set_errexit_status}"
+
+
+[1mIn ./lib/set.sh line 22:[0m
+[0m    error "You must first save it with the function:s ${bldgrn}set-e-save"[0m
+[33m                                                      ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/set.sh line 25:[0m
+[0m  local status=$(cat ${__bash_set_errexit_status} | tr -d '\n')[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                     ^--------------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                     ^--------------------------^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+[1mDid you mean: [0m
+  local status=$(cat "${__bash_set_errexit_status}" | tr -d '\n')
+
+
+[1mIn ./lib/set.sh line 27:[0m
+[0m    error "Invalid data in the set -e tempfile:" "$(cat ${__bash_set_errexit_status})"[0m
+[32m                                                        ^--------------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    error "Invalid data in the set -e tempfile:" "$(cat "${__bash_set_errexit_status}")"
+
+
+[1mIn ./lib/set.sh line 30:[0m
+[0m  set -o errexit ${status}[0m
+[32m                 ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  set -o errexit "${status}"
+
+
+[1mIn ./lib/set.sh line 31:[0m
+[0m  rm -f ${__bash_set_errexit_status} 2>/dev/null[0m
+[32m        ^--------------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  rm -f "${__bash_set_errexit_status}" 2>/dev/null
+
+
+[1mIn ./lib/array.sh line 20:[0m
+[0marray.has-element() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/audio.sh line 3:[0m
+[0maudio.file.frequency() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/audio.sh line 6:[0m
+[0m  local frequency=$(mdls "${file}" | grep kMDItemAudioSampleRate | sed 's/.*= //g')[0m
+[33m        ^-------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/audio.sh line 8:[0m
+[0m  local kHz=$(maths.eval "${frequency} / 1000.0" 0)[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/audio.sh line 9:[0m
+[0m  printf ${kHz}[0m
+[32m         ^----^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m         ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "${kHz}"
+
+
+[1mIn ./lib/audio.sh line 14:[0m
+[0m    "You can pass additional flags to ${txtylw}lame" "" \[0m
+[33m                                      ^-------^ SC2154: txtylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/audio.sh line 33:[0m
+[0m  local first="$(find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print | head -1)"[0m
+[33m        ^---^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/audio.sh line 38:[0m
+[0m    error "No AIFF or WAV files in the folder ${bldgrn}${dir}"[0m
+[33m                                              ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/audio.sh line 44:[0m
+[0m  printf "${bldgrn} — ${kHz}kHz"[0m
+[32m         ^---------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/audio.sh line 47:[0m
+[0m  SAVEIFS=$IFS[0m
+[33m  ^-----^ SC2034: SAVEIFS appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/audio.sh line 51:[0m
+[0m  find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print0 | while read -d $'\0' file; do[0m
+[32m                                                                                 ^--^ SC2162: read without -r will mangle backslashes.[0m
+
+
+[1mIn ./lib/audio.sh line 52:[0m
+[0m    local fn=$(ascii-clean "${file}")[0m
+[33m          ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/audio.sh line 58:[0m
+[0m      printf "${bldgrn} OK, already converted. Use FORCE=1 to overwrite. ${clr}"[0m
+[32m             ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                                                                         ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/audio.sh line 63:[0m
+[0m    printf "${txtcyn} Transcoding...${clr}"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m            ^-------^ SC2154: txtcyn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/audio.sh line 76:[0m
+[0m      info "${bakred}${bldwht}  ERROR: lame exited with an error code ${code}. Aborting!  "[0m
+[33m            ^-------^ SC2154: bakred is referenced but not assigned.[0m
+[33m                     ^-------^ SC2154: bldwht is referenced but not assigned.[0m
+
+
+[1mIn ./lib/audio.sh line 113:[0m
+[0m  local khz=$(audio.file.frequency "${file}")[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/audio.sh line 114:[0m
+[0m  h2 "'$(basename "${file}")' —❯ ${txtylw}${nfile}${txtgrn}, sample rate: ${khz:-'Unknown'}kHz"[0m
+[33m                                                  ^-------^ SC2154: txtgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/audio.sh line 133:[0m
+[0m  local to="${destination}/$(basename "${from/.mp3/.wav}")"[0m
+[33m        ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/audio.sh line 135:[0m
+[0m  if [[ ${from} =~ ".mp3" ]]; then[0m
+[31m                   ^----^ SC2076: Don't quote right-hand side of =~, it'll match literally rather than as a regex.[0m
+
+
+[1mIn ./lib/audio.sh line 165:[0m
+[0m  while read -d '' filename; do[0m
+[32m        ^--^ SC2162: read without -r will mangle backslashes.[0m
+
+
+[1mIn ./lib/github.sh line 3:[0m
+[0mgithub.org() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/github.sh line 15:[0m
+[0m  local namespace="$(github.org)"[0m
+[33m        ^-------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/github.sh line 22:[0m
+[0m      "To change it in the future, run: ${bldylw}github.org ${blgrn}new-organization"[0m
+[33m                                        ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[33m                                                            ^------^ SC2154: blgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/maths.sh line 8:[0m
+[0mmaths.eval() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/maths.sh line 10:[0m
+[0m  local -a __math_chars_array=($(echo "${__math_chars}" | sedx -E 's/(.)/\1 /g'))[0m
+[33m                               ^-- SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+[33m                                       ^-------------^ SC2128: Expanding an array without an index only gives the first element.[0m
+
+
+[1mIn ./lib/maths.sh line 52:[0m
+[0m      "${bldylw}${ruby_script}" >&2[0m
+[33m       ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ssh.sh line 3:[0m
+[0mssh.load-keys() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/ssh.sh line 5:[0m
+[0m  find ${HOME}/.ssh -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \;[0m
+[32m       ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  find "${HOME}"/.ssh -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \;
+
+
+[1mIn ./lib/ssh.sh line 9:[0m
+[0m  local email="$(user.gitconfig.email)"[0m
+[33m        ^---^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/ssh.sh line 15:[0m
+[0m  local date=$( time.now.db )[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/ssh.sh line 17:[0m
+[0m    warning "There is an existing file ${bldred}~/.ssh/id_rsa"[0m
+[33m                                       ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 7:[0m
+[0mexport LibBrew__PackageCacheList="/tmp/.lib_brew_packages.txt"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/brew.sh line 23:[0m
+[0m  ((${BASH_IN_SUBSHELL})) || brew.cache-reset[0m
+[32m    ^-----------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/brew.sh line 24:[0m
+[0m  ((${BASH_IN_SUBSHELL})) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT[0m
+[32m    ^-----------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+[33m                                         ^--------------------------^ SC2064: Use single quotes, otherwise this expands now rather than when signalled.[0m
+[33m                                                                      ^-----------------------^ SC2064: Use single quotes, otherwise this expands now rather than when signalled.[0m
+
+
+[1mIn ./lib/brew.sh line 34:[0m
+[0m  run "brew upgrade $@"[0m
+[31m                    ^-- SC2145: Argument mixes string and array. Use * or separate argument.[0m
+
+
+[1mIn ./lib/brew.sh line 49:[0m
+[0m  local brew=$(which brew 2>/dev/null)[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/brew.sh line 54:[0m
+[0m    info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"[0m
+[33m                                     ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 65:[0m
+[0m  [[ -n ${opts_verbose} ]] && verbose="--verbose"[0m
+[33m        ^-------------^ SC2154: opts_verbose is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 95:[0m
+[0m  file.exists-and-newer-than "${file}" ${stale_minutes} && {[0m
+[32m                                       ^--------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  file.exists-and-newer-than "${file}" "${stale_minutes}" && {
+
+
+[1mIn ./lib/brew.sh line 100:[0m
+[0m  cp /dev/null ${file} >/dev/null[0m
+[32m               ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  cp /dev/null "${file}" >/dev/null
+
+
+[1mIn ./lib/brew.sh line 106:[0m
+[0m  local -a installed_packages=($(brew.package.list))[0m
+[33m                               ^------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/brew.sh line 107:[0m
+[0m  array.has-element $(basename "${package}") "${installed_packages[@]}"[0m
+[33m                    ^----------------------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/brew.sh line 112:[0m
+[0m  local -a installed_casks=($(brew.cask.list))[0m
+[33m                            ^---------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/brew.sh line 113:[0m
+[0m  array.has-element $(basename "${cask}") "${installed_casks[@]}"[0m
+[33m                    ^-------------------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/brew.sh line 120:[0m
+[0m  [[ -n ${opts_force} ]] && force="--force"[0m
+[33m        ^-----------^ SC2154: opts_force is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 137:[0m
+[0m  [[ -z ${opt_terse} ]] && inf "checking for 🍻  ${bldylw}${package}..."[0m
+[33m        ^----------^ SC2154: opt_terse is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 139:[0m
+[0m  if [[ $(brew.package.is-installed ${package}) == "true" ]]; then[0m
+[32m                                    ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  if [[ $(brew.package.is-installed "${package}") == "true" ]]; then
+
+
+[1mIn ./lib/brew.sh line 141:[0m
+[0m    [[ -z ${opt_terse} ]] || printf "${bldgrn}○ "[0m
+[32m                                    ^-----------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                                     ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 145:[0m
+[0m      printf " ${bldpur}${package}${txtylw} must pour.\n${clr}"[0m
+[32m             ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m               ^-------^ SC2154: bldpur is referenced but not assigned.[0m
+[33m                                  ^-------^ SC2154: txtylw is referenced but not assigned.[0m
+[33m                                                        ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 148:[0m
+[0m      (brew install ${package} ${force} ${verbose}) 2>&1 | cat >/dev/null[0m
+[32m                    ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      (brew install "${package}" ${force} ${verbose}) 2>&1 | cat >/dev/null
+
+
+[1mIn ./lib/brew.sh line 159:[0m
+[0m    if [[ $(brew.package.is-installed ${package}) == "true" ]]; then[0m
+[32m                                      ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    if [[ $(brew.package.is-installed "${package}") == "true" ]]; then
+
+
+[1mIn ./lib/brew.sh line 179:[0m
+[0m  if [[ -n $(ls -al /Applications/*.app | grep -i ${cask}) && -z ${opts_force} ]]; then[0m
+[32m        ^-- SC2143: Use grep -q instead of comparing output with [ -n .. ].[0m
+[33m             ^-- SC2010: Don't use ls | grep. Use a glob or a for loop with a condition to allow non-alphanumeric filenames.[0m
+[32m                                                  ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  if [[ -n $(ls -al /Applications/*.app | grep -i "${cask}") && -z ${opts_force} ]]; then
+
+
+[1mIn ./lib/brew.sh line 181:[0m
+[0m  elif [[ $(brew.cask.is-installed ${cask}) == "true" ]]; then[0m
+[32m                                   ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  elif [[ $(brew.cask.is-installed "${cask}") == "true" ]]; then
+
+
+[1mIn ./lib/brew.sh line 200:[0m
+[0m  export LibRun__AbortOnError=${False}[0m
+[33m                              ^------^ SC2154: False is referenced but not assigned.[0m
+
+
+[1mIn ./lib/brew.sh line 235:[0m
+[0m  for package in $@; do[0m
+[31m                 ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/brew.sh line 236:[0m
+[0m    brew.uninstall.package ${package}[0m
+[32m                           ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    brew.uninstall.package "${package}"
+
+
+[1mIn ./lib/output.sh line 1:[0m
+[0m#/usr/bin/env bash[0m
+[31m ^-- SC1113: Use #!, not just #, for the shebang.[0m
+
+
+[1mIn ./lib/output.sh line 6:[0m
+[0mexport LibOutput__CommandPrefixLen=7[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/output.sh line 26:[0m
+[0m  output.is-terminal && printf "\e[${1}C"[0m
+[32m                               ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 30:[0m
+[0m  output.is-terminal && printf "\e[${1}D"[0m
+[32m                               ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 34:[0m
+[0m  output.is-terminal && printf "\e[${1}A"[0m
+[32m                               ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 38:[0m
+[0m  output.is-terminal && printf "\e[${1}B"[0m
+[32m                               ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 44:[0m
+[0m  .output.cursor-down-by ${1:-0}[0m
+[32m                         ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  .output.cursor-down-by "${1:-0}"
+
+
+[1mIn ./lib/output.sh line 50:[0m
+[0m  [[ -n $1 && "$1" -ne 0 ]] && .output.cursor-right-by ${1}[0m
+[32m                                                       ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -n $1 && "$1" -ne 0 ]] && .output.cursor-right-by "${1}"
+
+
+[1mIn ./lib/output.sh line 55:[0m
+[0m  .output.cursor-move-to-x ${x}[0m
+[32m                           ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  .output.cursor-move-to-x "${x}"
+
+
+[1mIn ./lib/output.sh line 89:[0m
+[0m  echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'[0m
+[32m       ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
+
+
+[1mIn ./lib/output.sh line 93:[0m
+[0m  printf "${bldred}" >&2[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 94:[0m
+[0m  printf "${bldblu}" >&1[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 121:[0m
+[0m  printf -- "%d" $w[0m
+[32m                 ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf -- "%d" "$w"
+
+
+[1mIn ./lib/output.sh line 130:[0m
+[0m  if [[ -n "${AppCurrentScreenWidth}" && $(($(millis) - ${AppCurrentScreenMillis})) -lt 1000 ]]; then[0m
+[32m                                                        ^-----------------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/output.sh line 131:[0m
+[0m    printf -- "${AppCurrentScreenWidth}"[0m
+[32m              ^------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 140:[0m
+[0m  printf -- "%d" ${w}[0m
+[32m                 ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf -- "%d" "${w}"
+
+
+[1mIn ./lib/output.sh line 153:[0m
+[0m  printf -- $(($h - 2))[0m
+[32m            ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m               ^-- SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/output.sh line 161:[0m
+[0m  .output.repeat-char "─" $(.output.width)[0m
+[33m                          ^--------------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/output.sh line 165:[0m
+[0m  local cols=${1:-$(.output.screen-width)}[0m
+[33m        ^--^ SC2034: cols appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/output.sh line 169:[0m
+[0m  printf "${color}"[0m
+[32m         ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 193:[0m
+[0m      printf -- "${line}"[0m
+[32m                ^-------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 198:[0m
+[0m  printf -- "${line}"[0m
+[32m            ^-------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 205:[0m
+[0m  printf -- "${char}" * ${width}[0m
+[32m            ^-------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                        ^------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf -- "${char}" * "${width}"
+
+
+[1mIn ./lib/output.sh line 209:[0m
+[0m      printf -- "${line}"[0m
+[32m                ^-------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 214:[0m
+[0m  printf -- "${line}"[0m
+[32m            ^-------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 223:[0m
+[0m.output.box-separator() {[0m
+[33m^-- SC2120: .output.box-separator references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/output.sh line 224:[0m
+[0m  printf "$1"[0m
+[32m         ^--^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 228:[0m
+[0m  printf "┤${clr}\n"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m           ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 231:[0m
+[0m.output.box-top() {[0m
+[33m^-- SC2120: .output.box-top references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/output.sh line 232:[0m
+[0m  printf "$1┌"[0m
+[32m         ^---^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 235:[0m
+[0m  printf "┐${clr}\n"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 242:[0m
+[0m  printf "┘${clr}\n"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 270:[0m
+[0m    printf ">>> %80.80s <<< \n" ${text}[0m
+[32m                                ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    printf ">>> %80.80s <<< \n" "${text}"
+
+
+[1mIn ./lib/output.sh line 297:[0m
+[0m      printf ">>> %80.80s <<< \n" ${line}[0m
+[32m                                  ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      printf ">>> %80.80s <<< \n" "${line}"
+
+
+[1mIn ./lib/output.sh line 302:[0m
+[0m  [[ -n "${opts_suppress_headers}" ]] && return[0m
+[33m         ^----------------------^ SC2154: opts_suppress_headers is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 304:[0m
+[0m  printf "${__color_bdr}"[0m
+[32m         ^--------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 305:[0m
+[0m  .output.box-top[0m
+[32m  ^-------------^ SC2119: Use .output.box-top "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/output.sh line 310:[0m
+[0m      printf "${__color_bdr}"[0m
+[32m             ^--------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 311:[0m
+[0m      .output.box-separator[0m
+[32m      ^-------------------^ SC2119: Use .output.box-separator "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/output.sh line 314:[0m
+[0m    __i=$(($__i + 1))[0m
+[32m           ^--^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/output.sh line 317:[0m
+[0m  printf "${__color_bdr}"[0m
+[32m         ^--------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 328:[0m
+[0m  local remaining_space_len=$((1 + ($width - ${#clean_text}) / 2))[0m
+[32m                                    ^----^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/output.sh line 331:[0m
+[0m  [[ $(((${width} - ${#clean_text}) % 2)) == 1 ]] && offset=1[0m
+[32m         ^------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/output.sh line 333:[0m
+[0m  printf "${color}"[0m
+[32m         ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 348:[0m
+[0m  printf " ${color}"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 355:[0m
+[0m    printf -- "  ❯❯ ${text} ❯❯ "[0m
+[32m              ^----------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 356:[0m
+[0m    printf -- "  ${clr}\n\n"[0m
+[32m              ^------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 421:[0m
+[0m  .output.box "${bakblu}" "${bldwht}" "$@"[0m
+[33m               ^-------^ SC2154: bakblu is referenced but not assigned.[0m
+[33m                           ^-------^ SC2154: bldwht is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 425:[0m
+[0m  .output.box "${bakgrn}" "${bldwht}" "$@"[0m
+[33m               ^-------^ SC2154: bakgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 429:[0m
+[0m  .output.box "${bakpur}" "${bldylw}" "$@"[0m
+[33m               ^-------^ SC2154: bakpur is referenced but not assigned.[0m
+[33m                           ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 445:[0m
+[0m  .output.box "${bldblu}" "${bldgrn}" "$@"[0m
+[33m                           ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 457:[0m
+[0m  .output.box "${txtred}" "${txtred}" "$@"[0m
+[33m               ^-------^ SC2154: txtred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 463:[0m
+[0m  box.red-in-red "${bakred}${bldwht} ${bldylw}${header}" "$@" >&2[0m
+[33m                  ^-------^ SC2154: bakred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 467:[0m
+[0m  .output.box "${bldgrn}" "${bldpur}" "$@"[0m
+[33m                           ^-------^ SC2154: bldpur is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 483:[0m
+[0m  .output.box "${bldgrn}" "${bldcyn}" "$@"[0m
+[33m                           ^-------^ SC2154: bldcyn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 495:[0m
+[0m  [[ -z ${white_on_salmon} ]] && hr[0m
+[33m        ^----------------^ SC2154: white_on_salmon is referenced but not assigned.[0m
+[32m                                 ^-- SC2119: Use hr "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/output.sh line 500:[0m
+[0m  center "${white_on_orange}" "$@"[0m
+[33m          ^----------------^ SC2154: white_on_orange is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 516:[0m
+[0m  left "${yellow_on_gray}" "$@"[0m
+[33m        ^---------------^ SC2154: yellow_on_gray is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 524:[0m
+[0m  left "${txtblk}${bakgrn}" "$@"[0m
+[33m        ^-------^ SC2154: txtblk is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 528:[0m
+[0m  left "${bakylw}${txtblk}" "$@"[0m
+[33m        ^-------^ SC2154: bakylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 532:[0m
+[0m  left "${bldwht}${bakblk}${underlined}" "$@"[0m
+[33m                 ^-------^ SC2154: bakblk is referenced but not assigned.[0m
+[33m                          ^-----------^ SC2154: underlined is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 625:[0m
+[0mhr() {[0m
+[33m^-- SC2120: hr references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/output.sh line 626:[0m
+[0m  [[ -z "$*" ]] || printf "$*"[0m
+[32m                          ^--^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 633:[0m
+[0m  printf "${clr}"[0m
+[32m         ^------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 634:[0m
+[0m  [[ -s ${file} ]] && cat ${file}[0m
+[32m                          ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -s ${file} ]] && cat "${file}"
+
+
+[1mIn ./lib/output.sh line 641:[0m
+[0m  printf "${txtred}"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 642:[0m
+[0m  [[ -s ${file} ]] && cat ${file}[0m
+[32m                          ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -s ${file} ]] && cat "${file}"
+
+
+[1mIn ./lib/output.sh line 647:[0m
+[0m  local color="${txtgrn}"[0m
+[33m               ^-------^ SC2154: txtgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 648:[0m
+[0m  [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"[0m
+[33m     ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 650:[0m
+[0m  [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return[0m
+[33m        ^----------------------^ SC2154: LibRun__AssignedWidth is referenced but not assigned.[0m
+[33m                                       ^----------------------^ SC2154: LibRun__CommandLength is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 668:[0m
+[0m    pattern="${txtblu}〔${pattern}〕"[0m
+[33m             ^-------^ SC2154: txtblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 669:[0m
+[0m    printf "${txtblu}${pattern}" "${millis}"[0m
+[32m           ^-------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 673:[0m
+[0m    [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" ${exit_code}[0m
+[32m                                                                        ^----------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" "${exit_code}"
+
+
+[1mIn ./lib/output.sh line 674:[0m
+[0m    [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" ${exit_code}[0m
+[32m                                                                        ^----------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" "${exit_code}"
+
+
+[1mIn ./lib/output.sh line 680:[0m
+[0m    export LibOutput__LeftPrefix=$(.output.replicate-to " " "${LibOutput__LeftPrefixLen}")[0m
+[33m                                                             ^-------------------------^ SC2154: LibOutput__LeftPrefixLen is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 682:[0m
+[0m  printf "${LibOutput__LeftPrefix}"[0m
+[32m         ^------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 690:[0m
+[0m  printf " ${txtblk}${bakgrn} ✔︎ ${clr} "[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 703:[0m
+[0m  printf " ${bakred}${bldwht} ✘ ${clr} "[0m
+[32m         ^-----------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 707:[0m
+[0m  ui.closer.not-ok $@[0m
+[31m                   ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/output.sh line 716:[0m
+[0m  printf " ${bakylw}${bldwht} ❖ ${clr} "[0m
+[32m         ^-----------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 719:[0m
+[0mui.closer.kind-of-ok:() {[0m
+[33m^-- SC2120: ui.closer.kind-of-ok: references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/output.sh line 720:[0m
+[0m  ui.closer.kind-of-ok $@[0m
+[31m                       ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/output.sh line 727:[0m
+[0m  printf "  ⇨ ${txtwht}$*${clr}"[0m
+[32m         ^---------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m              ^-------^ SC2154: txtwht is referenced but not assigned.[0m
+
+
+[1mIn ./lib/output.sh line 731:[0m
+[0m  printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" >&2[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 737:[0m
+[0m  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 743:[0m
+[0m  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 748:[0m
+[0m  printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 757:[0m
+[0m  printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 762:[0m
+[0m  printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 766:[0m
+[0m  printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 770:[0m
+[0m  header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}")[0m
+[32m                     ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 781:[0m
+[0m  inf $@[0m
+[31m      ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/output.sh line 786:[0m
+[0m  header=$(printf -- "${bldwht}${bakred} « ERROR » ${clr}")[0m
+[32m                     ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 787:[0m
+[0m  box.red-in-red "${header} ${bldylw}$@" >&2[0m
+[31m                                     ^-- SC2145: Argument mixes string and array. Use * or separate argument.[0m
+
+
+[1mIn ./lib/output.sh line 791:[0m
+[0m  inf $*[0m
+[33m      ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m      ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  inf "$*"
+
+
+[1mIn ./lib/output.sh line 796:[0m
+[0m  err $*[0m
+[33m      ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m      ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  err "$*"
+
+
+[1mIn ./lib/output.sh line 801:[0m
+[0m  warn $*[0m
+[33m       ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m       ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  warn "$*"
+
+
+[1mIn ./lib/output.sh line 802:[0m
+[0m  ui.closer.kind-of-ok:[0m
+[32m  ^-------------------^ SC2119: Use ui.closer.kind-of-ok: "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/output.sh line 814:[0m
+[0m  printf "${clr}\n"[0m
+[32m         ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 818:[0m
+[0m  printf "${clr}"[0m
+[32m         ^------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/output.sh line 828:[0m
+[0m  pr -l 10000 -${columns} -e4 -w ${sw} |[0m
+[32m               ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                 ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  pr -l 10000 -"${columns}" -e4 -w "${sw}" |
+
+
+[1mIn ./lib/pipe.sh line 9:[0m
+[0mpipe.extract-variables() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/usage.sh line 4:[0m
+[0m.usage.setup() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/usage.sh line 13:[0m
+[0m.usage.begin() {[0m
+[33m^-- SC2120: .usage.begin references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/usage.sh line 36:[0m
+[0m  printf "%-15s " "$*:" | tr 'a-z' 'A-Z'[0m
+[32m                             ^---^ SC2018: Use '[:lower:]' to support accents and foreign alphabets.[0m
+[32m                                   ^---^ SC2019: Use '[:upper:]' to support accents and foreign alphabets.[0m
+
+
+[1mIn ./lib/usage.sh line 47:[0m
+[0m  local -a flags=("$@")[0m
+[33m           ^---^ SC2034: flags appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/usage.sh line 58:[0m
+[0m    if (($(($n % 2)) == 0)); then[0m
+[32m            ^-- SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/usage.sh line 77:[0m
+[0m    if (($(($n % 2)) == 0)); then[0m
+[32m            ^-- SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/usage.sh line 95:[0m
+[0m  printf "${__color_bdr}"[0m
+[32m         ^--------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/usage.sh line 101:[0m
+[0m  local script_dir="$(dirname ${script_name})"[0m
+[33m        ^--------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                              ^------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local script_dir="$(dirname "${script_name}")"
+
+
+[1mIn ./lib/usage.sh line 102:[0m
+[0m  local script_base="$(basename ${script_name})"[0m
+[33m        ^---------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                ^------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local script_base="$(basename "${script_name}")"
+
+
+[1mIn ./lib/usage.sh line 121:[0m
+[0m  .usage.begin[0m
+[32m  ^----------^ SC2119: Use .usage.begin "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/usage.sh line 139:[0m
+[0m  local backup="$(.usage-cache-file)"[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/usage.sh line 143:[0m
+[0m    .usage.box "$@" | tee ${backup}[0m
+[32m                          ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    .usage.box "$@" | tee "${backup}"
+
+
+[1mIn ./lib/usage.sh line 148:[0m
+[0m  printf "${__color_headers}"[0m
+[32m         ^------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/json.sh line 17:[0m
+[0mjson.begin-array() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/json.sh line 30:[0m
+[0m  cat $2 |[0m
+[32m      ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m      ^-- SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+[1mDid you mean: [0m
+  cat "$2" |
+
+
+[1mIn ./lib/json.sh line 38:[0m
+[0m  json.end-array $3[0m
+[32m                 ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  json.end-array "$3"
+
+
+[1mIn ./lib/json.sh line 43:[0m
+[0m    printf "\"${1}\": "[0m
+[32m           ^----------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/osx.sh line 6:[0m
+[0mosx.cookie-dump() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/osx.sh line 13:[0m
+[0m    pbpaste >${file}[0m
+[32m             ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    pbpaste >"${file}"
+
+
+[1mIn ./lib/osx.sh line 14:[0m
+[0m    local size=$(file.size ${file})[0m
+[33m          ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    local size=$(file.size "${file}")
+
+
+[1mIn ./lib/osx.sh line 17:[0m
+[0m      info "Here is what we got in your clipboard:\n\n$(cat ${file})\n"[0m
+[32m                                                            ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      info "Here is what we got in your clipboard:\n\n$(cat "${file}")\n"
+
+
+[1mIn ./lib/osx.sh line 23:[0m
+[0m    cat "${file}" |[0m
+[32m        ^-------^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+
+[1mIn ./lib/osx.sh line 30:[0m
+[0m    info "Copy the value of the ${bldylw}Set-Cookie:${txtblu} header into the clipboard,"[0m
+[33m                                ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[33m                                                    ^-------^ SC2154: txtblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/osx.sh line 34:[0m
+[0m  [[ -z ${tmp} ]] || rm -f ${tmp}[0m
+[32m                           ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -z ${tmp} ]] || rm -f "${tmp}"
+
+
+[1mIn ./lib/osx.sh line 49:[0m
+[0m    return -1[0m
+[31m           ^-- SC2152: Can only return 0-255. Other data should be written to stdout.[0m
+
+
+[1mIn ./lib/osx.sh line 53:[0m
+[0m  local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/osx.sh line 56:[0m
+[0m  local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")[0m
+[33m        ^-------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/osx.sh line 73:[0m
+[0m  export LibRun__AbortOnError=${True}[0m
+[33m                              ^-----^ SC2154: True is referenced but not assigned.[0m
+
+
+[1mIn ./lib/osx.sh line 77:[0m
+[0m    "NOTE: it's ${italic}not important what resolution you choose," \[0m
+[33m                ^-------^ SC2154: italic is referenced but not assigned.[0m
+
+
+[1mIn ./lib/osx.sh line 84:[0m
+[0m  local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                                                                             ^------------^ SC2016: Expressions don't expand in single quotes, use double quotes for that.[0m
+
+
+[1mIn ./lib/osx.sh line 89:[0m
+[0m    line_pscn_key=$(($line - 4))[0m
+[32m                     ^---^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/osx.sh line 90:[0m
+[0m    line_pscn_value=$(($line - 3))[0m
+[32m                       ^---^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/osx.sh line 97:[0m
+[0m    return -1[0m
+[31m           ^-- SC2152: Can only return 0-255. Other data should be written to stdout.[0m
+
+
+[1mIn ./lib/osx.sh line 108:[0m
+[0m    info "Previous Value — ${bldpur}${value}"[0m
+[33m                           ^-------^ SC2154: bldpur is referenced but not assigned.[0m
+
+
+[1mIn ./lib/osx.sh line 109:[0m
+[0m    info "New value:     — ${bldgrn}${new_value}"[0m
+[33m                           ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/osx.sh line 184:[0m
+[0m  local domain=$(echo ${fqdn} | sed -E 's/^[^.]*\.//g')[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                      ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local domain=$(echo "${fqdn}" | sed -E 's/^[^.]*\.//g')
+
+
+[1mIn ./lib/osx.sh line 185:[0m
+[0m  local host=$(echo ${fqdn} | sed -E 's/\..*//g')[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                    ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local host=$(echo "${fqdn}" | sed -E 's/\..*//g')
+
+
+[1mIn ./lib/osx.sh line 231:[0m
+[0m  printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} $(sudo scutil --get ${var} | tr -d '\n')[0m
+[32m                                        ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[33m                                               ^-- SC2046: Quote this to prevent word splitting.[0m
+[32m                                                                   ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "${bldylw}%20s: ${bldgrn}%s\n" "${var}" $(sudo scutil --get "${var}" | tr -d '\n')
+
+
+[1mIn ./lib/osx.sh line 236:[0m
+[0m  printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} ${!var}[0m
+[32m                                        ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                               ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "${bldylw}%20s: ${bldgrn}%s\n" "${var}" "${!var}"
+
+
+[1mIn ./lib/osx.sh line 254:[0m
+[0m  open $(bashmatic-term-program)[0m
+[33m       ^-----------------------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/run.sh line 3:[0m
+[0mexport LibRun__AskDeclineFunction="exit"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/run.sh line 7:[0m
+[0m  .run $@[0m
+[31m       ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/run.sh line 8:[0m
+[0m  return ${LibRun__LastExitCode}[0m
+[33m         ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+[32m         ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/run.sh line 17:[0m
+[0m  printf "    ${txtgrn}${italic}${prompt} ${clr}  "[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m              ^-------^ SC2154: txtgrn is referenced but not assigned.[0m
+[33m                       ^-------^ SC2154: italic is referenced but not assigned.[0m
+[33m                                          ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/run.sh line 18:[0m
+[0m  read -r -s -n1 key[0m
+[33m                 ^-^ SC2034: key appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/run.sh line 39:[0m
+[0m  read user_input[0m
+[32m  ^--^ SC2162: read without -r will mangle backslashes.[0m
+
+
+[1mIn ./lib/run.sh line 51:[0m
+[0m  local command="$*"[0m
+[33m        ^-----^ SC2034: command appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/run.sh line 60:[0m
+[0m    n=$(($n + 1))[0m
+[32m         ^-- SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/run.sh line 79:[0m
+[0m  inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}"[0m
+[33m       ^-------^ SC2154: bldcyn is referenced but not assigned.[0m
+[33m                                        ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/run.sh line 80:[0m
+[0m  read a 2>/dev/null[0m
+[32m  ^--^ SC2162: read without -r will mangle backslashes.[0m
+
+
+[1mIn ./lib/run.sh line 88:[0m
+[0m    info "${bldblu}Roger that."[0m
+[33m          ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/run.sh line 93:[0m
+[0m    info "${bldred}(Great idea!) Abort! Abandon ship!  🛳   "[0m
+[33m          ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 7:[0m
+[0mbashmatic.reload() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 8:[0m
+[0m  source "${BASHMATIC_INIT}"[0m
+[33m         ^-----------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 12:[0m
+[0m  cat $(dirname "${BASHMATIC_INIT}")/.version[0m
+[33m      ^----------------------------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 24:[0m
+[0m        success "BashMatic is already loaded from ${bldblu}${file}"[0m
+[33m                                                  ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 28:[0m
+[0m        h2 "Adding BashMatic auto-loader to ${bldgrn}${file}..."[0m
+[33m                                            ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 31:[0m
+[0m      source "${file}"[0m
+[33m             ^-------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 45:[0m
+[0m  export SCREEN_WIDTH=$(screen-width)[0m
+[33m         ^----------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 47:[0m
+[0m  if [[ ! ${pattern} =~ "*" && ! ${pattern} =~ ".sh" ]]; then[0m
+[31m                        ^-^ SC2076: Don't quote right-hand side of =~, it'll match literally rather than as a regex.[0m
+[33m                        ^-^ SC2049: =~ is for regex, but this looks like a glob. Use = instead.[0m
+[31m                                               ^---^ SC2076: Don't quote right-hand side of =~, it'll match literally rather than as a regex.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 51:[0m
+[0m  grep -Ee -e '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} |[0m
+[32m                                        ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  grep -Ee -e '^[_a-zA-Z0-9]+.*\(\)' lib/"${pattern}" |
+
+
+[1mIn ./lib/bashmatic.sh line 130:[0m
+[0m      [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" >&2[0m
+[32m                                  ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                                   ^-------^ SC2154: txtcyn is referenced but not assigned.[0m
+[33m                                                     ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[33m                                                                     ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 136:[0m
+[0m      [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" >&2[0m
+[32m                                  ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                                   ^-------^ SC2154: txtgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/bashmatic.sh line 145:[0m
+[0m  printf "${bldred}  ERROR:\n${txtred}  $*%s\n" ""[0m
+[33m          ^-------^ SC2154: bldred is referenced but not assigned.[0m
+[33m                             ^-------^ SC2154: txtred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/db.sh line 6:[0m
+[0mexport RAILS_SCHEMA_RB="db/schema.rb"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/db.sh line 10:[0m
+[0m  psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'[0m
+[33m       ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m       ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+
+
+[1mIn ./lib/db.sh line 14:[0m
+[0m  printf -- "-U ${AppPostgresUsername} -h ${AppPostgresHostname} $*"[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                ^--------------------^ SC2154: AppPostgresUsername is referenced but not assigned.[0m
+[33m                                          ^--------------------^ SC2154: AppPostgresHostname is referenced but not assigned.[0m
+
+
+[1mIn ./lib/db.sh line 21:[0m
+[0mdb.psql.args.default() {[0m
+[33m^-- SC2120: db.psql.args.default references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/db.sh line 22:[0m
+[0m  printf -- "-U postgres -h localhost $*"[0m
+[32m            ^---------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/db.sh line 25:[0m
+[0mdb.psql.args.maint() {[0m
+[33m^-- SC2120: db.psql.args.maint references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/db.sh line 26:[0m
+[0m  printf -- "-U postgres -h localhost --maintenance-db=postgres $*"[0m
+[32m            ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/db.sh line 33:[0m
+[0m    out=$(psql -c "select count(*) from accounts" $(db.psql.args. ${db}) 2>&1)[0m
+[33m                                                  ^--------------------^ SC2046: Quote this to prevent word splitting.[0m
+[32m                                                                  ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    out=$(psql -c "select count(*) from accounts" $(db.psql.args. "${db}") 2>&1)
+
+
+[1mIn ./lib/db.sh line 45:[0m
+[0m  ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'[0m
+[32m  ^-- SC2009: Consider using pgrep instead of grepping ps output.[0m
+[32m           ^-------------^ SC2126: Consider using grep -c instead of grep|wc -l.[0m
+[33m                ^--------^ SC2062: Quote the grep pattern so the shell won't interpret it.[0m
+
+
+[1mIn ./lib/db.sh line 54:[0m
+[0m  local checksum=$(db.rails.schema.checksum)[0m
+[33m        ^------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/db.sh line 58:[0m
+[0m    printf "${checksum}.$(util.arch).${dbname}.dump"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/db.sh line 69:[0m
+[0m  printf "${bldcyn}[${dbtype}] ${bldpur}${db} ${clr}\n\n" >>${tof}[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^-------^ SC2154: bldcyn is referenced but not assigned.[0m
+[33m                               ^-------^ SC2154: bldpur is referenced but not assigned.[0m
+[33m                                              ^----^ SC2154: clr is referenced but not assigned.[0m
+[32m                                                            ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "${bldcyn}[${dbtype}] ${bldpur}${db} ${clr}\n\n" >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 71:[0m
+[0m  printf "${bldblu}" >>${tof}[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+[32m                       ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "${bldblu}" >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 73:[0m
+[0m    psql -X -P pager ${db} -c "select * from hb_stat_replication" >>${tof}[0m
+[32m                     ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                                    ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    psql -X -P pager "${db}" -c "select * from hb_stat_replication" >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 75:[0m
+[0m    psql -X -P pager ${db} -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>${tof}[0m
+[32m                     ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                                                                              ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    psql -X -P pager "${db}" -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 80:[0m
+[0m  printf "${bldcyn}[${dbtype}] ${bldpur}Above: Replication Status / Below: Active Queries:${clr}\n\n${bldylw}" >>${tof}[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                                                                                                    ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[32m                                                                                                                 ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "${bldcyn}[${dbtype}] ${bldpur}Above: Replication Status / Below: Active Queries:${clr}\n\n${bldylw}" >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 82:[0m
+[0m  psql -X -P pager ${db} -c \[0m
+[32m                   ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  psql -X -P pager "${db}" -c \
+
+
+[1mIn ./lib/db.sh line 86:[0m
+[0m    grep -Ee -v 'select.*client_addr' 2>&1 >>${tof}[0m
+[33m                                     ^--^ SC2069: To redirect stdout+stderr, 2>&1 must be last (or use '{ cmd > file; } 2>&1' to clarify).[0m
+[32m                                            ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    grep -Ee -v 'select.*client_addr' 2>&1 >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 96:[0m
+[0m      printf "${RAILS_SCHEMA_RB}"[0m
+[32m             ^------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/db.sh line 98:[0m
+[0m      printf "${RAILS_SCHEMA_SQL}"[0m
+[32m             ^-------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/db.sh line 101:[0m
+[0m    printf "${RAILS_SCHEMA_RB}"[0m
+[32m           ^------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/db.sh line 103:[0m
+[0m    printf "${RAILS_SCHEMA_SQL}"[0m
+[32m           ^-------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/db.sh line 111:[0m
+[0m    local schema=$(db.rails.schema.file)[0m
+[33m          ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/db.sh line 118:[0m
+[0m  local dbnames=$@[0m
+[33m                ^-- SC2124: Assigning an array to a string! Assign as array, or use * instead of @ to concatenate.[0m
+
+
+[1mIn ./lib/db.sh line 126:[0m
+[0m  local width=$(.output.screen-width)[0m
+[33m        ^---^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/db.sh line 127:[0m
+[0m  local height=$(.output.screen-height)[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/db.sh line 132:[0m
+[0m    info "Your screen is ${bldred}${width}x${height}."[0m
+[33m                         ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/db.sh line 141:[0m
+[0m    declare -a results=($(.db.by_shortname $dbname))[0m
+[33m                        ^-------------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+[32m                                           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    declare -a results=($(.db.by_shortname "$dbname"))
+
+
+[1mIn ./lib/db.sh line 144:[0m
+[0m      i=$(($i + 1))[0m
+[32m           ^-- SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/db.sh line 145:[0m
+[0m      db="${results[@]:1}"[0m
+[33m         ^---------------^ SC2124: Assigning an array to a string! Assign as array, or use * instead of @ to concatenate.[0m
+
+
+[1mIn ./lib/db.sh line 158:[0m
+[0m    ((${BASH_IN_SUBSHELL})) && exit 1 || return 1[0m
+[32m      ^-----------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/db.sh line 164:[0m
+[0m  local clear=0[0m
+[33m        ^---^ SC2034: clear appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/db.sh line 168:[0m
+[0m  local tof="$(mktemp -d "${TMPDIR:-/tmp/}.XXXXXXXXXXXX")/.db.top.$$"[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/db.sh line 169:[0m
+[0m  cp /dev/null ${tof}[0m
+[32m               ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  cp /dev/null "${tof}"
+
+
+[1mIn ./lib/db.sh line 174:[0m
+[0m    local screen_height=$(screen.height)[0m
+[33m          ^-----------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/db.sh line 177:[0m
+[0m      index=$((${index} + 1))[0m
+[32m               ^------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/db.sh line 194:[0m
+[0m      local vertical_shift=$((${percent_total_height} * ${screen_height} / 100))[0m
+[32m                              ^---------------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+[32m                                                        ^--------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/db.sh line 196:[0m
+[0m      cursor.at.y ${vertical_shift} >>${tof}[0m
+[32m                                      ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      cursor.at.y ${vertical_shift} >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 197:[0m
+[0m      [[ -n ${DEBUG} ]] && h.blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >>${tof}[0m
+[32m                                                                                                                                                             ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      [[ -n ${DEBUG} ]] && h.blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 198:[0m
+[0m      hr.colored ${bldpur} >>${tof}[0m
+[32m                 ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                             ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      hr.colored "${bldpur}" >>"${tof}"
+
+
+[1mIn ./lib/db.sh line 203:[0m
+[0m    cat ${tof}[0m
+[32m        ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    cat "${tof}"
+
+
+[1mIn ./lib/db.sh line 205:[0m
+[0m    printf "${bldwht}Press Ctrl-C to quit.${clr}"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m            ^-------^ SC2154: bldwht is referenced but not assigned.[0m
+
+
+[1mIn ./lib/db.sh line 206:[0m
+[0m    cp /dev/null ${tof}[0m
+[32m                 ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    cp /dev/null "${tof}"
+
+
+[1mIn ./lib/db.sh line 207:[0m
+[0m    sleep ${interval}[0m
+[32m          ^---------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    sleep "${interval}"
+
+
+[1mIn ./lib/db.sh line 217:[0m
+[0m  local filename=$(.db.backup-filename ${dbname})[0m
+[33m        ^------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                       ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local filename=$(.db.backup-filename "${dbname}")
+
+
+[1mIn ./lib/db.sh line 218:[0m
+[0m  [[ $? != 0 ]] && return[0m
+[32m     ^-- SC2181: Check exit code directly with e.g. 'if mycmd;', not indirectly with $?.[0m
+
+
+[1mIn ./lib/db.sh line 220:[0m
+[0m  [[ ${LibRun__Verbose} -eq ${True} ]] && {[0m
+[33m     ^----------------^ SC2154: LibRun__Verbose is referenced but not assigned.[0m
+[33m                            ^-----^ SC2154: True is referenced but not assigned.[0m
+
+
+[1mIn ./lib/db.sh line 228:[0m
+[0m  code=${LibRun__LastExitCode}[0m
+[33m       ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+
+
+[1mIn ./lib/db.sh line 232:[0m
+[0m    return ${code}[0m
+[32m           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    return "${code}"
+
+
+[1mIn ./lib/db.sh line 245:[0m
+[0m  [[ -z ${filename} ]] && filename=$(.db.backup-filename ${dbname})[0m
+[32m                                                         ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -z ${filename} ]] && filename=$(.db.backup-filename "${dbname}")
+
+
+[1mIn ./lib/db.sh line 247:[0m
+[0m  [[ dbname =~ 'production' ]] && {[0m
+[33m            ^-- SC2050: This expression is constant. Did you forget the $ on a variable?[0m
+
+
+[1mIn ./lib/db.sh line 257:[0m
+[0m  psql_args=$(db.psql.args.default)[0m
+[32m              ^------------------^ SC2119: Use db.psql.args.default "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/db.sh line 258:[0m
+[0m  maint_args=$(db.psql.args.maint)[0m
+[32m               ^----------------^ SC2119: Use db.psql.args.maint "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/db.sh line 275:[0m
+[0m    return ${code}[0m
+[32m           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    return "${code}"
+
+
+[1mIn ./lib/db.sh line 277:[0m
+[0m  return ${LibRun__LastExitCode}[0m
+[32m         ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/user.sh line 1:[0m
+[0muser.gitconfig.email() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[31m^-- SC2148: Tips depend on target shell and yours is unknown. Add a shebang or a 'shell' directive.[0m
+
+
+[1mIn ./lib/user.sh line 3:[0m
+[0m    grep email ${HOME}/.gitconfig | sedx 's/.*=\s?//g'[0m
+[32m               ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    grep email "${HOME}"/.gitconfig | sedx 's/.*=\s?//g'
+
+
+[1mIn ./lib/user.sh line 9:[0m
+[0m    grep name ${HOME}/.gitconfig | sedx 's/.*=\s?//g'[0m
+[32m              ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    grep name "${HOME}"/.gitconfig | sedx 's/.*=\s?//g'
+
+
+[1mIn ./lib/user.sh line 14:[0m
+[0m  [[ -n $(which finge) ]] && finger ${USER} | head -1 | sedx 's/.*Name: //g'[0m
+[32m                                    ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -n $(which finge) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
+
+
+[1mIn ./lib/user.sh line 18:[0m
+[0m  echo ${USER:-$(whoami)}[0m
+[32m       ^----------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  echo "${USER:-$(whoami)}"
+
+
+[1mIn ./lib/user.sh line 31:[0m
+[0m  user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'[0m
+[32m                                ^-- SC2016: Expressions don't expand in single quotes, use double quotes for that.[0m
+
+
+[1mIn ./lib/user.sh line 39:[0m
+[0m  nslookup $(user.my.ip) | grep 'name =' | sedx 's/.*name = //g'[0m
+[33m           ^-----------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/user.sh line 46:[0m
+[0m  printf "${host}"[0m
+[32m         ^-------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/user.sh line 51:[0m
+[0m  basename $(user.login-shell-path)[0m
+[33m           ^----------------------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/user.sh line 56:[0m
+[0m    finger ${USER} | grep Shell: | sed 's/^.*Shell: //g'[0m
+[32m           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    finger "${USER}" | grep Shell: | sed 's/^.*Shell: //g'
+
+
+[1mIn ./lib/user.sh line 58:[0m
+[0m    echo $SHELL[0m
+[32m         ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    echo "$SHELL"
+
+
+[1mIn ./lib/git.sh line 6:[0m
+[0mgit.configure-auto-updates() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/git.sh line 9:[0m
+[0m  export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | util.checksum.stdin)"[0m
+[33m         ^-----------------------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                                                         ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo "${USER}" | util.checksum.stdin)"
+
+
+[1mIn ./lib/git.sh line 10:[0m
+[0m  mkdir -p $(dirname ${LibGit__LastUpdateTimestampFile})[0m
+[33m           ^-- SC2046: Quote this to prevent word splitting.[0m
+[32m                     ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  mkdir -p $(dirname "${LibGit__LastUpdateTimestampFile}")
+
+
+[1mIn ./lib/git.sh line 14:[0m
+[0m  [[ -n ${LibGit__QuietUpdate} ]][0m
+[33m        ^--------------------^ SC2154: LibGit__QuietUpdate is referenced but not assigned.[0m
+
+
+[1mIn ./lib/git.sh line 18:[0m
+[0m  local dir="$(pwd)"[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/git.sh line 19:[0m
+[0m  cd "${BASHMATIC_HOME}" >/dev/null[0m
+[33m  ^-- SC2164: Use 'cd ... || exit' or 'cd ... || return' in case cd fails.[0m
+
+[1mDid you mean: [0m
+  cd "${BASHMATIC_HOME}" >/dev/null || exit
+
+
+[1mIn ./lib/git.sh line 20:[0m
+[0m  git.repo-is-clean || {[0m
+[32m  ^---------------^ SC2119: Use git.repo-is-clean "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/git.sh line 21:[0m
+[0m    warning "${bldylw}${BASHMATIC_HOME} has locally modified files." \[0m
+[33m             ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/git.sh line 23:[0m
+[0m    cd "${dir}" >/dev/null[0m
+[33m    ^--------------------^ SC2164: Use 'cd ... || exit' or 'cd ... || return' in case cd fails.[0m
+
+[1mDid you mean: [0m
+    cd "${dir}" >/dev/null || exit
+
+
+[1mIn ./lib/git.sh line 28:[0m
+[0m  cd "${dir}" >/dev/null[0m
+[33m  ^--------------------^ SC2164: Use 'cd ... || exit' or 'cd ... || return' in case cd fails.[0m
+
+[1mDid you mean: [0m
+  cd "${dir}" >/dev/null || exit
+
+
+[1mIn ./lib/git.sh line 32:[0m
+[0mgit.last-update-at() {[0m
+[33m^-- SC2120: git.last-update-at references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/git.sh line 37:[0m
+[0m  [[ -f ${file} ]] && last_update="$(cat $file | tr -d '\n')"[0m
+[32m                                         ^---^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                         ^---^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+[1mDid you mean: [0m
+  [[ -f ${file} ]] && last_update="$(cat "$file" | tr -d '\n')"
+
+
+[1mIn ./lib/git.sh line 38:[0m
+[0m  printf "%d" ${last_update}[0m
+[32m              ^------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "%d" "${last_update}"
+
+
+[1mIn ./lib/git.sh line 43:[0m
+[0m  local now=$(epoch)[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/git.sh line 44:[0m
+[0m  printf $((now - last_update))[0m
+[32m         ^--------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/git.sh line 48:[0m
+[0m  local last_update_at=$(git.last-update-at)[0m
+[33m        ^------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                         ^----------------^ SC2119: Use git.last-update-at "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/git.sh line 49:[0m
+[0m  local second_since_update=$(git.seconds-since-last-pull ${last_update_at})[0m
+[33m        ^-----------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                                          ^---------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  local second_since_update=$(git.seconds-since-last-pull "${last_update_at}")
+
+
+[1mIn ./lib/git.sh line 59:[0m
+[0m  echo $(epoch) >${LibGit__LastUpdateTimestampFile}[0m
+[33m       ^------^ SC2046: Quote this to prevent word splitting.[0m
+[32m       ^------^ SC2005: Useless echo? Instead of 'echo $(cmd)', just use 'cmd'.[0m
+[32m                 ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  echo $(epoch) >"${LibGit__LastUpdateTimestampFile}"
+
+
+[1mIn ./lib/git.sh line 64:[0m
+[0m    (git remote update && git fetch) 2>&1 >/dev/null[0m
+[33m                                     ^--^ SC2069: To redirect stdout+stderr, 2>&1 must be last (or use '{ cmd > file; } 2>&1' to clarify).[0m
+
+
+[1mIn ./lib/git.sh line 69:[0m
+[0m  local status=$(git.local-vs-remote)[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                 ^-----------------^ SC2119: Use git.local-vs-remote "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/git.sh line 73:[0m
+[0m    git.quiet && git pull --rebase 2>&1 >/dev/null[0m
+[33m                                   ^--^ SC2069: To redirect stdout+stderr, 2>&1 must be last (or use '{ cmd > file; } 2>&1' to clarify).[0m
+
+
+[1mIn ./lib/git.sh line 85:[0m
+[0mgit.local-vs-remote() {[0m
+[33m^-- SC2120: git.local-vs-remote references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/git.sh line 87:[0m
+[0m  local local_repo=$(git rev-parse @)[0m
+[33m        ^--------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/git.sh line 88:[0m
+[0m  local remote_repo=$(git rev-parse "$upstream")[0m
+[33m        ^---------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/git.sh line 89:[0m
+[0m  local base=$(git merge-base @ "$upstream")[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/git.sh line 92:[0m
+[0m    printf "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/git.sh line 118:[0m
+[0mgit.repo-is-clean() {[0m
+[33m^-- SC2120: git.repo-is-clean references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/git.sh line 120:[0m
+[0m  cd "${repo}" >/dev/null[0m
+[33m  ^---------------------^ SC2164: Use 'cd ... || exit' or 'cd ... || return' in case cd fails.[0m
+
+[1mDid you mean: [0m
+  cd "${repo}" >/dev/null || exit
+
+
+[1mIn ./lib/git.sh line 122:[0m
+[0m    cd - >/dev/null[0m
+[33m    ^-------------^ SC2164: Use 'cd ... || exit' or 'cd ... || return' in case cd fails.[0m
+
+[1mDid you mean: [0m
+    cd - >/dev/null || exit
+
+
+[1mIn ./lib/git.sh line 125:[0m
+[0m    cd - >/dev/null[0m
+[33m    ^-------------^ SC2164: Use 'cd ... || exit' or 'cd ... || return' in case cd fails.[0m
+
+[1mDid you mean: [0m
+    cd - >/dev/null || exit
+
+
+[1mIn ./lib/git.sh line 135:[0m
+[0m  [[ ${Bashmatic__Test} -eq 1 ]] && return 0[0m
+[33m     ^----------------^ SC2154: Bashmatic__Test is referenced but not assigned.[0m
+
+
+[1mIn ./lib/git.sh line 139:[0m
+[0m  git.repo-is-clean || {[0m
+[32m  ^---------------^ SC2119: Use git.repo-is-clean "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/git.sh line 175:[0m
+[0m  local remote="${1:-"origin"}"[0m
+[33m        ^----^ SC2034: remote appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/git.sh line 176:[0m
+[0m  local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/git.sh line 178:[0m
+[0m  open -a 'Google Chrome' ${url}[0m
+[32m                          ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  open -a 'Google Chrome' "${url}"
+
+
+[1mIn ./lib/caller.sh line 12:[0m
+[0mcaller.stack() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/caller.sh line 16:[0m
+[0m    caller ${index} 2>&1 1>/dev/null || break[0m
+[33m                    ^--^ SC2069: To redirect stdout+stderr, 2>&1 must be last (or use '{ cmd > file; } 2>&1' to clarify).[0m
+
+
+[1mIn ./lib/caller.sh line 18:[0m
+[0m    local -a frame=($(caller ${index} | tr ' ' '\n'))[0m
+[33m                    ^-- SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/time.sh line 10:[0m
+[0mexport AppCurrentOS=${AppCurrentOS:-$(uname -s)}[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/time.sh line 19:[0m
+[0m    printf "Please run ${bldylw}brew install coreutils${clr} to install gdate utility."[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                       ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[33m                                                      ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/time.sh line 40:[0m
+[0m    printf "date -r ${epoch_ts}"[0m
+[32m           ^-------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/time.sh line 42:[0m
+[0m    printf "date --date='@${epoch_ts}'"[0m
+[32m           ^--------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/time.sh line 47:[0m
+[0m  date '+%F.%T' | tr -d '[-.:]'  [0m
+[32m                        ^-----^ SC2021: Don't use [] around classes in tr, it replaces literal square brackets.[0m
+
+
+[1mIn ./lib/time.sh line 56:[0m
+[0m  eval "$(time.date-from-epoch ${epoch_ts}) -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'[0m
+[32m                               ^---------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  eval "$(time.date-from-epoch "${epoch_ts}") -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
+
+
+[1mIn ./lib/time.sh line 62:[0m
+[0m  eval "$(time.date-from-epoch ${epoch_ts}) \"+%m/%d/%Y, %r\""[0m
+[32m                               ^---------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  eval "$(time.date-from-epoch "${epoch_ts}") \"+%m/%d/%Y, %r\""
+
+
+[1mIn ./lib/time.sh line 69:[0m
+[0m  local seconds=$((${mins} * 60))[0m
+[32m                   ^-----^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/time.sh line 70:[0m
+[0m  local epoch=$(epoch)[0m
+[33m        ^---^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/time.sh line 71:[0m
+[0m  echo $((${epoch} - ${seconds}))[0m
+[32m          ^------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+[32m                     ^--------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/time.sh line 79:[0m
+[0m  printf "${format}" ${seconds} ${leftover}[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/time.sh line 84:[0m
+[0m  local hours=$((${seconds} / 3600))[0m
+[32m                 ^--------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/time.sh line 85:[0m
+[0m  local remainder=$((${seconds} - ${hours} * 3600))[0m
+[32m                     ^--------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+[32m                                  ^------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/time.sh line 86:[0m
+[0m  local mins=$((${remainder} / 60))[0m
+[32m                ^----------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/time.sh line 87:[0m
+[0m  local secs=$((${seconds} - ${hours} * 3600 - ${mins} * 60))[0m
+[32m                ^--------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+[32m                             ^------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+[32m                                               ^-----^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/shell-set.sh line 48:[0m
+[0mshell-set.is-set() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/shell-set.sh line 59:[0m
+[0m  info "Current Shell Set Stack: ${bldylw}[${SetOptsStack[*]}]"[0m
+[33m                                 ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/shell-set.sh line 72:[0m
+[0m  shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}")[0m
+[32m                   ^------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[33m                                                    ^----------------^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+[1mDid you mean: [0m
+  shell-set.is-set "${value}" && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
+
+
+[1mIn ./lib/shell-set.sh line 73:[0m
+[0m  shell-set.is-set ${value} || export SetOptsStack=(${SetOptsStack[@]} "+${value}")[0m
+[32m                   ^------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[33m                                                    ^----------------^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+[1mDid you mean: [0m
+  shell-set.is-set "${value}" || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
+
+
+[1mIn ./lib/shell-set.sh line 89:[0m
+[0m  local pop=(${last})[0m
+[33m             ^-----^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/shell-set.sh line 91:[0m
+[0m  export SetOptsStack=("${SetOptsStack[@]/$pop/}")[0m
+[33m                                          ^--^ SC2128: Expanding an array without an index only gives the first element.[0m
+
+
+[1mIn ./lib/runtime-config.sh line 1:[0m
+[0m#!/usr/bin/env #!/usr/bin/env bash[0m
+[31m^-- SC1008: This shebang was unrecognized. ShellCheck only supports sh/bash/dash/ksh. Add a 'shell' directive to specify.[0m
+[31m^-- SC2096: On most OS, shebangs can only specify a single parameter.[0m
+
+
+[1mIn ./lib/runtime-config.sh line 24:[0m
+[0mrun.set-next() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/runtime-config.sh line 67:[0m
+[0m  export LibRun__Detail=${True}[0m
+[33m                        ^-----^ SC2154: True is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime-config.sh line 70:[0m
+[0m  export LibRun__Detail=${False}[0m
+[33m                        ^------^ SC2154: False is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime-config.sh line 168:[0m
+[0m    ____run.list-options ${type}[0m
+[32m                         ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    ____run.list-options "${type}"
+
+
+[1mIn ./lib/runtime-config.sh line 172:[0m
+[0m  for feature in $@; do[0m
+[31m                 ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/runtime-config.sh line 174:[0m
+[0m    if [[ -z $(type ${func} 2>/dev/null) ]]; then[0m
+[32m                    ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    if [[ -z $(type "${func}" 2>/dev/null) ]]; then
+
+
+[1mIn ./lib/runtime-config.sh line 176:[0m
+[0m      ____run.list-options ${type}[0m
+[32m                           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      ____run.list-options "${type}"
+
+
+[1mIn ./lib/runtime-config.sh line 185:[0m
+[0m  local -a features=($(eval "$func"))[0m
+[33m                     ^-------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/sym.sh line 3:[0m
+[0msym.dev.install-shell-helpers() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/sym.sh line 5:[0m
+[0m  declare -a init_files=($(util.shell-init-files))[0m
+[33m                         ^----------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/sym.sh line 7:[0m
+[0m  for file in ${init_files[@]}; do[0m
+[31m              ^--------------^ SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/sym.sh line 10:[0m
+[0m    [[ -n $(grep sym.symit ${f}) ]] && {[0m
+[32m       ^-- SC2143: Use grep -q instead of comparing output with [ -n .. ].[0m
+[32m                           ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    [[ -n $(grep sym.symit "${f}") ]] && {
+
+
+[1mIn ./lib/sym.sh line 17:[0m
+[0m    for file in ${init_files[@]}; do[0m
+[31m                ^--------------^ SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/sym.sh line 40:[0m
+[0m  trap "rm -f ${symit__source}; " EXIT[0m
+[33m              ^--------------^ SC2064: Use single quotes, otherwise this expands now rather than when signalled.[0m
+[33m              ^--------------^ SC2154: symit__source is referenced but not assigned (did you mean 'symit_source'?).[0m
+
+
+[1mIn ./lib/sym.sh line 44:[0m
+[0m  export LibRun__AbortOnError=${True}[0m
+[33m                              ^-----^ SC2154: True is referenced but not assigned.[0m
+
+
+[1mIn ./lib/sym.sh line 51:[0m
+[0m  source ${symit_source}[0m
+[33m         ^-------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./lib/sym.sh line 77:[0m
+[0m  ((${skip_sleep})) || sleep ${sleep_duration}[0m
+[32m    ^-----------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+[32m                             ^---------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  ((${skip_sleep})) || sleep "${sleep_duration}"
+
+
+[1mIn ./lib/sym.sh line 83:[0m
+[0m  if [[ ${AppCurrentOS} != 'Darwin' ]]; then[0m
+[33m        ^-------------^ SC2154: AppCurrentOS is referenced but not assigned.[0m
+
+
+[1mIn ./lib/sym.sh line 91:[0m
+[0m  [[ -f ~/.sym.symit.bash ]] && source ~/.sym.symit.bash[0m
+[33m                                       ^---------------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./lib/sym.sh line 98:[0m
+[0m    info: "Key ${SYMIT_KEY} is already in you your OS-X Key Chain."[0m
+[33m               ^----------^ SC2153: Possible misspelling: SYMIT_KEY may not be assigned, but SYMIT__KEY is.[0m
+
+
+[1mIn ./lib/sym.sh line 100:[0m
+[0m    [[ $? != 0 ]] && return[0m
+[32m       ^-- SC2181: Check exit code directly with e.g. 'if mycmd;', not indirectly with $?.[0m
+
+
+[1mIn ./lib/sym.sh line 103:[0m
+[0m  if [[ ${skip_instructions} == ${false} ]]; then[0m
+[33m                                ^------^ SC2053: Quote the right-hand side of == in [[ ]] to prevent glob matching.[0m
+[33m                                ^------^ SC2154: false is referenced but not assigned.[0m
+
+
+[1mIn ./lib/sym.sh line 121:[0m
+[0m    [[ $? != 0 ]] && return[0m
+[32m       ^-- SC2181: Check exit code directly with e.g. 'if mycmd;', not indirectly with $?.[0m
+
+
+[1mIn ./lib/sym.sh line 136:[0m
+[0m  info "Key import was successful, great job! ${bldylw}☺ "[0m
+[33m                                              ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/sym.sh line 157:[0m
+[0m  sym -ck APP_CHEF_SYM_KEY $*[0m
+[33m                           ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m                           ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  sym -ck APP_CHEF_SYM_KEY "$*"
+
+
+[1mIn ./lib/sym.sh line 166:[0m
+[0m  sym -cqk APP_SYM_KEY $*[0m
+[33m                       ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m                       ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  sym -cqk APP_SYM_KEY "$*"
+
+
+[1mIn ./lib/color.sh line 8:[0m
+[0mreset-color() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/color.sh line 75:[0m
+[0mtxt-info() { printf "${clr}${txtblu}"; }[0m
+[32m                    ^---------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/color.sh line 76:[0m
+[0mtxt-err() { printf "${clr}${bldylw}${bakred}"; }[0m
+[32m                   ^------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/color.sh line 77:[0m
+[0mtxt-warn() { printf "${clr}${bldylw}"; }[0m
+[32m                    ^---------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/color.sh line 79:[0m
+[0merror-text() { printf "${txtred}"; }[0m
+[32m                      ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/color.sh line 140:[0m
+[0m((${AppColorsLoaded})) || color.enable[0m
+[32m  ^----------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/7z.sh line 3:[0m
+[0m7z.install() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/7z.sh line 31:[0m
+[0m  [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sedx 's/\./-/g').tar.7z"[0m
+[32m                                                                ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename "${folder}" | sedx 's/\./-/g').tar.7z"
+
+
+[1mIn ./lib/7z.sh line 41:[0m
+[0m  for arg in $@; do[0m
+[31m             ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/7z.sh line 43:[0m
+[0m      flags=( ${flags[@]} "${arg}" )[0m
+[33m              ^---------^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/7z.sh line 45:[0m
+[0m      args=( ${args[@]} "${arg}" )[0m
+[33m             ^--------^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/7z.sh line 48:[0m
+[0m  printf "${bldgrn}"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/7z.sh line 49:[0m
+[0m  printf "${args[*]}\n"[0m
+[32m         ^------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/7z.sh line 50:[0m
+[0m  printf "${bldylw}"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/7z.sh line 60:[0m
+[0m  printf "${clr}"[0m
+[32m         ^------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/7z.sh line 80:[0m
+[0m  info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size ${archive}) bytes."[0m
+[33m                          ^-------^ SC2154: txtylw is referenced but not assigned.[0m
+[32m                                                                               ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size "${archive}") bytes."
+
+
+[1mIn ./lib/dir.sh line 3:[0m
+[0mdir.count-slashes() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/dir.sh line 29:[0m
+[0m  printf "${dir}"[0m
+[32m         ^------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/deploy.sh line 6:[0m
+[0mexport LibDeploy__VpnInfoUrl=${LibDeploy__VpnInfoUrl:-''}[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/deploy.sh line 34:[0m
+[0m      "${undblu}${LibDeploy__VpnInfoUrl}${clr}"[0m
+[33m       ^-------^ SC2154: undblu is referenced but not assigned.[0m
+[33m                                        ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/deploy.sh line 37:[0m
+[0m  if [[ -n "$(netstat -rn | grep utun)" ]]; then[0m
+[32m        ^-- SC2143: Use grep -q instead of comparing output with [ -n .. ].[0m
+
+
+[1mIn ./lib/deploy.sh line 39:[0m
+[0m    printf "${bldylw}"[0m
+[32m           ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m            ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/deploy.sh line 41:[0m
+[0m    printf "${clr}\n"[0m
+[32m           ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/deploy.sh line 59:[0m
+[0m  local text=$(echo "${original_text}" | sed -E 's/"/\"/g' | sed -E "s/'/\'/g")[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/deploy.sh line 63:[0m
+[0m  [[ ${LibRun__DryRun} -eq ${False} ]] && {[0m
+[33m     ^---------------^ SC2154: LibRun__DryRun is referenced but not assigned.[0m
+[33m                           ^------^ SC2154: False is referenced but not assigned.[0m
+
+
+[1mIn ./lib/deploy.sh line 68:[0m
+[0m      if [[ $? -eq 0 ]]; then[0m
+[32m            ^-- SC2181: Check exit code directly with e.g. 'if mycmd;', not indirectly with $?.[0m
+
+
+[1mIn ./lib/deploy.sh line 75:[0m
+[0m  [[ ${LibRun__DryRun} -eq ${True} ]] && run "send to slack [${text}]"[0m
+[33m                           ^-----^ SC2154: True is referenced but not assigned.[0m
+
+
+[1mIn ./lib/deploy.sh line 79:[0m
+[0m  deploy.slack "<!here> $@"[0m
+[31m                        ^-- SC2145: Argument mixes string and array. Use * or separate argument.[0m
+
+
+[1mIn ./lib/net.sh line 3:[0m
+[0mnet.local-subnet() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/net.sh line 4:[0m
+[0m  local subnet="$(ifconfig -a |[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/net.sh line 12:[0m
+[0m  printf '%s' ${subnet}[0m
+[32m              ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf '%s' "${subnet}"
+
+
+[1mIn ./lib/net.sh line 17:[0m
+[0m  local out=$(mktemp)[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/net.sh line 22:[0m
+[0m  cat ${out} | sed -E "s/Nmap scan report for (.*)$/\n\${bldylw}Nmap scan report for \1\${clr}\n/g" >>${colored}[0m
+[32m      ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m      ^----^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+[1mDid you mean: [0m
+  cat "${out}" | sed -E "s/Nmap scan report for (.*)$/\n\${bldylw}Nmap scan report for \1\${clr}\n/g" >>${colored}
+
+
+[1mIn ./lib/util.sh line 1:[0m
+[0m# Note, this function does not actually work as a function, but only with ZSH[0m
+[31m^-- SC2148: Tips depend on target shell and yours is unknown. Add a shebang or a 'shell' directive.[0m
+
+
+[1mIn ./lib/util.sh line 7:[0m
+[0mutil.is-variable-defined() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/util.sh line 14:[0m
+[0m  printf $(((RANDOM % ${limit})))[0m
+[32m         ^----------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                      ^------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/util.sh line 19:[0m
+[0m  local val=$(($(date '+%s') - 100000 * $RANDOM))[0m
+[32m                                        ^-----^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/util.sh line 21:[0m
+[0m  printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c ${len})"[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                                                                              ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c "${len}")"
+
+
+[1mIn ./lib/util.sh line 26:[0m
+[0m  [[ -z $(echo ${1} | sed -E 's/^[0-9]+$//g') ]][0m
+[32m               ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  [[ -z $(echo "${1}" | sed -E 's/^[0-9]+$//g') ]]
+
+
+[1mIn ./lib/util.sh line 31:[0m
+[0m  echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'[0m
+[32m       ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
+
+
+[1mIn ./lib/util.sh line 42:[0m
+[0m  echo $(basename $(printf $SHELL))[0m
+[33m       ^--------------------------^ SC2046: Quote this to prevent word splitting.[0m
+[32m       ^--------------------------^ SC2005: Useless echo? Instead of 'echo $(cmd)', just use 'cmd'.[0m
+[33m                  ^--------------^ SC2046: Quote this to prevent word splitting.[0m
+[32m                           ^----^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                           ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  echo $(basename $(printf "$SHELL"))
+
+
+[1mIn ./lib/util.sh line 46:[0m
+[0m  echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'[0m
+[33m           ^-------------^ SC2154: AppCurrentOS is referenced but not assigned.[0m
+[32m                                                         ^---^ SC2019: Use '[:upper:]' to support accents and foreign alphabets.[0m
+[32m                                                               ^---^ SC2018: Use '[:lower:]' to support accents and foreign alphabets.[0m
+
+
+[1mIn ./lib/util.sh line 64:[0m
+[0m  declare -a shell_files=($(util.shell-init-files))[0m
+[33m                          ^----------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/util.sh line 65:[0m
+[0m  for init_file in ${shell_files[@]}; do[0m
+[31m                   ^---------------^ SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/util.sh line 67:[0m
+[0m    [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && {[0m
+[32m                     ^-- SC2143: Use grep -q instead of comparing output with [ -n .. ].[0m
+[32m                                           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    [[ -f ${file} && -n $(grep "${search}" "${file}") ]] && {
+
+
+[1mIn ./lib/util.sh line 74:[0m
+[0m    for init_file in ${shell_files[@]}; do[0m
+[31m                     ^---------------^ SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/util.sh line 77:[0m
+[0m        echo "${string}" >>${file}[0m
+[32m                           ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+        echo "${string}" >>"${file}"
+
+
+[1mIn ./lib/util.sh line 84:[0m
+[0m  printf "${is_installed}"[0m
+[32m         ^---------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/util.sh line 104:[0m
+[0m  declare -a shell_files=($(util.shell-init-files))[0m
+[33m                          ^----------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/util.sh line 105:[0m
+[0m  local temp_holder=$(mktemp)[0m
+[33m        ^---------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/util.sh line 106:[0m
+[0m  for init_file in ${shell_files[@]}; do[0m
+[31m                   ^---------------^ SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/util.sh line 109:[0m
+[0m    if [[ -f ${file} && -n $(grep "${search}" ${file}) ]]; then[0m
+[32m                        ^-- SC2143: Use grep -q instead of comparing output with [ -n .. ].[0m
+[32m                                              ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    if [[ -f ${file} && -n $(grep "${search}" "${file}") ]]; then
+
+
+[1mIn ./lib/util.sh line 111:[0m
+[0m      local matches=$(grep -c "${search}" ${file})[0m
+[33m            ^-----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                          ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      local matches=$(grep -c "${search}" "${file}")
+
+
+[1mIn ./lib/util.sh line 112:[0m
+[0m      run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"[0m
+[33m                                                                           ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/util.sh line 119:[0m
+[0m        [[ -n "${do_backup_changes}" ]] && "mv ${file} ${backup}"[0m
+[33m               ^------------------^ SC2154: do_backup_changes is referenced but not assigned.[0m
+
+
+[1mIn ./lib/util.sh line 126:[0m
+[0m  return ${LibRun__LastExitCode}[0m
+[33m         ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+[32m         ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/util.sh line 130:[0m
+[0m  declare -a hb_aliases=($(alias | grep -Ee 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))[0m
+[33m                         ^-- SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/util.sh line 156:[0m
+[0m  find ${folder} -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'[0m
+[32m       ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  find "${folder}" -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
+
+
+[1mIn ./lib/util.sh line 173:[0m
+[0m    echo ${e/${1}/}[0m
+[32m         ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    echo "${e/${1}/}"
+
+
+[1mIn ./lib/util.sh line 178:[0m
+[0m  cat $* | shasum | awk '{print $1}'[0m
+[33m      ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m      ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m      ^-- SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+[1mDid you mean: [0m
+  cat "$*" | shasum | awk '{print $1}'
+
+
+[1mIn ./lib/util.sh line 189:[0m
+[0m  local init_file=$(util.append-to-init-files 'eval "$(direnv hook bash)"; export DIRENV_LOG_FORMAT=' 'direnv hook')[0m
+[33m        ^-------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                                              ^-- SC2016: Expressions don't expand in single quotes, use double quotes for that.[0m
+
+
+[1mIn ./lib/util.sh line 207:[0m
+[0m  local current=$(which sed)[0m
+[33m        ^-----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/util.sh line 209:[0m
+[0m  local os=$(uname -s)[0m
+[33m        ^-- SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/util.sh line 235:[0m
+[0m    sleep ${LibUtil__WatchRefreshSeconds}[0m
+[32m          ^-----------------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    sleep "${LibUtil__WatchRefreshSeconds}"
+
+
+[1mIn ./lib/util.sh line 245:[0m
+[0m    hr.colored "${txtblu}"[0m
+[33m                ^-------^ SC2154: txtblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/util.sh line 246:[0m
+[0m    printf " ❯ Command: ${bldgrn}$*${clr}  •  ${txtblu}$(date)${clr}  •  Refresh: ${bldcyn}${LibUtil__WatchRefreshSeconds}${clr}\n"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                        ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+[33m                                   ^----^ SC2154: clr is referenced but not assigned.[0m
+[33m                                                                                  ^-------^ SC2154: bldcyn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/util.sh line 250:[0m
+[0m    printf "To change refresh rate run ${bldylw}watch.set-refresh <seconds>${clr}\n\n\n"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/progress-bar.sh line 3:[0m
+[0mexport abort_progress_bar=0[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/progress-bar.sh line 5:[0m
+[0mexport LibProgress__BarColor__Default="${bldblu}"[0m
+[33m                                       ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/progress-bar.sh line 26:[0m
+[0m  for j in $(seq 0 ${width}); do[0m
+[32m                   ^------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  for j in $(seq 0 "${width}"); do
+
+
+[1mIn ./lib/progress-bar.sh line 38:[0m
+[0m  local delay_seconds=$(ruby -e "printf('%.6f', ${full_cycle_seconds}.to_f / ${width}.to_f)")[0m
+[33m        ^-----------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/progress-bar.sh line 40:[0m
+[0m  trap ".progress.abort" INT STOP[0m
+[31m                             ^--^ SC2173: SIGKILL/SIGSTOP can not be trapped.[0m
+
+
+[1mIn ./lib/progress-bar.sh line 47:[0m
+[0m  printf "${LibProgress__BarColor}"[0m
+[32m         ^------------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/progress-bar.sh line 49:[0m
+[0m  for count in $(seq 1 ${loops}); do[0m
+[33m  ^-^ SC2034: count appears unused. Verify use (or export if used externally).[0m
+[32m                       ^------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  for count in $(seq 1 "${loops}"); do
+
+
+[1mIn ./lib/progress-bar.sh line 52:[0m
+[0m    for j in $(seq 0 ${width}); do[0m
+[33m    ^-^ SC2034: j appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/progress-bar.sh line 53:[0m
+[0m      sleep ${delay_seconds}[0m
+[32m            ^--------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+      sleep "${delay_seconds}"
+
+
+[1mIn ./lib/progress-bar.sh line 54:[0m
+[0m      printf "${LibProgress__BarChar}"[0m
+[32m             ^-----------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/progress-bar.sh line 104:[0m
+[0m  info "Waiting for background process to finish; PID=${bldylw}${pid}"[0m
+[33m                                                      ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/progress-bar.sh line 133:[0m
+[0m  progress.bar.config BarColor=${bldgrn}[0m
+[33m                               ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+[32m                               ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  progress.bar.config BarColor="${bldgrn}"
+
+
+[1mIn ./lib/progress-bar.sh line 137:[0m
+[0m  progress.bar.config BarColor=${bldred}[0m
+[33m                               ^-------^ SC2154: bldred is referenced but not assigned.[0m
+[32m                               ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  progress.bar.config BarColor="${bldred}"
+
+
+[1mIn ./lib/progress-bar.sh line 141:[0m
+[0m  progress.bar.config BarColor=${bldylw}[0m
+[32m                               ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  progress.bar.config BarColor="${bldylw}"
+
+
+[1mIn ./lib/runtime.sh line 13:[0m
+[0mexport LibRun__LastExitCode=${False}[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+[33m                            ^------^ SC2154: False is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 25:[0m
+[0mexport LibRun__ShowCommand__Default=${True}[0m
+[33m                                    ^-----^ SC2154: True is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 76:[0m
+[0m    info "${clr}$(run.dry-run-prefix) ${bldgrn}${cmd}"[0m
+[33m          ^----^ SC2154: clr is referenced but not assigned.[0m
+[33m                                      ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 82:[0m
+[0m    return ${LibRun__LastExitCode}[0m
+[32m           ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/runtime.sh line 98:[0m
+[0m    local line="${clr}$(run.dry-run-prefix) bundle exec ${bldgrn}${cmd}"[0m
+[33m          ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/runtime.sh line 118:[0m
+[0m    array.includes "${code}" "${array[@]}"[0m
+[33m                              ^---------^ SC2154: array is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 132:[0m
+[0m    printf "${clr}\n"[0m
+[32m           ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/runtime.sh line 136:[0m
+[0m    eval "${command}" 2>${stderr} 1>${stdout}[0m
+[32m                        ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                    ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    eval "${command}" 2>"${stderr}" 1>"${stdout}"
+
+
+[1mIn ./lib/runtime.sh line 142:[0m
+[0m  if [[ ${LibRun__DryRun} == ${True} ]]; then[0m
+[33m                             ^-----^ SC2053: Quote the right-hand side of == in [[ ]] to prevent glob matching.[0m
+
+
+[1mIn ./lib/runtime.sh line 143:[0m
+[0m    printf "${txtcyn}${italic}« dry run »${clr} "[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m            ^-------^ SC2154: txtcyn is referenced but not assigned.[0m
+[33m                     ^-------^ SC2154: italic is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 157:[0m
+[0m  local prefix="${LibOutput__LeftPrefix}${clr}"[0m
+[33m                ^----------------------^ SC2154: LibOutput__LeftPrefix is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 170:[0m
+[0m    printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m                     ^-------^ SC2154: txtblk is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 174:[0m
+[0m    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(.output.replicate-to "*" 40)"[0m
+[33m                       ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 181:[0m
+[0m  run.print-long-command "$1" $(screen.width)[0m
+[33m                              ^-------------^ SC2046: Quote this to prevent word splitting.[0m
+
+
+[1mIn ./lib/runtime.sh line 195:[0m
+[0m  local command_prompt="${prefix}❯ $(run.dry-run-prefix)"[0m
+[33m        ^------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/runtime.sh line 198:[0m
+[0m  printf "${prefix}❯ ${bldylw}"[0m
+[32m         ^--------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/runtime.sh line 199:[0m
+[0m  printf "${command}" | fold -s -w${w} |[0m
+[32m         ^----------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[32m                                  ^--^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "${command}" | fold -s -w"${w}" |
+
+
+[1mIn ./lib/runtime.sh line 239:[0m
+[0m    [[ -n ${LibRun__RetrySleep} ]] && sleep ${LibRun__RetrySleep}[0m
+[32m                                            ^-------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    [[ -n ${LibRun__RetrySleep} ]] && sleep "${LibRun__RetrySleep}"
+
+
+[1mIn ./lib/runtime.sh line 241:[0m
+[0m    info "warning: command exited with code ${bldred}${LibRun__LastExitCode}" \[0m
+[33m                                            ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 294:[0m
+[0m      printf "${clr}\n"[0m
+[32m             ^--------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/runtime.sh line 304:[0m
+[0m  printf "${clr}"[0m
+[32m         ^------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/runtime.sh line 315:[0m
+[0m  local started=$(millis)[0m
+[33m        ^-----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/runtime.sh line 320:[0m
+[0m  local duration=$((($(millis) - ${started}) / 1000))[0m
+[32m                                 ^--------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/runtime.sh line 323:[0m
+[0m    local cmd="$(echo ${command} | sedx 's/\"//g')"[0m
+[33m          ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                      ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    local cmd="$(echo "${command}" | sedx 's/\"//g')"
+
+
+[1mIn ./lib/runtime.sh line 325:[0m
+[0m      "The command took ${bldylw}${duration}${txtred} secs." \[0m
+[33m                                            ^-------^ SC2154: txtred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 328:[0m
+[0m    ((${BASH_IN_SUBSHELL})) && exit 1 || return 1[0m
+[32m      ^-----------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/runtime.sh line 340:[0m
+[0m  printf "    ${txtgrn}${italic}${prompt} ${clr}  "[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m              ^-------^ SC2154: txtgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 341:[0m
+[0m  read -r -s -n1 key[0m
+[33m                 ^-^ SC2034: key appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/runtime.sh line 363:[0m
+[0m  local lcase_var_name="$(echo ${var_name} | tr 'A-Z' 'a-z')"[0m
+[33m        ^------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                               ^---------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                ^---^ SC2019: Use '[:upper:]' to support accents and foreign alphabets.[0m
+[32m                                                      ^---^ SC2018: Use '[:lower:]' to support accents and foreign alphabets.[0m
+
+[1mDid you mean: [0m
+  local lcase_var_name="$(echo "${var_name}" | tr 'A-Z' 'a-z')"
+
+
+[1mIn ./lib/runtime.sh line 366:[0m
+[0m  local color="${bldblu}"[0m
+[33m               ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/runtime.sh line 397:[0m
+[0m  printf "    ${bldylw}%-35s ${txtblk}${color} " ${var_name}[0m
+[32m                                                 ^---------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "    ${bldylw}%-35s ${txtblk}${color} " "${var_name}"
+
+
+[1mIn ./lib/runtime.sh line 403:[0m
+[0m    elif $(util.is-numeric "${var_value}"); then[0m
+[33m         ^-- SC2091: Remove surrounding $() to avoid executing output.[0m
+
+
+[1mIn ./lib/runtime.sh line 404:[0m
+[0m      avail_len=$((${avail_len} - 5))[0m
+[32m                   ^----------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/runtime.sh line 405:[0m
+[0m      if [[ "${var_value}" =~ '.' ]]; then[0m
+[31m                              ^-^ SC2076: Don't quote right-hand side of =~, it'll match literally rather than as a regex.[0m
+
+
+[1mIn ./lib/runtime.sh line 411:[0m
+[0m      avail_len=$((${avail_len} - 5))[0m
+[32m                   ^----------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/runtime.sh line 421:[0m
+[0m  run.inspect-variable $1[0m
+[32m                       ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  run.inspect-variable "$1"
+
+
+[1mIn ./lib/runtime.sh line 428:[0m
+[0m  for var in $@; do[0m
+[31m             ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/runtime.sh line 437:[0m
+[0m  for var in $@; do[0m
+[31m             ^-- SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/runtime.sh line 456:[0m
+[0m  run.inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" \[0m
+[32m                                          ^-------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                               ^---^ SC2018: Use '[:lower:]' to support accents and foreign alphabets.[0m
+[32m                                                                     ^---^ SC2019: Use '[:upper:]' to support accents and foreign alphabets.[0m
+
+[1mDid you mean: [0m
+  run.inspect-variables "VARIABLES $(echo "${pattern_type}" | tr 'a-z' 'A-Z') ${pattern}" \
+
+
+[1mIn ./lib/runtime.sh line 457:[0m
+[0m    "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"[0m
+[32m                     ^-------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                     ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    "$(run.variables-"${pattern_type}" "${pattern}" | tr '\n' ' ')"
+
+
+[1mIn ./lib/docker.sh line 17:[0m
+[0m.docker.exec() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/docker.sh line 19:[0m
+[0m  export LibRun__ShowCommandOutput=${True}[0m
+[33m                                   ^-----^ SC2154: True is referenced but not assigned.[0m
+
+
+[1mIn ./lib/docker.sh line 28:[0m
+[0m  local versions="$(docker images "${AppDockerRepo}" | grep -Ee -v 'TAG|latest|none' | awk '{print $2}')"[0m
+[33m        ^------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/docker.sh line 191:[0m
+[0m  local images="$(docker images | grep "^${name}" | sed 's/  */ /g' | cut -d ' ' -f 3 | tr '\n' ' ')"[0m
+[33m        ^----^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/docker.sh line 192:[0m
+[0m  ${func} ${images}[0m
+[32m          ^-------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  ${func} "${images}"
+
+
+[1mIn ./lib/aws.sh line 7:[0m
+[0maws.rds.hostname() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/aws.sh line 10:[0m
+[0m  [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2>/dev/null 1>/dev/null)[0m
+[33m                           ^-^ SC2034: out appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/aws.sh line 30:[0m
+[0m      "Please set variables: ${bldylw}LibAws__DefaultUploadFolder" \[0m
+[33m                             ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/aws.sh line 41:[0m
+[0m  local file=$(basename "${pathname}")[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/aws.sh line 43:[0m
+[0m  local year=$(file.last-modified-year "${pathname}")[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/aws.sh line 44:[0m
+[0m  local date=$(file.last-modified-date "${pathname}")[0m
+[33m        ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/aws.sh line 51:[0m
+[0m    [[ "${remote_file}" =~ "${date}" ]] && remote_file=$(echo "${remote_file}" | sedx "s/[_\.-]?${date}[_\.-]//g")[0m
+[31m                           ^-------^ SC2076: Don't quote right-hand side of =~, it'll match literally rather than as a regex.[0m
+
+
+[1mIn ./lib/aws.sh line 54:[0m
+[0m    [[ "${remote_file}" =~ "${date}" ]] || remote_file="${date}.${remote_file}"[0m
+[31m                           ^-------^ SC2076: Don't quote right-hand side of =~, it'll match literally rather than as a regex.[0m
+
+
+[1mIn ./lib/aws.sh line 58:[0m
+[0m  remote_file=$(echo "${remote_file}" | sed -E 's/ /-/g;s/--+/-/g' | tr '[A-Z]' '[a-z]')[0m
+[32m                                                                        ^-----^ SC2021: Don't use [] around classes in tr, it replaces literal square brackets.[0m
+[32m                                                                                ^-----^ SC2021: Don't use [] around classes in tr, it replaces literal square brackets.[0m
+
+
+[1mIn ./lib/aws.sh line 64:[0m
+[0m  if [[ ${LibRun__LastExitCode} -eq 0 ]]; then[0m
+[33m        ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+
+
+[1mIn ./lib/aws.sh line 66:[0m
+[0m    [[ -n "${LibAws__ObjectUrlFile}" ]] && echo ${remoteUrl} >"${LibAws__ObjectUrlFile}"[0m
+[33m           ^----------------------^ SC2154: LibAws__ObjectUrlFile is referenced but not assigned.[0m
+[32m                                                ^----------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    [[ -n "${LibAws__ObjectUrlFile}" ]] && echo "${remoteUrl}" >"${LibAws__ObjectUrlFile}"
+
+
+[1mIn ./lib/aws.sh line 75:[0m
+[0m  return ${LibRun__LastExitCode}[0m
+[32m         ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/jemalloc.sh line 3:[0m
+[0mexport ColorRed="\e[1;31m"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/jemalloc.sh line 11:[0m
+[0m  printf "Ruby version being tested:\n  →  ${ColorBlue}$(which ruby) ${ColorYellow}$(jm.ruby.detect)${ColorReset}\n"[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/jemalloc.sh line 18:[0m
+[0m    ruby_loc=$(rbenv versions | grep '*' | awk '{print $2}')[0m
+[33m                                     ^-^ SC2063: Grep uses regex, but this looks like a glob.[0m
+
+
+[1mIn ./lib/jemalloc.sh line 30:[0m
+[0m    printf "No Jemalloc was found for the curent ruby $(jm.ruby.detect)\n"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/jemalloc.sh line 46:[0m
+[0m  local local_ruby=$(jm.ruby.detect)[0m
+[33m        ^--------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/jemalloc.sh line 48:[0m
+[0m  printf "${ColorBlue}Checking if ruby ${ColorYellow}${local_ruby}${ColorBlue} is linked with jemalloc... \n\n "[0m
+[32m         ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/jemalloc.sh line 50:[0m
+[0m    printf " ✅ ${ColorGreen} — jemalloc was detected.\n"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/jemalloc.sh line 52:[0m
+[0m    printf " 🚫 ${ColorRed} — jemalloc was not detected.\n"[0m
+[32m           ^-- SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/jemalloc.sh line 54:[0m
+[0m  printf "${ColorReset}\n"[0m
+[32m         ^---------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/jemalloc.sh line 61:[0m
+[0m  $(basename $0) [ -q/--quiet ][0m
+[32m             ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  $(basename "$0") [ -q/--quiet ]
+
+
+[1mIn ./lib/ftrace.sh line 31:[0m
+[0mexport __LibTrace__StackLevel=0[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/ftrace.sh line 47:[0m
+[0m  export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} + 1 ))[0m
+[32m                                    ^-----------------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/ftrace.sh line 48:[0m
+[0m  printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' ${func} "${args}" >&2[0m
+[33m                  ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+[33m                             ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+[33m                                          ^----^ SC2154: clr is referenced but not assigned.[0m
+[32m                                                                                  ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' "${func}" "${args}" >&2
+
+
+[1mIn ./lib/ftrace.sh line 58:[0m
+[0m  local color="${bldgrn}"[0m
+[33m               ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ftrace.sh line 59:[0m
+[0m  [[ ${code} -ne 0 ]] && color="${bldred}"[0m
+[33m                                ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ftrace.sh line 61:[0m
+[0m  printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' ${func} ${code} "${msg}" >&2[0m
+[32m                                                                                     ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+[32m                                                                                             ^-----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' "${func}" "${code}" "${msg}" >&2
+
+
+[1mIn ./lib/ftrace.sh line 62:[0m
+[0m  export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} - 1 ))[0m
+[32m                                    ^-----------------------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/pdf.sh line 16:[0m
+[0mfunction pdf.combine() {[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/pdf.sh line 24:[0m
+[0m      info "Appending file ${bldylw}${f}"[0m
+[33m                           ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/pdf.sh line 45:[0m
+[0m  return ${LibRun__LastExitCode}[0m
+[33m         ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+[32m         ^---------------------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  return "${LibRun__LastExitCode}"
+
+
+[1mIn ./lib/ruby.sh line 4:[0m
+[0mexport RUBY_CONFIGURE_OPTS="${RUBY_CONFIGURE_OPTS:-""}"[0m
+[31m^-- SC1134: Failed to process /Users/kig/.bashmatic/.shellcheckrc, line 2: Expected '=' after directive key. Fix any mentioned problems and try again.[0m
+
+
+[1mIn ./lib/ruby.sh line 12:[0m
+[0m  grep -q "rbenv init" ~/.bash_profile && echo 'eval "$(rbenv init -)"' >>~/.bash_profile[0m
+[32m                                               ^----------------------^ SC2016: Expressions don't expand in single quotes, use double quotes for that.[0m
+
+
+[1mIn ./lib/ruby.sh line 30:[0m
+[0m  ruby.top-versions |[0m
+[32m  ^---------------^ SC2119: Use ruby.top-versions "$@" if function's $1 should mean script's $1.[0m
+
+
+[1mIn ./lib/ruby.sh line 53:[0m
+[0mruby.top-versions() {[0m
+[33m^-- SC2120: ruby.top-versions references arguments, but none are ever passed.[0m
+
+
+[1mIn ./lib/ruby.sh line 55:[0m
+[0m  local arg="$(.ruby.ruby-build.list-argument)"[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/ruby.sh line 57:[0m
+[0m  rbenv install ${arg} |[0m
+[32m                ^----^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  rbenv install "${arg}" |
+
+
+[1mIn ./lib/ruby.sh line 104:[0m
+[0m  printf "${DEFAULT_RUBY_GEMS[*]}"[0m
+[32m         ^-----------------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/ruby.sh line 115:[0m
+[0m    rbenv $*[0m
+[33m          ^-- SC2048: Use "$@" (with quotes) to prevent whitespace problems.[0m
+[32m          ^-- SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+    rbenv "$*"
+
+
+[1mIn ./lib/ruby.sh line 129:[0m
+[0m  local -a gems=($@)[0m
+[33m                 ^-- SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/ruby.sh line 132:[0m
+[0m  [[ ${#gems[@]} -eq 0 ]] && gems=($(ruby.default-gems))[0m
+[33m                                   ^------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/ruby.sh line 133:[0m
+[0m  local -a existing=($(ruby.installed-gems))[0m
+[33m                     ^--------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/ruby.sh line 137:[0m
+[0m      "Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" \[0m
+[31m                                ^---------------------^ SC2145: Argument mixes string and array. Use * or separate argument.[0m
+
+
+[1mIn ./lib/ruby.sh line 138:[0m
+[0m      "USAGE: ${bldgrn}ruby.gems ${bldred} rails rubocop puma pry"[0m
+[33m              ^-------^ SC2154: bldgrn is referenced but not assigned.[0m
+[33m                                 ^-------^ SC2154: bldred is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ruby.sh line 144:[0m
+[0m    "${bldylw}Checking for gems that still missing..."[0m
+[33m     ^-------^ SC2154: bldylw is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ruby.sh line 151:[0m
+[0m      gem_info="${bldgrn} ✔  ${gem}${clr}\n"[0m
+[33m                                   ^----^ SC2154: clr is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ruby.sh line 154:[0m
+[0m      gems_to_be_installed=(${gems_to_be_installed[@]} ${gem})[0m
+[33m                            ^------------------------^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+[33m                                                       ^----^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/ruby.sh line 156:[0m
+[0m    printf "   ${gem_info}"[0m
+[32m           ^--------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/ruby.sh line 166:[0m
+[0m  local -a gems_installed=()[0m
+[33m           ^------------^ SC2034: gems_installed appears unused. Verify use (or export if used externally).[0m
+
+
+[1mIn ./lib/ruby.sh line 169:[0m
+[0m  for gem in ${gems_to_be_installed[@]}; do[0m
+[31m             ^------------------------^ SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/ruby.sh line 175:[0m
+[0m    if [[ ${LibRun__LastExitCode} -ne 0 ]]; then[0m
+[33m          ^---------------------^ SC2154: LibRun__LastExitCode is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ruby.sh line 181:[0m
+[0m      gem_installed=(${gem_installed[@]} ${gem})[0m
+[33m                     ^-----------------^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+[33m                                         ^----^ SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/ruby.sh line 200:[0m
+[0m  local -a gems=($@)[0m
+[33m                 ^-- SC2206: Quote to prevent word splitting/globbing, or split robustly with mapfile or read -a.[0m
+
+
+[1mIn ./lib/ruby.sh line 204:[0m
+[0m  [[ ${#gems[@]} -eq 0 ]] && declare -a gems=($(ruby.default-gems))[0m
+[33m                                              ^------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/ruby.sh line 205:[0m
+[0m  local -a existing=($(ruby.installed-gems))[0m
+[33m                     ^--------------------^ SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).[0m
+
+
+[1mIn ./lib/ruby.sh line 207:[0m
+[0m    error "Unable to determine what gems to remove. Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" \[0m
+[31m                                                                             ^---------------------^ SC2145: Argument mixes string and array. Use * or separate argument.[0m
+
+
+[1mIn ./lib/ruby.sh line 218:[0m
+[0m  for gem in ${gems[@]}; do[0m
+[31m             ^--------^ SC2068: Double quote array expansions to avoid re-splitting elements.[0m
+
+
+[1mIn ./lib/ruby.sh line 227:[0m
+[0m      deleted=$(($deleted + 1))[0m
+[32m                 ^------^ SC2004: $/${} is unnecessary on arithmetic variables.[0m
+
+
+[1mIn ./lib/ruby.sh line 231:[0m
+[0m    printf "   ${gem_info}"[0m
+[32m           ^--------------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/ruby.sh line 253:[0m
+[0m      source ~/.bash_wd[0m
+[33m             ^--------^ SC1090: Can't follow non-constant source. Use a directive to specify location.[0m
+
+
+[1mIn ./lib/ruby.sh line 303:[0m
+[0m  ruby.install-ruby ${version} openssl readline "$@"[0m
+[32m                    ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  ruby.install-ruby "${version}" openssl readline "$@"
+
+
+[1mIn ./lib/ruby.sh line 313:[0m
+[0m    version="$(cat .ruby-version | tr -d '\n')"[0m
+[32m                   ^-----------^ SC2002: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead.[0m
+
+
+[1mIn ./lib/ruby.sh line 326:[0m
+[0m  h3 "Installing Ruby Version ${bldpur}${version} ${bldblu}${version_source}."[0m
+[33m                              ^-------^ SC2154: bldpur is referenced but not assigned.[0m
+[33m                                                  ^-------^ SC2154: bldblu is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ruby.sh line 358:[0m
+[0m  export RUBY_CONFIGURE_OPTS="--with-readline-dir=$(brew --prefix readline) ${RUBY_CONFIGURE_OPTS}"[0m
+[33m         ^-----------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/ruby.sh line 363:[0m
+[0m  export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl) ${RUBY_CONFIGURE_OPTS}"[0m
+[33m         ^-----------------^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/ruby.sh line 378:[0m
+[0m  local arg="$(.ruby.ruby-build.list-argument)"[0m
+[33m        ^-^ SC2155: Declare and assign separately to avoid masking return values.[0m
+
+
+[1mIn ./lib/ruby.sh line 464:[0m
+[0m  local procs=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | wc -l)[0m
+[33m        ^---^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                ^-- SC2009: Consider using pgrep instead of grepping ps output.[0m
+
+
+[1mIn ./lib/ruby.sh line 470:[0m
+[0m  local -a pids=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')[0m
+[33m           ^--^ SC2155: Declare and assign separately to avoid masking return values.[0m
+[32m                  ^-- SC2009: Consider using pgrep instead of grepping ps output.[0m
+
+
+[1mIn ./lib/ruby.sh line 473:[0m
+[0m  printf "${txtcyn}"[0m
+[32m         ^---------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+[33m          ^-------^ SC2154: txtcyn is referenced but not assigned.[0m
+
+
+[1mIn ./lib/ruby.sh line 474:[0m
+[0m  pstree ${pids[*]}[0m
+[32m         ^--------^ SC2086: Double quote to prevent globbing and word splitting.[0m
+
+[1mDid you mean: [0m
+  pstree "${pids[*]}"
+
+
+[1mIn ./lib/ruby.sh line 475:[0m
+[0m  printf "${clr}"[0m
+[32m         ^------^ SC2059: Don't use variables in the printf format string. Use printf '..%s..' "$foo".[0m
+
+
+[1mIn ./lib/ruby.sh line 481:[0m
+[0m  ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | xargs kill -9[0m
+[32m  ^-- SC2009: Consider using pgrep instead of grepping ps output.[0m
+
+For more information:
+  https://www.shellcheck.net/wiki/SC1008 -- This shebang was unrecognized. Sh...
+  https://www.shellcheck.net/wiki/SC1113 -- Use #!, not just #, for the sheba...
+  https://www.shellcheck.net/wiki/SC1134 -- Failed to process /Users/kig/.bas...

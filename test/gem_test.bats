@@ -11,7 +11,7 @@ source lib/util.sh
   set -e
   cp test/Gemfile.lock .
   result="$(gem.gemfile.version activesupport)"
-  [ "${result}" = "6.0.3.1" ]
+  [ "${result}" == "6.0.3.1" ]
 }
 
 @test "gem.gemfile.version returns correct 3-part version" {
@@ -19,5 +19,5 @@ source lib/util.sh
   set -e
   cp test/Gemfile.lock .
   result="$(gem.gemfile.version simple-feed)"
-  [ "${result}" = "3.0.1" ]
+  [ "${result}" == "3.0.1" ]
 }

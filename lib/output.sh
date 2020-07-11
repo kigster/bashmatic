@@ -1,4 +1,5 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
+
 # Private functions
 
 # shellcheck disable=SC2155
@@ -183,7 +184,7 @@ output.color.off() {
   printf "\n"
 }
 
-.output.repeat-char() {
+.output.repeat-char.impl-looping() {
   local char="${1}"
   local width=${2}
   [[ -z "${width}" ]] && width=$(.output.screen-width)
@@ -196,6 +197,26 @@ output.color.off() {
     line="${line}${char}"
   done
   printf -- "${line}"
+}
+
+.output.repeat-char.impl-product() {
+  local char="${1}"
+  local width=${2}
+  [[ -z "${width}" ]] && width=$(.output.screen-width)
+  printf -- "${char}" * ${width}
+  local line=""
+  for i in {1..300}; do
+    [[ $i -gt ${width} ]] && {
+      printf -- "${line}"
+      return
+    }
+    line="${line}${char}"
+  done
+  printf -- "${line}"
+}
+
+.output.repeat-char() {
+  .output.repeat-char.impl-looping "$@"
 }
 
 # set background color to something before calling this
@@ -227,7 +248,7 @@ output.color.off() {
 }
 
 .output.clean.pipe() {
-  sedx -E -e 's/(\x1b|\\\e)\[[0-9]*;?[0-9]?+m//g;s/\r//g' 
+  sedx -E -e 's/(\x1b|\\\e)\[[0-9]*;?[0-9]?+m//g;s/\r//g'
 }
 
 ascii-pipe() {
@@ -307,18 +328,22 @@ ascii-clean() {
   shift
   local text="$*"
 
-  local clean_text=$(.output.clean "${text}")
-  local width=$(($(.output.screen-width) - 4))
-  local remaining_space_len=$((1 + ($width - ${#clean_text}) / 2))
+  local clean_text="$(printf -- "${text}" | ascii-pipe)"
+  local clean_text_len=${#clean_text}
+  local clean_text_len=$((clean_text_len * 2))
+  local screen_width=$(.output.screen-width)
+  local width=$((screen_width - 4))
+  local remainder="$((width - clean_text_len))"
+  local half_remainder=$((remainder / 2))
 
   local offset=0
-  [[ $(((${width} - ${#clean_text}) % 2)) == 1 ]] && offset=1
+  [[ "" -eq "1" ]] && offset=1
 
   printf "${color}"
   cursor.at.x 1
-  .output.repeat-char " " ${remaining_space_len}
+  .output.repeat-char " " ${half_remainder}
   printf "%s" "${text}"
-  .output.repeat-char " " $((remaining_space_len + offset - 1))
+  .output.repeat-char " " $((half_remainder + offset - 1))
   reset-color
   cursor.at.x 0
   echo
@@ -801,7 +826,6 @@ reset-color() {
 reset-color:() {
   printf "${clr}"
 }
-
 
 columnize() {
   local columns="${1:-2}"

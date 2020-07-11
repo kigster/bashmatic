@@ -127,7 +127,7 @@ util.remove-from-init-files() {
 }
 
 util.whats-installed() {
-  declare -a hb_aliases=($(alias | grep -E 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
+  declare -a hb_aliases=($(alias | grep -Ee 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
   h2 "Installed app aliases:" ' ' "${hb_aliases[@]}"
 
   h2 "Installed DB Functions:"
@@ -159,13 +159,13 @@ util.lines-in-folder() {
 util.functions-starting-with() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | egrep '()' | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+  set | grep -Ee '()' | grep -Ee "^${prefix}" | sedx -E 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
 }
 
 util.functions-matching() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | egrep "^${prefix}" | sedx -E 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+  set | grep -Ee "^${prefix}" | sedx -E 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
 }
 
 util.functions-matching.diff() {

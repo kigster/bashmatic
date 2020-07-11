@@ -48,7 +48,7 @@ bashmatic.functions-from() {
     pattern="${pattern}.sh"
   fi
 
-  egrep -e '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} |
+  grep -Ee -e '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} |
     sed -e 's/^lib\/.*\.sh://g' |
     sed -e 's/^function //g' |
     sed -e 's/\(\) *{.*$//g' |

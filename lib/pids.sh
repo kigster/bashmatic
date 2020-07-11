@@ -78,7 +78,7 @@ pid.stop-and-kill() {
   while true; do
     pid.alive $pid || return 0
     kill -${sig} ${pid} 2>&1 >/dev/null
-    delta=$(( delta * 2))
+    delta=$((delta * 2))
     [[ ${delta} -gt 16 ]] && sig="KILL"
     sleep "0.${delta}"
   done
@@ -88,7 +88,6 @@ pid.stop-and-kill() {
     return 1
   }
 }
-
 
 # Stop a running process by sending it a TERM first then KILL
 # Usage:
@@ -171,7 +170,7 @@ EXAMPLES:
     return 0
   fi
 
-  ps -ef | egrep "${pattern}" | egrep -v grep | awk '{print $2}' | sort -n
+  ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep | awk '{print $2}' | sort -n
 }
 
 # prints PIDs with other information such as CPU, MEM, etc.
@@ -217,7 +216,7 @@ EXAMPLES:
 
   local pattern="$(pids.normalize.search-string "$1")"
   shift
-  ps -ef | egrep "${pattern}" | egrep -v grep
+  ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep
 }
 
 #

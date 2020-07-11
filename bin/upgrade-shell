@@ -8,13 +8,14 @@
 # Part of BashMatic Suite of BASH functions.
 #
 
-( [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || \
+([[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
   [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
 
-(( $__ran_as_script )) || {
+(($__ran_as_script)) || {
   echo
   printf "${txtred}This script should be run, not sourced.${clr}\n"
-  echo; return
+  echo
+  return
 }
 
 export SHELL_BASH_OSX="/bin/bash"
@@ -31,12 +32,12 @@ bash.append_path() {
   local file=${1}
   local new_path=${2:-"/usr/local/bin"}
   local string="export PATH=\"${new_path}:\${PATH}\""
-  if [[ -z $(egrep "export PATH=\"${new_path}" ${file}) ]]; then
+  if [[ -z $(grep -Ee "export PATH=\"${new_path}" ${file}) ]]; then
     echo "adding ${txtblue}${new_path}${clr} to ${txtgrn}${file}${clr}"
     set -e
-    echo >> ${file}
-    echo "${string}" >> ${file}
-    echo >> ${file}
+    echo >>${file}
+    echo "${string}" >>${file}
+    echo >>${file}
     set +e
     ok:
   else
@@ -92,13 +93,13 @@ bash.user.chsh() {
 bash.confirm() {
   echo "Upgrade Your BASH"
 
-  echo  "This script will:\n" \
-      "  1. install (if needed) version 4 of BASH to /usr/local/bin/bas\n" \
-      "  2. append the shell path to the /etc/shells file, and\n" \
-      "  3. it will switch your shell to the new one\n " \
-      "You will need keep your current session open, and start a new terminal\n" \
-      "To verify that you have a new version, type 'echo \$BASH_VERSION' i\n " \
-      "the new terminal; you should see something like '4.4.12(1)-release\n"
+  echo "This script will:\n" \
+    "  1. install (if needed) version 4 of BASH to /usr/local/bin/bas\n" \
+    "  2. append the shell path to the /etc/shells file, and\n" \
+    "  3. it will switch your shell to the new one\n " \
+    "You will need keep your current session open, and start a new terminal\n" \
+    "To verify that you have a new version, type 'echo \$BASH_VERSION' i\n " \
+    "the new terminal; you should see something like '4.4.12(1)-release\n"
 
   echo
 }
@@ -107,18 +108,18 @@ bash.quit_if_already_upgraded() {
   if [[ $(bash.current.shell) == ${SHELL_BASH_BREW} ]]; then
     echo
     echo \
-        "It appears that your current shell is already\n" \
-        "${bldcyn}${SHELL_BASH_BREW}${bldylw}"
+      "It appears that your current shell is already\n" \
+      "${bldcyn}${SHELL_BASH_BREW}${bldylw}"
 
     exit 0
   fi
 }
 
 bash.instructions() {
-  echo  "NOTE, that your current session will still be on the old shell.\n" \
-      "You need to start a new terminal session, make sure it loads\n "\
-      "before you close this one. In the new termninal you should see \n" \
-      "something similar to '4.4.12(1)-release' when you type 'echo \$BASH_VERSION'\n"
+  echo "NOTE, that your current session will still be on the old shell.\n" \
+    "You need to start a new terminal session, make sure it loads\n " \
+    "before you close this one. In the new termninal you should see \n" \
+    "something similar to '4.4.12(1)-release' when you type 'echo \$BASH_VERSION'\n"
 }
 
 #——————————————————————————————————————————————————————————————————————————————

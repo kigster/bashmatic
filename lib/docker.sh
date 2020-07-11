@@ -25,7 +25,7 @@
 .docker.last-version() {
   .docker.check-repo "${1}" || return 1
 
-  local versions="$(docker images "${AppDockerRepo}" | egrep -v 'TAG|latest|none' | awk '{print $2}')"
+  local versions="$(docker images "${AppDockerRepo}" | grep -Ee -v 'TAG|latest|none' | awk '{print $2}')"
 
   local max=0
   for v in ${versions}; do

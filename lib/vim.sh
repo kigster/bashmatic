@@ -20,8 +20,8 @@ vim.gvim-off() {
   file.gsub "${LibVim__initFile}" '^gvim.on$' 'gvim.off'
 
   # append to ~/.bashrc
-  egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >>${LibVim__initFile}
-  egrep -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >>${LibVim__initFile}
+  grep -Ee -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >>${LibVim__initFile}
+  grep -Ee -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >>${LibVim__initFile}
 
   # import into the current shell
   eval "
@@ -44,8 +44,8 @@ vim.gvim-on() {
   file.gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'
 
   # append to ~/.bashrc
-  egrep -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >>${LibVim__initFile}
-  egrep -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >>${LibVim__initFile}
+  grep -Ee -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >>${LibVim__initFile}
+  grep -Ee -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >>${LibVim__initFile}
 
   # import into the current shell
   eval "

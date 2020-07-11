@@ -30,14 +30,16 @@ export PUMA_WORKERS=5
 # PIDS ——————————————————————————————————————————————————————————————————————
 
 puma.pids.master() {
-  ps -ef | egrep '[p]uma [0-9]' | awk '{print $2}'
+  ps -ef | grep -Ee '[p]uma [0-9]' | awk '{print $2}'
 }
 
 puma.pids.count() {
-  local extra_filter="${1}"; shift
-  local extra_flag="${1}"; shift
+  local extra_filter="${1}"
+  shift
+  local extra_flag="${1}"
+  shift
 
-  printf "%d" "$(ps -ef | egrep '[p]uma[: ]' | egrep ${extra_flag} "${extra_filter}" | grep -v puma-ctl | wc -l | sed 's/\ //g')"
+  printf "%d" "$(ps -ef | grep -Ee '[p]uma[: ]' | grep -Ee ${extra_flag} "${extra_filter}" | grep -v puma-ctl | wc -l | sed 's/\ //g')"
 }
 
 # STATE ——————————————————————————————————————————————————————————————————————
@@ -89,7 +91,7 @@ puma.status.header() {
 }
 
 puma.status.listing() {
-  declare -a pumas=("$(ps -ef | egrep [p]uma | egrep -v 'puma-ctl|grep' | grep --color=always puma)")
+  declare -a pumas=("$(ps -ef | grep -Ee [p]uma | grep -Ee -v 'puma-ctl|grep' | grep --color=always puma)")
   [[ ${#pumas[@]} -gt 1 ]] && {
     h2 "Currently Active Puma Processes:"
     echo "${pumas[*]}"
@@ -143,7 +145,7 @@ puma.commands.help() {
 
 # MAIN ——————————————————————————————————————————————————————————————————————
 
-declare -a puma_commands=( $(util.functions-matching.diff "puma.commands." | tr '\n' ' ') )
+declare -a puma_commands=($(util.functions-matching.diff "puma.commands." | tr '\n' ' '))
 export puma_commands
 
 puma.main() {
@@ -162,4 +164,3 @@ puma.main() {
 }
 
 [[ $0 =~ "puma-ctl" ]] && puma.main "$@"
-

@@ -56,7 +56,7 @@ gem.global.versions() {
   local gem=$1
   [[ -z ${gem} ]] && return
   gem.cache-installed
-  cat "${LibGem__GemListCache}" | egrep "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
+  cat "${LibGem__GemListCache}" | grep -Ee "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
 gem.remote.version() {
@@ -86,7 +86,7 @@ gem.gemfile.version() {
   local gem=$1
   [[ -z ${gem} ]] && return
   if [[ -f Gemfile.lock ]]; then
-    egrep "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
+    grep -Ee "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
   fi
 }
 
@@ -137,9 +137,9 @@ gem.is-installed() {
   gem.cache-installed >/dev/null
 
   if [[ -z ${version} ]]; then
-    egrep -q "^${gem} \(" "${LibGem__GemListCache}"
+    grep -Ee -q "^${gem} \(" "${LibGem__GemListCache}"
   else
-    egrep "^${gem} \(" "${LibGem__GemListCache}" | egrep -q "${version}"
+    grep -Ee "^${gem} \(" "${LibGem__GemListCache}" | grep -Ee -q "${version}"
   fi
 }
 

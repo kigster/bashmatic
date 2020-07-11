@@ -41,12 +41,12 @@ url.shorten() {
     fi
 
     bitlyUrl="http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}"
- 
+
     debug "BITLY_LOLGIN : ${clr}${bldylw}${BITLY_LOGIN}" >&2
     debug "BITLY_LOLGIN : ${clr}${bldgrn}${BITLY_API_KEY}" >&2
     debug "BITLY_API_URL: ${clr}${undblu}${bitlyUrl}${clr}" >&2
 
-    local output="$( $(url.downloader) "${bitlyUrl}" 2>&1 )"
+    local output="$($(url.downloader) "${bitlyUrl}" 2>&1)"
     if [[ "${output}" =~ "INVALID" || "${output}" =~ "Server Error" ]]; then
       error "${output}"
       return 1
@@ -125,7 +125,7 @@ url.http-code() {
     return 101
   }
 
-  local result=$(wget -v --spider "${url}" 2>&1 | egrep "response" | awk '{print $6}' | tr -d ' ' | tail -1)
+  local result=$(wget -v --spider "${url}" 2>&1 | grep -Ee "response" | awk '{print $6}' | tr -d ' ' | tail -1)
 
   export LibUrl__LastHttpCode="${result}"
 

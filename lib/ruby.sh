@@ -9,7 +9,7 @@ ruby.ensure-rbenv() {
   brew.install
   brew.install.package rbenv ruby-build
 
-  grep -q "rbenv init" ~/.bash_profile && echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+  grep -q "rbenv init" ~/.bash_profile && echo 'eval "$(rbenv init -)"' >>~/.bash_profile
 
   [[ -n $(command -V rbenv) ]] && return 0
 
@@ -17,7 +17,7 @@ ruby.ensure-rbenv() {
 }
 
 ruby.ensure-rbenv-or-complain() {
-  ruby.ensure-rbenv || { 
+  ruby.ensure-rbenv || {
     error "Can't install rbenv via HomeBrew, please try manually."
     return 1
   }
@@ -55,7 +55,7 @@ ruby.top-versions() {
   local arg="$(.ruby.ruby-build.list-argument)"
 
   rbenv install ${arg} |
-    egrep "^${platform}" |
+    grep -Ee "^${platform}" |
     ruby -e '
       last_v = nil;
       last_m = nil;
@@ -295,7 +295,7 @@ ruby.install-ruby-with-deps() {
 
 ruby.install-ruby-with-readline-and-openssl() {
   local version="$1"
-  [[ -z ${version} ]] && { 
+  [[ -z ${version} ]] && {
     error "usage: ruby.install-ruby-with-readline-and-openssl ruby-version"
     return 1
   }
@@ -400,7 +400,7 @@ ruby.gemfile-lock-version() {
     return 1
   fi
 
-  egrep " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
+  grep -Ee " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————
@@ -461,13 +461,13 @@ ruby.compiled-with() {
 ##——————————————————————————————————————————————————————————————————————————————————
 ruby.stop() {
   local regex='/[r]uby| [p]uma| [i]rb| [r]ails | [b]undle| [u]nicorn| [r]ake'
-  local procs=$(ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | wc -l)
+  local procs=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | wc -l)
   [[ ${procs} -eq 0 ]] && {
     info: "No ruby processes were found."
     return 0
   }
 
-  local -a pids=$(ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')
+  local -a pids=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')
 
   h2 "Detected ${#pids[@]} Ruby Processes..., here is the tree:"
   printf "${txtcyn}"
@@ -478,7 +478,7 @@ ruby.stop() {
   printf "To abort, press Ctrl-C. To kill them all press any key.."
   run.ui.press-any-key
 
-  ps -ef | egrep "${regex}" | egrep -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
+  ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————

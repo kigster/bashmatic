@@ -1,1 +1,2 @@
-disabled=SC2155,SC2059
+disable=SC2155,SC2059
+shell=/usr/bin/env bash

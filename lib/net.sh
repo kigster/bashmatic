@@ -3,7 +3,7 @@
 net.local-subnet() {
   local subnet="$(ifconfig -a |
     grep 'inet ' |
-    egrep -v 'inet 169|inet 127' |
+    grep -Ee -v 'inet 169|inet 127' |
     awk '{print $2}' |
     cut -d '.' -f 1,2,3 |
     sort |

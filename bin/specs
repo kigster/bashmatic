@@ -8,7 +8,7 @@ export TERM=${TERM:-xterm-256color}
 export MIN_WIDTH=${MIN_WIDTH:-"100"}
 
 export ProjectRoot=$(pwd -P)
-trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT 
+trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT
 export BatsRoot="${ProjectRoot}/.bats-sources"
 export BatsPrefix="${ProjectRoot}/.bats-install"
 
@@ -21,9 +21,9 @@ export False=0
 
 export Bashmatic__Test=${True}
 
-(mkdir -p ${BatsPrefix}            2>/dev/null) || true 
-(mkdir -p ${BatsPrefix}/bin           2>/dev/null)  || true 
-(mkdir -p ${BatsPrefix}/libexec           2>/dev/null)  || true 
+(mkdir -p ${BatsPrefix} 2>/dev/null) || true
+(mkdir -p ${BatsPrefix}/bin 2>/dev/null) || true
+(mkdir -p ${BatsPrefix}/libexec 2>/dev/null) || true
 
 export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
 
@@ -69,7 +69,7 @@ specs.install-bats() {
 }
 
 spec.find-bats() {
-  command -v bats || which bats || find . -name bats -perm "-u=x" | grep -e -v 'fixtures|libexec'
+  command -v bats || which bats || find . -name bats -perm "-u=x" | grep -Ee -v 'fixtures|libexec'
 }
 
 specs.run-file() {
@@ -86,7 +86,7 @@ specs.run-file() {
   set -e
 
   local bats=$(spec.find-bats)
-  
+
   [[ -z ${bats} ]] && {
     echo "ERROR: can't find bats executable :("
     echo

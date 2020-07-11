@@ -7,7 +7,7 @@
 .file.make_executable() {
   local file=$1
 
-  if [[ -f ${file} && -n $(head -1 $1 | egrep '#!.*(bash|ruby|env)') ]]; then
+  if [[ -f ${file} && -n $(head -1 $1 | grep -Ee '#!.*(bash|ruby|env)') ]]; then
     printf "making file ${bldgrn}${file}${clr} executable since it's a script...\n"
     chmod 755 ${file}
     return 0
@@ -44,7 +44,7 @@ file.gsub() {
   }
 
   # fix any EDITOR assignments in ~/.bashrc
-  egrep -q "${find}" "${file}" || return 0
+  grep -Ee -q "${find}" "${file}" || return 0
 
   [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options}
   # replace
@@ -66,7 +66,8 @@ file.exists-and-newer-than() {
 }
 
 file.ask.if-exists() {
-  local file="$1"; shift
+  local file="$1"
+  shift
   local message="$*"
 
   [[ -z "${message}" ]] && message="File ${file} exists. Overwrite?"
@@ -272,4 +273,3 @@ ff() {
 dir.find() {
   find . -name "*$1*" -type d -print
 }
-

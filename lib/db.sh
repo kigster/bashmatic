@@ -83,7 +83,7 @@ db.datetime() {
     "select pid, client_addr || ':' || client_port as Client, substring(state for 10) as State, now() - query_start " \
     "as Duration, waiting as Wait, substring(query for ${query_width}) as Query from pg_stat_activity where state != 'idle' " \
     "order by Duration desc" |
-    egrep -v 'select.*client_addr' 2>&1 >>${tof}
+    grep -Ee -v 'select.*client_addr' 2>&1 >>${tof}
 }
 
 #===============================================================================

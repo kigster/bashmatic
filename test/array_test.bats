@@ -133,6 +133,6 @@ versions_array() {
 
   result="$(cat "${tmp}")"
   [[ ${lines} -eq 2                              ]]
-  [[ $(cat "${tmp}" | egrep -c ' • kig') -eq 1  ]]
-  [[ $(cat "${tmp}" | egrep -c ' • pig') -eq 1  ]]
+  [[ $(cat "${tmp}" | grep -Ee -c ' • kig') -eq 1  ]]
+  [[ $(cat "${tmp}" | grep -Ee -c ' • pig') -eq 1  ]]
 }
