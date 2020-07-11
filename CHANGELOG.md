@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.2.2](https://github.com/kigster/bashmatic/tree/v1.2.2) (2020-07-11)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.2.1...v1.2.2)
+
+ * Added `ascii-pipe` to remove color and other escape codes from an ASCII string
+ * Added the first output unit test
+ * Fixed a bug in the `util.dev-setup.update` function
+
 ## [v1.2.1](https://github.com/kigster/bashmatic/tree/v1.2.1) (2020-06-26)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.2.0...v1.2.1)

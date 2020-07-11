@@ -227,12 +227,20 @@ output.color.off() {
 }
 
 .output.clean.pipe() {
-  sed -E 's/(\x1b|\\\e)\[[0-9]*;?[0-9]+m//g' # | tr -cd '\000-\177'
+  sedx -E -e 's/(\x1b|\\\e)\[[0-9]*;?[0-9]?+m//g;s/\r//g' 
+}
+
+ascii-pipe() {
+  cat | .output.clean.pipe
 }
 
 .output.clean() {
   local text="$*"
   printf -- '%s' "${text}" | .output.clean.pipe
+}
+
+ascii-clean() {
+  .output.clean "$@"
 }
 
 .output.boxed-text() {
@@ -794,9 +802,6 @@ reset-color:() {
   printf "${clr}"
 }
 
-ascii-clean() {
-  .output.clean "$@"
-}
 
 columnize() {
   local columns="${1:-2}"

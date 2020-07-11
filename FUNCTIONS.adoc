@@ -3079,6 +3079,20 @@ git.local-vs-remote ()
 
 ----
 
+==== `git.open`
+
+[source,bash]
+----
+git.open () 
+{ 
+    local remote="${1:-"origin"}";
+    local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g');
+    info "Opening URL ${bldylw}${url}";
+    open -a 'Google Chrome' ${url}
+}
+
+----
+
 ==== `git.quiet`
 
 [source,bash]
@@ -3970,6 +3984,17 @@ abort ()
 ascii-clean () 
 { 
     .output.clean "$@"
+}
+
+----
+
+==== `ascii-pipe`
+
+[source,bash]
+----
+ascii-pipe () 
+{ 
+    cat | .output.clean.pipe
 }
 
 ----
@@ -5268,7 +5293,8 @@ pdf.combine ()
     run "mkdir -p $(dirname "${merged}")";
     info "Please wait while GhostScript combines your PDFs into";
     info "destination file: ${bldylw}${merged}";
-    run "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${merged} ${files}"
+    run "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${merged} ${files}";
+    return ${LibRun__LastExitCode}
 }
 
 ----
