@@ -196,7 +196,7 @@ util.install-direnv() {
   eval "$(direnv hook bash)"
 }
 
-export LibSed__latestVersion=
+export LibSed__CachedCommand=
 
 sedx() {
   #———————————————————————————————————————————————————————
@@ -204,23 +204,45 @@ sedx() {
   # will install the more powerful GNU sed if it finds the super old sed.
   # You can use sedx as you would use sed normally.
 
-  local current=$(which sed)
-  local latest=${LibSed__latestVersion:-'/usr/local/bin/gsed'}
-  local os=$(uname -s)
+  if [[ -z "${LibSed__CachedCommand}" ]]; then
+    local sed_path
+    local sed_command
+    local os
 
-  if [[ ! -x "${latest}" ]]; then
+    sed_path="$(which sed)"
+    os="$(uname -s)"
+
     if [[ "${os}" == "Darwin" ]]; then
-      [[ -n $(which brew) ]] || return 1
-      brew install gnu-sed 1>/dev/null 2>&1
-      [[ -x "${latest}" ]] || latest="${current}"
-    elif [[ "${os}" == "Linux" ]]; then
-      latest="${current}"
+      local gsed_path
+      gsed_path="$(which gsed)"
+
+      if [[ -z "${gsed_path}" ]]; then
+        [[ -n $(which brew) ]] || {
+          error "Brew is needed to install GNU sed on OS-X"
+          return 1
+        }
+        brew install gnu-sed 1>/dev/null 2>&1
+        brew link gnu-sed --force 1>/dev/null 2>&1
+        gsed_path="$(which gsed)"
+      fi
+
+      [[ -z "${gsed_path}" ]] && {
+        error "Can't find GNU sed even after installation."
+        return 2
+      }
+
+      sed_path="${gsed_path}"
     fi
+
+    sed_command="${sed_path}"
+  else
+    sed_command="${LibSed__CachedCommand}"
   fi
 
-  latest=${latest:-${current}}
+  [[ -z ${LibSed__CachedCommand} ]] && export LibSed__CachedCommand="${sed_command}"
 
-  ${latest} -E "$@"
+  sed_command="${sed_command} -r -e "
+  ${sed_command} "$@"
 }
 
 export LibUtil__WatchRefreshSeconds="0.5"

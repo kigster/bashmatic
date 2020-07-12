@@ -8240,7 +8240,7 @@ pause.short ()
 sedx () 
 { 
     local current=$(which sed);
-    local latest=${LibSed__latestVersion:-'/usr/local/bin/gsed'};
+    local latest=${LibSed__CachedCommand:-'/usr/local/bin/gsed'};
     local os=$(uname -s);
     if [[ ! -x "${latest}" ]]; then
         if [[ "${os}" == "Darwin" ]]; then
