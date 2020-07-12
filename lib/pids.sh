@@ -170,7 +170,7 @@ EXAMPLES:
     return 0
   fi
 
-  ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep | awk '{print $2}' | sort -n
+  ps -ef | ${GrepCommand} "${pattern}" | ${GrepCommand} -v grep | awk '{print $2}' | sort -n
 }
 
 # prints PIDs with other information such as CPU, MEM, etc.
@@ -216,7 +216,7 @@ EXAMPLES:
 
   local pattern="$(pids.normalize.search-string "$1")"
   shift
-  ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep
+  ps -ef | ${GrepCommand} "${pattern}" | ${GrepCommand} -v grep
 }
 
 #

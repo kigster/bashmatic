@@ -35,8 +35,8 @@
 * xref:#module-repositories[repositories]
 * xref:#module-ruby[ruby]
 * xref:#module-run[run]
-* xref:#module-runtime-config[runtime-config]
 * xref:#module-runtime[runtime]
+* xref:#module-runtime-config[runtime-config]
 * xref:#module-set[set]
 * xref:#module-settings[settings]
 * xref:#module-shell-set[shell-set]
@@ -495,7 +495,7 @@ audio.make.mp3s ()
     run.set-all show-command-on show-output-off abort-on-error;
     find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print0 | while read -d '' file; do
         local fn=$(ascii-clean "${file}");
-        mp3=$(echo "${file}" | sedx -E 's/\.(wav|aiff?)$/.mp3/g');
+        mp3=$(echo "${file}" | sedx 's/\.(wav|aiff?)$/.mp3/g');
         inf "checking ${txtylw}${file} $(txt-info) ... ";
         if [[ -f "${mp3}" && -z "${FORCE}" ]]; then
             printf "${bldgrn} OK, already converted. Use FORCE=1 to overwrite. ${clr}";
@@ -560,7 +560,7 @@ aws.rds.hostname ()
     local name=${1};
     [[ -z $(which jq) ]] && out=$(brew.install.package jq 2>/dev/null 1>/dev/null);
     [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2>/dev/null 1>/dev/null);
-    [[ -n ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g' | grep -Ee "^${name}\.";
+    [[ -n ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g' | ${GrepCommand} "^${name}\.";
     [[ -z ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g'
 }
 
@@ -723,7 +723,7 @@ bashmatic.functions-from ()
     if [[ ! ${pattern} =~ "*" && ! ${pattern} =~ ".sh" ]]; then
         pattern="${pattern}.sh";
     fi;
-    grep -Ee -e '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} | sed -e 's/^lib\/.*\.sh://g' | sed -e 's/^function //g' | sed -e 's/\(\) *{.*$//g' | tr -d '()' | sed -e '/^ *$/d' | grep -v '^_' | sort | uniq | columnize "$@";
+    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} | sedx 's/^lib\/.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^_' -v | sort | uniq | columnize "$@";
     cd - > /dev/null || return 1
 }
 
@@ -2379,7 +2379,7 @@ file.gsub ()
         error "Invalid usage of file.sub — " "USAGE: file.gsub <file>    <find-regex>        <replace-regex>" "EG:    file.gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'";
         return 1
     };
-    grep -Ee -q "${find}" "${file}" || return 0;
+    ${GrepCommand} -q "${find}" "${file}" || return 0;
     [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options};
     run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
 }
@@ -2795,7 +2795,7 @@ gem.gemfile.version ()
     local gem=$1;
     [[ -z ${gem} ]] && return;
     if [[ -f Gemfile.lock ]]; then
-        grep -Ee "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g';
+        grep -E -e "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g';
     fi
 }
 
@@ -2834,7 +2834,7 @@ gem.global.versions ()
     local gem=$1;
     [[ -z ${gem} ]] && return;
     gem.cache-installed;
-    cat "${LibGem__GemListCache}" | grep -Ee "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
+    cat "${LibGem__GemListCache}" | grep -E -e "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
 ----
@@ -2885,9 +2885,9 @@ gem.is-installed ()
     local version=$2;
     gem.cache-installed > /dev/null;
     if [[ -z ${version} ]]; then
-        grep -Ee -q "^${gem} \(" "${LibGem__GemListCache}";
+        grep -E -e -q "^${gem} \(" "${LibGem__GemListCache}";
     else
-        grep -Ee "^${gem} \(" "${LibGem__GemListCache}" | grep -Ee -q "${version}";
+        grep -E -e "^${gem} \(" "${LibGem__GemListCache}" | grep -E -e -q "${version}";
     fi
 }
 
@@ -3553,7 +3553,7 @@ json.file-to-array ()
 maths.eval () 
 { 
     local __math_chars=(!²³¹¼½¾×÷ΠΣ⁰ⁱ⁴⁵⁶⁷⁸⁹ⁿ⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞∅∈∉√∛∜∞∩∪∿⊂⊃⟌τ𝛕𝜏𝝉𝞃𝞽०१२३४५६७८९ℯ𝐞𝑒𝒆𝖾𝗲𝘦𝙚𝚎ｅπϖ𝛑𝛡𝜋𝜛𝝅𝝕𝝿𝞏𝞹𝟉𝐢𝑖𝒊𝒾𝓲𝔦𝕚𝖎𝗂𝗶𝘪𝙞𝚒);
-    local -a __math_chars_array=($(echo "${__math_chars}" | sedx -E 's/(.)/\1 /g'));
+    local -a __math_chars_array=($(echo "${__math_chars}" | sedx 's/(.)/\1 /g'));
     local __math_chars_array;
     [[ -z "$1" ]] && { 
         output.set-max-width 100;
@@ -3571,7 +3571,7 @@ maths.eval ()
     shift;
     local output_width="${1}";
     local ruby_script="require 'unicode_math'; printf('%${output_width}.${output_precision}f', (Math.module_eval { ${expression} }))";
-    ruby_script="$(echo "${ruby_script}" | sedx -E 's/ ?(×|÷|!)/\.\1/g')";
+    ruby_script="$(echo "${ruby_script}" | sedx 's/ ?(×|÷|!)/\.\1/g')";
     local temp_file;
     temp_file="$(mktemp)";
     ruby -r 'unicode_math' -e "${ruby_script}" 2> "${temp_file}";
@@ -3617,7 +3617,7 @@ net.local-subnet ()
 { 
     local subnet="$(ifconfig -a |
     grep 'inet ' |
-    grep -Ee -v 'inet 169|inet 127' |
+    ${GrepCommand} -v 'inet 169|inet 127' |
     awk '{print $2}' |
     cut -d '.' -f 1,2,3 |
     sort |
@@ -3864,7 +3864,7 @@ osx.ramdisk.mount ()
         return 1;
     fi;
     local path="/Volumes/${diskname}";
-    if ( mount | grep -Ee -q "/[V]olumes/${diskname}" ); then
+    if ( mount | ${GrepCommand} -q "/[V]olumes/${diskname}" ); then
         info "Looks like RAM disk already exists at ${path}...";
         return 1;
     else
@@ -3888,7 +3888,7 @@ osx.ramdisk.unmount ()
         return 1
     };
     local path="/Volumes/${diskname}";
-    if ( mount | grep -Ee -q "/[V]olumes/${diskname}" ); then
+    if ( mount | ${GrepCommand} -q "/[V]olumes/${diskname}" ); then
         run.ui.ask "Unmount RAM disk at ${path}? ";
         run "umount ${path}";
     else
@@ -5408,7 +5408,7 @@ pid.stop-and-kill ()
     while true; do
         pid.alive $pid || return 0;
         kill -${sig} ${pid} 2>&1 > /dev/null;
-        delta=$(( delta * 2));
+        delta=$((delta * 2));
         [[ ${delta} -gt 16 ]] && sig="KILL";
         sleep "0.${delta}";
     done;
@@ -5464,7 +5464,7 @@ EXAMPLES:
     fi;
     local pattern="$(pids.normalize.search-string "$1")";
     shift;
-    ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep
+    ps -ef | ${GrepCommand} "${pattern}" | ${GrepCommand} -v grep
 }
 
 ----
@@ -5552,7 +5552,7 @@ EXAMPLES:
 ";
         return 0;
     fi;
-    ps -ef | grep -Ee "${pattern}" | grep -Ee -v grep | awk '{print $2}' | sort -n
+    ps -ef | ${GrepCommand} "${pattern}" | ${GrepCommand} -v grep | awk '{print $2}' | sort -n
 }
 
 ----
@@ -6071,7 +6071,7 @@ ruby.gemfile-lock-version ()
         error "Can not find Gemfile.lock";
         return 1;
     fi;
-    grep -Ee " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
+    ${GrepCommand} " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
 }
 
 ----
@@ -6375,12 +6375,12 @@ ruby.rubygems-update ()
 ruby.stop () 
 { 
     local regex='/[r]uby| [p]uma| [i]rb| [r]ails | [b]undle| [u]nicorn| [r]ake';
-    local procs=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | wc -l);
+    local procs=$(ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | wc -l);
     [[ ${procs} -eq 0 ]] && { 
         info: "No ruby processes were found.";
         return 0
     };
-    local -a pids=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ');
+    local -a pids=$(ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ');
     h2 "Detected ${#pids[@]} Ruby Processes..., here is the tree:";
     printf "${txtcyn}";
     pstree ${pids[*]};
@@ -6388,7 +6388,7 @@ ruby.stop ()
     hr;
     printf "To abort, press Ctrl-C. To kill them all press any key..";
     run.ui.press-any-key;
-    ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
+    ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
 }
 
 ----
@@ -6401,7 +6401,7 @@ ruby.top-versions ()
 { 
     local platform="${1:-"2\."}";
     local arg="$(.ruby.ruby-build.list-argument)";
-    rbenv install ${arg} | grep -Ee "^${platform}" | ruby -e '
+    rbenv install ${arg} | ${GrepCommand} "^${platform}" | ruby -e '
       last_v = nil;
       last_m = nil;
       ARGF.each do |line|
@@ -6572,77 +6572,6 @@ run.ui.retry-command ()
         n=$(($n + 1));
         sleep 1;
     done
-}
-
-----
-
-
-=== Module `runtime-config`
-
-==== `run.inspect`
-
-[source,bash]
-----
-run.inspect () 
-{ 
-    if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
-        run.inspect-variables-that-are starting-with LibRun;
-    fi;
-    if [[ ${#@} -eq 0 || $(array.has-element "totals" "$@") == "true" ]]; then
-        hl.subtle "TOTALS";
-        info "${bldgrn}${commands_completed} commands completed successfully";
-        [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed";
-        [[ ${commands_ignored} -gt 0 ]] && info "${bldylw}${commands_ignored} commands failed, but were ignored.";
-        echo;
-    fi;
-    if [[ ${#@} -eq 0 || $(array.has-element "current" "$@") == "true" ]]; then
-        run.inspect-variables-that-are ending-with __LastExitCode;
-    fi;
-    reset-color
-}
-
-----
-
-==== `run.set-all`
-
-[source,bash]
-----
-run.set-all () 
-{ 
-    ____run.configure all "$@"
-}
-
-----
-
-==== `run.set-all.list`
-
-[source,bash]
-----
-run.set-all.list () 
-{ 
-    set | grep -Ee '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
-}
-
-----
-
-==== `run.set-next`
-
-[source,bash]
-----
-run.set-next () 
-{ 
-    ____run.configure next "$@"
-}
-
-----
-
-==== `run.set-next.list`
-
-[source,bash]
-----
-run.set-next.list () 
-{ 
-    set | grep -Ee '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 ----
@@ -6977,7 +6906,7 @@ run.ui.press-any-key ()
 run.variables-ending-with () 
 { 
     local suffix="${1}";
-    env | grep -Ee ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
+    env | grep -E -e ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 ----
@@ -6989,7 +6918,7 @@ run.variables-ending-with ()
 run.variables-starting-with () 
 { 
     local prefix="${1}";
-    env | grep -Ee "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
+    env | grep -E -e "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 ----
@@ -7051,6 +6980,77 @@ run.with.ruby-bundle ()
 run.with.ruby-bundle-and-output () 
 { 
     .run.bundle.exec.with-output "$@"
+}
+
+----
+
+
+=== Module `runtime-config`
+
+==== `run.inspect`
+
+[source,bash]
+----
+run.inspect () 
+{ 
+    if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
+        run.inspect-variables-that-are starting-with LibRun;
+    fi;
+    if [[ ${#@} -eq 0 || $(array.has-element "totals" "$@") == "true" ]]; then
+        hl.subtle "TOTALS";
+        info "${bldgrn}${commands_completed} commands completed successfully";
+        [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed";
+        [[ ${commands_ignored} -gt 0 ]] && info "${bldylw}${commands_ignored} commands failed, but were ignored.";
+        echo;
+    fi;
+    if [[ ${#@} -eq 0 || $(array.has-element "current" "$@") == "true" ]]; then
+        run.inspect-variables-that-are ending-with __LastExitCode;
+    fi;
+    reset-color
+}
+
+----
+
+==== `run.set-all`
+
+[source,bash]
+----
+run.set-all () 
+{ 
+    ____run.configure all "$@"
+}
+
+----
+
+==== `run.set-all.list`
+
+[source,bash]
+----
+run.set-all.list () 
+{ 
+    set | ${GrepCommand} '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+}
+
+----
+
+==== `run.set-next`
+
+[source,bash]
+----
+run.set-next () 
+{ 
+    ____run.configure next "$@"
+}
+
+----
+
+==== `run.set-next.list`
+
+[source,bash]
+----
+run.set-next.list () 
+{ 
+    set | ${GrepCommand} '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 ----
@@ -7897,7 +7897,7 @@ url.http-code ()
         echo 1>&2;
         return 101
     };
-    local result=$(wget -v --spider "${url}" 2>&1 | grep -Ee "response" | awk '{print $6}' | tr -d ' ' | tail -1);
+    local result=$(wget -v --spider "${url}" 2>&1 | ${GrepCommand} "response" | awk '{print $6}' | tr -d ' ' | tail -1);
     export LibUrl__LastHttpCode="${result}";
     if [[ ${quiet} == true ]]; then
         if [[ ${result} -gt 199 && ${result} -lt 210 ]]; then
@@ -7949,7 +7949,7 @@ url.shorten ()
         debug "BITLY_LOLGIN : ${clr}${bldylw}${BITLY_LOGIN}" 1>&2;
         debug "BITLY_LOLGIN : ${clr}${bldgrn}${BITLY_API_KEY}" 1>&2;
         debug "BITLY_API_URL: ${clr}${undblu}${bitlyUrl}${clr}" 1>&2;
-        local output="$( $(url.downloader) "${bitlyUrl}" 2>&1 )";
+        local output="$($(url.downloader) "${bitlyUrl}" 2>&1)";
         if [[ "${output}" =~ "INVALID" || "${output}" =~ "Server Error" ]]; then
             error "${output}";
             return 1;
@@ -8239,22 +8239,49 @@ pause.short ()
 ----
 sedx () 
 { 
-    local current=$(which sed);
-    local latest=${LibSed__CachedCommand:-'/usr/local/bin/gsed'};
-    local os=$(uname -s);
-    if [[ ! -x "${latest}" ]]; then
+    [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && export BASHMATIC_UTIL_SED_COMMAND="$(sedx.cache-command)";
+    ${BASHMATIC_UTIL_SED_COMMAND} "$*"
+}
+
+----
+
+==== `sedx.cache-command`
+
+[source,bash]
+----
+sedx.cache-command () 
+{ 
+    if [[ -z "${BASHMATIC_UTIL_SED_COMMAND}" ]]; then
+        local sed_path;
+        local sed_command;
+        local os;
+        sed_path="$(which sed)";
+        os="$(uname -s)";
         if [[ "${os}" == "Darwin" ]]; then
-            [[ -n $(which brew) ]] || return 1;
-            brew install gnu-sed > /dev/null 2>&1;
-            [[ -x "${latest}" ]] || latest="${current}";
-        else
-            if [[ "${os}" == "Linux" ]]; then
-                latest="${current}";
+            local gsed_path;
+            gsed_path="$(which gsed)";
+            if [[ -z "${gsed_path}" ]]; then
+                [[ -n $(which brew) ]] || { 
+                    error "Brew is needed to install GNU sed on OS-X";
+                    return 1
+                };
+                brew install gnu-sed > /dev/null 2>&1;
+                brew link gnu-sed --force > /dev/null 2>&1;
+                gsed_path="$(which gsed)";
             fi;
+            [[ -z "${gsed_path}" ]] && { 
+                error "Can't find GNU sed even after installation.";
+                return 2
+            };
+            sed_path="${gsed_path}";
         fi;
+        sed_command="${sed_path}";
+    else
+        sed_command="${BASHMATIC_UTIL_SED_COMMAND}";
     fi;
-    latest=${latest:-${current}};
-    ${latest} -E "$@"
+    sed_command="${sed_command} -r -e ";
+    printf "%s" "${sed_command}";
+    [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && export BASHMATIC_UTIL_SED_COMMAND="${sed_command}"
 }
 
 ----
@@ -8364,7 +8391,7 @@ util.functions-matching ()
 { 
     local prefix="${1}";
     local extra_command=${2:-"cat"};
-    set | grep -Ee "^${prefix}" | sedx -E 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+    set | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
 }
 
 ----
@@ -8391,7 +8418,7 @@ util.functions-starting-with ()
 { 
     local prefix="${1}";
     local extra_command=${2:-"cat"};
-    set | grep -Ee '()' | grep -Ee "^${prefix}" | sedx -E 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+    set | ${GrepCommand} '()' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
 }
 
 ----
@@ -8582,7 +8609,7 @@ util.ver-to-i ()
 ----
 util.whats-installed () 
 { 
-    declare -a hb_aliases=($(alias | grep -Ee 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'));
+    declare -a hb_aliases=($(alias | ${GrepCommand} 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'));
     h2 "Installed app aliases:" ' ' "${hb_aliases[@]}";
     h2 "Installed DB Functions:";
     info "hb.db  [ ms | r1 | r2 | c ]";
@@ -8676,8 +8703,8 @@ vim.gvim-off ()
     local regex_to='export EDITOR=vim';
     file.gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}";
     file.gsub "${LibVim__initFile}" '^gvim.on$' 'gvim.off';
-    grep -Ee -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile};
-    grep -Ee -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >> ${LibVim__initFile};
+    ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile};
+    ${GrepCommand} -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >> ${LibVim__initFile};
     eval "
     [[ -n '${DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOff}
@@ -8700,8 +8727,8 @@ vim.gvim-on ()
     local regex_to='export EDITOR=gvim';
     file.gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}";
     file.gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on';
-    grep -Ee -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile};
-    grep -Ee -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >> ${LibVim__initFile};
+    ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile};
+    ${GrepCommand} -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >> ${LibVim__initFile};
     eval "
     [[ -n '${DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOn}

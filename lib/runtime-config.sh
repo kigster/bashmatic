@@ -30,11 +30,11 @@ run.set-all() {
 }
 
 run.set-next.list() {
-  set | grep -Ee '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+  set | ${GrepCommand} '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 run.set-all.list() {
-  set | grep -Ee '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+  set | ${GrepCommand} '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
 }
 
 run.inspect() {

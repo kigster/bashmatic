@@ -48,13 +48,13 @@ bashmatic.functions-from() {
     pattern="${pattern}.sh"
   fi
 
-  grep -Ee -e '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} |
-    sed -e 's/^lib\/.*\.sh://g' |
-    sed -e 's/^function //g' |
-    sed -e 's/\(\) *{.*$//g' |
+  ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} |
+    sedx 's/^lib\/.*\.sh://g' |
+    sedx 's/^function //g' |
+    sedx 's/\(\) *\{.*$//g' |
     tr -d '()' |
-    sed -e '/^ *$/d' |
-    grep -v '^_' |
+    sedx '/^ *$/d' |
+    ${GrepCommand} '^_' -v |
     sort |
     uniq |
     columnize "$@"

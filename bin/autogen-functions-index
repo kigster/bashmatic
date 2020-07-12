@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # vim: ft=sh
 
-source ${HOME}/.bashmatic/init.sh
+source "${HOME}/.bashmatic/init.sh"
 
 list.modules() {
-  ls -1 ${BASHMATIC_HOME}/lib/*.sh | sed -E 's/.*lib\///g; s/\.sh//g'
+  find "${BASHMATIC_HOME}/lib/" -type f | sedx 's/.*lib\///g; s/\.sh//g; s/^\///g' | sort
 }
 
 generate() {

@@ -55,7 +55,7 @@ ruby.top-versions() {
   local arg="$(.ruby.ruby-build.list-argument)"
 
   rbenv install ${arg} |
-    grep -Ee "^${platform}" |
+    ${GrepCommand} "^${platform}" |
     ruby -e '
       last_v = nil;
       last_m = nil;
@@ -400,7 +400,7 @@ ruby.gemfile-lock-version() {
     return 1
   fi
 
-  grep -Ee " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
+  ${GrepCommand} " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————
@@ -461,13 +461,13 @@ ruby.compiled-with() {
 ##——————————————————————————————————————————————————————————————————————————————————
 ruby.stop() {
   local regex='/[r]uby| [p]uma| [i]rb| [r]ails | [b]undle| [u]nicorn| [r]ake'
-  local procs=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | wc -l)
+  local procs=$(ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | wc -l)
   [[ ${procs} -eq 0 ]] && {
     info: "No ruby processes were found."
     return 0
   }
 
-  local -a pids=$(ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')
+  local -a pids=$(ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')
 
   h2 "Detected ${#pids[@]} Ruby Processes..., here is the tree:"
   printf "${txtcyn}"
@@ -478,7 +478,7 @@ ruby.stop() {
   printf "To abort, press Ctrl-C. To kill them all press any key.."
   run.ui.press-any-key
 
-  ps -ef | grep -Ee "${regex}" | grep -Ee -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
+  ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————

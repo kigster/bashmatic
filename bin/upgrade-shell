@@ -32,7 +32,7 @@ bash.append_path() {
   local file=${1}
   local new_path=${2:-"/usr/local/bin"}
   local string="export PATH=\"${new_path}:\${PATH}\""
-  if [[ -z $(grep -Ee "export PATH=\"${new_path}" ${file}) ]]; then
+  if [[ -z $(${GrepCommand} "export PATH=\"${new_path}" ${file}) ]]; then
     echo "adding ${txtblue}${new_path}${clr} to ${txtgrn}${file}${clr}"
     set -e
     echo >>${file}

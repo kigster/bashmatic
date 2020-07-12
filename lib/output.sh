@@ -248,7 +248,7 @@ output.color.off() {
 }
 
 .output.clean.pipe() {
-  sedx -E -e 's/(\x1b|\\\e)\[[0-9]*;?[0-9]?+m//g;s/\r//g'
+  sedx 's/(\x1b|\\\e)\[[0-9]*;?[0-9]?+m//g; s/\r//g'
 }
 
 ascii-pipe() {

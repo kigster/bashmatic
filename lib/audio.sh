@@ -29,9 +29,9 @@ export child_pid=
 audio.make.mp3s() {
   local dir="${1:-"."}"
   local kHz="${2:-"48"}"
-  
+
   local first="$(find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print | head -1)"
-  
+
   h3 "Converting WAV and AIF files to MP3 in ${txtylw}${dir}."
 
   if [[ -z ${first} ]]; then
@@ -50,11 +50,11 @@ audio.make.mp3s() {
 
   find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print0 | while read -d $'\0' file; do
     local fn=$(ascii-clean "${file}")
-    mp3=$(echo "${file}" | sedx -E 's/\.(wav|aiff?)$/.mp3/g')
+    mp3=$(echo "${file}" | sedx 's/\.(wav|aiff?)$/.mp3/g')
 
     inf "checking ${txtylw}${file} $(txt-info) ... "
 
-    if [[ -f "${mp3}" && -z "${FORCE}" ]]; then  
+    if [[ -f "${mp3}" && -z "${FORCE}" ]]; then
       printf "${bldgrn} OK, already converted. Use FORCE=1 to overwrite. ${clr}"
       ok:
       continue
@@ -74,11 +74,11 @@ audio.make.mp3s() {
     if [[ ${code} -ne 0 ]]; then
       ui.closer.not-ok:
       info "${bakred}${bldwht}  ERROR: lame exited with an error code ${code}. Aborting!  "
-      [[ -f "${mp3}" ]] && { 
+      [[ -f "${mp3}" ]] && {
         info "NOTE: removing unfinished MP3 file ${mp3}."
-        rm -f "${mp3}" 1>&2 > /dev/null
+        rm -f "${mp3}" 1>&2 >/dev/null
       }
-      break 
+      break
     else
       ok:
     fi
@@ -107,7 +107,7 @@ audio.make.mp3() {
     error "File '${file}' does not exist."
     audio.make.mp3.usage && return 2
   }
-    
+
   [[ -z ${nfile} ]] && nfile="$(echo "${file}" | sedx 's/\.(wav|aiff?)$/\.mp3/g')"
 
   local khz=$(audio.file.frequency "${file}")

@@ -125,7 +125,7 @@ url.http-code() {
     return 101
   }
 
-  local result=$(wget -v --spider "${url}" 2>&1 | grep -Ee "response" | awk '{print $6}' | tr -d ' ' | tail -1)
+  local result=$(wget -v --spider "${url}" 2>&1 | ${GrepCommand} "response" | awk '{print $6}' | tr -d ' ' | tail -1)
 
   export LibUrl__LastHttpCode="${result}"
 

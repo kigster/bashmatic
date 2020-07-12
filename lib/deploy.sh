@@ -5,7 +5,7 @@
 # Set me to a URL pointing to the VPN setup instructions
 export LibDeploy__VpnInfoUrl=${LibDeploy__VpnInfoUrl:-''}
 
-# Set me to the grep -Ee regular expression to filter `netstat -rn` with.
+# Set me to the ${GrepCommand}  regular expression to filter `netstat -rn` with.
 # successful grep means VPN is connected, no match - disconnected.
 # Defaults to 10/16, but change it to whatever suits you.
 export LibDeploy__VpnSubnet=${LibDeploy__VpnSubnet:-"^10/16"}
@@ -20,7 +20,7 @@ export LibDeploy__NoSlack=false
 ################################################################################
 
 .deploy.check-vpn() {
-  netstat -rn | grep -Ee "${LibDeploy__VpnSubnet}" >/dev/null
+  netstat -rn | ${GrepCommand} "${LibDeploy__VpnSubnet}" >/dev/null
 }
 
 .deploy.vpn-error() {
@@ -37,7 +37,7 @@ export LibDeploy__NoSlack=false
   if [[ -n "$(netstat -rn | grep utun)" ]]; then
     info "Your current VPN routes are as follows:\n"
     printf "${bldylw}"
-    netstat -rn | grep -Ee '^[0-9].*tun'
+    netstat -rn | ${GrepCommand} '^[0-9].*tun'
     printf "${clr}\n"
   fi
 

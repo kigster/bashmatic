@@ -7,7 +7,7 @@
 #
 maths.eval() {
   local __math_chars=(!²³¹¼½¾×÷ΠΣ⁰ⁱ⁴⁵⁶⁷⁸⁹ⁿ⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞∅∈∉√∛∜∞∩∪∿⊂⊃⟌τ𝛕𝜏𝝉𝞃𝞽०१२३४५६७८९ℯ𝐞𝑒𝒆𝖾𝗲𝘦𝙚𝚎ｅπϖ𝛑𝛡𝜋𝜛𝝅𝝕𝝿𝞏𝞹𝟉𝐢𝑖𝒊𝒾𝓲𝔦𝕚𝖎𝗂𝗶𝘪𝙞𝚒)
-  local -a __math_chars_array=($(echo "${__math_chars}" | sedx -E 's/(.)/\1 /g'))
+  local -a __math_chars_array=($(echo "${__math_chars}" | sedx 's/(.)/\1 /g'))
   local __math_chars_array
   [[ -z "$1" ]] && {
     output.set-max-width 100
@@ -39,7 +39,7 @@ maths.eval() {
   local output_width="${1}"
 
   local ruby_script="require 'unicode_math'; printf('%${output_width}.${output_precision}f', (Math.module_eval { ${expression} }))"
-  ruby_script="$(echo "${ruby_script}" | sedx -E 's/ ?(×|÷|!)/\.\1/g')"
+  ruby_script="$(echo "${ruby_script}" | sedx 's/ ?(×|÷|!)/\.\1/g')"
 
   local temp_file
   temp_file="$(mktemp)"

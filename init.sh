@@ -22,7 +22,7 @@ export PATH="${PATH}:${BASHMATIC_HOME}/bin"
 
 declare -A BashMatic__LoadCache 2>/dev/null
 export BashMatic__LoadCache
-
+export GrepCommand="$(which grep) -E -e "
 export True=1
 export False=0
 export LoadedShown=${LoadedShown:-1}

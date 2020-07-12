@@ -9,4 +9,5 @@ test/all.bats
 libexec/
 share/
 hello/
-./Gemfile.lock
+/Gemfile.lock
+shellcheck.log

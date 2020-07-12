@@ -127,7 +127,7 @@ util.remove-from-init-files() {
 }
 
 util.whats-installed() {
-  declare -a hb_aliases=($(alias | grep -Ee 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
+  declare -a hb_aliases=($(alias | ${GrepCommand} 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
   h2 "Installed app aliases:" ' ' "${hb_aliases[@]}"
 
   h2 "Installed DB Functions:"
@@ -159,13 +159,13 @@ util.lines-in-folder() {
 util.functions-starting-with() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | grep -Ee '()' | grep -Ee "^${prefix}" | sedx -E 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+  set | ${GrepCommand} '()' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
 }
 
 util.functions-matching() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | grep -Ee "^${prefix}" | sedx -E 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+  set | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
 }
 
 util.functions-matching.diff() {
@@ -196,15 +196,16 @@ util.install-direnv() {
   eval "$(direnv hook bash)"
 }
 
-export LibSed__CachedCommand=
+export BASHMATIC_UTIL_SED_COMMAND=
 
-sedx() {
-  #———————————————————————————————————————————————————————
-  # SedX is a functional enhancement to the regular sed. It basically
-  # will install the more powerful GNU sed if it finds the super old sed.
-  # You can use sedx as you would use sed normally.
+# This function ensures we have GNU sed installed, and if not,
+# uses Brew on a Mac to install it.
+#
+# It is used by sedx() function
+#———————————————————————————————————————————————————————
+sedx.cache-command() {
 
-  if [[ -z "${LibSed__CachedCommand}" ]]; then
+  if [[ -z "${BASHMATIC_UTIL_SED_COMMAND}" ]]; then
     local sed_path
     local sed_command
     local os
@@ -236,13 +237,21 @@ sedx() {
 
     sed_command="${sed_path}"
   else
-    sed_command="${LibSed__CachedCommand}"
+    sed_command="${BASHMATIC_UTIL_SED_COMMAND}"
   fi
 
-  [[ -z ${LibSed__CachedCommand} ]] && export LibSed__CachedCommand="${sed_command}"
-
   sed_command="${sed_command} -r -e "
-  ${sed_command} "$@"
+  printf "%s" "${sed_command}"
+
+  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && \
+    export BASHMATIC_UTIL_SED_COMMAND="${sed_command}"
+}
+
+sedx() {
+  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && \
+    export BASHMATIC_UTIL_SED_COMMAND="$(sedx.cache-command)"
+
+  ${BASHMATIC_UTIL_SED_COMMAND} "$*"
 }
 
 export LibUtil__WatchRefreshSeconds="0.5"

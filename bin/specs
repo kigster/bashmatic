@@ -18,6 +18,7 @@ declare -a TestFiles=()
 
 export True=1
 export False=0
+export GrepCommand="$(which grep) -E -e "
 
 export Bashmatic__Test=${True}
 
@@ -69,7 +70,7 @@ specs.install-bats() {
 }
 
 spec.find-bats() {
-  command -v bats || which bats || find . -name bats -perm "-u=x" | grep -Ee -v 'fixtures|libexec'
+  command -v bats || which bats || find . -name bats -perm "-u=x" | ${GrepCommand} -v 'fixtures|libexec'
 }
 
 specs.run-file() {

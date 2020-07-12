@@ -2,11 +2,15 @@
 
 load test_helper
 
+source lib/util.sh
+source lib/output.sh
 source lib/ruby.sh
 source lib/gem.sh
-source lib/util.sh
+
+
 
 @test "gem.gemfile.version returns correct 4-part version" {
+  alias ${GrepCommand} ="grep -E -e "
   gem.cache-refresh
   set -e
   cp test/Gemfile.lock .
@@ -15,6 +19,7 @@ source lib/util.sh
 }
 
 @test "gem.gemfile.version returns correct 3-part version" {
+  alias ${GrepCommand} ="grep -E -e "
   gem.cache-refresh
   set -e
   cp test/Gemfile.lock .

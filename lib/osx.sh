@@ -145,7 +145,7 @@ osx.ramdisk.mount() {
 
   local path="/Volumes/${diskname}"
 
-  if (mount | grep -Ee -q "/[V]olumes/${diskname}"); then
+  if (mount | ${GrepCommand} -q "/[V]olumes/${diskname}"); then
     info "Looks like RAM disk already exists at ${path}..."
     return 1
   else
@@ -167,7 +167,7 @@ osx.ramdisk.unmount() {
 
   local path="/Volumes/${diskname}"
 
-  if (mount | grep -Ee -q "/[V]olumes/${diskname}"); then
+  if (mount | ${GrepCommand} -q "/[V]olumes/${diskname}"); then
     run.ui.ask "Unmount RAM disk at ${path}? "
     run "umount ${path}"
   else

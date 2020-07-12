@@ -7,7 +7,7 @@
 .file.make_executable() {
   local file=$1
 
-  if [[ -f ${file} && -n $(head -1 $1 | grep -Ee '#!.*(bash|ruby|env)') ]]; then
+  if [[ -f ${file} && -n $(head -1 $1 | ${GrepCommand} '#!.*(bash|ruby|env)') ]]; then
     printf "making file ${bldgrn}${file}${clr} executable since it's a script...\n"
     chmod 755 ${file}
     return 0
@@ -44,7 +44,7 @@ file.gsub() {
   }
 
   # fix any EDITOR assignments in ~/.bashrc
-  grep -Ee -q "${find}" "${file}" || return 0
+  ${GrepCommand} -q "${find}" "${file}" || return 0
 
   [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options}
   # replace

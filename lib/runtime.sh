@@ -441,12 +441,12 @@ run.print-variables() {
 
 run.variables-starting-with() {
   local prefix="${1}"
-  env | grep -Ee "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
+  env | grep -E -e  "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 run.variables-ending-with() {
   local suffix="${1}"
-  env | grep -Ee ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
+  env | grep -E -e  ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 # Usage: run.inspect-variables-that-are starting-with LibRun
