@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+set +ex
+
+[[ -d ${HOME}/.bashmatic ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)" 1>/dev/null 2>/dev/null
+
+# vim: ft=bash
+# shellcheck source=/dev/null
+. "${HOME}/.bashmatic/init.sh" >/dev/null 2>&1
+
+__downloader_tempfile=$(mktemp)
+export __downloader_tempfile
+
+__downloader__LogoUrlList="${__downloader_tempfile}.urls"
+export __downloader__LogoUrlList
+
+__downloader_tempfile="${__downloader_tempfile}.html"
+export __downloader_tempfile
+
+__downloader__Command=${BashMatic__Downloader:-"$(which curl) -fsSL "}
+export __downloader__Command
+
+__downloader__Image=${__downloader__Command}
+[[ ${__downloader__Image} =~ "curl" ]] && __downloader__Image="${__downloader__Image} -O "
+export __downloader__Image
+
+__downloader__Dir="./downloaded-logos"
+export __downloader__Dir
+
+declare -a __downloader__LogoSources
+__downloader__LogoSources="$@"
+
+[[ -n ${__downloader__LogoSources[*]} ]] || {
+  usage-box "$0 url url ...  © Downloads LOGO images included in target URLs"
+  echo
+  info "NOTE: The urls should be pointing to HTML pages that link to logo images."
+  info "The script will loop over each url, download it and parse it,"
+  info "downloading all matching logo images into the '${__downloader__Dir}' folder."
+  echo
+  exit 0
+}
+
+export __downloader__LogoSources
+
+trap 'exit 0' INT
+
+download-logo-images() {
+  local source="$1"
+
+  [[ -s ${__downloader__LogoUrlList} ]] || {
+    error "Can't find any image URLs in the URL file. Abort"
+    return 1
+  }
+
+  [[ -d "${__downloader__Dir}" ]] || run "mkdir -p ${__downloader__Dir}"
+  run "cd ${__downloader__Dir}"
+
+  h1 "Download Command is: ${__downloader__Image}" \
+    "Discovered $(wc -l "${__downloader__LogoUrlList}" | tr -d '\n') LOGO images"
+
+  local program
+  if [[ ${__downloader__Image} =~ "wget" ]]; then
+    program="wget"
+  else
+    program="curl"
+  fi
+
+  set -e
+
+  local url
+  grep -i -E -e '^http' <"${__downloader__LogoUrlList}" | while IFS= read -r logo; do
+    url="$(ascii-clean "${logo}" | tr -d '\n')"
+    info " ${bldylw}${program} ${clr} → ${undblu}${bldblu}${url}${clr}"
+    eval "${__downloader__Image} ${url} &" 2>/dev/null 1>/dev/null
+  done
+
+  run "cd -"
+}
+
+download-logo-sources() {
+  local source="$1"
+  h2 "Fetching LOGOS from ${bldylw}${source}..."
+
+  run "mkdir -p $(dirname "${__downloader_tempfile}")"
+  run "${__downloader__Command} ${source} > ${__downloader_tempfile}"
+
+  if [[ -f ${__downloader_tempfile} ]]; then
+    grep -i -E -e 'src="[^"]*(logo)*\.(png|jpg|jpe?g|gif)"' ${__downloader_tempfile} |
+      awk '{FS="src=\""}{print $2}' |
+      awk '{FS="\""}{print $1}' |
+      grep -i -e 'logo' |
+      sort |
+      uniq >"${__downloader__LogoUrlList}"
+  fi
+
+  [[ -f "${__downloader__LogoUrlList}" ]] || {
+    error "Couldn't find the result of the URL download."
+    return 1
+  }
+}
+
+main() {
+  for source in "${__downloader__LogoSources[@]}"; do
+    download-logo-sources "${source}"
+    download-logo-images "${source}"
+  done
+
+  run "rm -f ${__downloader__LogoUrlList}"
+}
+
+main "$@"
