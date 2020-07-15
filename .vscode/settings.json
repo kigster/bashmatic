@@ -1,6 +1,6 @@
 {
    "terminal.integrated.cursorBlinking": true,
-   "editor.fontFamily": "JetBrains Mono",
+   "editor.fontFamily": "Lekton",
    "editor.tabSize": 2,
    "editor.cursorStyle": "block",
    "files.autoSave": "afterDelay",
@@ -16,9 +16,9 @@
    "editor.letterSpacing": -0.2,
    "editor.renderControlCharacters": true,
    "html.format.wrapLineLength": 100,
-   "editor.lineHeight": 15,
+   "editor.lineHeight": 17,
    "editor.find.addExtraSpaceOnTop": false,
-   "editor.fontSize": 11,
+   "editor.fontSize": 14,
    "command-runner.commands": {
       "Run Bats Unit Tests": "cd ${workspaceFolder} && bin/specs ${file}",
    },
@@ -26,5 +26,5 @@
       "Bashmatic"
    ],
    "workbench.preferredDarkColorTheme": "Monokai Pro",
-   "workbench.colorTheme": "GitHub Dark",
+   "workbench.colorTheme": "Monokai Pro",
 }

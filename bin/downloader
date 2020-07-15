@@ -1,66 +1,181 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+# Author: Konstantin Gredeskoul
+# Copyright: © 2020 KG, MIT License
+#
+# This script can extract image URLs from a remote HTML document(s) and
+# downloads them all to a local folder.
 
-set +ex
-
-[[ -d ${HOME}/.bashmatic ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)" 1>/dev/null 2>/dev/null
+[[ -d "${HOME}/.bashmatic" ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)" 1>/dev/null 2>/dev/null
 
 # vim: ft=bash
 # shellcheck source=/dev/null
 . "${HOME}/.bashmatic/init.sh" >/dev/null 2>&1
 
-__downloader_tempfile=$(mktemp)
+__downloader_tempfile=$(mktemp -t ${RANDOM})
 export __downloader_tempfile
 
-__downloader__LogoUrlList="${__downloader_tempfile}.urls"
-export __downloader__LogoUrlList
+__downloader_image_urls="${__downloader_tempfile}.urls"
+export __downloader_image_urls
 
 __downloader_tempfile="${__downloader_tempfile}.html"
 export __downloader_tempfile
 
-__downloader__Command=${BashMatic__Downloader:-"$(which curl) -fsSL "}
-export __downloader__Command
+__downloader_command=${BashMatic__Downloader:-"$(which curl) -fsSL "}
+export __downloader_command
 
-__downloader__Image=${__downloader__Command}
-[[ ${__downloader__Image} =~ "curl" ]] && __downloader__Image="${__downloader__Image} -O "
-export __downloader__Image
+__downloader_image_command="${__downloader_command}"
+export __downloader_image_command
 
-__downloader__Dir="./downloaded-logos"
-export __downloader__Dir
+__downloader_output_dir="./downloader-images"
+export __downloader_output_dir
 
-declare -a __downloader__LogoSources
-__downloader__LogoSources="$@"
+declare -a __downloader_source_pages
+__downloader_source_pages=()
+export __downloader_source_pages
 
-[[ -n ${__downloader__LogoSources[*]} ]] || {
-  usage-box "$0 url url ...  © Downloads LOGO images included in target URLs"
+downloader.usage() {
+  usage-box "downloader [flags] url1 url2 ...  © For each URL assumed to return HTML, parses and downloads images." \
+    "-m / --matches REGEX" "Optional regex to filter the image file names to download." \
+    "-n / --negate" "Apply the regex as a negation" \
+    "-i / --case-insensitive" "Apply regex in a case-insentive manner" \
+    "-b / --background" "Run curl/wget on the background" \
+    "-o / --output-dir DIR" "Output directory, default is: ${__downloader_output_dir}" \
+    "-e / --exit-on-error" "Abort if an error occurs. Default is to keep going." \
+    "-N / --dry-run" "Only print commands, but do not run them" \
+    "-d / --debug" "Show internal state before running" \
+    "-q / --quiet" "Do not print as much output." \
+    "-h / --help" "Show this message."
+
+  h3 EXAMPLES
+
   echo
-  info "NOTE: The urls should be pointing to HTML pages that link to logo images."
-  info "The script will loop over each url, download it and parse it,"
-  info "downloading all matching logo images into the '${__downloader__Dir}' folder."
+  info "    ${bldblk}# Extracts image URLs from two HTML sites and downloads only PNGs"
+  info "    ${bldblu}❯ downloader -m .png -o ./images/pngs https://kig.re/ https://reinvent.one/"
   echo
+  info "    ${bldblk}# Downloads all images EXCEPT those of webp format, case insensitively"
+  info "    ${bldblk}# also, speed up download by launching curl on the background:"
+  info "    ${bldblu}❯ downloader -b -n -m .webp -i -o ./images/pngs kig.re reinvent.one"
+  echo
+  printf "${clr}\n"
   exit 0
 }
 
-export __downloader__LogoSources
+export arg_regex=""
+export arg_output_dir=""
 
-trap 'exit 0' INT
+export __downloader_flag_negate=0
+export __downloader_flag_background=0
+export __downloader_flag_case_insensitive=0
+export __downloader_flag_exit_on_error=0
+export __downloader_flag_dry_run=0
+export __downloader_flag_quiet=0
+export __downloader_flag_debug=0
 
-download-logo-images() {
+downloader.abort() {
+  local option="$1"
+  downloader.usage
+  echo
+  error "Option ${option} requires an argument, but none was given."
+  exit 1
+}
+
+downloader.parse-opts() {
+  [[ -z "$1" ]] && {
+    downloader.usage
+    exit 0
+  }
+
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -m | --matches)
+      shift
+      export arg_regex="$1"
+      [[ -z ${arg_regex} ]] && downloader.abort "--matches"
+      shift
+      ;;
+    -o | --output-dir)
+      shift
+      export __downloader_output_dir="$1"
+      [[ -z ${__downloader_output_dir} ]] && downloader.abort "--output-dir"
+      shift
+      ;;
+    -N | --dry-run)
+      run.set-all dry-run-on
+      shift
+      ;;
+    -n | --negate)
+      export __downloader_flag_negate=1
+      shift
+      ;;
+    -i | --case-insensitive)
+      export __downloader_flag_case_insensitive=1
+      shift
+      ;;
+    -e | --exit-on-error)
+      run.set-all abort-on-error
+      export __downloader_flag_exit_on_error=1
+      shift
+      ;;
+    -q | --quiet)
+      export __downloader_flag_quiet=1
+      shift
+      ;;
+    -d | --debug)
+      export __downloader_flag_debug=1
+      shift
+      ;;
+    -b | --background)
+      export __downloader_flag_background=1
+      shift
+      ;;
+    -h | -\? | --help)
+      shift
+      downloader.usage
+      exit 0
+      ;;
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    -?*)
+      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
+    *)
+      [[ -z "$1" ]] && break
+      __downloader_source_pages+=("$1")
+      shift
+      ;;
+    esac
+  done
+}
+
+downloader.fetch-images() {
   local source="$1"
+  h1 "Fetching images from: ${bldylw}${source}"
 
-  [[ -s ${__downloader__LogoUrlList} ]] || {
+  [[ -f ${__downloader_image_urls} ]] || {
     error "Can't find any image URLs in the URL file. Abort"
     return 1
   }
 
-  [[ -d "${__downloader__Dir}" ]] || run "mkdir -p ${__downloader__Dir}"
-  run "cd ${__downloader__Dir}"
+  local wc="$(wc -l "${__downloader_image_urls}" | tr -d '\n')"
+  local -a url_count=(${wc})
+  [[ "${url_count}" -eq 0 ]] && {
+    error "No matching image URLs were found in ${source}"
+    return
+  }
 
-  h1 "Download Command is: ${__downloader__Image}" \
-    "Discovered $(wc -l "${__downloader__LogoUrlList}" | tr -d '\n') LOGO images"
+  info "Image URLs discovered: ${bldylw}${url_count[0]}"
+
+  [[ -d "${__downloader_output_dir}" ]] || run "mkdir -p ${__downloader_output_dir}"
+  run "cd ${__downloader_output_dir}"
 
   local program
-  if [[ ${__downloader__Image} =~ "wget" ]]; then
+  if [[ ${__downloader_image_command} =~ "wget" ]]; then
     program="wget"
   else
     program="curl"
@@ -68,45 +183,106 @@ download-logo-images() {
 
   set -e
 
+  local prefix="${source}"
+  [[ ${prefix[${#prefix}]} == "/" ]] || prefix=${prefix/\/.*/}
+  [[ "${prefix}" =~ "http" ]] || prefix="https://${prefix}"
+  local background
+
+  ((__downloader_flag_background)) && background=" & "
   local url
-  grep -i -E -e '^http' <"${__downloader__LogoUrlList}" | while IFS= read -r logo; do
-    url="$(ascii-clean "${logo}" | tr -d '\n')"
-    info " ${bldylw}${program} ${clr} → ${undblu}${bldblu}${url}${clr}"
-    eval "${__downloader__Image} ${url} &" 2>/dev/null 1>/dev/null
-  done
+  while IFS= read -r image; do
+    url="$(echo "${image}" | tr -d '\n\r' | ascii-pipe)"
+    [[ "${url}" =~ "http" ]] || url="${prefix}${url}"
+    inf "downloading via ${bldylw}${program}: ${bldwht} → ${undblu}${url}"
+    ((__downloader_flag_debug)) && echo "COMMAND: ${__downloader_image_command} -O ${url}" | cat -vet
+    run "${__downloader_image_command} -O ${url} ${background}" 2>/dev/null 1>/dev/null
+    ui.closer.ok:
+  done <"${__downloader_image_urls}"
 
   run "cd -"
 }
 
-download-logo-sources() {
+downloader.extract-image-urls() {
   local source="$1"
-  h2 "Fetching LOGOS from ${bldylw}${source}..."
+
+  [[ ${source} =~ "http" ]] || source="https://${source}"
+
+  h2 "Fetching HTML source from" "${bldylw}${source}"
 
   run "mkdir -p $(dirname "${__downloader_tempfile}")"
-  run "${__downloader__Command} ${source} > ${__downloader_tempfile}"
+  run "${__downloader_command} -o ${__downloader_tempfile} ${source} > ${__downloader_tempfile}"
+
+  [[ ! $? -eq 0 ]] && {
+    error "ERROR fetching HTML from ${bldgrn}${source}"
+    return 1
+  }
+
+  local fsize=$(file.size "${__downloader_tempfile}")
+  info "Downloaded file is ${fsize} bytes."
+  local flags
+  flags="^.*$" # this includes everything
+
+  [[ -n ${arg_regex} ]] && {
+    # overwrite flags
+    flags=""
+    # shellcheck disable=SC2089
+    ((__downloader_flag_negate)) && flags="${flags} -v "
+    ((__downloader_flag_case_insensitive)) && flags="${flags} -i"
+    flags="${flags} ${arg_regex}"
+  }
+
+  ((__downloader_flag_debug)) && {
+    info "flags=[${flags}]"
+  }
 
   if [[ -f ${__downloader_tempfile} ]]; then
-    grep -i -E -e 'src="[^"]*(logo)*\.(png|jpg|jpe?g|gif)"' ${__downloader_tempfile} |
-      awk '{FS="src=\""}{print $2}' |
-      awk '{FS="\""}{print $1}' |
-      grep -i -e 'logo' |
+    grep -E -i 'src="[^"].*\.(png|jpg|jpe?g|gif|tiff|svg|pdf|bmp)"' ${__downloader_tempfile} |
+      sedx 's/^\s+//g; s/\s+$//g; s/.*src="?//g; s/".*$//g' |
+      grep -E ${flags} |
       sort |
-      uniq >"${__downloader__LogoUrlList}"
+      uniq >"${__downloader_image_urls}"
   fi
 
-  [[ -f "${__downloader__LogoUrlList}" ]] || {
+  ((__downloader_flag_debug)) && {
+    hr
+    cat "${__downloader_image_urls}"
+    hr
+  }
+
+  [[ -f "${__downloader_image_urls}" ]] || {
     error "Couldn't find the result of the URL download."
     return 1
   }
 }
 
+downloader.inspect-state() {
+  h2 'DEBUG: Internal Variables:'
+  local index
+  run.inspect-variables-that-are starting-with __downloader
+  local url_count=${#__downloader_source_pages[@]}
+
+  for index in $(seq 0 $((url_count - 1))); do
+    run.inspect-variable "__downloader_source_pages[${index}]"
+  done
+  hr
+}
+
 main() {
-  for source in "${__downloader__LogoSources[@]}"; do
-    download-logo-sources "${source}"
-    download-logo-images "${source}"
+  trap 'exit 0' INT
+  local source
+
+  downloader.parse-opts "$@"
+
+  ((__downloader_flag_debug)) && downloader.inspect-state
+
+  for source in "${__downloader_source_pages[@]}"; do
+    downloader.extract-image-urls "${source}" && downloader.fetch-images "${source}"
+    echo
+    hr
+    echo
   done
 
-  run "rm -f ${__downloader__LogoUrlList}"
+  run "rm -f ${__downloader_image_urls} ${__downloader_tempfile}"
 }
 
 main "$@"

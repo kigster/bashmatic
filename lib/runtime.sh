@@ -378,10 +378,10 @@ run.inspect-variable() {
         value=${var_value}
         color="${bldred}"
       fi
-    elif [[ "${var_value}" == "${True}" || ${var_value} -eq 1 ]]; then
+    elif [[ "${var_value}" == "${True}" || "${var_value}" == "1" ]]; then
       value="${value_check}"
       color="${bldgrn}"
-    elif [[ "${var_value}" == "${False}" || ${var_value} -eq 0 ]]; then
+    elif [[ "${var_value}" == "${False}" || "${var_value}" == "0" ]]; then
       value="${value_off}"
       color="${bldred}"
     fi
@@ -441,12 +441,12 @@ run.print-variables() {
 
 run.variables-starting-with() {
   local prefix="${1}"
-  env | grep -E -e  "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
+  env | grep -E -e "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 run.variables-ending-with() {
   local suffix="${1}"
-  env | grep -E -e  ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
+  env | grep -E -e ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 # Usage: run.inspect-variables-that-are starting-with LibRun
