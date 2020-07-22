@@ -30,7 +30,7 @@ export DevSetup__Version="0.2.0"
   export latest_postgres_version=${pg_versions[0]}
   export postgres_version=${postgres_version:-${latest_postgres_version}}
   export postgres_version=${postgres_version:-${DEFAULT_POSTGRESQL_VERSION}}
-  info "Using PostgreSQL version ${bldylw}${postgres_version}">&2
+  info "Using PostgreSQL version ${bldylw}${postgres_version}" >&2
 }
 
 .dev-setup.detect.mysql-version() {
@@ -283,7 +283,6 @@ export DevSetup__Callbacks
   )
 }
 
-
 .dev-setup.install-rbenv-hook() {
   local login_shell=$(user.login-shell)
   local rcfile
@@ -297,8 +296,8 @@ export DevSetup__Callbacks
     rbenv_init='eval "$(rbenv init - zsh)"'
   fi
 
-  grep -q 'rbenv init' ${rcfile} || echo "${rbenv_init}" >> "${rcfile}"
-  grep -q -E 'PATH.*\.rbenv/bin' ${rcfile} || echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH' >> "${rcfile}"
+  grep -q 'rbenv init' ${rcfile} || echo "${rbenv_init}" >>"${rcfile}"
+  grep -q -E 'PATH.*\.rbenv/bin' ${rcfile} || echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH' >>"${rcfile}"
 }
 
 .dev-setup.callbacks.ruby() {

@@ -5,6 +5,7 @@
 
 == Bashmatic Modules
 
+* xref:#module-.usage[.usage]
 * xref:#module-7z[7z]
 * xref:#module-array[array]
 * xref:#module-audio[audio]
@@ -54,6 +55,9 @@
 * xref:#module-yaml[yaml]
 
 == List of Bashmatic Functions
+
+
+=== Module `.usage`
 
 
 === Module `7z`
@@ -892,7 +896,7 @@ bashmatic.version ()
 ----
 brew.cache-reset () 
 { 
-    rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}
+    rm -f "${LibBrew__PackageCacheList}" "${LibBrew__CaskCacheList}"
 }
 
 ----
@@ -903,8 +907,7 @@ brew.cache-reset ()
 ----
 brew.cache-reset.delayed () 
 { 
-    ((${BASH_IN_SUBSHELL})) || brew.cache-reset;
-    ((${BASH_IN_SUBSHELL})) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
+    ( "${BASH_IN_SUBSHELL}" ) || brew.cache-reset
 }
 
 ----
@@ -917,7 +920,7 @@ brew.cask.is-installed ()
 { 
     local cask="${1}";
     local -a installed_casks=($(brew.cask.list));
-    array.has-element $(basename "${cask}") "${installed_casks[@]}"
+    array.has-element ${cask} "${installed_casks[@]}"
 }
 
 ----
@@ -928,7 +931,7 @@ brew.cask.is-installed ()
 ----
 brew.cask.list () 
 { 
-    cache-or-command "${LibBrew__CaskCacheList}" 30 "brew cask ls -1"
+    cache-or-command ${LibBrew__CaskCacheList} 30 brew cask ls -1
 }
 
 ----
@@ -970,10 +973,10 @@ brew.install.cask ()
     local cask=$1;
     local force=;
     local verbose=;
-    [[ -n ${opts_force} ]] && force="--force";
-    [[ -n ${opts_verbose} ]] && verbose="--verbose";
-    inf "verifying brew cask ${bldylw}${cask}";
-    if [[ -n $(ls -al /Applications/*.app | grep -i ${cask}) && -z ${opts_force} ]]; then
+    [[ -n "${opts_force}" ]] && force="--force";
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose";
+    inf "verifying brew cask ${bldylw}{cask}";
+    if [[ -n "$(ls -al /Applications/*.app | grep -i ${cask})" && -z "${opts_force}" ]]; then
         ui.closer.ok:;
     else
         if [[ $(brew.cask.is-installed ${cask}) == "true" ]]; then
@@ -981,7 +984,7 @@ brew.install.cask ()
             return 0;
         else
             ui.closer.kind-of-ok:;
-            run "brew cask install ${cask} ${force} ${verbose}";
+            run "brew cask install"${cask}"${force} ${verbose}";
         fi;
     fi;
     brew.cache-reset.delayed
@@ -995,36 +998,41 @@ brew.install.cask ()
 ----
 brew.install.package () 
 { 
-    local package=$1;
+    local package="$1";
     local force=;
     local verbose=;
-    [[ -n ${opts_force} ]] && force="--force";
-    [[ -n ${opts_verbose} ]] && verbose="--verbose";
-    [[ -z ${opt_terse} ]] && inf "checking for 🍻  ${bldylw}${package}...";
-    if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
-        [[ -z ${opt_terse} ]] && ok:;
-        [[ -z ${opt_terse} ]] || printf "${bldgrn}○ ";
+    [[ -n "${opts_force}" ]] && force="--force";
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose";
+    [[ -z "${opt_terse}" ]] && inf "checking for 🍻 "${bldylw}"{package}...";
+    local code;
+    if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
+        [[ -z "${opt_terse}" ]] && ok:;
+        [[ -z "${opt_terse}" ]] || printf "${bldgrn}○ ";
         export LibRun__LastExitCode=0;
     else
-        if [[ -z ${opt_terse} ]]; then
-            printf " ${bldpur}${package}${txtylw} must pour.\n${clr}";
+        if [[ -z "${opt_terse}" ]]; then
+            hl.subtle "Brew is installing package: ${package}";
             run "brew install ${package} ${force} ${verbose}";
+            code=${LibRun__LastExitCode};
         else
-            ( brew install ${package} ${force} ${verbose} ) 2>&1 | cat > /dev/null;
-            local code=$?;
+            brew install "${package}" ${force} ${verbose} > /dev/null 2>&1;
+            code=$?;
         fi;
-        [[ ${code} -eq 0 || ${LibRun__LastExitCode} -eq 0 ]] || { 
+        run "brew link ${package} --overwrite ${force} ${verbose}";
+        run "hash -r";
+        [[ "${code}" -eq 0 ]] || { 
+            warning "Reinstalling ${package} as I couldn't find it after instal...";
             brew.reinstall.package "${package}"
         };
-        brew.cache-reset.delayed;
         export LibRun__LastExitCode=0;
-        if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
-            [[ -n ${opt_terse} ]] && printf "\n🟢 ";
+        if [[ "$(brew.package.is-installed ${package})" == "true" ]]; then
+            [[ -n "${opt_terse}" ]] && printf "\n 🟢 ";
         else
-            [[ -n ${opt_terse} ]] && printf "\n🔴 ";
+            [[ -n "${opt_terse}" ]] && printf "\n 🔴 ";
             export LibRun__LastExitCode=1;
         fi;
     fi;
+    set +x;
     return ${LibRun__LastExitCode}
 }
 
@@ -1037,7 +1045,7 @@ brew.install.package ()
 brew.install.packages () 
 { 
     local force=;
-    [[ -n ${opts_force} ]] && force="--force";
+    [[ -n "${opts_force}" ]] && force="--force";
     for package in "$@";
     do
         brew.install.package "${package}";
@@ -1066,7 +1074,7 @@ brew.package.is-installed ()
 { 
     local package="${1}";
     local -a installed_packages=($(brew.package.list));
-    array.has-element $(basename "${package}") "${installed_packages[@]}"
+    array.has-element "${package}" "${installed_packages[@]}"
 }
 
 ----
@@ -1079,8 +1087,8 @@ brew.package.link ()
 { 
     local package="${1}";
     shift;
-    [[ -n ${opts_verbose} ]] && verbose="--verbose";
-    run "brew link ${verbose} ${package} $*"
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose";
+    run "brew link"${verbose}"${package} $*"
 }
 
 ----
@@ -1091,7 +1099,7 @@ brew.package.link ()
 ----
 brew.package.list () 
 { 
-    cache-or-command "${LibBrew__PackageCacheList}" 30 "brew ls -1"
+    cache-or-command ${LibBrew__PackageCacheList} 30 brew ls -1
 }
 
 ----
@@ -1105,13 +1113,11 @@ brew.reinstall.package ()
     local package="${1}";
     local force=;
     local verbose=;
-    [[ -n ${opts_force} ]] && force="--force";
-    [[ -n ${opts_verbose} ]] && verbose="--verbose";
-    run "brew unlink ${package} ${force} ${verbose}; true";
-    run "brew uninstall ${package}  ${force} ${verbose}; true";
-    run "brew install ${package} ${force} ${verbose}";
-    run "brew link ${package} --overwrite ${force} ${verbose}";
-    brew.cache-reset.delayed
+    [[ -n "${opts_force}" ]] && force="--force";
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose";
+    run "brew unlink    ${package} ${force} ${verbose}";
+    run "brew uninstall ${package} ${force} ${verbose}";
+    brew.install.package "${package}"
 }
 
 ----
@@ -1123,12 +1129,15 @@ brew.reinstall.package ()
 brew.reinstall.packages () 
 { 
     local force=;
-    [[ -n ${opts_force} ]] && force="--force";
+    local result=0;
+    [[ -n "${opts_force}" ]] && force="--force";
     for package in "$@";
     do
         brew.uninstall.package "${package}";
         brew.install.package "${package}";
-    done
+        local result=$?;
+    done;
+    return ${result}
 }
 
 ----
@@ -1139,9 +1148,9 @@ brew.reinstall.packages ()
 ----
 brew.relink () 
 { 
-    local package=${1};
+    local package"${1}";
     local verbose=;
-    [[ -n ${opts_verbose} ]] && verbose="--verbose";
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose";
     run "brew link ${verbose} ${package} --overwrite"
 }
 
@@ -1203,11 +1212,11 @@ brew.uninstall.package ()
     local package=$1;
     local force=;
     local verbose=;
-    [[ -n ${opts_force} ]] && force="--force";
-    [[ -n ${opts_verbose} ]] && verbose="--verbose";
-    export LibRun__AbortOnError=${False};
+    [[ -n "${opts_force}" ]] && force="--force";
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose";
+    run.set-next continue-on-error;
     run "brew unlink ${package} ${force} ${verbose}";
-    export LibRun__AbortOnError=${False};
+    run.set-next continue-on-error;
     run "brew uninstall ${package} ${force} ${verbose}";
     brew.cache-reset.delayed
 }
@@ -1221,10 +1230,10 @@ brew.uninstall.package ()
 brew.uninstall.packages () 
 { 
     local force=;
-    [[ -n ${opts_force} ]] && force="--force";
+    [[ -n "${opts_force}" ]] && force="--force";
     for package in $@;
     do
-        brew.uninstall.package ${package};
+        brew.uninstall.package "${package}";
     done
 }
 
@@ -1275,7 +1284,7 @@ cache-or-command ()
     local stale_minutes="$1";
     shift;
     local command="$*";
-    file.exists-and-newer-than "${file}" ${stale_minutes} && { 
+    file.exists-and-newer-than "${file}""${stale_minutes}" && { 
         cat "${file}";
         return 0
     };
@@ -2473,12 +2482,7 @@ file.list.filter-non-empty ()
 ----
 file.size () 
 { 
-    AppCurrentOS=${AppCurrentOS:-$(uname -s)};
-    if [[ "Linux" == ${AppCurrentOS} ]]; then
-        stat -c %s "$1";
-    else
-        file.stat "$1" st_size;
-    fi
+    /usr/local/bin/grc -es --colour=auto ls -al $* | awk '{print $5}'
 }
 
 ----
@@ -2885,9 +2889,9 @@ gem.is-installed ()
     local version=$2;
     gem.cache-installed > /dev/null;
     if [[ -z ${version} ]]; then
-        grep -E -e -q "^${gem} \(" "${LibGem__GemListCache}";
+        grep -q -E -e "^${gem} \(" "${LibGem__GemListCache}";
     else
-        grep -E -e "^${gem} \(" "${LibGem__GemListCache}" | grep -E -e -q "${version}";
+        grep -E -e "^${gem} \(" "${LibGem__GemListCache}" | grep -E -q -e "${version}";
     fi
 }
 
@@ -6689,11 +6693,11 @@ run.inspect-variable ()
                 color="${bldred}";
             fi;
         else
-            if [[ "${var_value}" == "${True}" || ${var_value} -eq 1 ]]; then
+            if [[ "${var_value}" == "${True}" || "${var_value}" == "1" ]]; then
                 value="${value_check}";
                 color="${bldgrn}";
             else
-                if [[ "${var_value}" == "${False}" || ${var_value} -eq 0 ]]; then
+                if [[ "${var_value}" == "${False}" || "${var_value}" == "0" ]]; then
                     value="${value_off}";
                     color="${bldred}";
                 fi;
@@ -7801,7 +7805,7 @@ time.now.file-extension ()
 ----
 today () 
 { 
-    date +'%Y-%m-%d'
+    date '+%Y-%m-%d'
 }
 
 ----

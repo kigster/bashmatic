@@ -243,12 +243,12 @@ sedx.cache-command() {
   sed_command="${sed_command} -r -e "
   printf "%s" "${sed_command}"
 
-  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && \
+  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] &&
     export BASHMATIC_UTIL_SED_COMMAND="${sed_command}"
 }
 
 sedx() {
-  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && \
+  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] &&
     export BASHMATIC_UTIL_SED_COMMAND="$(sedx.cache-command)"
 
   ${BASHMATIC_UTIL_SED_COMMAND} "$*"

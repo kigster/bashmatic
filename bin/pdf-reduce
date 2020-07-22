@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+# Author: Konstantin Gredeskoul
+# Copyright: © 2020 KG, MIT License
+#
+# This script can extract image URLs from a remote HTML document(s) and
+# downloads them all to a local folder.
+
+# shellcheck disable=SC1134,SC2155
+[[ -d "${HOME}/.bashmatic" ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)" 1>/dev/null 2>&1
+
+# shellcheck source=/dev/null
+. "${HOME}/.bashmatic/init.sh" >/dev/null 2>&1
+
+# This project is derived from the +shrinkpdf+ open source project:
+#
+# http://www.alfredklomp.com/programming/shrinkpdf
+# Licensed under the 3-clause BSD license:
+#
+# Copyright © 2014-2019, Alfred Klomp, All rights reserved.
+# Copyright © [unknown], Vivek Gitem, Mysterious modifications that he needed?
+#
+# Copyright © 2020 Konstantin Gredeskoul, as part of BashMatic.
+# FUNCTION pdf.do.shrink
+
+function pdf.do.shrink() {
+  local infile="$1"
+  local outfile="$2"
+  local resolution="$3"
+
+  h1 "Starting PDF reduction..." \
+    "Source File: → ${bldgrn}${infile}" \
+    "Destination: → ${bldblu}${outfile}" \
+    "Resolution:  → ${bldcyn}${resolution}"
+
+  local finish=$(mktemp -t finish)
+  run "rm -f ${finish}"
+
+  (
+    /usr/local/bin/gs \
+      -q -dNOPAUSE -dBATCH -dSAFER \
+      -sDEVICE=pdfwrite \
+      -dCompatibilityLevel=1.3 \
+      -dPDFSETTINGS=/screen \
+      -dEmbedAllFonts=true \
+      -dSubsetFonts=true \
+      -dAutoRotatePages=/All \
+      -dColorImageDownsampleType=/Bicubic \
+      -dColorImageResolution="${resolution}" \
+      -dGrayImageDownsampleType=/Bicubic \
+      -dGrayImageResolution="${resolution}" \
+      -dMonoImageDownsampleType=/Subsample \
+      -dMonoImageResolution="${resolution}" \
+      -sOutputFile="${outfile}" \
+      "${infile}" && touch "${finish}"
+  ) &
+
+  echo
+
+  local finished=0
+  local counter=0
+  local width=$(screen.width)
+  width=$((width - 10))
+  inf '['
+
+  while true; do
+    counter=$((counter + 1))
+    if [[ -f "${finish}" && -s "${outfile}" ]]; then
+      printf "${txtblu}]"
+      ok:
+      echo
+      hr
+      run "rm -f \"${finish}\""
+      local size_old="$(file.size "${infile}")"
+      local size_new="$(file.size "${outfile}")"
+      local delta=$((100 - 100 * size_new / size_old))
+      echo "DELTA: ${delta}"
+      h1 "PDF file reduction completed with %${delta} reduction"
+      finished=1
+      break
+    else
+      sleep 0.2
+
+      if [[ ${counter} -gt ${width} ]]; then
+        counter=0
+        printf "${txtblu}]"
+        ok:
+        inf '['
+      else
+        printf "${bldgrn}◼︎"
+      fi
+    fi
+  done
+
+  ((finished)) && { success "OK. Reduction completed."; }
+  ((finished)) || { error "Did not properly finish."; }
+}
+
+# FUNCTION +pdf.do.check_smaller+
+function pdf.do.check_smaller() {
+  # If $1 and $2 are regular files, we can compare file sizes to
+  # see if we succeeded in shrinking. If not, we copy $1 over $2:
+  if [ ! -f "$1" -o ! -f "$2" ]; then
+    return 0
+  fi
+  ISIZE="$(echo $(wc -c "$1") | cut -f1 -d\ )"
+  OSIZE="$(echo $(wc -c "$2") | cut -f1 -d\ )"
+  if [ "$ISIZE" -lt "$OSIZE" ]; then
+    error "Input smaller than output, doing straight copy" >&2
+    cp "$1" "$2"
+  fi
+}
+
+# +pdf.do.usage
+function pdf.do.usage() {
+  usage-box "$(basename $1) infile [outfile] [resolution-in-dpi] © Reduces PDF filesize by lossy recompressing with Ghostscript." \
+    "$(cursor.up 1)$(cursor.left 10)                   " "$(cursor.left 2)Not guaranteed to succeed, but usually works.$(cursor.right 26)" \
+    " " " " \
+    " " "$(cursor.left 17)${txtgrn}Copyright © 2014-2019, Alfred Klomp, All rights reserved.$(cursor.right 20)" \
+    " " "$(cursor.left 17)${txtgrn}Copyright © Vivek Gitem$(cursor.right 27)"
+}
+
+function pdf.main() {
+  local input_file="$1"
+  local outfile="$2"
+  local resolution="$3"
+
+  local output_file
+
+  # Need an input file:
+  if [ -z "${input_file}" ]; then
+    pdf.do.usage "$0"
+    exit 1
+  fi
+
+  if [[ $(util.is-numeric "${outfile}") && ${outfile} -lt 101 && ${outfile} -gt 0 ]]; then
+    resolution="${outfile}"
+    outfile=
+  fi
+
+  if [[ -n "${outfile}" ]]; then
+    output_file="${outfile}"
+  else
+    output_file="${input_file}"
+    output_file="${output_file/-reduced/}"
+    output_file="${output_file/.pdf.pdf/.pdf}"
+    output_file="${output_file/.pdf/-reduced.pdf}"
+  fi
+
+  # Output resolution defaults to 72 unless given:
+  if [[ -n "${resolution}" ]]; then
+    res="${resolution}"
+  else
+    res="90"
+  fi
+
+  h.salmon "[${input_file}] ➞ [${output_file}] (resolution: ${res})"
+  pdf.do.shrink "${input_file}" "${output_file}" "${res}" || exit $?
+  pdf.do.check_smaller "${input_file}" "${output_file}"
+}
+
+pdf.main "$@"

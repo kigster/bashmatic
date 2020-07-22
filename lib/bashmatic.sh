@@ -38,7 +38,7 @@ bashmatic.functions-from() {
   local pattern="${1}"
 
   [[ -n ${pattern} ]] && shift
-  [[ -z ${pattern} ]] && pattern="*.sh"
+  [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
 
   cd "${BASHMATIC_HOME}" >/dev/null || return 1
 

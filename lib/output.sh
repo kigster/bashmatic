@@ -281,10 +281,10 @@ ascii-clean() {
   local width="$(.output.width)"
   local remaining_space_len=$((width - clean_text_len - 1))
 
-  printf "${__color_bdr}%s ${__color_fg}" '│'
-  printf "${text}%s" ''
+  printf -- "${__color_bdr}%s ${__color_fg}" '│'
+  printf "${text}%s" ""
   [[ ${remaining_space_len} -gt 0 ]] && cursor.shift.x $((remaining_space_len - 1))
-  printf "${__color_bdr}%s${clr}\n" '│'
+  printf -- "${__color_bdr}%s${clr}\n" '│'
 }
 
 #

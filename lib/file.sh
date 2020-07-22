@@ -7,9 +7,9 @@
 .file.make_executable() {
   local file=$1
 
-  if [[ -f ${file} && -n $(head -1 $1 | ${GrepCommand} '#!.*(bash|ruby|env)') ]]; then
+  if [[ -f "${file}" && -n $(head -1 $1 | ${GrepCommand} '#!.*(bash|ruby|env)') ]]; then
     printf "making file ${bldgrn}${file}${clr} executable since it's a script...\n"
-    chmod 755 ${file}
+    chmod 755 "${file}"
     return 0
   else
     return 1
@@ -17,13 +17,13 @@
 }
 
 .file.remote_size() {
-  local url=$1
+  local url="$1"
   printf $(($(curl -sI $url | grep -i 'Content-Length' | awk '{print $2}') + 0))
 }
 
 .file.size_bytes() {
-  local file=$1
-  printf $(($(wc -c <$file) + 0))
+  local file="$1"
+  printf $(($(wc -c <"$file") + 0))
 }
 
 # Replaces a given regex with a string
@@ -80,11 +80,11 @@ file.ask.if-exists() {
 }
 
 file.install-with-backup() {
-  local source=$1
-  local dest=$2
-  if [[ ! -f ${source} ]]; then
+  local source="$1"
+  local dest="$2"
+  if [[ ! -f "${source}" ]]; then
     error "file ${source} can not be found"
-    return -1
+    return 4
   fi
 
   if [[ -f "${dest}" ]]; then
@@ -131,7 +131,7 @@ file.stat() {
   }
 
   # use stat and add local so that all variables created are not global
-  eval $(stat -s ${file} | tr ' ' '\n' | sed 's/^/local /g')
+  eval $(stat -s "${file}" | tr ' ' '\n' | sed 's/^/local /g')
   echo ${!field}
 }
 
@@ -147,20 +147,20 @@ file.size() {
 file.size.mb() {
   local file="$1"
   shift
-  local s=$(file.size ${file})
-  local mb=$(echo $(($s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
+  local s=$(file.size "${file}")
+  local mb=$(echo $((s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
   printf "%.2f MB" ${mb}
 }
 
 file.list.filter-existing() {
-  for file in $@; do
-    [[ -f ${file} ]] && echo "${file}"
+  for file in "$@"; do
+    [[ -f "${file}" ]] && echo "${file}"
   done
 }
 
 file.list.filter-non-empty() {
-  for file in $@; do
-    [[ -s ${file} ]] && echo "${file}"
+  for file in "$@"; do
+    [[ -s "${file}" ]] && echo "${file}"
   done
 }
 

@@ -1,32 +1,37 @@
 #!/usr/bin/env bash
-#———————————————————————————————————————————————————————————————————————————————
+# vim: ft=bash
+#
 # © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
-# https://github.com/kigster/pullulant
-#———————————————————————————————————————————————————————————————————————————————
-export LibBrew__PackageCacheList="/tmp/.lib_brew_packages.txt"
-export LibBrew__CaskCacheList="/tmp/.lib_brew_casks.txt"
+# shellcheck disable=SC1134
+#
+LibBrew__PackageCacheList="/tmp/.lib_brew_packages.txt"
+export LibBrew__PackageCacheList
 
-# This function returns the sorted list of versions that are specified
+LibBrew__CaskCacheList="/tmp/.lib_brew_casks.txt"
+export LibBrew__CaskCacheList
+
+# This returns the sorted list of versions that are specified
 # for a given package in Brew using @<version>, for instance: "mysql@5.5" or
 # postgres@9.4 etc.
-brew.package.available-versions() {
+
+function brew.package.available-versions() {
   local package="$1"
   brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
 }
 
-brew.cache-reset() {
-  rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}
+function brew.cache-reset() {
+  rm -f "${LibBrew__PackageCacheList}" "${LibBrew__CaskCacheList}"
 }
 
-brew.cache-reset.delayed() {
-  ((${BASH_IN_SUBSHELL})) || brew.cache-reset
-  ((${BASH_IN_SUBSHELL})) && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
+function brew.cache-reset.delayed() {
+  ("${BASH_IN_SUBSHELL}") || brew.cache-reset
+  #("${BASH_IN_SUBSHELL}") && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
 }
 
-brew.upgrade.packages() {
+function brew.upgrade.packages() {
   [[ -z "$(which brew)" ]] || brew.install
-  [[ -z  $1 ]] && { 
+  [[ -z $1 ]] && {
     error "usage: brew.upgrade.packages package1 package2 ..."
     return 1
   }
@@ -34,7 +39,7 @@ brew.upgrade.packages() {
   run "brew upgrade $@"
 }
 
-brew.upgrade() {
+function brew.upgrade() {
   brew.install
   if [[ -z "$(which brew)" ]]; then
     warn "brew is not installed...."
@@ -45,7 +50,7 @@ brew.upgrade() {
   run "brew cleanup -s"
 }
 
-brew.install() {
+function brew.install() {
   local brew=$(which brew 2>/dev/null)
   if [[ -z "${brew}" ]]; then
     info "Installing Homebrew, please wait..."
@@ -55,33 +60,33 @@ brew.install() {
   fi
 }
 
-brew.setup() {
+function brew.setup() {
   brew.upgrade
 }
 
-brew.package.link() {
+function brew.package.link() {
   local package="${1}"
   shift
-  [[ -n ${opts_verbose} ]] && verbose="--verbose"
-  run "brew link ${verbose} ${package} $*"
+  [[ -n "${opts_verbose}" ]] && verbose="--verbose"
+  run "brew link"${verbose}"${package} $*"
 }
 
-brew.relink() {
-  local package=${1}
+function brew.relink() {
+  local package"${1}"
   local verbose=
-  [[ -n ${opts_verbose} ]] && verbose="--verbose"
+  [[ -n "${opts_verbose}" ]] && verbose="--verbose"
   run "brew link ${verbose} ${package} --overwrite"
 }
 
-brew.package.list() {
-  cache-or-command "${LibBrew__PackageCacheList}" 30 "brew ls -1"
+function brew.package.list() {
+  cache-or-command ${LibBrew__PackageCacheList} 30 brew ls -1
 }
 
-brew.cask.list() {
-  cache-or-command "${LibBrew__CaskCacheList}" 30 "brew cask ls -1"
+function brew.cask.list() {
+  cache-or-command ${LibBrew__CaskCacheList} 30 brew cask ls -1
 }
 
-brew.cask.tap() {
+function brew.cask.tap() {
   run "brew tap homebrew/cask-cask"
 }
 
@@ -92,7 +97,7 @@ cache-or-command() {
   shift
   local command="$*"
 
-  file.exists-and-newer-than "${file}" ${stale_minutes} && {
+  file.exists-and-newer-than "${file}""${stale_minutes}" && {
     cat "${file}"
     return 0
   }
@@ -101,106 +106,114 @@ cache-or-command() {
   eval "${command}" | tee -a "${file}"
 }
 
-brew.package.is-installed() {
+function brew.package.is-installed() {
   local package="${1}"
   local -a installed_packages=($(brew.package.list))
-  array.has-element $(basename "${package}") "${installed_packages[@]}"
+  array.has-element "${package}" "${installed_packages[@]}"
 }
 
-brew.cask.is-installed() {
+function brew.cask.is-installed() {
   local cask="${1}"
   local -a installed_casks=($(brew.cask.list))
-  array.has-element $(basename "${cask}") "${installed_casks[@]}"
+  array.has-element ${cask} "${installed_casks[@]}"
 }
 
-brew.reinstall.package() {
+function brew.reinstall.package() {
   local package="${1}"
   local force=
   local verbose=
-  [[ -n ${opts_force} ]] && force="--force"
-  [[ -n ${opts_verbose} ]] && verbose="--verbose"
+  [[ -n "${opts_force}" ]] && force="--force"
+  [[ -n "${opts_verbose}" ]] && verbose="--verbose"
 
-  run "brew unlink ${package} ${force} ${verbose}; true"
-  run "brew uninstall ${package}  ${force} ${verbose}; true"
-  run "brew install ${package} ${force} ${verbose}"
-  run "brew link ${package} --overwrite ${force} ${verbose}"
-  brew.cache-reset.delayed
+  run "brew unlink    ${package} ${force} ${verbose}"
+  run "brew uninstall ${package} ${force} ${verbose}"
+
+  # brew.cache-reset.delayed
+
+  brew.install.package "${package}"
 }
 
-brew.install.package() {
-  local package=$1
+function brew.install.package() {
+  local package="$1"
   local force=
   local verbose=
-  [[ -n ${opts_force} ]] && force="--force"
-  [[ -n ${opts_verbose} ]] && verbose="--verbose"
+  [[ -n "${opts_force}" ]] && force="--force"
+  [[ -n "${opts_verbose}" ]] && verbose="--verbose"
 
-  [[ -z ${opt_terse} ]] && inf "checking for 🍻  ${bldylw}${package}..."
+  [[ -z "${opt_terse}" ]] && inf "checking for 🍻 "${bldylw}"{package}..."
 
-  if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
-    [[ -z ${opt_terse} ]] && ok:
-    [[ -z ${opt_terse} ]] || printf "${bldgrn}○ "
+  local code
+  if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
+    [[ -z "${opt_terse}" ]] && ok:
+    [[ -z "${opt_terse}" ]] || printf "${bldgrn}○ "
     export LibRun__LastExitCode=0
   else
-    if [[ -z ${opt_terse} ]]; then
-      printf " ${bldpur}${package}${txtylw} must pour.\n${clr}"
+    if [[ -z "${opt_terse}" ]]; then
+      hl.subtle "Brew is installing package: ${package}"
       run "brew install ${package} ${force} ${verbose}"
+      code=${LibRun__LastExitCode}
     else
-      (brew install ${package} ${force} ${verbose}) 2>&1 | cat >/dev/null
-      local code=$?
+      brew install "${package}" ${force} ${verbose} 1>/dev/null 2>&1
+      code=$?
     fi
 
-    [[ ${code} -eq 0 || ${LibRun__LastExitCode} -eq 0 ]] || {
+    run "brew link ${package} --overwrite ${force} ${verbose}"
+    run "hash -r"
+
+    [[ "${code}" -eq 0 ]] || {
+      warning "Reinstalling ${package} as I couldn't find it after instal..."
       brew.reinstall.package "${package}"
     }
 
-    brew.cache-reset.delayed
+    # brew.cache-reset.delayed
     export LibRun__LastExitCode=0
 
-    if [[ $(brew.package.is-installed ${package}) == "true" ]]; then
-      [[ -n ${opt_terse} ]] && printf "\n🟢 "
+    if [[ "$(brew.package.is-installed ${package})" == "true" ]]; then
+      [[ -n "${opt_terse}" ]] && printf "\n 🟢 "
     else
-      [[ -n ${opt_terse} ]] && printf "\n🔴 "
+      [[ -n "${opt_terse}" ]] && printf "\n 🔴 "
       export LibRun__LastExitCode=1
     fi
   fi
 
+  set +x
   return ${LibRun__LastExitCode}
 }
 
-brew.install.cask() {
+function brew.install.cask() {
   local cask=$1
   local force=
   local verbose=
 
-  [[ -n ${opts_force} ]] && force="--force"
-  [[ -n ${opts_verbose} ]] && verbose="--verbose"
+  [[ -n "${opts_force}" ]] && force="--force"
+  [[ -n "${opts_verbose}" ]] && verbose="--verbose"
 
-  inf "verifying brew cask ${bldylw}${cask}"
-  if [[ -n $(ls -al /Applications/*.app | grep -i ${cask}) && -z ${opts_force} ]]; then
+  inf "verifying brew cask ${bldylw}{cask}"
+  if [[ -n "$(ls -al /Applications/*.app | grep -i ${cask})" && -z "${opts_force}" ]]; then
     ui.closer.ok:
   elif [[ $(brew.cask.is-installed ${cask}) == "true" ]]; then
     ui.closer.ok:
     return 0
   else
     ui.closer.kind-of-ok:
-    run "brew cask install ${cask} ${force} ${verbose}"
+    run "brew cask install"${cask}"${force} ${verbose}"
   fi
 
   brew.cache-reset.delayed
 }
 
-brew.uninstall.package() {
+function brew.uninstall.package() {
   local package=$1
   local force=
   local verbose=
 
-  [[ -n ${opts_force} ]] && force="--force"
-  [[ -n ${opts_verbose} ]] && verbose="--verbose"
+  [[ -n "${opts_force}" ]] && force="--force"
+  [[ -n "${opts_verbose}" ]] && verbose="--verbose"
 
-  export LibRun__AbortOnError=${False}
+  run.set-next continue-on-error
   run "brew unlink ${package} ${force} ${verbose}"
 
-  export LibRun__AbortOnError=${False}
+  run.set-next continue-on-error
   run "brew uninstall ${package} ${force} ${verbose}"
 
   brew.cache-reset.delayed
@@ -209,45 +222,49 @@ brew.uninstall.package() {
 # set $opts_verbose to see more output
 # set $opts_force to true to force it
 
-brew.install.packages() {
+function brew.install.packages() {
   local force=
-  [[ -n ${opts_force} ]] && force="--force"
+  [[ -n "${opts_force}" ]] && force="--force"
 
   for package in "$@"; do
     brew.install.package "${package}"
   done
 }
 
-brew.reinstall.packages() {
+function brew.reinstall.packages() {
   local force=
-  [[ -n ${opts_force} ]] && force="--force"
+  local result=0
+
+  [[ -n "${opts_force}" ]] && force="--force"
 
   for package in "$@"; do
     brew.uninstall.package "${package}"
     brew.install.package "${package}"
+    local result=$?
   done
+  return ${result}
 }
 
-brew.uninstall.packages() {
+function brew.uninstall.packages() {
   local force=
-  [[ -n ${opts_force} ]] && force="--force"
+  [[ -n "${opts_force}" ]] && force="--force"
 
   for package in $@; do
-    brew.uninstall.package ${package}
+    brew.uninstall.package "${package}"
   done
 }
 
-brew.service.up() {
+function brew.service.up() {
   local svc="$1"
   run "brew services start ${svc}"
 }
 
-brew.service.down() {
+function brew.service.down() {
   local svc="$1"
   run "brew services stop ${svc}"
 }
 
-brew.service.restart() {
+function brew.service.restart() {
   local svc="$1"
   run "brew services restart ${svc}"
 }
