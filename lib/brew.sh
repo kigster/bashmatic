@@ -140,7 +140,7 @@ function brew.install.package() {
   [[ -n "${opts_force}" ]] && force="--force"
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
 
-  [[ -z "${opt_terse}" ]] && inf "checking for 🍻 "${bldylw}"{package}..."
+  [[ -z "${opt_terse}" ]] && inf "checking for 🍻 ${bldylw}${package}..."
 
   local code
   if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
