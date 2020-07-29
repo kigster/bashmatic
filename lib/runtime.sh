@@ -147,6 +147,7 @@ run.dry-run-prefix() {
 run.print-command() {
   local command="$1"
   local max_width=${2:-"100"}
+  local min_width=60
   local w
   w=$(($(.output.screen-width) - 10))
 
@@ -158,6 +159,9 @@ run.print-command() {
   local ascii_cmd
   local command_prompt="${prefix}❯ "
   local command_width=$((w - 30))
+  
+  [[ ${command_width} -lt ${min_width} ]] && command_width=${min_width}
+
   # record length of the command
   ascii_cmd="$(printf "${command_prompt}$(run.dry-run-prefix)%-.${command_width}s " "${command:0:${command_width}}")"
 
