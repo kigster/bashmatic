@@ -13,7 +13,7 @@ net.local-subnet() {
 }
 
 net.fast-scan() {
-  local subnet="${1:-"$(...net.local-subnet)"}"
+  local subnet="${1:-"$(net.local-subnet)"}"
   local out=$(mktemp)
   run.set-next show-output-on
   local colored=/tmp/colored.$$
