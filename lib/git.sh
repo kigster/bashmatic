@@ -29,6 +29,19 @@ git.sync() {
   return 0
 }
 
+git.sync-dirs() {
+  local pattern="${1:-'*'}"
+  set -e
+  run.set-all abort-on-error
+  for dir in $(find . -type d -depth 1 -name "${pattern}*"); do
+    hl.yellow-on-gray "syncing [$dir]..."
+    cd $dir>/dev/null
+    run "git pull --rebase"
+    cd ->/dev/null
+  done
+}
+
+
 git.last-update-at() {
   git.configure-auto-updates
 
