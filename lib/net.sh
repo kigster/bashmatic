@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
+net.local-net() {
+  ifconfig -a | grep inet | grep broadcast | awk '{print $2}' | awk 'BEGIN{FS="."}{printf "%d.%d.%d.%s", $1, $2, $3, "0/24"}'
+} 
+
 net.local-subnet() {
   local subnet="$(ifconfig -a |
-    grep 'inet ' |
-    ${GrepCommand} -v 'inet 169|inet 127' |
+    grep inet | grep broadcast | 
+    grep -v 'inet 169' |
+    grep -v 'inet 127' |
     awk '{print $2}' |
     cut -d '.' -f 1,2,3 |
     sort |

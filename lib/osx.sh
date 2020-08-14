@@ -1,9 +1,24 @@
 #!/usr/bin/env bash
 
+
+function osx.dropbox.exclude() {
+  local dir="$1"
+  if [[ -d "${dir}" ]] ; then
+    xattr -w com.dropbox.ignored 1 "$1"
+  else
+    error "Folder '${dir}' does not exist or is blank."
+    return 1
+  fi
+}
+
+function osx.dropbox.exclude-pwd() {
+  xattr -w com.dropbox.ignored 1 $(pwd)
+}
+
 # Breaks up a file containing a pasted cookie into individual cookies sorted
 # by cookie size. To use, either pass a file name as an argument, or have
 # the cookie copied into the clipboard.
-osx.cookie-dump() {
+function osx.cookie-dump() {
   local file="$1"
   local tmp
 
