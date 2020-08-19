@@ -14,9 +14,12 @@ generate() {
 
   printf "= Bashmatic Functions Index\n" >>"${temp}"
   cat <<-HEADER >>"${temp}"
+:allow-uri-read:
 :doctype: book
-:toclevels: 5
+:sectnums:
+:showtitle:
 :toc:
+:toclevels: 5
 HEADER
 
   printf "\n== Bashmatic Modules\n\n" >>"${temp}"
@@ -28,7 +31,7 @@ HEADER
   local code_off="----"
 
   for module in $(list.modules); do
-    printf "${txtylw}(${module}) ${bldgrn}"
+    printf "\n${txtylw}(${module}) ${bldgrn}"
 
     printf "\n=== Module \`%s\`\n\n" "${module}" >>"${temp}"
     for function in $(bashmatic.functions-from ${module} 1); do
@@ -36,7 +39,7 @@ HEADER
       (
         printf "==== \`%s\`\n" "${function}"
         printf "\n%s\n%s\n" "${code_on}" "${code_off}"
-        type "${function}" | tail +2
+        type "${function}" | sed 's/;$//g' | tail +2
         printf "\n%s\n\n" "${code_off}"
       ) >>"${temp}"
     done

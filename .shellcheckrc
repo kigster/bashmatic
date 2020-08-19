@@ -1,2 +1,1 @@
 disable=SC2155,SC2059,SC2154
-shell="/usr/bin/env bash"

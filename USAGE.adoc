@@ -1,54 +1,33 @@
-= Bashmatic© Version 1.2.1
+= Bashmatic© Version 1.2.3
+:doctype: article
 :allow-uri-read:
 :toc:
-:toclevels: 4
+:toclevels: 5
 :sectnums:
 :showtitle:
 
-== `7z`
+NOTE: https://github.com/reconquest/shdoc[shdoc] documentation extracted from the Bashmatic Sources.
 
-== `array`
+'''
+== Module *git*
 
-== `audio`
+==== 
+Bashmatic Utilities and aliases for Git revision control system. 
+==== 
 
-== `aws`
-
-== `bashmatic`
-
-== `brew`
-
-== `caller`
-
-== `color`
-
-== `db`
-
-== `deploy`
-
-== `dir`
-
-== `docker`
-
-== `file`
-
-== `ftrace`
-
-== `gem`
-
-== `git`
-
-> Bashmatic Utilities and aliases for Git revision control system.
 
 Lots of useful utilities and helpers.
 
 * <<gitopen,git.open()>>
 
-== git.open()
+[discrete]
+=== git.open()
 
 Reads the remote of a repo by name provided as
   an argument (or defaults to "origin") and opens it in the browser.
 
-=== Example
+[discrete]
+==== Example
 
 [source,bash]
 ----
@@ -59,92 +38,61 @@ git.open
 git.open origin # same thing
 ----
 
-=== Arguments
+[discrete]
+==== Arguments
 
 * *$1* (optional): name of the remote to open, defaults to "orogin"
 
-== `github`
+== Module *pdf*
 
-== `jemalloc`
+==== 
+Bashmatic Utilities for PDF file handling 
+==== 
 
-== `json`
-
-== `maths`
-
-== `net`
-
-== `osx`
-
-== `output`
-
-== `pdf`
-
-> Bashmatic Utilities for PDF file handling
 
 Install and uses GhostScript to manipulate PDFs.
 
 * <<pdfcombine,pdf.combine()>>
 
-== pdf.combine()
+[discrete]
+=== pdf.combine()
 
 Combine multiple PDFs into a single one using ghostscript.
 
-=== Example
+[discrete]
+==== Example
 
 [source,bash]
 ----
 pdf.combine ~/merged.pdf 'my-book-chapter*'
 ----
 
-=== Arguments
+[discrete]
+==== Arguments
 
 * *$1* (pathname): to the merged file
 * *...* (the): rest of the PDF files to combine
 
-== `pids`
+== Module *util*
 
-== `pipe`
+==== 
+util.sh 
+==== 
 
-== `progress-bar`
 
-== `repositories`
+Miscellaneous utilities.
 
-== `ruby`
+* <<utilrot13-stdin,util.rot13-stdin()>>
 
-== `run`
+[discrete]
+=== util.rot13-stdin()
 
-== `runtime-config`
+Convert STDIN using rot13
 
-== `runtime`
+[discrete]
+==== Example
 
-== `set`
-
-== `settings`
-
-== `shell-set`
-
-== `ssh`
-
-== `subshell`
-
-== `sym`
-
-== `text`
-
-== `time`
-
-== `trap`
-
-== `url`
-
-== `usage`
-
-== `user`
-
-== `util`
-
-== `vim`
-
-== `yaml`
-
-'''
+[source,bash]
+----
+ echo "test" | util.rot13-stdin
+----

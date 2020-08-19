@@ -1,8 +1,36 @@
-# Note, this function does not actually work as a function, but only with ZSH
-# where it always detects "script" and never "sourced" unless you put them
-# first line of the as your first line in the script.
+#!/usr/bin/env bash
+# vim: ft=bash
 #
-# Therefore, it is here for the reference.
+# @file util.sh
+# @brief Miscellaneous utilities.
+
+# @description Convert STDIN using rot13
+#
+# @example
+#    echo "test" | util.rot13-stdin
+#
+# @requires A working Ruby installation.
+util.rot13-stdin() {
+  ruby -e 'puts STDIN.read.
+  tr(
+    "0123456789",
+    "5678901234").
+  tr(
+    "abcdefghijklmnopqrstuvwxyz",
+    "nopqrstuvwxyzabcdefghijklm").
+  tr(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "NOPQRSTUVWXYZABCDEFGHIJKLM")'
+}
+
+# usage: util.rot13 "string"
+#    or: rot13 "string"
+util.rot13() {
+  local value="$*"
+  echo "$value" | util.rot13-stdin
+}
+
+alias rot13=util.rot13
 
 util.is-variable-defined() {
   local var_name="$1"

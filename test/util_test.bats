@@ -1,11 +1,19 @@
 #!/usr/bin/env bats
 
-
 load test_helper
 
 source lib/util.sh
 
 set -e
+
+@test "util.rot13() encryptor" {
+  phrase="The quick brown fox jumps over the lazy dog"
+  rotated=$(util.rot13 "${phrase}")
+  restored=$(util.rot13 "${rotated}")
+
+  [ "${phrase}" == "${restored}" ]
+  [ ! "${rotated}" == "${restored}" ]
+}
 
 @test "util.generate-password() generates correct length" {
   len=64

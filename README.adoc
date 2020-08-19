@@ -18,6 +18,8 @@ NOTICE:
 
 * There is also an auto-generated file listing the source of every function and module. You can find it xref:FUNCTIONS.adoc[FUNCTIONS.adoc].
 
+* There is also the beginnings of `shdoc`-based documentation, available in the xref:./USAGE.adoc[USAGE.adoc] file and a corresponding xref:./USAGE.pdf[PDF].
+
 * Additionally please checkout the xref:CHANGELOG.md[CHANGELOG] and the xref:LICENSE.adoc[LICENSE].
 
 ====

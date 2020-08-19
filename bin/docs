@@ -11,38 +11,68 @@ function setup() {
   [[ -n $(command -V kramdoc) ]] || gem.install kramdoc
 }
 
+# NOT USED
+function replace-shdoc() {
+  run "rm -f bin/shdoc"
+  (cd bin &&
+    curl -fsSL https://raw.githubusercontent.com/reconquest/shdoc/master/shdoc -o - |
+    sed 's#/usr/bin/gawk#/usr/local/bin/gawk#g' >shdoc && cd -) >/dev/null
+  run "chmod 755 bin/shdoc"
+}
+
 function generate() {
   local out=USAGE.md
-  echo "# Bashmatic© Version $(cat .version)" >$out
+  local tmp="$(mktemp -t docs)"
 
-  for file in $(ls -1 lib/*.sh); do
-    lib=$(echo $file | sed 's/lib\///g;s/\.sh$//g')
-    printf "\n%s\n" "## \`${lib}\`" >>${out}
-    cat ${file} | bin/shdoc >>${out}
-    printf "${txtgrn}%s" "❯"
+  # shellcheck disable=2207
+  local -a files=($(ls -1 lib/*.sh))
+  for file in "${files[@]}"; do
+    lib=$(echo "${file}" | sed 's/lib\///g;s/\.sh$//g')
+    local docs=$(bin/shdoc "${file}" | sed '/^\s*$/d')
+    [[ -z ${docs} ]] && {
+      printf "${txtred}%s" "⊗"
+      continue
+    }
+
+    printf "\n%s\n" "## Module **${lib}**" >>${out}
+    bin/shdoc <"${file}" | sed 's/##/###/g' >"${tmp}"
+    if [[ -n $(cat "${tmp}") ]]; then
+      cat "${tmp}" >>${out}
+      printf "${txtgrn}%s" "✔"
+    fi
   done
   echo
 
   printf \
-    "\n\n----\n" \
+    "\n\n" \
+    '"""' \
+    "\n\n" \
     "## Copyright & License\n\n" \
     " * Copyright © 2017-2020 Konstantin Gredeskoul, All rights reserved.\n" \
     " * Distributed under MIT License.\n\n" >>$out
 
+  sed -i'' 's/```/```bash/g' "${out}"
   adoc="${out/md/adoc}"
   run "rm -f ${adoc}"
   run "kramdoc ${out}"
   [[ -f ${adoc} ]] && run "rm -f ${out}"
-
   append.adoc.metadata "${adoc}"
 }
 
 function append.adoc.metadata() {
   local adoc="${1}"
   local temp=$(mktemp -t adoc)
-  run "head -1 ${adoc} >${temp}"
-  printf ":allow-uri-read:\n:toc:\n:toclevels: 4\n:sectnums:\n:showtitle:\n" >>"${temp}"
-  run "tail +3 ${adoc} | sed 's/^= /> /g' >>${temp}"
+  (
+    printf "= Bashmatic© Version $(cat .version)\n"
+    printf ":doctype: article\n:allow-uri-read:\n:toc:\n:toclevels: 5\n:sectnums:\n:showtitle:\n\n"
+    printf "NOTE: https://github.com/reconquest/shdoc[shdoc] documentation "
+    printf "extracted from the Bashmatic Sources.\n"
+    printf "\n'''\n"
+  ) >${temp}
+  tail +3 "${adoc}" | sed -E 's/^= (.*)$/==== \
+\1 \
+==== \
+/g' | cat >>${temp}
   run "mv ${temp} ${adoc}"
   run "asciidoctor-pdf ${adoc}"
 }
@@ -50,6 +80,7 @@ function append.adoc.metadata() {
 main() {
   setup
   generate
+  open USAGE.pdf
 }
 
 main "$@"
