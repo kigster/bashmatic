@@ -60,6 +60,8 @@ Just look at this tiny, five-line script:
 [source,bash]
 ----
 #!/usr/bin/env bash
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield)
+
 source ~/.bashmatic/init.sh
 
 h2 "Installing ruby gem sym and brew package curl..." \
@@ -843,3 +845,7 @@ Acknowledgements: the script is an automation of the method offered on http://is
 === Contributing
 
 Submit a pull request!
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large)
