@@ -156,9 +156,10 @@ export DevSetup__Callbacks
     direnv
     git
     geoip
+    gh
     htop
     libevent
-    imagemagick@6
+    imagemagick
     jpeg
     jq
     lame
