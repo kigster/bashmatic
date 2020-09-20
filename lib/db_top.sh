@@ -57,7 +57,7 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   local code=$?
 
   # grep --color=never -E -v 'EEEselect.*client_addr'
-  export GREP_COLOR=33
+  export GREP_COLOR=35
   grep -C 1000 -i --color=always -E -e ' (((auto)?(analyze|vacuum))|delete|update|insert)' "${tof}.out" |
     grep -v 'select pid, client_addr' >>"${tof}"
 
@@ -72,8 +72,6 @@ db.top.set-refresh() {
 }
 
 db.top() {
-  h1 "Please wait while we resolve DB names..."
-
   local dbname
   local width_min=90
   local height_min=50
@@ -113,9 +111,8 @@ db.top() {
   done
 
   if [[ ${#connections_names[@]} -eq 0 ]]; then
-    info "USAGE: db.top db1 db2 ... "
-    info "   EG: db.top prod-master prod-replica1 prod-replica2"
-    ((BASH_IN_SUBSHELL)) && exit 1 || return 1
+    h1 "${bldgrn}USAGE: db.top db1 db2 ... " "   EG: db.top prod-master prod-replica1 prod-replica2"
+    return 1
   fi
 
   ((BASH_IN_SUBSHELL)) && {
