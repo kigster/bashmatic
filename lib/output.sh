@@ -544,7 +544,7 @@ hl.green() {
 }
 
 hl.yellow() {
-  left "${bakylw}${txtblk}" "$@"
+  left "${txtblk}${bakylw}" "$@"
 }
 
 hl.subtle() {

@@ -60,7 +60,14 @@ db.config.get-file() {
 }
 
 db.psql.args.config() {
+  local output="$(db.config.parse "$1")"
   local -a params
+
+  [[ -z ${output} || "${output}" =~ "null" ]] && {
+    error "Database $1 is not defined." >&2
+    return 1
+  }
+
   params=($(db.config.parse "$1"))
 
   local dbhost
