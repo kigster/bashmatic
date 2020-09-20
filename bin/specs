@@ -30,6 +30,14 @@ export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
 
 source "$(pwd)/init.sh"
 
+if [[ -n ${CI} ]]; then
+  .output.set-indent 0
+  color.disable
+else
+  .output.set-indent 1
+  color.enable
+fi
+
 specs.test-filename() {
   file=$1
   for f in ${file} "test/${file}" "test/${file}_tests.bats"; do

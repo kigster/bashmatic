@@ -10,7 +10,7 @@ reset-color() {
 }
 
 color.enable() {
-  if [[ -z "${AppColorsLoaded}" ]]; then
+  if [[ -n "${AppColorsLoaded}" && ${AppColorsLoaded} -ne 1 ]]; then
 
     export txtblk='\e[0;30m' # Black - Regular
     export txtred='\e[0;31m' # Red
@@ -132,7 +132,7 @@ color.disable() {
   unset white_on_salmon
   unset yellow_on_gray
 
-  export AppColorsLoaded=1
+  export AppColorsLoaded=0
 
   #trap reset-color EXIT
 }

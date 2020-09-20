@@ -10,6 +10,8 @@ export LibOutput__LeftPrefix="       "
 export LibOutput__MinWidth__Default=80
 export LibOutput__MaxWidth__Default=
 
+export bashmatic_spacer_width="${bashmatic_spacer_width:-4}"
+
 output.reset-min-max-width() {
   export LibOutput__MinWidth=${LibOutput__MinWidth__Default}
   export LibOutput__MaxWidth=${LibOutput__MaxWidth__Default}
@@ -349,20 +351,28 @@ ascii-clean() {
   echo
 }
 
+.output.set-indent() {
+  local shift="$1"
+
+  [[ ${shift} -ge 0 && ${shift} -lt 100 ]] && {
+    export bashmatic_spacer_width=${shift}
+  }
+}
+
 .output.left-justify() {
   local color="${1}"
   shift
   local text="$*"
-  echo
-  printf " ${color}"
+  local spacer="                   "
+  spacer=${spacer:1:${bashmatic_spacer_width}}
+  printf "\n${color}"
   if output.is-terminal; then
-    local width=$(($(.output.screen-width) - 2))
+    local width=$(($(.output.screen-width)-${#spacer}))
     #local width=$((2 * $(.output.screen-width) / 3))
     [[ ${width} -lt 70 ]] && width="70"
-    printf -- "  %-${width}.${width}s${clr}\n\n" "❯❯ ${text} ❯❯"
+    printf -- "${spacer}%-${width}.${width}s${clr}\n\n" "❯❯ ${text} ❯❯"
   else
-    printf -- "  ❯❯ ${text} ❯❯ "
-    printf -- "  ${clr}\n\n"
+    printf -- "${spacer}❯❯ ${text} ❯❯ ${clr}\n\n"
   fi
 }
 
