@@ -17,7 +17,7 @@ source lib/maths.sh
   [[ "${result}" == "1.66882" ]]
 }
 
-@test "maths.eval square root of PI" {
+@test "maths.eval square root of PI times 5" {
   local result="$(maths.eval '5!×(ｅ)')"
   [[ "${result}" == "326.19382" ]]
 }

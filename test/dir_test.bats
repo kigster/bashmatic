@@ -28,15 +28,15 @@ source lib/dir.sh
   [[ $(dir.is-a-dir "${dir}") -eq false ]]
 }
 
-@test "dir.expand-dir on ~ dir" {
+@test "dir.expand-dir on ~/tmp dir" {
   [[ "$(dir.expand-dir ~/tmp)" =~ "/Users" ]]
   [[ "$(dir.expand-dir ~/tmp)" == "${HOME}/tmp" ]]
 }
-@test "dir.expand-dir on / dir" {
+@test "dir.expand-dir on /tmp/mahaha dir" {
   [[ "$(dir.expand-dir /tmp/mahaha)" == "/tmp/mahaha" ]]
 }
 
-@test "dir.expand-dir on ~ dir" {
+@test "dir.expand-dir on tmp dir" {
   [[ "$(dir.expand-dir tmp)" == "$(pwd)/tmp" ]]
 }
 

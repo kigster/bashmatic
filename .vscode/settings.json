@@ -1,6 +1,6 @@
 {
    "terminal.integrated.cursorBlinking": true,
-   "editor.fontFamily": "Lekton",
+   "editor.fontFamily": "Fantasque Sans Mono",
    "editor.tabSize": 2,
    "editor.cursorStyle": "block",
    "files.autoSave": "afterDelay",
@@ -16,9 +16,8 @@
    "editor.letterSpacing": -0.2,
    "editor.renderControlCharacters": true,
    "html.format.wrapLineLength": 100,
-   "editor.lineHeight": 17,
    "editor.find.addExtraSpaceOnTop": false,
-   "editor.fontSize": 14,
+   "editor.fontSize": 18,
    "command-runner.commands": {
       "Run Bats Unit Tests": "cd ${workspaceFolder} && bin/specs ${file}",
    },
@@ -26,5 +25,5 @@
       "Bashmatic"
    ],
    "workbench.preferredDarkColorTheme": "Monokai Pro",
-   "workbench.colorTheme": "Monokai Pro",
+   "terminal.integrated.fontSize": 16,
 }

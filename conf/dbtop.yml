@@ -1,0 +1,9 @@
+development:
+  database: dbname
+  username: dbuser
+  host: dbhost
+  password: dbpass
+  encrypted_password:
+    key: dbpass
+    source: ~/.dbpass.key
+  

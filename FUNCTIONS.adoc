@@ -17,6 +17,8 @@
 * xref:#module-caller[caller]
 * xref:#module-color[color]
 * xref:#module-db[db]
+* xref:#module-db_rails[db_rails]
+* xref:#module-db_top[db_top]
 * xref:#module-deploy[deploy]
 * xref:#module-dir[dir]
 * xref:#module-docker[docker]
@@ -1566,6 +1568,60 @@ underline ()
 
 === Module `db`
 
+==== `db.config.get-file`
+
+[source,bash]
+----
+db.config.get-file () 
+{ 
+    echo "${bashmatic_db_config}"
+}
+
+----
+
+==== `db.config.init`
+
+[source,bash]
+----
+db.config.init () 
+{ 
+    export bashmatic_db_connection=(host database username password)
+}
+
+----
+
+==== `db.config.parse`
+
+[source,bash]
+----
+db.config.parse () 
+{ 
+    local db="$1"
+    [[ -z ${db} ]] && return 1
+    [[ -f ${bashmatic_db_config} ]] || return 2
+    db.config.init
+    local -a script=("require 'yaml'; h = YAML.load(STDIN); ")
+    for field in "${bashmatic_db_connection[@]}"
+    do
+        script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
+    done
+    cat "${bashmatic_db_config}" | ruby -e "${script[*]}"
+}
+
+----
+
+==== `db.config.set-file`
+
+[source,bash]
+----
+db.config.set-file () 
+{ 
+    [[ -s "$1" ]] || return 1
+    export bashmatic_db_config="$1"
+}
+
+----
+
 ==== `db.datetime`
 
 [source,bash]
@@ -1577,91 +1633,117 @@ db.datetime ()
 
 ----
 
-==== `db.dump`
+==== `db.pg.local.num-procs`
 
 [source,bash]
 ----
-db.dump () 
+db.pg.local.num-procs () 
 { 
-    local dbname=${1}
-    shift
-    local psql_args="$*"
-    [[ -z "${psql_args}" ]] && psql_args="-U postgres -h localhost"
-    local filename=$(.db.backup-filename ${dbname})
-    [[ $? != 0 ]] && return
-    [[ ${LibRun__Verbose} -eq ${True} ]] && { 
-        info "dumping from: ${bldylw}${dbname}"
-        info "saving to...: ${bldylw}${filename}"
-    }
-    cmd="pg_dump -Fc -Z5 ${psql_args} -f ${filename} ${dbname}"
-    run "${cmd}"
-    code=${LibRun__LastExitCode}
-    if [[ ${code} != 0 ]]; then
-        ui.closer.not-ok:
-        error "pg_dump exited with code ${code}"
-        return ${code}
+    /bin/ps -ef | /bin/grep "[p]ostgres" | wc -l | awk '{print $1}'
+}
+
+----
+
+==== `db.psql.args`
+
+[source,bash]
+----
+db.psql.args () 
+{ 
+    if [[ -z "${bashmatic_db_database}" || -z "${bashmatic_db_host}" ]]; then
+        if [[ -n "$1" ]]; then
+            db.psql.args.config "$1"
+        else
+            error "Unable to determine DB connection parameters"
+            return 1
+        fi
     else
-        ui.closer.ok:
-        return 0
+        export PGPASSWORD="${bashmatic_db_password}"
+        printf -- "-U ${bashmatic_db_username} -h ${bashmatic_db_host} ${bashmatic_db_database}"
     fi
 }
 
 ----
 
-==== `db.num-procs`
+==== `db.psql.args.config`
 
 [source,bash]
 ----
-db.num-procs () 
+db.psql.args.config () 
 { 
-    ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
+    local -a params
+    params=($(db.config.parse "$1"))
+    local dbhost
+    local dbname
+    local dbuser
+    local dbpass
+    dbhost=${params[0]}
+    dbname=${params[1]}
+    dbuser=${params[2]}
+    dbpass=${params[3]}
+    export PGPASSWORD="${dbpass}"
+    printf -- "-U ${dbuser} -h ${dbhost} ${dbname}"
 }
 
 ----
 
-==== `db.psql-args`
+==== `db.psql.args.localhost`
 
 [source,bash]
 ----
-db.psql-args () 
-{ 
-    db.psql.args. "$@"
-}
-
-----
-
-==== `db.psql.args.`
-
-[source,bash]
-----
-db.psql.args. () 
-{ 
-    printf -- "-U ${AppPostgresUsername} -h ${AppPostgresHostname} $*"
-}
-
-----
-
-==== `db.psql.args.default`
-
-[source,bash]
-----
-db.psql.args.default () 
+db.psql.args.localhost () 
 { 
     printf -- "-U postgres -h localhost $*"
 }
 
 ----
 
-==== `db.psql.args.maint`
+==== `db.psql.args.maintenance`
 
 [source,bash]
 ----
-db.psql.args.maint () 
+db.psql.args.maintenance () 
 { 
-    printf -- "-U postgres -h localhost --maintenance-db=postgres $*"
+    db.psql.args.localhost "--maintenance-db=postgres $*"
 }
 
 ----
+
+==== `db.psql.db-settings`
+
+[source,bash]
+----
+db.psql.db-settings () 
+{ 
+    psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+}
+
+----
+
+==== `db.wait-until-db-online`
+
+[source,bash]
+----
+db.wait-until-db-online () 
+{ 
+    local db="${1}"
+    inf 'waiting for the database to come up...'
+    while true; do
+        out=$(psql -c "select count(*) from pg_stat_user_tables" "$(db.psql.args "${db}")" 2>&1)
+        code=$?
+        [[ ${code} == 0 ]] && break
+        [[ ${code} == 1 ]] && break
+        sleep 1
+        [[ ${out} =~ 'does not exist' ]] && break
+    done
+    ui.closer.ok:
+    return 0
+}
+
+----
+
+
+=== Module `db_rails`
 
 ==== `db.rails.schema.checksum`
 
@@ -1705,44 +1787,8 @@ db.rails.schema.file ()
 
 ----
 
-==== `db.restore`
 
-[source,bash]
-----
-db.restore () 
-{ 
-    local dbname="$1"
-    shift
-    local filename="$1"
-    [[ -n ${filename} ]] && shift
-    [[ -z ${filename} ]] && filename=$(.db.backup-filename ${dbname})
-    [[ dbname =~ 'production' ]] && { 
-        error 'This script is not meant for production'
-        return 1
-    }
-    [[ -s ${filename} ]] || { 
-        error "can't find valid backup file in ${bldylw}${filename}"
-        return 2
-    }
-    psql_args=$(db.psql.args.default)
-    maint_args=$(db.psql.args.maint)
-    run "dropdb ${maint_args} ${dbname} 2>/dev/null; true"
-    export LibRun__AbortOnError=${True}
-    run "createdb ${maint_args} ${dbname} ${psql_args}"
-    [[ ${LibRun__Verbose} -eq ${True} ]] && { 
-        info "restoring from..: ${bldylw}${filename}"
-        info "restoring to....: ${bldylw}${dbname}"
-    }
-    run "pg_restore -Fc -j 8 ${psql_args} -d ${dbname} ${filename}"
-    code=${LibRun__LastExitCode}
-    if [[ ${code} != 0 ]]; then
-        warning "pg_restore completed with exit code ${code}"
-        return ${code}
-    fi
-    return ${LibRun__LastExitCode}
-}
-
-----
+=== Module `db_top`
 
 ==== `db.top`
 
@@ -1750,10 +1796,9 @@ db.restore ()
 ----
 db.top () 
 { 
-    local dbnames=$@
-    h1 "Please wait while we resolve DB names using AWSCLI..."
+    h1 "Please wait while we resolve DB names..."
     local db
-    local dbtype
+    local dbname
     local width_min=90
     local height_min=50
     local width=$(.output.screen-width)
@@ -1764,43 +1809,38 @@ db.top ()
         info "Your screen is ${bldred}${width}x${height}."
         return
     fi
-    declare -A connections=()
-    declare -a connection_names=()
+    local -a connections_arguments
+    local -a connections_names
+    local -a connections_passwords
     local i=0
-    for dbname in $dbnames
+    local arguments
+    local tof="$(mktemp -d "${TMPDIR:-/tmp/}.XXXXXXXXXXXX")/.db.top.$$"
+    for connection in "$@"
     do
-        declare -a results=($(.db.by_shortname $dbname))
-        if [[ -n ${#results[@]} ]]; then
-            dbtype="${results[0]}"
-            i=$(($i + 1))
-            db="${results[@]:1}"
-            if [[ -n ${dbtype} ]]; then
-                [[ ${dbtype} == "master" ]] && dbname="master"
-                [[ ${dbtype} == "replica" ]] && dbname="replica-${dbname}"
-                connections[${dbname}]="${db}"
-                connection_names[$i]=${dbname}
-            fi
-        fi
+        db.psql.args "${connection}" > "${tof}"
+        arguments="$(cat ${tof})"
+        connections_arguments+=("${arguments}")
+        connections_names+=("${connection}")
+        connections_passwords+=("${PGPASSWORD}")
+        i=$((i + 1))
     done
-    if [[ ${#connections[@]} == 0 ]]; then
-        error "usage: $0 db1, db2, ... "
-        info "eg: db.top m r2 "
-        ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
+    if [[ ${#connections_names[@]} -eq 0 ]]; then
+        error "usage: $0 db1 db2 ... "
+        info "eg: db.top prod-master prod-replica1 prod-replica2 "
+        ((BASH_IN_SUBSHELL)) && exit 1 || return 1
     fi
     trap "clear" TERM
     trap "clear" EXIT
-    local clear=0
-    local interval=${DB_TOP_REFRESH_RATE:-0.5}
+    local interval=${DB_TOP_REFRESH_RATE:-1}
     local num_dbs=${#connection_names[@]}
-    local tof="$(mktemp -d "${TMPDIR:-/tmp/}.XXXXXXXXXXXX")/.db.top.$$"
-    cp /dev/null ${tof}
     while true; do
         local index=0
-        cursor.at.y 0
+        cp /dev/null "${tof}"
+        rm -f "${tof}.errors"
+        cursor.at.y 0 > "${tof}"
         local screen_height=$(screen.height)
-        for __dbtype in "${connection_names[@]}"
+        for dbname in "${connections_names[@]}"
         do
-            index=$((${index} + 1))
             local percent_total_height=0
             if [[ ${num_dbs} -eq 2 ]]; then
                 [[ ${index} -eq 2 ]] && percent_total_height=66
@@ -1816,53 +1856,30 @@ db.top ()
                     fi
                 fi
             fi
-            local vertical_shift=$((${percent_total_height} * ${screen_height} / 100))
-            cursor.at.y ${vertical_shift} >> ${tof}
-            [[ -n ${DEBUG} ]] && h.blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >> ${tof}
-            hr.colored ${bldpur} >> ${tof}
-            .db.top.page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
+            local vertical_shift=$((percent_total_height * screen_height / 100))
+            cursor.at.y ${vertical_shift} >> "${tof}"
+            [[ -n ${DEBUG} ]] && h.blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >> "${tof}"
+            hr.colored "${bldpur}" >> "${tof}"
+            .db.top.connection "${tof}" "${dbname}" "${connections_passwords[${index}]}" "${connections_arguments[${index}]}"
+            index=$((index + 1))
         done
-        clear
-        h.yellow " «   DB-TOP V0.1.2 © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License."
-        cat ${tof}
-        cursor.at.y $(($(.output.screen-height) + 1))
-        printf "${bldwht}Press Ctrl-C to quit.${clr}"
-        cp /dev/null ${tof}
-        sleep ${interval}
+        if [[ -s "${tof}.errors" ]]; then
+            error "ERROR runnign psql with args: ${bldylw}${connections_arguments[${index}]}"
+            cat "${tof}.errors"
+            hr
+            cat "${tof}"
+            sleep 10
+            break
+        else
+            clear
+            cursor.at.y 0
+            h.yellow " «   DbTop© v1.1.0 © 2016-2020 Konstantin Gredeskoul • © 2020 All Rights Reserved • MIT License"
+            cat "${tof}"
+            cursor.at.y $(($(.output.screen-height) + 1))
+            printf "${bldwht}Press Ctrl-C to quit.${clr}"
+        fi
+        sleep "${interval}"
     done
-}
-
-----
-
-==== `db.wait-until-db-online`
-
-[source,bash]
-----
-db.wait-until-db-online () 
-{ 
-    local db=${1}
-    inf 'waiting for the database to come up...'
-    while true; do
-        out=$(psql -c "select count(*) from accounts" $(db.psql.args. ${db}) 2>&1)
-        code=$?
-        [[ ${code} == 0 ]] && break
-        [[ ${code} == 1 ]] && break
-        sleep 1
-        [[ ${out} =~ 'does not exist' ]] && break
-    done
-    ui.closer.ok:
-    return 0
-}
-
-----
-
-==== `psql.db-settings`
-
-[source,bash]
-----
-psql.db-settings () 
-{ 
-    psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
 ----

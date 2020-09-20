@@ -85,12 +85,12 @@ versions_array() {
   [[ ${code} -eq 1 ]]
 }
 
-@test "array.has-element() when element exists" {
+@test "array.has-element() when element exists using return value"  {
   declare -a array=("a string" "test2000" "hello" "one")
   array.has-element test2000 "${array[@]}" && true
 }
 
-@test "array.has-element() when element exists and has a space" {
+@test "array.has-element() when element exists and has a space using return value" {
   declare -a array=("a string" "test2000" "hello" "one")
   array.has-element "a string" "${array[@]}" && true
 }
@@ -103,22 +103,22 @@ versions_array() {
   [[ ${code} -eq 0 ]]
 }
 
-@test "array.has-element() when element exists" {
+@test "array.has-element() when element exists using output" {
   declare -a array=("a string" "test2000" "hello" "one")
   [[ $(array.has-element hello "${array[@]}") == "true" ]]
 }
 
-@test "array.has-element() when element is a substring of an existing element" {
+@test "array.has-element() when element is a substring of an existing element using output" {
   declare -a array=("a string" "test2000" "hello" "one")
   [[ $(array.has-element hell "${array[@]}") == "false" ]]
 }
 
-@test "array.has-element when element does not exist" {
+@test "array.has-element when element does not exist using output" {
   declare -a array=("a string" "test2000" "hello" "one")
   [[ $(array.has-element 123 "${array[@]}")  == "false" ]]
 }
 
-@test "array.has-element when element does not exist and is a space " {
+@test "array.has-element when element does not exist and is a space using output" {
   declare -a array=("a string" "test2000" "hello" "one")
   [[ $(array.has-element ' ' "${array[@]}")  == "false" ]]
 }
