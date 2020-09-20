@@ -1,7 +1,0 @@
-language: c
-script: bin/specs
-notifications:
-  webhooks:
-    on_success: always
-    on_failure: onchange
-    on_start: never
