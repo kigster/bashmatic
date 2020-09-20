@@ -30,6 +30,14 @@ export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
 
 source "$(pwd)/init.sh"
 
+if [[ -n ${CI} ]]; then
+  .output.set-indent 0
+  color.disable
+else
+  .output.set-indent 1
+  color.enable
+fi
+
 specs.test-filename() {
   file=$1
   for f in ${file} "test/${file}" "test/${file}_tests.bats"; do
@@ -55,7 +63,12 @@ specs.usage() {
   exit 0
 }
 
-specs.install-bats() {
+specs.install-bats-brew() {
+  run "brew tap kaos/shell"
+  brew.install.packages bats-assert bats-file bats-assert
+}
+
+specs.install-bats-sources() {
   [[ -n $(which bats) ]] && return 0
   [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
   [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/sstephenson/bats.git ${BatsRoot}"
@@ -67,6 +80,10 @@ specs.install-bats() {
     run "cd ${ProjectRoot}"
     run 'hash -r'
   fi
+}
+
+specs.install-bats() {
+  specs.install-bats-sources "$@"
 }
 
 spec.find-bats() {

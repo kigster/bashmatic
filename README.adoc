@@ -5,8 +5,7 @@
 :toclevels: 3
 :sectnums:
 
-image:https://travis-ci.org/kigster/bashmatic.svg?branch=master[Build Status,link=https://travis-ci.org/kigster/bashmatic]
-image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI]
+image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
 
 NOTICE: 
 ====
@@ -60,7 +59,6 @@ Just look at this tiny, five-line script:
 [source,bash]
 ----
 #!/usr/bin/env bash
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield)
 
 source ~/.bashmatic/init.sh
 
@@ -848,4 +846,6 @@ Submit a pull request!
 
 
 ## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large)
+
+image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA,link="https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large"]
+

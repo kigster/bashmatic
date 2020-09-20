@@ -3,34 +3,114 @@
 # Private Functions
 #===============================================================================
 
-export RAILS_SCHEMA_RB="db/schema.rb"
-export RAILS_SCHEMA_SQL="db/structure.sql"
+export bashmatic_db_config=${bashmatic_db_config:-"${HOME}/.db/database.yml"}
+declare -a bashmatic_db_connection
 
-psql.db-settings() {
-  psql $* -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+unset bashmatic_db_username
+unset bashmatic_db_password
+unset bashmatic_db_host
+unset bashmatic_db_database
+
+# @description Print out PostgreSQL settings for a connection specified by args
+#
+# @example
+#    db.psql.db-settings -h localhost -U postgres appdb
+#
+# @requires
+#    Local psql CLI client
+db.psql.db-settings() {
+  psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
-db.psql.args.() {
-  printf -- "-U ${AppPostgresUsername} -h ${AppPostgresHostname} $*"
+db.config.init() {
+  export bashmatic_db_connection=(host database username password)
 }
 
-db.psql-args() {
-  db.psql.args. "$@"
+# @description Returns a space-separated values of db host, db name, username and password
+#
+# @example
+#    db.config.set-file ~/.db/database.yml
+#    db.config.parse development
+#    #=> hostname dbname dbuser dbpass
+#    declare -a params=($(db.config.parse development))
+#    echo ${params[0]} # host
+#
+# @requires
+#    Local psql CLI client
+db.config.parse() {
+  local db="$1"
+  [[ -z ${db} ]] && return 1
+  [[ -f ${bashmatic_db_config} ]] || return 2
+  db.config.init
+  local -a script=("require 'yaml'; h = YAML.load(STDIN); ")
+  for field in "${bashmatic_db_connection[@]}"; do
+    script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
+  done
+  cat "${bashmatic_db_config}" | ruby -e "${script[*]}"
 }
 
-db.psql.args.default() {
+db.config.set-file() {
+  [[ -s "$1" ]] || return 1
+
+  export bashmatic_db_config="$1"
+}
+
+db.config.get-file() {
+  echo "${bashmatic_db_config}"
+}
+
+db.psql.args.config() {
+  local output="$(db.config.parse "$1")"
+  local -a params
+
+  [[ -z ${output} || "${output}" =~ "null" ]] && {
+    error "Database $1 is not defined." >&2
+    return 1
+  }
+
+  params=($(db.config.parse "$1"))
+
+  local dbhost
+  local dbname
+  local dbuser
+  local dbpass
+
+  dbhost=${params[0]}
+  dbname=${params[1]}
+  dbuser=${params[2]}
+  dbpass=${params[3]}
+
+  export PGPASSWORD="${dbpass}"
+  printf -- "-U ${dbuser} -h ${dbhost} ${dbname}"
+}
+
+db.psql.args() {
+  if [[ -z "${bashmatic_db_database}" || -z "${bashmatic_db_host}" ]]; then
+    if [[ -n "$1" ]]; then
+      db.psql.args.config "$1"
+    else
+      error "Unable to determine DB connection parameters"
+      return 1
+    fi
+  else
+    export PGPASSWORD="${bashmatic_db_password}"
+    printf -- "-U ${bashmatic_db_username} -h ${bashmatic_db_host} ${bashmatic_db_database}"
+  fi
+}
+
+db.psql.args.localhost() {
   printf -- "-U postgres -h localhost $*"
 }
 
-db.psql.args.maint() {
-  printf -- "-U postgres -h localhost --maintenance-db=postgres $*"
+db.psql.args.maintenance() {
+  db.psql.args.localhost "--maintenance-db=postgres $*"
 }
 
 db.wait-until-db-online() {
-  local db=${1}
+  local db="${1}"
   inf 'waiting for the database to come up...'
   while true; do
-    out=$(psql -c "select count(*) from accounts" $(db.psql.args. ${db}) 2>&1)
+    out=$(psql -c "select count(*) from pg_stat_user_tables" "$(db.psql.args "${db}")" 2>&1)
     code=$?
     [[ ${code} == 0 ]] && break # can connect and all is good
     [[ ${code} == 1 ]] && break # db is there, but no database/table is found
@@ -41,8 +121,8 @@ db.wait-until-db-online() {
   return 0
 }
 
-db.num-procs() {
-  ps -ef | grep [p]ostgres | wc -l | awk '{print $1}'
+db.pg.local.num-procs() {
+  /bin/ps -ef | /bin/grep "[p]ostgres" | wc -l | awk '{print $1}'
 }
 
 db.datetime() {
@@ -59,220 +139,71 @@ db.datetime() {
   fi
 }
 
-.db.top.page() {
-  local tof=$1
-  shift
-  local dbtype=$1
-  shift
-  local db="$*"
+# db.dump() {
+#   local dbname=${1}
+#   shift
+#   local psql_args="$*"
 
-  printf "${bldcyn}[${dbtype}] ${bldpur}${db} ${clr}\n\n" >>${tof}
+#   [[ -z "${psql_args}" ]] && psql_args="-U postgres -h localhost"
+#   local filename=$(.db.backup-filename ${dbname})
+#   [[ $? != 0 ]] && return
 
-  printf "${bldblu}" >>${tof}
-  if [[ "${dbtype}" == 'master' ]]; then
-    psql -X -P pager ${db} -c "select * from hb_stat_replication" >>${tof}
-  else
-    psql -X -P pager ${db} -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>${tof}
-  fi
+#   [[ ${LibRun__Verbose} -eq ${True} ]] && {
+#     info "dumping from: ${bldylw}${dbname}"
+#     info "saving to...: ${bldylw}${filename}"
+#   }
 
-  local query_width=$(($(.output.screen-width) - 78))
+#   cmd="pg_dump -Fc -Z5 ${psql_args} -f ${filename} ${dbname}"
+#   run "${cmd}"
 
-  printf "${bldcyn}[${dbtype}] ${bldpur}Above: Replication Status / Below: Active Queries:${clr}\n\n${bldylw}" >>${tof}
+#   code=${LibRun__LastExitCode}
+#   if [[ ${code} != 0 ]]; then
+#     ui.closer.not-ok:
+#     error "pg_dump exited with code ${code}"
+#     return ${code}
+#   else
+#     ui.closer.ok:
+#     return 0
+#   fi
+# }
 
-  psql -X -P pager ${db} -c \
-    "select pid, client_addr || ':' || client_port as Client, substring(state for 10) as State, now() - query_start " \
-    "as Duration, waiting as Wait, substring(query for ${query_width}) as Query from pg_stat_activity where state != 'idle' " \
-    "order by Duration desc" |
-    ${GrepCommand} -v 'select.*client_addr' 2>&1 >>${tof}
-}
+# db.restore() {
+#   local dbname="$1"
+#   shift
+#   local filename="$1"
+#   [[ -n ${filename} ]] && shift
 
-#===============================================================================
-# Public Functions
-#===============================================================================
+#   [[ -z ${filename} ]] && filename=$(.db.backup-filename ${dbname})
 
-db.rails.schema.file() {
-  if [[ -f "${RAILS_SCHEMA_RB}" && -f "${RAILS_SCHEMA_SQL}" ]]; then
-    if [[ "${RAILS_SCHEMA_RB}" -nt "${RAILS_SCHEMA_SQL}" ]]; then
-      printf "${RAILS_SCHEMA_RB}"
-    else
-      printf "${RAILS_SCHEMA_SQL}"
-    fi
-  elif [[ -f "${RAILS_SCHEMA_RB}" ]]; then
-    printf "${RAILS_SCHEMA_RB}"
-  elif [[ -f "${RAILS_SCHEMA_SQL}" ]]; then
-    printf "${RAILS_SCHEMA_SQL}"
-  fi
-}
+#   [[ dbname =~ 'production' ]] && {
+#     error 'This script is not meant for production'
+#     return 1
+#   }
 
-db.rails.schema.checksum() {
-  if [[ -d db/migrate ]]; then
-    find db/migrate -type f -ls | awk '{printf("%10d-%s\n",$7,$11)}' | sort | shasum | awk '{print $1}'
-  else
-    local schema=$(db.rails.schema.file)
-    [[ -s ${schema} ]] || error "can not find Rails schema in either ${RAILS_SCHEMA_RB} or ${RAILS_SCHEMA_SQL}"
-    [[ -s ${schema} ]] && util.checksum.files "${schema}"
-  fi
-}
+#   [[ -s ${filename} ]] || {
+#     error "can't find valid backup file in ${bldylw}${filename}"
+#     return 2
+#   }
 
-db.top() {
-  local dbnames=$@
+#   psql_args=$(db.psql.args.default)
+#   maint_args=$(db.psql.args.maint)
 
-  h1 "Please wait while we resolve DB names using AWSCLI..."
+#   run "dropdb ${maint_args} ${dbname} 2>/dev/null; true"
 
-  local db
-  local dbtype
-  local width_min=90
-  local height_min=50
-  local width=$(.output.screen-width)
-  local height=$(.output.screen-height)
+#   export LibRun__AbortOnError=${True}
+#   run "createdb ${maint_args} ${dbname} ${psql_args}"
 
-  if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
-    error "Your screen is too small for db.top."
-    info "Minimum required screen dimensions are ${width_min} columns, ${height_min} rows."
-    info "Your screen is ${bldred}${width}x${height}."
-    return
-  fi
+#   [[ ${LibRun__Verbose} -eq ${True} ]] && {
+#     info "restoring from..: ${bldylw}${filename}"
+#     info "restoring to....: ${bldylw}${dbname}"
+#   }
 
-  declare -A connections=()
-  declare -a connection_names=()
-  local i=0
+#   run "pg_restore -Fc -j 8 ${psql_args} -d ${dbname} ${filename}"
+#   code=${LibRun__LastExitCode}
 
-  for dbname in $dbnames; do
-    declare -a results=($(.db.by_shortname $dbname))
-    if [[ ${#results[@]} ]]; then
-      dbtype="${results[0]}"
-      i=$(($i + 1))
-      db="${results[@]:1}"
-      if [[ -n ${dbtype} ]]; then
-        [[ ${dbtype} == "master" ]] && dbname="master"
-        [[ ${dbtype} == "replica" ]] && dbname="replica-${dbname}"
-        connections[${dbname}]="${db}"
-        connection_names[$i]=${dbname}
-      fi
-    fi
-  done
-
-  if [[ ${#connections[@]} == 0 ]]; then
-    error "usage: $0 db1, db2, ... "
-    info "eg: db.top m r2 "
-    ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
-  fi
-
-  trap "clear" TERM
-  trap "clear" EXIT
-
-  local clear=0
-  local interval=${DB_TOP_REFRESH_RATE:-0.5}
-  local num_dbs=${#connection_names[@]}
-
-  local tof="$(mktemp -d "${TMPDIR:-/tmp/}.XXXXXXXXXXXX")/.db.top.$$"
-  cp /dev/null ${tof}
-
-  while true; do
-    local index=0
-    cursor.at.y 0
-    local screen_height=$(screen.height)
-
-    for __dbtype in "${connection_names[@]}"; do
-      index=$((${index} + 1))
-
-      local percent_total_height=0
-
-      if [[ ${num_dbs} -eq 2 ]]; then
-        [[ ${index} -eq 2 ]] && percent_total_height=66
-
-      elif [[ ${num_dbs} -eq 3 ]]; then
-        [[ ${index} -eq 2 ]] && percent_total_height=50
-        [[ ${index} -eq 3 ]] && percent_total_height=80
-
-      elif [[ ${num_dbs} -eq 4 ]]; then
-        [[ ${index} -eq 2 ]] && percent_total_height=40
-        [[ ${index} -eq 3 ]] && percent_total_height=60
-        [[ ${index} -eq 4 ]] && percent_total_height=80
-      fi
-
-      local vertical_shift=$((${percent_total_height} * ${screen_height} / 100))
-
-      cursor.at.y ${vertical_shift} >>${tof}
-      [[ -n ${DEBUG} ]] && h.blue "screen_height = ${screen_height} | percent_total_height = ${percent_total_height} | vertical_shift = ${vertical_shift}" >>${tof}
-      hr.colored ${bldpur} >>${tof}
-      .db.top.page "${tof}" "${__dbtype}" "${connections[${__dbtype}]}"
-    done
-    clear
-    h.yellow " «   DB-TOP V0.1.2 © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License."
-    cat ${tof}
-    cursor.at.y $(($(.output.screen-height) + 1))
-    printf "${bldwht}Press Ctrl-C to quit.${clr}"
-    cp /dev/null ${tof}
-    sleep ${interval}
-  done
-}
-
-db.dump() {
-  local dbname=${1}
-  shift
-  local psql_args="$*"
-
-  [[ -z "${psql_args}" ]] && psql_args="-U postgres -h localhost"
-  local filename=$(.db.backup-filename ${dbname})
-  [[ $? != 0 ]] && return
-
-  [[ ${LibRun__Verbose} -eq ${True} ]] && {
-    info "dumping from: ${bldylw}${dbname}"
-    info "saving to...: ${bldylw}${filename}"
-  }
-
-  cmd="pg_dump -Fc -Z5 ${psql_args} -f ${filename} ${dbname}"
-  run "${cmd}"
-
-  code=${LibRun__LastExitCode}
-  if [[ ${code} != 0 ]]; then
-    ui.closer.not-ok:
-    error "pg_dump exited with code ${code}"
-    return ${code}
-  else
-    ui.closer.ok:
-    return 0
-  fi
-}
-
-db.restore() {
-  local dbname="$1"
-  shift
-  local filename="$1"
-  [[ -n ${filename} ]] && shift
-
-  [[ -z ${filename} ]] && filename=$(.db.backup-filename ${dbname})
-
-  [[ dbname =~ 'production' ]] && {
-    error 'This script is not meant for production'
-    return 1
-  }
-
-  [[ -s ${filename} ]] || {
-    error "can't find valid backup file in ${bldylw}${filename}"
-    return 2
-  }
-
-  psql_args=$(db.psql.args.default)
-  maint_args=$(db.psql.args.maint)
-
-  run "dropdb ${maint_args} ${dbname} 2>/dev/null; true"
-
-  export LibRun__AbortOnError=${True}
-  run "createdb ${maint_args} ${dbname} ${psql_args}"
-
-  [[ ${LibRun__Verbose} -eq ${True} ]] && {
-    info "restoring from..: ${bldylw}${filename}"
-    info "restoring to....: ${bldylw}${dbname}"
-  }
-
-  run "pg_restore -Fc -j 8 ${psql_args} -d ${dbname} ${filename}"
-  code=${LibRun__LastExitCode}
-
-  if [[ ${code} != 0 ]]; then
-    warning "pg_restore completed with exit code ${code}"
-    return ${code}
-  fi
-  return ${LibRun__LastExitCode}
-}
+#   if [[ ${code} != 0 ]]; then
+#     warning "pg_restore completed with exit code ${code}"
+#     return ${code}
+#   fi
+#   return ${LibRun__LastExitCode}
+# }

@@ -9,10 +9,7 @@ export AppCurrentOS=$(uname -s)
 
 export AppNodeVersion="13.2.0"
 export AppYarnVersion="1.19.2"
-export AppPostgresVersion=${PostgreSQLVersion:-"12.1"}
 
-export AppPostgresHostname="localhost"
-export AppPostgresUsername="postgres"
 if [[ -f ".ruby-version" ]]; then
   AppRubyVersion=$(cat .ruby-version)
 else
