@@ -11,3 +11,4 @@ share/
 hello/
 /Gemfile.lock
 shellcheck.log
+**/.DS_Store
