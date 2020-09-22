@@ -7,7 +7,7 @@ list.modules() {
   find "${BASHMATIC_HOME}/lib/" -type f | sedx 's/.*lib\///g; s/\.sh//g; s/^\///g' | sort
 }
 
-generate() {
+generate-functions-index() {
   h1 "Generating FUNCTIONS.md..."
   local temp=/tmp/FUNCTIONS.adoc
   run "rm -f ${temp} && touch ${temp}"
@@ -52,4 +52,14 @@ HEADER
   eval "code ~/.bashmatic/FUNCTIONS.adoc"
 }
 
-generate
+
+generate-shdoc() {
+  bin/shdoc lib/*.sh >/tmp/USAGE.md
+  command -v kramdoc || gem install asciidoctor-kramdoc
+  kramdoc /tmp/USAGE.md
+  mv /tmp/USAGE.adoc .
+  rm -f /tmp/USAGE.md
+}
+
+generate-functions-index
+generate-shdoc

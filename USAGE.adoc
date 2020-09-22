@@ -1,33 +1,45 @@
-= Bashmatic© Version 1.2.3
-:doctype: article
-:allow-uri-read:
-:toc:
-:toclevels: 5
-:sectnums:
-:showtitle:
+= util.sh
 
-NOTE: https://github.com/reconquest/shdoc[shdoc] documentation extracted from the Bashmatic Sources.
+Miscellaneous utilities.
 
-'''
-== Module *git*
-
-==== 
-Bashmatic Utilities and aliases for Git revision control system. 
-==== 
-
-
-Lots of useful utilities and helpers.
-
+* <<dbpsqldb-settings,db.psql.db-settings()>>
+* <<dbconfigparse,db.config.parse()>>
 * <<gitopen,git.open()>>
+* <<pdfcombine,pdf.combine()>>
+* <<utilrot13-stdin,util.rot13-stdin()>>
 
-[discrete]
-=== git.open()
+== db.psql.db-settings()
+
+Print out PostgreSQL settings for a connection specified by args
+
+=== Example
+
+[source,bash]
+----
+ db.psql.db-settings -h localhost -U postgres appdb
+----
+
+== db.config.parse()
+
+Returns a space-separated values of db host, db name, username and password
+
+=== Example
+
+[source,bash]
+----
+ db.config.set-file ~/.db/database.yml
+ db.config.parse development
+ #=> hostname dbname dbuser dbpass
+ declare -a params=($(db.config.parse development))
+ echo ${params[0]} # host
+----
+
+== git.open()
 
 Reads the remote of a repo by name provided as
   an argument (or defaults to "origin") and opens it in the browser.
 
-[discrete]
-==== Example
+=== Example
 
 [source,bash]
 ----
@@ -38,59 +50,31 @@ git.open
 git.open origin # same thing
 ----
 
-[discrete]
-==== Arguments
+=== Arguments
 
 * *$1* (optional): name of the remote to open, defaults to "orogin"
 
-== Module *pdf*
-
-==== 
-Bashmatic Utilities for PDF file handling 
-==== 
-
-
-Install and uses GhostScript to manipulate PDFs.
-
-* <<pdfcombine,pdf.combine()>>
-
-[discrete]
-=== pdf.combine()
+== pdf.combine()
 
 Combine multiple PDFs into a single one using ghostscript.
 
-[discrete]
-==== Example
+=== Example
 
 [source,bash]
 ----
 pdf.combine ~/merged.pdf 'my-book-chapter*'
 ----
 
-[discrete]
-==== Arguments
+=== Arguments
 
 * *$1* (pathname): to the merged file
 * *...* (the): rest of the PDF files to combine
 
-== Module *util*
-
-==== 
-util.sh 
-==== 
-
-
-Miscellaneous utilities.
-
-* <<utilrot13-stdin,util.rot13-stdin()>>
-
-[discrete]
-=== util.rot13-stdin()
+== util.rot13-stdin()
 
 Convert STDIN using rot13
 
-[discrete]
-==== Example
+=== Example
 
 [source,bash]
 ----
