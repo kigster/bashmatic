@@ -1,11 +1,12 @@
 = Bashmatic™ — BASH primitives for humans, and for fun.
+:safe: unsafe
 :allow-uri-read:
 :doctype: book
 :toc:
 :toclevels: 3
 :sectnums:
 
-image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
+image::https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
 
 NOTICE: 
 ====
@@ -52,7 +53,7 @@ IMPORTANT: _Bashmatic_'s goal is to make BASH programming both fun, consistent, 
 
 BASH is know to be too verbose and unreliable. We beg to differ. This is why we wanted to start this README with a couple of examples.
 
-=== Example A: Install Gems via Homebrew
+=== Example (A): Install Gems via Homebrew
 
 Just look at this tiny, five-line script:
 
@@ -81,7 +82,7 @@ Still not convinced?
 
 Take a look at a more comprehensive example next.
 
-=== Example B: Download and install binaries.
+=== Example (B): Download and install binaries.
 
 In this example, we'll download and install binaries `kubectl` and `minikube` binaries into `/usr/local/bin`
 
@@ -105,7 +106,8 @@ NOTE: If you need to create a BASH installer, _Bashmatic®_ offers some incredib
 
 Let's get back to the Earth, and talk about how to install Bashmatic, and how to use it in more detail right after.
 
-=== Example C: Developer Environment Bootstrap Script
+
+=== Example ++(C)++: Developer Environment Bootstrap Script
 
 This final and most feature-rich example is not just an example -- **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
 
@@ -113,7 +115,7 @@ NOTE: the script relies on Homebrew behind the scenes, and therefore would not w
 
 It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
-image::.dev-setup.png[dev-setup.png,width=100%]
+image::.dev-setup.png[Developer Setup,width=100%]
 
 In the example below we'll use `dev-setup` script to install the following:
  
@@ -139,7 +141,8 @@ We'll run this from a folder where our application is installed, because then th
 
 This compact command line installs a ton of things, but don't take our word for it — run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
 
-=== Example D: Installing GRC Colourify Tool
+
+=== Example (D): Installing GRC Colourify Tool
 
 This is a great tool that colorizes nearly any other tool's output.
 
@@ -151,6 +154,74 @@ Run it like so:
 You might need to enter your password for SUDO.
 
 Once it completes, run `source ~/.bashrc` (or whatever shell you use), and type something like `ls -al` or `netstat -rn` or `ping 1.1.1.1` and notice how all of the above is nicely colored.
+
+
+=== Example (E): Database Utilities & `dbtop`
+
+If you are using PostgreSQL, you are in luck! Bashmatic includes numerous helpers for PostreSQL's CLI
+utility `psql`.
+
+Before you begin, we recommend that you install file `.psqlrc` from Bashmatic's `conf` directory into your home folder. While not required, this file sets up your prompt and various macros for PostgreSQL that will come very handy if you use `psql` with any regularity.
+
+What is `dbtop` anyway?
+
+Just like with the regular `top` you can see the "top" resource-consuming processes running on your local system, with `dbtop` you can observe a self-refreshing report of the actively running queries on up to *three database servers* at the same time.
+
+Here is the pixelated screenshot of `dbtop` running against two live databases:
+
+image::.dbtop.png[DBTop Example,width=100%,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
+
+In order for this to work, you must first define database connection parameters in a YAML file located at the following PATH: `~/.db/database.yml`.
+
+Here is how the file should be organized (if you ever used Ruby on Rails, the standard `config/database.yml` file should be fully compatible):
+
+[source,yaml]
+----
+development:
+  database: development
+  username: postgres
+  host: localhost
+  password: 
+staging:
+  database: staging
+  username: postgres
+  host: staging.db.example.com
+  password: 
+production:
+  database: production
+  username: postgres
+  host: production.db.example.com
+  password: "a098098safdaf0998ff79789a798a7sdf"
+----
+
+Given the above file, you should be able to run:
+
+[source,bash]
+$ db.config.connections
+
+And see the newline separated list:
+
+```
+development
+staging
+production
+```
+
+Once that's working, you should be able run `dbtop`:
+
+[source,bash]
+----
+$ dbtop development staging production
+----
+
+NOTE: At the moment, only the default port 5432 is supported. If you are using an alternative port, and as long as it's shared across the connections you can set the `PGPORT` environment variable that `psql` will read.
+
+**DBTop Configuration**:
+
+You can configure the following settings for `dbtop`:
+
+1. You can change the location of the `database.yml` file with `db.config.set-file <filepath>`
+2. You can change the refresh rate of the `dbtop` with eg. `db.top.set-refresh 0.5` (in seconds, fractional values allowed). This sets the sleep time between the screen is fully refreshed.
 
 == Installing Bashmatic
 
@@ -226,9 +297,9 @@ For instance:
 [source,bash]
 ----
 $ gem.install
-┌──────────────────────────────────────────────────────────────────┐
-│  « ERROR »  Error — gem name is required as an argument          │
-└──────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  « ERROR »  Error — gem name is required as an argument │
+└─────────────────────────────────────────────────────────┘
 ----
 
 Now let's run it properly:
@@ -321,8 +392,6 @@ run.set-all.list
 ----
 
 Using these functions you can write powerful shell scripts that display each command they run, it's status, duration, and can abort on various conditions. You can ask the user to confirm, and you can show a user message and wait for any key pressed to continue.
-
-To learn more about this key module, please go to the <<runtime-framework,Runtime Framework>> section.
 
 ===== Runtime Framework in Depth
 
@@ -459,9 +528,9 @@ Components are BASH functions that draw something concrete on the screen. For in
 ----
 $ h1 Hello
 
-┌──────────────────────────────────────────────┐
-│ Hello                                        │
-└──────────────────────────────────────────────┘
+┌───────────────────┐
+│ Hello             │
+└───────────────────┘
 ----
 
 These are often named after HTML elements, such as `hr`, `h1`, `h2`, etc.
@@ -536,18 +605,18 @@ For instance:
 [source,bash]
 ----
 $ github.clone sym
+
   ✘    Validating Github Configuration...
 
        Please enter the name of your Github Organization:
        $ kigster
 
-┌───────────────────────────────────────────────────────────────────────────────────┐
-│ Your github organization was saved in your ~/.gitconfig file.                     │
-├───────────────────────────────────────────────────────────────────────────────────┤
-│ To change it in the future, run: github.org new-organization                      │
-└───────────────────────────────────────────────────────────────────────────────────┘
+  Your github organization was saved in your ~/.gitconfig file.
+  To change it in the future, run: 
 
-  ✔︎    $ git clone git@github.com:kigster/sym ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔    931 ms 〕    0
+       $ github.org <org-name>
+
+  ✔︎ $ git clone git@github.com:kigster/sym ▪▪▪▪▪▪〔     931 ms 〕  
 ----
 
 ==== 5. File Helpers
@@ -844,8 +913,10 @@ Acknowledgements: the script is an automation of the method offered on http://is
 
 Submit a pull request!
 
-
 ## License
 
-image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA,link="https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large"]
+This project is distributed under the MIT License.
+
+image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[License Scan Status,width=400,height=500link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large]
+
 

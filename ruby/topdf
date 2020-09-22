@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+source ${BASHMATIC_HOME}/init.sh
+
+brew.install.package graphicsmagick
+ruby.bundle-install
+stderr=$(mktemp "/tmp/asciidoc.$$.$RANDOM")
+run "bundle exec asciidoctor-pdf ${BASHMATIC_HOME}/README.adoc -a allow-uri-read 2>${stderr}"
+code=$?
+[[ ${code} -eq 0 ]] && {
+  success "PDF file generated into ${BASHMATIC_HOME}/README.pdf"
+  open "${BASHMATIC_HOME}/README.pdf"
+  exit 0
+}
+
+error "asciidoctor-pdf exited with an error code ${code}"
+[[ -s ${stderr} ]] && {
+  info "The following STDERR was produced:"
+  printf  "${txtylw}\n"
+  cat ${stderr}
+  rm -f ${stderr}
+}
+
+exit ${code}
+
+

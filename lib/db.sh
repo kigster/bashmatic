@@ -49,9 +49,13 @@ db.config.parse() {
   cat "${bashmatic_db_config}" | ruby -e "${script[*]}"
 }
 
+db.config.connections() {
+  [[ -f ${bashmatic_db_config} ]] || return 2
+  cat "${bashmatic_db_config}" | ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")"
+}
+
 db.config.set-file() {
   [[ -s "$1" ]] || return 1
-
   export bashmatic_db_config="$1"
 }
 
@@ -82,6 +86,27 @@ db.psql.args.config() {
 
   export PGPASSWORD="${dbpass}"
   printf -- "-U ${dbuser} -h ${dbhost} ${dbname}"
+}
+
+db.psql.connect() {
+  local dbname="$1"
+  if [[ -z ${dbname} ]]; then
+    h1 "USAGE: db.connect connection-name" \
+      "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file."
+    return 0
+  fi
+  local tempfile=$(mktemp /tmp/.bashmatic.db.${RANDOM} || exit 1)
+  db.psql.args.config "${dbname}" >"${tempfile}"
+  local -a args=($(cat "${tempfile}"))
+  rm -f "${tempfile}" >/dev/null
+  printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
+  printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
+  hr
+  psql "${args[@]}"
+}
+
+db.connect() {
+  db.psql.connect "$@"
 }
 
 db.psql.args() {
