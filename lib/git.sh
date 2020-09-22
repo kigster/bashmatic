@@ -18,7 +18,7 @@ git.sync() {
   local dir="$(pwd)"
   cd "${BASHMATIC_HOME}" >/dev/null
   git.repo-is-clean || {
-    warning "${bldylw}${BASHMATIC_HOME} has locally modified files." \
+    output.is-ssh || warning "${bldylw}${BASHMATIC_HOME} has locally modified files." \
       "Please commit or stash them to allow auto-upgrade to function as designed." >&2
     cd "${dir}" >/dev/null
     return 1

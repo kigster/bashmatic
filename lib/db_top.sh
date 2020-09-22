@@ -28,10 +28,12 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   shift
   local tof="$1"
   shift
+  local height="$1"
+  shift
   local query_width
   local sw=$(screen-width)
-  query_width=$((sw - 68))
-  sed -e "/^--.*$/d; s/QUERY_WIDTH/${query_width}/g;" "${BASHMATIC_HOME}/.db.active.sql" | tr '\n' ' ' >"${tof}.query"
+  query_width=$((sw - 72))
+  sed -e "/^--.*$/d; s/QUERY_WIDTH/${query_width}/g;s/LIMIT/${height}/g" "${BASHMATIC_HOME}/.db.active.sql" | tr '\n' ' ' >"${tof}.query"
 }
 
 .db.top.connection() {
@@ -41,15 +43,17 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   shift
   local dbpass="$1"
   shift
+  local height="$1"
+  shift
 
   local displayname=$(printf "  %-15.15s" "$dbname")
   rm -f "${tof}.errors" >/dev/null
 
-  printf "${bldwht}${bakblu} Database: ${txtblu}${bakpur}${bldwht}${bakpur}${bldylw}${displayname} ${txtpur}${bakylw}${clr}${txtblk}${bakylw} Active Queries (refresh: ${bashmatic_db_top_refresh}secs): ${clr}${txtylw}${clr}\n\n${clr}" >>"${tof}"
+  printf "${bldwht}${bakblu} Database: ${txtblu}${bakpur}${bldwht}${bakpur}${bldylw}${displayname} ${txtpur}${bakylw}${clr}${txtblk}${bakylw} Active Queries (refresh: ${bashmatic_db_top_refresh}secs, Max Queries Shown: ${height}): ${clr}${txtylw}${clr}\n\n${clr}" >>"${tof}"
 
   export PGPASSWORD="${dbpass}"
 
-  .db.top.psql.active "${dbname}" "${tof}" "$@"
+  .db.top.psql.active "${dbname}" "${tof}" "${height}" "$@"
   .db.top.psql.replication "${dbname}" "${tof}" "$@"
 
   local query="${tof}.query"
@@ -58,8 +62,8 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
 
   # grep --color=never -E -v 'EEEselect.*client_addr'
   export GREP_COLOR=35
-  grep -C 1000 -i --color=always -E -e ' (((auto)?(analyze|vacuum))|delete|update|insert)' "${tof}.out" |
-    grep -v 'select pid, client_addr' >>"${tof}"
+  grep -C 1000 -i --color=always -E -e ' (((auto)?(analyze|vacuum))|delete|update|insert|create (table|index)|alter (table|index)?)' "${tof}.out" |
+    egrep -v -- '^(--|.*select pid, client_addr)' >>"${tof}"
 
   [[ ${code} -ne 0 ]] && {
     error "psql exited with code ${code}" >>"${tof}.errors"
@@ -69,6 +73,30 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
 
 db.top.set-refresh() {
   export bashmatic_db_top_refresh="$1"
+}
+
+.db.top.vertical-offset() {
+  local num_dbs="$1"
+  local index="$2"
+  local offset
+
+  if [[ ${num_dbs} -eq 1 ]]; then
+    [[ ${index} -eq 0 ]] && offset=5
+    [[ ${index} -eq 1 ]] && offset=100
+
+  elif [[ ${num_dbs} -eq 2 ]]; then
+    [[ ${index} -eq 0 ]] && offset=4
+    [[ ${index} -eq 1 ]] && offset=66
+    [[ ${index} -eq 2 ]] && offset=100
+
+  elif [[ ${num_dbs} -eq 3 ]]; then
+    [[ ${index} -eq 0 ]] && offset=4
+    [[ ${index} -eq 1 ]] && offset=45
+    [[ ${index} -eq 2 ]] && offset=75
+    [[ ${index} -eq 3 ]] && offset=100
+  fi
+
+  printf "%d" ${offset}
 }
 
 db.top() {
@@ -131,31 +159,24 @@ db.top() {
     local screen_height=$(screen.height)
 
     for dbname in "${connections_names[@]}"; do
-      local percent_total_height=0
-
-      if [[ ${num_dbs} -eq 1 ]]; then
-        [[ ${index} -eq 0 ]] && percent_total_height=5
-
-      elif [[ ${num_dbs} -eq 2 ]]; then
-        [[ ${index} -eq 0 ]] && percent_total_height=4
-        [[ ${index} -eq 1 ]] && percent_total_height=66
-
-      elif [[ ${num_dbs} -eq 3 ]]; then
-        [[ ${index} -eq 0 ]] && percent_total_height=4
-        [[ ${index} -eq 1 ]] && percent_total_height=45
-        [[ ${index} -eq 2 ]] && percent_total_height=75
-      fi
+      local percent_total_height
+      local percent_total_height_next
+      percent_total_height=$(.db.top.vertical-offset "${num_dbs}" ${index})
+      percent_total_height_next=$(.db.top.vertical-offset "${num_dbs}" $((index + 1)))
 
       local vertical_shift=$((percent_total_height * screen_height / 100))
+      local vertical_shift_next=$((percent_total_height_next * screen_height / 100))
+      local height=$((vertical_shift_next - vertical_shift - 13))
 
       cursor.at.y ${vertical_shift} >>"${tof}"
       [[ -n ${DEBUG} ]] && {
         .output.set-indent 0
+        info "CURRENT ❯${bldylw} % = ${percent_total_height}, %++ = ${percent_total_height_next}" >>"${tof}"
         h1 -- "Database: ${dbname}" \
           "PSQL arguments:" \
           "${connections_arguments[${index}]}" >>"${tof}"
       }
-      .db.top.connection "${tof}" "${dbname}" "${connections_passwords[${index}]}" "${connections_arguments[${index}]}"
+      .db.top.connection "${tof}" "${dbname}" "${connections_passwords[${index}]}" "${height}" "${connections_arguments[${index}]}"
       index=$((index + 1))
     done
 
