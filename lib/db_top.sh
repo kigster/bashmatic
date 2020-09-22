@@ -102,7 +102,7 @@ db.top.set-refresh() {
 db.top() {
   local dbname
   local width_min=90
-  local height_min=50
+  local height_min=30
   local width=$(screen.width)
   local height=$(screen.height)
 
@@ -166,7 +166,7 @@ db.top() {
 
       local vertical_shift=$((percent_total_height * screen_height / 100))
       local vertical_shift_next=$((percent_total_height_next * screen_height / 100))
-      local height=$((vertical_shift_next - vertical_shift - 13))
+      local height=$((vertical_shift_next - vertical_shift - 7))
 
       cursor.at.y ${vertical_shift} >>"${tof}"
       [[ -n ${DEBUG} ]] && {

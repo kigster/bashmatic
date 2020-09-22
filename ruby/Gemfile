@@ -1,0 +1,9 @@
+source "https://rubygems.org"
+
+gem 'asciidoctor-pdf'
+gem 'prawn'
+gem 'prawn-svg'
+gem 'gmagick'
+gem 'prawn-gmagick'
+gem 'public_suffix', '~> 4.0.6'
+

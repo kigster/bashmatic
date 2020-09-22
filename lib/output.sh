@@ -359,6 +359,10 @@ ascii-clean() {
   }
 }
 
+.set-indent() {
+  .output.set-indent "$@"
+}
+
 .output.left-justify() {
   local color="${1}"
   shift
@@ -367,7 +371,7 @@ ascii-clean() {
   spacer=${spacer:1:${bashmatic_spacer_width}}
   printf "\n${color}"
   if output.is-terminal; then
-    local width=$(($(.output.screen-width)-${#spacer}))
+    local width=$(($(.output.screen-width) - ${#spacer}))
     #local width=$((2 * $(.output.screen-width) / 3))
     [[ ${width} -lt 70 ]] && width="70"
     printf -- "${spacer}%-${width}.${width}s${clr}\n\n" "❯❯ ${text} ❯❯"

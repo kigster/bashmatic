@@ -76,7 +76,6 @@ bashmatic.functions.runtime() {
 }
 
 # Setup
-
 bashmatic.bash.version() {
   echo "${BASH_VERSION}" | cut -d '.' -f 1
 }
