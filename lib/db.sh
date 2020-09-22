@@ -4,7 +4,9 @@
 #===============================================================================
 
 export bashmatic_db_config=${bashmatic_db_config:-"${HOME}/.db/database.yml"}
-declare -a bashmatic_db_connection
+
+declare -a bashmatic_db_connection_params
+export bashmatic_db_connection_params=(host database username password)
 
 unset bashmatic_db_username
 unset bashmatic_db_password
@@ -22,10 +24,6 @@ db.psql.db-settings() {
   psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
-db.config.init() {
-  export bashmatic_db_connection=(host database username password)
-}
-
 # @description Returns a space-separated values of db host, db name, username and password
 #
 # @example
@@ -41,12 +39,17 @@ db.config.parse() {
   local db="$1"
   [[ -z ${db} ]] && return 1
   [[ -f ${bashmatic_db_config} ]] || return 2
-  db.config.init
   local -a script=("require 'yaml'; h = YAML.load(STDIN); ")
-  for field in "${bashmatic_db_connection[@]}"; do
+  for field in "${bashmatic_db_connection_params[@]}"; do
     script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
   done
-  cat "${bashmatic_db_config}" | ruby -e "${script[*]}"
+  ruby <"${bashmatic_db_config}" -e "${script[*]}"
+}
+
+db.config.databases() {
+  [[ -f ${bashmatic_db_config} ]] || return 2
+
+  ruby <"${bashmatic_db_config}" -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\\n\")"
 }
 
 db.config.set-file() {

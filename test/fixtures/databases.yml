@@ -6,4 +6,3 @@ development:
   encrypted_password:
     key: dbpass
     source: ~/.dbpass.key
-  

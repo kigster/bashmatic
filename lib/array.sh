@@ -115,12 +115,6 @@ array.to.piped-list() {
   array.join ' | ' false "$@"
 }
 
-array.from.stdin() {
-  local array_name=$1; shift
-  local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)"
-  eval "${script}"
-}
-
 # usage: array.eval.in-groups-of <number> <bash function> <array of arguments to bash function>
 #    eg: array.eval.in-groups-of 5 bash.package.install asciidoc asciidoctor autoconf automake awscli bash ....
 array.eval.in-groups-of() {

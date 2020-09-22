@@ -5,25 +5,30 @@
 #===============================================================================
 
 export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
+export bashmatic_db_top_highlighted_keywords=${bashmatic_db_top_highlighted_keywords:-' (((auto)?(analyze|vacuum))|alter ?(table|index)?|create ?(table|index)?|delete|update|insert)'}
 
+# If the database passed as an argument happens to be named "master*" or
+# "(slave|replica)" then run psql and show replication stats.
 .db.top.psql.replication() {
   local dbname="$1"
   shift
-  local toc="$1"
+  local to_file="$1"
   shift
 
   if [[ "${dbname}" =~ "master" ]]; then
-    psql -X -P pager "$@" -c "select * from hb_stat_replication" >>"${toc}"
+    psql -X -P pager "$@" -c "select * from hb_stat_replication" >>"${to_file}"
   elif [[ "${dbname}" =~ "replica" || "${dbname}" =~ "slave" ]]; then
-    psql -X -P pager "$@" -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>"${toc}"
+    psql -X -P pager "$@" -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>"${to_file}"
   else
     return
   fi
 
-  printf "${bldcyn}[${dbname}] ${bldpur}Above: Replication Status${clr}\n\n${bldylw}" >>"${toc}"
+  printf "${bldcyn}[${dbname}] ${bldpur}Above: Replication Status${clr}\n\n${bldylw}" >>"${to_file}"
 }
 
-.db.top.psql.active() {
+# Based oni the DB, renders the given query file
+# while substituting several templated keywords like QUERY_WIDTH
+.db.top.psql.render-query() {
   local dbname="$1"
   shift
   local tof="$1"
@@ -34,6 +39,9 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   sed -e "/^--.*$/d; s/QUERY_WIDTH/${query_width}/g;" "${BASHMATIC_HOME}/.db.active.sql" | tr '\n' ' ' >"${tof}.query"
 }
 
+# Given an output file $tof, a database name $dbname with $dbpass,
+# evaluate a templated query, while substituting the screen width
+# (which depensd on the TTY)
 .db.top.connection() {
   local tof="$1"
   shift
@@ -49,16 +57,19 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
 
   export PGPASSWORD="${dbpass}"
 
-  .db.top.psql.active "${dbname}" "${tof}" "$@"
+  .db.top.psql.render-query "${dbname}" "${tof}" "$@"
   .db.top.psql.replication "${dbname}" "${tof}" "$@"
 
   local query="${tof}.query"
+  # Run the query
+  # Note, eval ensures access to PGPASSWORD variable
   (eval "$(echo psql -X -P pager -f "${query}" "$@")") >"${tof}.out"
   local code=$?
 
-  # grep --color=never -E -v 'EEEselect.*client_addr'
+  # Before we exit, let's colorize the SQL output, and highlight some of the
+  # important keywords.
   export GREP_COLOR=35
-  grep -C 1000 -i --color=always -E -e ' (((auto)?(analyze|vacuum))|delete|update|insert)' "${tof}.out" |
+  grep -C 1000 -i --color=always -E -e "${tof}.out" |
     grep -v 'select pid, client_addr' >>"${tof}"
 
   [[ ${code} -ne 0 ]] && {
@@ -67,8 +78,25 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   }
 }
 
+# Set how often to refresh, i.e. sleep between subsequent renders.
 db.top.set-refresh() {
   export bashmatic_db_top_refresh="$1"
+}
+
+# Sets the regex used to highlight worsd in the activity queries.
+db.top.set-highlighted-keywords() {
+  export bashmatic_db_top_highlighted_keywords="$1"
+}
+
+db.top.usage() {
+  local -a databases=($(db.config.databases))
+  usage-box "dbtop database [ database [ database ] ] © Top-like display of the in-flight SQL queries for up to 3 Databases Concurrently" \
+    " " " " \
+    "${bldpur}Config FilePath:     " "${txtblk}${bakylw}${bashmatic_db_config}" \
+    "${bldpur}Available Databases: " "${txtblk}${bakylw}${databases[*]}" \
+    " " " " \
+    "${bldblu}EXAMPLE: " "${bldylw}\$ ${bldgrn}dbtop ${databases[@]:0:2}"
+  exit 0
 }
 
 db.top() {
@@ -77,6 +105,11 @@ db.top() {
   local height_min=50
   local width=$(screen.width)
   local height=$(screen.height)
+
+  if [[ "$1" == '--help' || "$1" == '-h' || -z "$1" ]]; then
+    db.top.usage
+    return 1
+  fi
 
   if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
     error "Your screen is too small for db.top."

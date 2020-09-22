@@ -19,11 +19,12 @@
    "editor.find.addExtraSpaceOnTop": false,
    "editor.fontSize": 18,
    "command-runner.commands": {
-      "Run Bats Unit Tests": "cd ${workspaceFolder} && bin/specs ${file}",
+      "Run All BASH Tests": "cd ${workspaceFolder} && bin/specs",
+      "Run Specific Tests": "cd ${workspaceFolder} && bin/specs ${file}"
    },
    "cSpell.words": [
       "Bashmatic"
    ],
    "workbench.preferredDarkColorTheme": "Monokai Pro",
-   "terminal.integrated.fontSize": 16,
+   "terminal.integrated.fontSize": 16
 }
