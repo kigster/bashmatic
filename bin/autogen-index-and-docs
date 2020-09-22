@@ -52,14 +52,27 @@ HEADER
   eval "code ~/.bashmatic/FUNCTIONS.adoc"
 }
 
+.install.kramdoc() {
+  command -v kramdoc || gem.install asciidoctor-kramdoc
+}
 
 generate-shdoc() {
   bin/shdoc lib/*.sh >/tmp/USAGE.md
-  command -v kramdoc || gem install asciidoctor-kramdoc
+  .install.kramdoc
   kramdoc /tmp/USAGE.md
   mv /tmp/USAGE.adoc .
   rm -f /tmp/USAGE.md
 }
 
-generate-functions-index
-generate-shdoc
+generate-changelog() {
+  gem.install github_changelog_generator
+
+  github_changelog_generator --project bashmatic --user kigster
+  .install.kramdoc
+  kramdoc CHANGELOG.md
+  rm -f CHANGELOG.md
+}
+
+generate-changelog &&
+  generate-functions-index &&
+  generate-shdoc
