@@ -49,7 +49,7 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   local displayname=$(printf "  %-15.15s" "$dbname")
   rm -f "${tof}.errors" >/dev/null
 
-  printf "${bldwht}${bakblu} Database: ${txtblu}${bakpur}${bldwht}${bakpur}${bldylw}${displayname} ${txtpur}${bakylw}${clr}${txtblk}${bakylw} Active Queries (refresh: ${bashmatic_db_top_refresh}secs, Max Queries Shown: ${height}): ${clr}${txtylw}${clr}\n\n${clr}" >>"${tof}"
+  printf "${bldwht}${bakblu} Database: ${txtblu}${bakpur}${bldwht}${bakpur}${bldylw}${displayname} ${txtpur}${bakylw}${clr}${txtblk}${bakylw} Active Queries (refresh: ${bashmatic_db_top_refresh}secs, Max Queries Shown: ${height}): ${clr}${txtylw}${clr}\n${clr}" >>"${tof}"
 
   export PGPASSWORD="${dbpass}"
 
@@ -60,10 +60,28 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   (eval "$(echo psql -X -P pager -f "${query}" "$@")") >"${tof}.out"
   local code=$?
 
-  # grep --color=never -E -v 'EEEselect.*client_addr'
-  export GREP_COLOR=35
-  grep -C 1000 -i --color=always -E -e ' (((auto)?(analyze|vacuum))|delete|update|insert|create (table|index)|alter (table|index)?)' "${tof}.out" |
-    egrep -v -- '^(--|.*select pid, client_addr)' >>"${tof}"
+  local sw=$(screen-width)
+  local h=$((height + 4))
+  local fh=$(wc -l "${tof}.out" | awk '{print $1}')
+
+  [[ ${fh} -gt $h ]] && {
+    local alert_color_bg="${bakpur}"
+    local alert_color_fg="${txtpur}"
+    if [[ ${fh} -gt 20 ]]; then
+      alert_color_bg="${bakred}"
+      alert_color_fg="${bldred}"
+    fi
+    printf "${bldwht}${bakblu} Truncated ${txtblu}${alert_color_bg}${bldwht}${alert_color_bg}${bldylw}$(printf " %2d Rows" $((fh - h)))  ${alert_color_fg}${bakylw}${clr}${alert_color_fg}${bakylw} Total: $((fh - 4)) Active Queries ${txtylw}${bakblk}${clr}\n" >>"${tof}"
+  }
+
+  cat "${tof}.out" |
+    grep -E -v -- ' select pid, client_addr ' |
+    GREP_COLOR=34 grep -E -C 1000 -i --color=always -e ' (((auto)?(analyze|vacuum))|delete|update|insert|create (table|index|materialized view)?|drop (table|index|materialized view)?|alter (table|index)?|\[a-z\])' |
+    GREP_COLOR=32 grep -E -C 1000 -i --color=always -e ' (active|idle)' |
+    sed -E '/^--$/d' |
+    head -"${h}" |
+    cut -c -"${sw}" |
+    cat >>"${tof}"
 
   [[ ${code} -ne 0 ]] && {
     error "psql exited with code ${code}" >>"${tof}.errors"

@@ -6,4 +6,3 @@ select pid, client_addr || ':' || client_port as Client,
 from pg_stat_activity 
 where state != 'idle' 
 order by Duration desc
-limit LIMIT
