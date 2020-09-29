@@ -187,7 +187,18 @@ util.lines-in-folder() {
 util.functions-starting-with() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | ${GrepCommand} '()' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+  set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+}
+
+util.functions-starting-with-lines() {
+  local prefix="${1}"
+  local extra_command=${2:-"cat"}
+  set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command}
+}
+
+util.functions-starting-with-csv() {
+  local prefix="$1"
+  util.functions-starting-with "${prefix}" | sedx "s/${prefix/./\\.}//g; s/\s+(\w)/, \1/g;"
 }
 
 util.functions-matching() {
@@ -232,7 +243,6 @@ export BASHMATIC_UTIL_SED_COMMAND=
 # It is used by sedx() function
 #———————————————————————————————————————————————————————
 sedx.cache-command() {
-
   if [[ -z "${BASHMATIC_UTIL_SED_COMMAND}" ]]; then
     local sed_path
     local sed_command
