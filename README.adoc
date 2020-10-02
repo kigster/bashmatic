@@ -4,15 +4,16 @@
 :doctype: book
 :toc:
 :toclevels: 3
-:sectnums:
+:sectnums: 
 
-image::https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
+image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
+image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield]
 
-NOTICE: 
+WARNING: 
 ====
 * _Bashmatic®_ is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
 
-* You can also download the xref:README.pdf[PDF version of this document] which is better for print. 
+* You can also download the **xref:README.pdf[PDF version of this document]** which is better for print. 
 
 * We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the xref:USAGE.adoc[USAGE.adoc] file, or it's xref:USAGE.pdf[PDF version].
 
@@ -21,8 +22,8 @@ NOTICE:
 * There is also the beginnings of `shdoc`-based documentation, available in the xref:./USAGE.adoc[USAGE.adoc] file and a corresponding xref:./USAGE.pdf[PDF].
 
 * Additionally please checkout the xref:CHANGELOG.md[CHANGELOG] and the xref:LICENSE.adoc[LICENSE].
-
 ====
+
 
 _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
 
@@ -169,7 +170,7 @@ Just like with the regular `top` you can see the "top" resource-consuming proces
 
 Here is the pixelated screenshot of `dbtop` running against two live databases:
 
-image::.dbtop.png[DBTop Example,width=100%,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
+image::.dbtop.png[DBTop Example,width=90%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
 
 In order for this to work, you must first define database connection parameters in a YAML file located at the following PATH: `~/.db/database.yml`.
 
@@ -355,7 +356,7 @@ bashmatic         ftrace            output            settings          util
 brew              gem               pids              shell-set         vim
 caller            git-recurse-updat progress-bar      ssh               yaml
 color             git               ruby              subshell
-db                sedx             run               sym
+db                sedx              run               sym
 ----
 
 === Key Modules Explained
@@ -541,6 +542,7 @@ Here is another example where we are deciding whether to print something based o
 
 ----
 output.is-tty && h1 "Yay For Terminals!"
+output.has-stdin && echo "We are being piped into..."
 ----
 
 The above reads more like a high level language like Ruby or Python than Shell. That's because BASH is more powerful than most people think.
@@ -849,7 +851,6 @@ aws.credentials.validate-or-exit
 ----
 
 
-
 ### How can I test if the function was ran as part of a script, or "sourced-in"?
 
 Some bash files exists as libraries to be "sourced in", and others exist as scripts to be run. But users won't always know what is what, and may try to source in a script that should be run, or vice versa — run a script that should be sourced in.
@@ -917,6 +918,7 @@ Submit a pull request!
 
 This project is distributed under the MIT License.
 
-image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[License Scan Status,width=400,height=500link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large]
+image::https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large]
+
 
 

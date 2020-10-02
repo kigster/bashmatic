@@ -436,6 +436,10 @@ output.is-pipe() {
   [[ -p /dev/stdout ]]
 }
 
+output.has-stdin() {
+  test -s /dev/stdin
+}
+
 output.is-redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
 }

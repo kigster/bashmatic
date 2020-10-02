@@ -5060,6 +5060,17 @@ output.color.on ()
 
 ----
 
+==== `output.has-stdin`
+
+[source,bash]
+----
+output.has-stdin () 
+{ 
+    test -s /dev/stdin
+}
+
+----
+
 ==== `output.is-pipe`
 
 [source,bash]
@@ -8569,7 +8580,32 @@ util.functions-starting-with ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    set | ${GrepCommand} '()' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+}
+
+----
+
+==== `util.functions-starting-with-csv`
+
+[source,bash]
+----
+util.functions-starting-with-csv () 
+{ 
+    local prefix="$1"
+    util.functions-starting-with "${prefix}" | sedx "s/${prefix/./\\.}//g; s/\s+(\w)/, \1/g;"
+}
+
+----
+
+==== `util.functions-starting-with-lines`
+
+[source,bash]
+----
+util.functions-starting-with-lines () 
+{ 
+    local prefix="${1}"
+    local extra_command=${2:-"cat"}
+    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command}
 }
 
 ----
