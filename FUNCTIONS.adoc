@@ -332,6 +332,34 @@ array.join ()
 
 ----
 
+==== `array.sort`
+
+[source,bash]
+----
+array.sort () 
+{ 
+    local IFS_previous="${IFS}"
+    export IFS=''
+    printf "%s\n" "$@" | sort | tr '\n' ' ' | sed 's/ $//g'
+    IFS="${IFS_previous}"
+}
+
+----
+
+==== `array.sort-numeric`
+
+[source,bash]
+----
+array.sort-numeric () 
+{ 
+    local IFS_previous="${IFS}"
+    export IFS=''
+    printf "%s\n" "$@" | sort -n | tr '\n' ' ' | sed 's/ $//g'
+    IFS="${IFS_previous}"
+}
+
+----
+
 ==== `array.to.bullet-list`
 
 [source,bash]
@@ -361,6 +389,20 @@ array.to.csv ()
 array.to.piped-list () 
 { 
     array.join ' | ' false "$@"
+}
+
+----
+
+==== `array.uniq`
+
+[source,bash]
+----
+array.uniq () 
+{ 
+    local IFS_previous="${IFS}"
+    IFS=''
+    printf "%s\n" "$@" | sort -u | tr '\n' ' ' | sed 's/ $//g'
+    IFS="${IFS_previous}"
 }
 
 ----
@@ -3057,7 +3099,7 @@ bashmatic.auto-update ()
     git.configure-auto-updates
     git.repo-is-clean || { 
         output.is-ssh || { 
-            h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up."
+            h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up." 1>&2
         }
         return 1
     }

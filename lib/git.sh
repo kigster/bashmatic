@@ -19,7 +19,7 @@ git.sync() {
   cd "${BASHMATIC_HOME}" >/dev/null
   git.repo-is-clean || {
     output.is-ssh || warning "${bldylw}${BASHMATIC_HOME} has locally modified files." \
-      "Please commit or stash them to allow auto-upgrade to function as designed." >&2
+                             "Please commit or stash them to allow auto-upgrade to function as designed." >&2
     cd "${dir}" >/dev/null
     return 1
   }
@@ -152,7 +152,7 @@ bashmatic.auto-update() {
   git.repo-is-clean || {
     output.is-ssh || {
       h1 "${BASHMATIC_HOME} has locally modified changes." \
-        "Will wait with auto-update until it's sync'd up."
+        "Will wait with auto-update until it's sync'd up." >&2
     }
     return 1
   }
