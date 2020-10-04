@@ -1,5 +1,13 @@
 = Changelog
 
+== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+
+https://github.com/kigster/bashmatic/compare/v1.3.0...HEAD[Full Changelog]
+
+*Merged pull requests:*
+
+* Adding array.sort, array.uniq and array.sort-numeric https://github.com/kigster/bashmatic/pull/14[#14] (https://github.com/kigster[kigster])
+
 == https://github.com/kigster/bashmatic/tree/v1.3.0[v1.3.0] (2020-09-22)
 
 https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0[Full Changelog]
