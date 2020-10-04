@@ -3,6 +3,27 @@
 load test_helper
 source lib/array.sh
 
+@test "array.sort" {
+  declare -a array=(hello begin again again)
+  local sorted="$(array.sort "${array[@]}")"
+  set -e
+  [[ "${sorted}" == "again again begin hello" ]]
+}
+
+@test "array.sort-numeric" {
+  declare -a array=(10 12 0 1 1)
+  local sorted="$(array.sort "${array[@]}")"
+  set -e
+  [[ "${sorted}" == "0 1 1 10 12" ]]
+}
+
+@test "array.uniq" {
+  declare -a array=(begin hello begin again again)
+  local sorted="$(array.uniq "${array[@]}")"
+  set -e
+  [[ "${sorted}" == "again begin hello" ]]
+}
+
 @test "array.eval-in-groups-of" {
   declare -a array=(asciidoc asciidoctor autoconf automake awscli bash zsh)
   local out

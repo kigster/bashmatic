@@ -1,27 +1,33 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
-
-# Controls when the action will run. Triggers the workflow on push or pull request 
-# events but only for the master branch
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
-    # Runs a single command using the runners shell
     - name: Run a one-line script
       run: MIN_WIDTH=100 bin/specs
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install ShellCheck
+      run: |
+        scversion="stable" # or "v0.4.7", or "latest"
+        wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${scversion?}/shellcheck-${scversion?}.linux.x86_64.tar.xz" | tar -xJv
+        mkdir -p ${HOME}/bin
+        cp -v "shellcheck-${scversion}/shellcheck"  ${HOME}/bin
+        ${HOME}/bin/shellcheck --version
+    - name: Run ShellCheck
+      run: 
+        ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) || true
+        echo; echo; echo
+        ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) |  egrep -c '^In ' || true
+
+

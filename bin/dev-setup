@@ -149,7 +149,7 @@ export DevSetup__Callbacks
     awscli
     bash
     bash-completion
-    bats
+    bats-core
     cloc
     coreutils
     curl
@@ -651,6 +651,13 @@ dev-setup.install() {
 
   brew.install
   brew.cache-reset
+
+  # shellcheck disable=SC2207
+  DevSetup__BrewPackages=($(array.uniq "${DevSetup__BrewPackages[@]}"))
+  # shellcheck disable=SC2207
+  DevSetup__BrewCasks=($(array.uniq "${DevSetup__BrewCasks[@]}"))
+  # shellcheck disable=SC2207
+  DevSetup__BrewServices=($(array.uniq "${DevSetup__BrewServices[@]}"))
 
   if [[ ${flag_callbacks_only} -ne 1 ]]; then
     block_size=${#DevSetup__BrewPackages[@]}

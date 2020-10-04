@@ -2,11 +2,72 @@
 
 Miscellaneous utilities.
 
+* <<arrayhas-element,array.has-element()>>
+* <<arrayincludes,array.includes()>>
+* <<arraysort,array.sort()>>
+* <<arraysort-numeric,array.sort-numeric()>>
+* <<arrayuniq,array.uniq()>>
 * <<dbpsqldb-settings,db.psql.db-settings()>>
 * <<dbconfigparse,db.config.parse()>>
 * <<gitopen,git.open()>>
 * <<pdfcombine,pdf.combine()>>
 * <<utilrot13-stdin,util.rot13-stdin()>>
+
+== array.has-element()
+
+ Returns "true" if the first argument is a member of the array
+ passed as the second argument:
+
+=== Example
+
+[source,bash]
+----
+  $ declare -a array=("a string" test2000 moo)
+  if [[ $(array.has-element "a string" "${array[@]}") == "true" ]]; then
+    ...
+  fi
+----
+
+== array.includes()
+
+ Similar to array.has-elements, but does not print anything, just
+ returns 0 if includes, 1 if not.
+
+== array.sort()
+
+Sorts the array alphanumerically and prints it to STDOUT
+
+=== Example
+
+[source,bash]
+----
+  declare -a unsorted=(hello begin again again)
+  local sorted="$(array.sort "${unsorted[@]}")"
+----
+
+== array.sort-numeric()
+
+Sorts the array numerically and prints it to STDOUT
+
+=== Example
+
+[source,bash]
+----
+  declare -a unsorted=(1 2 34 45 6)
+  local sorted="$(array.sort-numeric "${unsorted[@]}")"
+----
+
+== array.uniq()
+
+Sorts and uniqs the array and prints it to STDOUT
+
+=== Example
+
+[source,bash]
+----
+  declare -a unsorted=(hello hello hello goodbye)
+  local uniqued="$(array.sort-numeric "${unsorted[@]}")"
+----
 
 == db.psql.db-settings()
 

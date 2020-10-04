@@ -7,16 +7,15 @@
 # Any modifications, © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 #———————————————————————————————————————————————————————————————————————————————
 
-# Returns "true" if the first argument is a member of the array
-# passed as the second argument:
+# @description 
+#     Returns "true" if the first argument is a member of the array
+#     passed as the second argument:
 #
-# Example:
-#
+# @example
 #     $ declare -a array=("a string" test2000 moo)
 #     if [[ $(array.has-element "a string" "${array[@]}") == "true" ]]; then
 #       ...
 #     fi
-#
 array.has-element() {
   local search="$1"; shift
   local r="false"
@@ -34,8 +33,9 @@ array.has-element() {
   return 0
 }
 
-# similar to array.has-elements, but does not print anything, just
-# returns 0 if includes, 1 if not.
+# @description 
+#     Similar to array.has-elements, but does not print anything, just
+#     returns 0 if includes, 1 if not.
 array.includes() {
   local search="$1"; shift
   [[ "$*" =~ ${search} ]] || return 1
@@ -101,6 +101,45 @@ array.join() {
     fi
     index=$(( index + 1 ))
   done
+}
+
+# @description Sorts the array alphanumerically and prints it to STDOUT
+#
+# @example
+#     declare -a unsorted=(hello begin again again)
+#     local sorted="$(array.sort "${unsorted[@]}")"
+#
+array.sort() {
+  local IFS_previous="${IFS}"
+  export IFS=$'\0'
+  printf "%s\n" "$@" | sort | tr '\n' ' ' | sed 's/ $//g'
+  IFS="${IFS_previous}"
+}
+
+# @description Sorts the array numerically and prints it to STDOUT
+#
+# @example
+#     declare -a unsorted=(1 2 34 45 6)
+#     local sorted="$(array.sort-numeric "${unsorted[@]}")"
+#
+array.sort-numeric() {
+  local IFS_previous="${IFS}"
+  export IFS=$'\0'
+  printf "%s\n" "$@" | sort -n | tr '\n' ' ' | sed 's/ $//g'
+  IFS="${IFS_previous}"
+}
+
+# @description Sorts and uniqs the array and prints it to STDOUT
+#
+# @example
+#     declare -a unsorted=(hello hello hello goodbye)
+#     local uniqued="$(array.sort-numeric "${unsorted[@]}")"
+#
+array.uniq() {
+  local IFS_previous="${IFS}"
+  IFS=$'\0'
+  printf "%s\n" "$@" | sort -u | tr '\n' ' ' | sed 's/ $//g'
+  IFS="${IFS_previous}"
 }
 
 array.to.csv() {
