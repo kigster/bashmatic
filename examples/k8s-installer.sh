@@ -18,8 +18,8 @@ bashmatic.bash.exit-unless-version-four-or-later
 k8s.ensure-no-brew() {
   local package="$1"
 
-  [[ $(brew.package.is-installed ${package}) == "false" ]]
-}
+  [[ $(brew.package.is-installed "${package}") == "false" ]]
+
 
 main() {
   local kubectl_version="$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"

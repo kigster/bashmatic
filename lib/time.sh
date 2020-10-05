@@ -32,6 +32,17 @@ export AppCurrentOS=${AppCurrentOS:-$(uname -s)}
   ${date_runnable} '+%s%3N'
 }
 
+# milliseconds
+function time.now.with-ms() {
+  local date_runnable
+  date_runnable='date'
+  if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+    [[ -z $(command -v gdate) ]] && .time.osx.coreutils
+    [[ -n $(command -v gdate) ]] && date_runnable='gdate'
+  fi
+  ${date_runnable} '+%T.%3N'
+}
+
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on Linux vs OSX.
 time.date-from-epoch() {

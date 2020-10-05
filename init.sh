@@ -15,11 +15,11 @@ export BASHMATIC_INIT="${BASH_SOURCE[0]}"
 
 [[ -f ${BASHMATIC_HOME}/init.sh ]] && export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
 
-export BashmaticAutoload=${BashmaticAutoload:-"lib/lib.bash lib/tools.bash"}
-for init in ${BashmaticAutoload}; do
-  test -f "${PWD}/${init}" && {
-    [[ -n $DEBUG ]] && echo "sourcing in ${PWD}/${init}"
-    source "${PWD}/${init}"
+# If defined BASHMATIC_AUTOLOAD_FILES, we source these files together with BASHMATIC
+for _init in ${BASHMATIC_AUTOLOAD_FILES}; do
+  [[ -s "${PWD}/${_init}" ]] && {
+    [[ -n $DEBUG ]] && echo "sourcing in ${PWD}/${_init}"
+    source "${PWD}/${_init}"
   }
 done
 

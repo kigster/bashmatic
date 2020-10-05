@@ -1,9 +1,40 @@
 #!/usr/bin/env bash
+# @file osx.sh
+# @brief OSX Specific Helpers and Utilities
 
+# @description
+#   Checks if a given parameter matches any of the installed applications
+#   under /Applications and ~/Applications
+#
+#   By the default prints the matched application. Pass `-q` as a second
+#   argument to disable output.
+#
+# @example
+#    ❯ osx.app.is-installed safari
+#    Safari.app
+#    ❯ osx.app.is-installed safari -q && echo installed
+#    installed
+#    ❯ osx.app.is-installed microsoft -c
+#    6
+#
+# @arg $1 a string value to match (case insentively) for an app name
+# @arg $2.. additional arguments to the last invocation of `grep`
+#
+# @exitcode 0 if match was found
+# @exitcode 1 if not
+function osx.app.is-installed() {
+  local app="$1"
+  shift
+
+  /bin/ls -1 /Applications ~/Applications |
+    grep -E '\.app$' |
+    sort -u |
+    grep "$@" -E -i "${app}|${app/*-/}"
+}
 
 function osx.dropbox.exclude() {
   local dir="$1"
-  if [[ -d "${dir}" ]] ; then
+  if [[ -d "${dir}" ]]; then
     xattr -w com.dropbox.ignored 1 "$1"
   else
     error "Folder '${dir}' does not exist or is blank."
@@ -12,7 +43,7 @@ function osx.dropbox.exclude() {
 }
 
 function osx.dropbox.exclude-pwd() {
-  xattr -w com.dropbox.ignored 1 $(pwd)
+  xattr -w com.dropbox.ignored 1 "${PWD}"
 }
 
 # Breaks up a file containing a pasted cookie into individual cookies sorted
@@ -25,8 +56,8 @@ function osx.cookie-dump() {
   if [[ ! -s ${file} ]]; then
     tmp=$(mktemp)
     file=${tmp}
-    pbpaste >${file}
-    local size=$(file.size ${file})
+    pbpaste >"${file}"
+    local size=$(file.size "${file}")
     if [[ ${size} -lt 4 ]]; then
       error "Pasted data is too small to be a valid cookie?"
       info "Here is what we got in your clipboard:\n\n$(cat ${file})\n"

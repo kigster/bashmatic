@@ -4,18 +4,55 @@
 # © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
+# IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
+export BASHMATIC_TEST_DIR="${BASHMATIC_TEST_DIR:-"test"}"
 
+# @description Checks if we have debug mode enabled
+is-dbg() {
+  [[ -n $DEBGUG ]]
+}
 
+# @description Local debugging helper, activate it with DEBUG=1
+dbg() {
+  is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" >&2
+}
+
+# @description
+#     Find project root containing our test folder by
+#     checking all path components up to /
+function specs.find-project-root() {
+  local dir="${PWD}"
+  while true; do
+    [[ "${dir}" == "/" || -z "${dir}" ]] && break
+    [[ -d "${dir}/${BASHMATIC_TEST_DIR}" ]] && {
+      echo "${dir}"
+      return 0
+    }
+    dir="$(dirname "${dir}")"
+  done
+
+  error "Can't find project root containing directory '${BASHMATIC_TEST_DIR}'" \
+    "If your tests are located in differently named folder (eg 'specs'), please set"
+  "the environment variable before running specs, eg:" \
+    "\$ ${bldylw}export BASHMATIC_TEST_DIR=specs; specs" >&2
+
+  return 1
+}
+
+# AUTOMATIC variables
 export BashmaticBin="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-export BashmaticHome="$(dirname ${BashmaticBin})"
+export BashmaticHome="$(dirname "${BashmaticBin}")"
 
-[[ -n ${DEBUG} ]] && echo "Script Source: ${BASH_SOURCE[0]}"
+# Load Bashmatic...
 [[ -f "${BashmaticHome}/init.sh" ]] && source "${BashmaticHome}/init.sh"
+
+dbg "Script Source: ${BASH_SOURCE[0]}"
 
 export TERM=${TERM:-xterm-256color}
 export MIN_WIDTH=${MIN_WIDTH:-"100"}
 
-export ProjectRoot=${PWD}
+export ProjectRoot="$(specs.find-project-root)"
+dbg "ProjectRoot is ${ProjectRoot}"
 
 [[ ! -f "${ProjectRoot}/Gemfile.lock" ]] && trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT
 
@@ -25,7 +62,7 @@ export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
 export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:${ProjectRoot}/test/bin:/usr/bin:/usr/local/bin:/bin:/sbin"
 
-[[ -n $DEBUG ]] && echo "BatsPrefix is ${BatsPrefix}"
+dbg "BatsPrefix is ${BatsPrefix}"
 
 declare -a TestFiles=()
 
@@ -51,7 +88,7 @@ fi
 
 specs.test-filename() {
   file=$1
-  for f in ${file} "test/${file}" "test/${file}_tests.bats"; do
+  for f in "${file}" "test/${file}" "test/${file}_tests.bats"; do
     if [[ -s ${f} ]]; then
       printf "%s" "${f}"
       break
@@ -81,40 +118,42 @@ specs.install-bats-brew() {
 
 specs.install-bats-sources() {
   [[ -n $(which bats) ]] && return 0
-  [[ ${PATH} =~ ${ProjectRoot} ]] || export PATH="${ProjectRoot}/bin:${PATH}"
-  [[ ! -d ${BatsRoot} ]] && run "git clone https://github.com/sstephenson/bats.git ${BatsRoot}"
 
-  if [[ -d ${BatsRoot} && ! -x ${BatsPrefix}/bin/bats ]]; then
-    run "cd ${BatsRoot} && git reset --hard && git pull --rebase 2>/dev/null"
-    run.set-next show-output-on abort-on-error
-    run "./install.sh ${BatsPrefix}"
-    run "cd ${ProjectRoot}"
-    run 'hash -r'
-  fi
+  run.set-next show-output-off abort-on-error
 
-  run.set-next show-output-on abort-on-error
-  [[ -d "${BatsSource}" && -x "${BatsSource}/install.sh" ]] || {
+  [[ ! -d ${BatsRoot} ]] &&
+    run "git clone https://github.com/sstephenson/bats.git ${BatsRoot}"
+
+  [[ ! -d "${BatsSource}" ]] &&
     run "cd $(dirname "${BatsSource}") && git clone https://github.com/sstephenson/bats.git $(basename "${BatsSource}")"
-  }
 
   [[ -d "${BatsSource}" && -x "${BatsSource}/install.sh" ]] || {
-    echo "Can't find Bats source folder."
+    error "Can't find Bats source folder: expected ${BatsSource} to contain Bats sources..."
     exit 1
   }
 
+  # Let's update Bats if needed, and run its installer.
   run "cd ${BatsSource} && git reset --hard && git pull --rebase 2>/dev/null || true"
   local prefix="$(cd "${BatsPrefix}" && pwd -P)"
   run "./install.sh ${prefix}"
   run "cd ${ProjectRoot}"
   run 'hash -r'
 
-  [[ ${PATH} =~ ${ProjectRoot} ]] ||
+  [[ ${PATH} =~ ${ProjectRoot}/bin ]] ||
     export PATH="${ProjectRoot}/bin:${ProjectRoot}/test/bin:${PATH}"
-
 }
 
 specs.install-bats() {
-  specs.install-bats-sources "$@"
+  local install_type="${1:-"sources"}"
+  local func="specs.install-bats-${install_type}"
+
+  util.is-a-function "${func}" || {
+    error "Install method ${install_type} is unsupported." \
+      "Currently available: brew and sources."
+    return 1
+  }
+
+  ${func}
 }
 
 spec.find-bats() {
@@ -150,10 +189,10 @@ specs.run-file() {
 }
 
 specs.select-files() {
-  export os=$(uname -s | tr [A-Z] [a-z])
+  export os="$(uname -s | tr '[:upper:]' '[:lower:]')"
   if [[ -z ${TestFiles[*]} ]]; then
-    TestFiles=($(ls -1 test/*_test.*))
-    [[ -d "test/${os}" ]] && TestFiles=(${TestFiles[@]} $(ls -1 test/${os}/*_test.* 2>/dev/null))
+    TestFiles=($(find "${BASHMATIC_TEST_DIR}" -name '*test*.bats' -depth 1 | sort))
+    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && TestFiles+=($(find "${BASHMATIC_TEST_DIR}/${os}" -name '*test*.bats' -depth 1 | sort))
   fi
   export TestFiles
 }
@@ -166,7 +205,7 @@ specs.run-all() {
 }
 
 specs.main() {
-  specs.install-bats
+  specs.install-bats sources
   specs.select-files
   specs.run-all
 }
@@ -192,7 +231,7 @@ while :; do
     ;;
   *) # Default case: If no more options then break out of the loop.
     [[ -z ${1} ]] && break
-    file=$(specs.test-filename $1)
+    file=$(specs.test-filename "$1")
     [[ -n "${file}" ]] && TestFiles=(${TestFiles[@]} ${file})
     shift
     ;;

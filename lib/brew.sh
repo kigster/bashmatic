@@ -25,10 +25,8 @@ function brew.cache-reset() {
 }
 
 function brew.cache-reset.delayed() {
-  ("${BASH_IN_SUBSHELL}") || brew.cache-reset
-  #("${BASH_IN_SUBSHELL}") && trap "rm -f ${LibBrew__PackageCacheList} ${LibBrew__CaskCacheList}" EXIT
+  ((BASH_IN_SUBSHELL)) || brew.cache-reset
 }
-
 function brew.upgrade.packages() {
   [[ -z "$(which brew)" ]] || brew.install
   [[ -z $1 ]] && {
@@ -36,7 +34,7 @@ function brew.upgrade.packages() {
     return 1
   }
 
-  run "brew upgrade $@"
+  run "brew upgrade $*"
 }
 
 function brew.upgrade() {
@@ -68,7 +66,7 @@ function brew.package.link() {
   local package="${1}"
   shift
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-  run "brew link"${verbose}"${package} $*"
+  run "brew link ${verbose} ${package} $*"
 }
 
 function brew.relink() {
@@ -79,11 +77,11 @@ function brew.relink() {
 }
 
 function brew.package.list() {
-  cache-or-command ${LibBrew__PackageCacheList} 30 brew ls -1
+  cache-or-command ${LibBrew__PackageCacheList} 10 brew list --formula -1
 }
 
 function brew.cask.list() {
-  cache-or-command ${LibBrew__CaskCacheList} 30 brew cask ls -1
+  cache-or-command ${LibBrew__CaskCacheList} 10 brew list --cask -1
 }
 
 function brew.cask.tap() {
@@ -97,25 +95,45 @@ cache-or-command() {
   shift
   local command="$*"
 
-  file.exists-and-newer-than "${file}""${stale_minutes}" && {
+  file.exists-and-newer-than "${file}" "${stale_minutes}" && {
     cat "${file}"
     return 0
   }
 
-  cp /dev/null ${file} >/dev/null
+  rm -f "${file}" && touch "${file}"
   eval "${command}" | tee -a "${file}"
 }
 
 function brew.package.is-installed() {
-  local package="${1}"
-  local -a installed_packages=($(brew.package.list))
-  array.has-element "${package}" "${installed_packages[@]}"
+  if brew.package.all-installed "$@"; then
+    echo "true"
+  else
+    echo "false"
+  fi
 }
 
 function brew.cask.is-installed() {
-  local cask="${1}"
+  if brew.cask.all-installed "$@"; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
+function brew.package.all-installed() {
+  local -a installed_packages=($(brew.package.list))
+  for item in "$@"; do
+    array.includes "${item}" "${installed_packages[@]}" || return 1
+  done
+  return 0
+}
+
+function brew.cask.all-installed() {
   local -a installed_casks=($(brew.cask.list))
-  array.has-element ${cask} "${installed_casks[@]}"
+  for item in "$@"; do
+    array.includes "${item}" "${installed_casks[@]}" || return 1
+  done
+  return 0
 }
 
 function brew.reinstall.package() {
@@ -137,28 +155,34 @@ function brew.install.package() {
   local package="$1"
   local force=
   local verbose=
+  local code
+
   [[ -n "${opts_force}" ]] && force="--force"
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-
   [[ -z "${opt_terse}" ]] && inf "checking for 🍻 ${bldylw}${package}..."
 
-  local code
-  if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
+  if brew.package.all-installed "${package}"; then
+
     [[ -z "${opt_terse}" ]] && ok:
     [[ -z "${opt_terse}" ]] || printf "${bldgrn}○ "
+
     export LibRun__LastExitCode=0
   else
     if [[ -z "${opt_terse}" ]]; then
       hl.subtle "Brew is installing package: ${package}"
       run "brew install ${package} ${force} ${verbose}"
-      code=${LibRun__LastExitCode}
+      code="${LibRun__LastExitCode}"
     else
       brew install "${package}" ${force} ${verbose} 1>/dev/null 2>&1
       code=$?
     fi
 
-    run "brew link ${package} --overwrite ${force} ${verbose}"
-    run "hash -r"
+    [[ -n ${force} ]] && {
+      run.set-next continue-on-error
+      run "brew link ${package} --overwrite ${force} ${verbose}"
+    }
+
+    hash -r >/dev/null
 
     [[ "${code}" -eq 0 ]] || {
       warning "Reinstalling ${package} as I couldn't find it after instal..."
@@ -168,7 +192,7 @@ function brew.install.package() {
     # brew.cache-reset.delayed
     export LibRun__LastExitCode=0
 
-    if [[ "$(brew.package.is-installed ${package})" == "true" ]]; then
+    if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
       [[ -n "${opt_terse}" ]] && printf "\n 🟢 "
     else
       [[ -n "${opt_terse}" ]] && printf "\n 🔴 "
@@ -188,15 +212,17 @@ function brew.install.cask() {
   [[ -n "${opts_force}" ]] && force="--force"
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
 
-  inf "verifying brew cask ${bldylw}{cask}"
-  if [[ -n "$(ls -al /Applications/*.app | grep -i ${cask})" && -z "${opts_force}" ]]; then
-    ui.closer.ok:
-  elif [[ $(brew.cask.is-installed ${cask}) == "true" ]]; then
+  local installed_app="$(osx.app.is-installed "${cask}")"
+
+  inf "checking if cask is installed: ${bldylw}${cask}"
+  if [[ -n "${installed_app}" && -z "${opts_force}" ]]; then
     ui.closer.ok:
     return 0
+  elif brew.cask.all-installed "${cask}"; then
+    ui.closer.ok:
   else
     ui.closer.kind-of-ok:
-    run "brew cask install"${cask}"${force} ${verbose}"
+    run "brew cask install ${cask} ${force} ${verbose}"
   fi
 
   brew.cache-reset.delayed
@@ -242,6 +268,7 @@ function brew.reinstall.packages() {
     brew.install.package "${package}"
     local result=$?
   done
+
   return ${result}
 }
 
