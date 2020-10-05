@@ -15,6 +15,14 @@ export BASHMATIC_INIT="${BASH_SOURCE[0]}"
 
 [[ -f ${BASHMATIC_HOME}/init.sh ]] && export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
 
+export BashmaticAutoload=${BashmaticAutoload:-"lib/lib.bash lib/tools.bash"}
+for init in ${BashmaticAutoload}; do
+  test -f "${PWD}/${init}" && {
+    [[ -n $DEBUG ]] && echo "sourcing in ${PWD}/${init}"
+    source "${PWD}/${init}"
+  }
+done
+
 # shellcheck disable=SC2155
 export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | head -1)"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"

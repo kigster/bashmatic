@@ -4,12 +4,13 @@
 # © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
+
+
 export BashmaticBin="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 export BashmaticHome="$(dirname ${BashmaticBin})"
 
-echo "${BASH_SOURCE[0]}"
-test -f "${BashmaticHome}/init.sh" && source "${BashmaticHome}/init.sh"
-test -f "./lib/lib.bash" && source "lib/lib.bash"
+[[ -n ${DEBUG} ]] && echo "Script Source: ${BASH_SOURCE[0]}"
+[[ -f "${BashmaticHome}/init.sh" ]] && source "${BashmaticHome}/init.sh"
 
 export TERM=${TERM:-xterm-256color}
 export MIN_WIDTH=${MIN_WIDTH:-"100"}
@@ -24,7 +25,7 @@ export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
 export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:${ProjectRoot}/test/bin:/usr/bin:/usr/local/bin:/bin:/sbin"
 
-echo "BatsPrefix is ${BatsPrefix}"
+[[ -n $DEBUG ]] && echo "BatsPrefix is ${BatsPrefix}"
 
 declare -a TestFiles=()
 
