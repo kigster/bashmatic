@@ -5,13 +5,16 @@
 #
 # Any modifications, © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 
+export BashMatic__ColorLoaded=${BashMatic__ColorLoaded:-"0"}
+
 reset-color() {
   echo -en "${clr}"
 }
 
 color.enable() {
-  if [[ -n "${AppColorsLoaded}" && ${AppColorsLoaded} -ne 1 ]]; then
-
+  if ((BashMatic__ColorLoaded)); then
+    [[ -n ${DEBUG} ]] && echo "colors are already loaded."
+  else
     export txtblk='\e[0;30m' # Black - Regular
     export txtred='\e[0;31m' # Red
     export txtgrn='\e[0;32m' # Green
@@ -64,12 +67,8 @@ color.enable() {
     export white_on_salmon="\e[48;5;196m"
     export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
 
-    export AppColorsLoaded=1
-  else
-    [[ -n ${DEBUG} ]] && echo "colors already loaded..."
+    export BashMatic__ColorLoaded=1
   fi
-
-  #trap reset-color EXIT
 }
 
 txt-info() { printf "${clr}${txtblu}"; }
@@ -132,9 +131,9 @@ color.disable() {
   unset white_on_salmon
   unset yellow_on_gray
 
-  export AppColorsLoaded=0
+  export BashMatic__ColorLoaded=0
 
   #trap reset-color EXIT
 }
 
-((${AppColorsLoaded})) || color.enable
+((BashMatic__ColorLoaded)) || color.enable
