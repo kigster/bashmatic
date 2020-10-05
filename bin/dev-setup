@@ -91,33 +91,24 @@ export DevSetup__Callbacks
     font-daddytimemono-nerd-font
     font-dejavu-sans-mono-for-powerline
     font-denk-one
-    font-droid-sans-mono-for-powerline
     font-envy-code-r
     font-everson-mono
     font-fantasque-sans-mono
-    font-fira-mono-for-powerline
     font-fontawesome
     font-gomono-nerd-font
-    font-hack
     font-ia-writer-mono
     font-inconsolata
-    font-inconsolata-for-powerline
-    font-inconsolata-for-powerline-bold
     font-jetbrains-mono
     font-kawkab-mono
-    font-lekton
     font-lekton-nerd-font
-    font-liberation-mono-for-powerline
     font-menlo-for-powerline
     font-meslo-for-powerline
     font-miriam-mono-clm
-    font-monofur-for-powerline
     font-monoid
     font-monoisome
     font-mononoki
     font-monoton
     font-noto-mono
-    font-noto-mono-for-powerline
     font-office-code-pro
     font-oswald
     font-oxygen
@@ -126,17 +117,13 @@ export DevSetup__Callbacks
     font-pt-mono
     font-roboto
     font-roboto-condensed
-    font-roboto-mono-for-powerline
     font-share-tech-mono
     font-sometype-mono
     font-source-code-pro
-    font-source-code-pro-for-powerline
     font-source-sans-pro
-    font-space-mono
     font-titillium
     font-tulpen-one
     font-ubuntu
-    font-ubuntu-mono-derivative-powerline
     font-victor-mono
   )
 }
@@ -663,6 +650,7 @@ dev-setup.install() {
     block_size=${#DevSetup__BrewPackages[@]}
     [[ ${block_size} -gt 0 ]] && {
       h2 "Installing ${block_size} Brew Packages"
+      brew.cache-reset
       dev-setup.install.packages "brew.install.package" "${DevSetup__BrewPackages[@]}" || {
         failures=$((failures + 1))
       }
@@ -672,6 +660,7 @@ dev-setup.install() {
     block_size=${#DevSetup__BrewCasks[@]}
     [[ "${block_size}" -gt 0 ]] && {
       h2 "Installing ${block_size} Brew Casks"
+      brew.cache-reset
       dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewCasks[@]}" || {
         failures=$((failures + 1))
       }
@@ -690,8 +679,8 @@ dev-setup.install() {
     block_size=${#DevSetup__BrewFonts[@]}
     [[ "${block_size}" -gt 0 ]] && {
       h2 "Installing ${block_size} Open Source Fonts"
-
-      run "brew tap homebrew/cask-fonts"
+      brew tap | grep -q cask-fonts || run "brew tap homebrew/cask-fonts"
+      brew.cache-reset
       dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewFonts[@]}" || {
         failures=$((failures + 1))
       }
