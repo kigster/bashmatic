@@ -4,13 +4,24 @@
 # © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
+export BashmaticBin="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+export BashmaticHome="$(dirname ${BashmaticBin})"
+
+test -f "${BashmaticHome}/init.sh" && source "${BashmaticHome}/init.sh"
+test -f "./lib/lib.bash" && source "lib/lib.bash"
+
 export TERM=${TERM:-xterm-256color}
 export MIN_WIDTH=${MIN_WIDTH:-"100"}
 
-export ProjectRoot=$(pwd -P)
-trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT
+export ProjectRoot=${PWD}
+
+[[ ! -f "${ProjectRoot}/Gemfile.lock" ]] && trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT
+
 export BatsRoot="${ProjectRoot}/.bats-sources"
-export BatsPrefix="${ProjectRoot}/.bats-install"
+export BatsSource="${ProjectRoot}/.bats-sources"
+export BatsPrefix="${ProjectRoot}/.bats-prefix"
+
+export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:${ProjectRoot}/test/bin:/usr/bin:/usr/local/bin:/bin:/sbin"
 
 echo "BatsPrefix is ${BatsPrefix}"
 
@@ -22,13 +33,11 @@ export GrepCommand="$(which grep) -E -e "
 
 export Bashmatic__Test=${True}
 
-(mkdir -p ${BatsPrefix} 2>/dev/null) || true
-(mkdir -p ${BatsPrefix}/bin 2>/dev/null) || true
-(mkdir -p ${BatsPrefix}/libexec 2>/dev/null) || true
+(mkdir -p "${BatsPrefix}" 2>/dev/null) || true
+(mkdir -p "${BatsPrefix}"/bin 2>/dev/null) || true
+(mkdir -p "${BatsPrefix}"/libexec 2>/dev/null) || true
 
 export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
-
-source "$(pwd)/init.sh"
 
 if [[ -n ${CI} ]]; then
   .output.set-indent 0
@@ -42,7 +51,7 @@ specs.test-filename() {
   file=$1
   for f in ${file} "test/${file}" "test/${file}_tests.bats"; do
     if [[ -s ${f} ]]; then
-      printf "%s" ${f}
+      printf "%s" "${f}"
       break
     fi
   done
@@ -50,7 +59,7 @@ specs.test-filename() {
 
 specs.usage() {
   echo
-  printf "USAGE\n    ${bldgrn}bin/specs [ test1 test2 ... ]${clr}\n\n"
+  printf "USAGE\n    ${bldgrn}specs [ test1 test2 ... ]${clr}\n\n"
   printf "    ${txtblu}where test1 can be a full filename, or a partial, eg.\n"
   printf "    ${txtblu}'test/util_tests.bats' or just 'util'.\n\n"
 
@@ -80,6 +89,26 @@ specs.install-bats-sources() {
     run "cd ${ProjectRoot}"
     run 'hash -r'
   fi
+
+  run.set-next show-output-on abort-on-error
+  [[ -d "${BatsSource}" && -x "${BatsSource}/install.sh" ]] || {
+    run "cd $(dirname "${BatsSource}") && git clone https://github.com/sstephenson/bats.git $(basename "${BatsSource}")"
+  }
+
+  [[ -d "${BatsSource}" && -x "${BatsSource}/install.sh" ]] || {
+    echo "Can't find Bats source folder."
+    exit 1
+  }
+
+  run "cd ${BatsSource} && git reset --hard && git pull --rebase 2>/dev/null || true"
+  local prefix="$(cd "${BatsPrefix}" && pwd -P)"
+  run "./install.sh ${prefix}"
+  run "cd ${ProjectRoot}"
+  run 'hash -r'
+
+  [[ ${PATH} =~ ${ProjectRoot} ]] ||
+    export PATH="${ProjectRoot}/bin:${ProjectRoot}/test/bin:${PATH}"
+
 }
 
 specs.install-bats() {
