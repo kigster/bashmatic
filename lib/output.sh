@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-
 # Private functions
-
 # shellcheck disable=SC2155
 
 export LibOutput__CommandPrefixLen=7
