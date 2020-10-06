@@ -49,11 +49,6 @@ util.generate-password() {
   printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c ${len})"
 }
 
-# This returns true if the argument is numeric
-util.is-numeric() {
-  [[ -z $(echo ${1} | sed -E 's/^[0-9]+$//g') ]]
-}
-
 util.ver-to-i() {
   version=${1}
   echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
@@ -164,11 +159,24 @@ util.whats-installed() {
 }
 
 util.is-a-function() {
-  type "$1" 2>/dev/null | head -1 | grep -q 'is a function'
+  is.a-function "$@"
 }
 
 is-func() {
-  util.is-a-function "$@"
+  is.a-function "$@"
+}
+
+util.invoke-if-function() {
+  local namespace="$1"
+  shift
+  local action="$1"
+  shift
+
+  local func="${namespace}.${action}"
+
+  util.is-a-function "${func}" || return 255
+
+  ${func} "$@"
 }
 
 util.call-if-function() {
@@ -301,7 +309,7 @@ watch.set-refresh() {
 watch.ls-al() {
   while true; do
     ls -al
-    sleep ${LibUtil__WatchRefreshSeconds}
+    sleep "${LibUtil__WatchRefreshSeconds}"
     clear
   done
 }

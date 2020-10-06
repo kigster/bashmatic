@@ -3,6 +3,7 @@
 load test_helper
 
 source lib/util.sh
+source lib/is.sh
 
 set -e
 

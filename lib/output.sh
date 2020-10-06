@@ -279,11 +279,11 @@ ascii-clean() {
   local clean_text="$(.output.clean "${text}")"
   local clean_text_len="${#clean_text}"
   local width="$(.output.width)"
-  local remaining_space_len=$((width - clean_text_len - 1))
-
+  local w=$((width - 1))
+  # local remaining_space_len=$((width - clean_text_len - 1))
   printf -- "${__color_bdr}%s ${__color_fg}" '│'
-  printf "${text}%s" ""
-  [[ ${remaining_space_len} -gt 0 ]] && cursor.shift.x $((remaining_space_len - 1))
+  printf "%-${width}.${width}s" "${text}"
+  cursor.at.x ${width}
   printf -- "${__color_bdr}%s${clr}\n" '│'
 }
 
@@ -482,12 +482,6 @@ box.red-in-red() {
   .output.box "${txtred}" "${txtred}" "$@"
 }
 
-h.e() {
-  local header="$1"
-  shift
-  box.red-in-red "${bakred}${bldwht} ${bldylw}${header}" "$@" >&2
-}
-
 box.green-in-magenta() {
   .output.box "${bldgrn}" "${bldpur}" "$@"
 }
@@ -516,11 +510,53 @@ box.magenta-in-blue() {
   .output.box "${bldblu}" "${bldpur}" "$@"
 }
 
-test-group() {
-  [[ -z ${white_on_salmon} ]] && hr
-  h.salmon "$@"
+#————————————————————
+# Backgrounds
+#————————————————————
+
+box.yellow-on-green() {
+  .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldylw}" "$@"
 }
 
+box.white-on-red() {
+  .output.box "${bakred}${bldwht}" "${bakred}${bldwht}" "$@"
+}
+
+box.white-on-green() {
+  .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldwht}" "$@"
+}
+
+box.white-on-blue() {
+  .output.box "${bakblu}${bldwht}" "${bakblu}${bldwht}" "$@"
+}
+
+box.black-on-yellow() {
+  .output.box "${txtblk}${bakylw}" "${bakylw}" "$@"
+}
+
+box.black-on-red() {
+  .output.box "${txtblk}${bakred}" "${bakred}" "$@"
+}
+
+box.black-on-green() {
+  .output.box "${txtblk}${bakgrn}" "${bakgrn}" "$@"
+}
+
+box.black-on-blue() {
+  .output.box "${txtblk}${bakblu}" "${bakblu}" "$@"
+}
+
+box.black-on-purple() {
+  .output.box "${txtblk}${bakpur}" "${bakpur}" "$@"
+}
+
+h.e() {
+  .output.box "${bakred}${txtblk}" "${bakred}" "$@"
+}
+
+#————————————————————
+# Centered
+#————————————————————
 h.orange-center() {
   center "${white_on_orange}" "$@"
 }
@@ -808,8 +844,8 @@ info() {
 }
 
 error() {
-  header=$(printf -- "${bldwht}${bakred} « ERROR » ${clr}")
-  box.red-in-red "${header} ${bldylw}$@" >&2
+  header=$(printf -- "« ERROR » ")
+  box.white-on-red "${header} $1" "${@:2}" >&2
 }
 
 info:() {
@@ -853,4 +889,39 @@ columnize() {
     expand -8 |
     sed -E '/^ *$/d' |
     grep -v 'Page '
+}
+
+# @description Checks if we have debug mode enabled
+is-dbg() {
+  [[ -n $DEBUG ]]
+}
+
+# @description Local debugging helper, activate it with DEBUG=1
+dbg() {
+  is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" >&2
+  return 0
+}
+
+dbgf() {
+  local func="$1"
+  shift
+  is.a-function "${func}" || {
+    error "${func} is not a function"
+    return 1
+  }
+
+  dbg "${func}(" "$@" ")"
+  ${func} "$@"
+  local code=$?
+
+  is-dbg || return "${code}"
+
+  cursor.up 1
+  cursor.at.x 0
+  if [[ ${code} -eq 0 ]]; then
+    ok:
+  else
+    not-ok:
+  fi
+  return ${code}
 }

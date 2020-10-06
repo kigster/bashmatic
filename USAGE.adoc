@@ -1,4 +1,5 @@
 = util.sh
+:doctype: book
 
 Miscellaneous utilities.
 
@@ -10,7 +11,17 @@ Miscellaneous utilities.
 * <<dbpsqldb-settings,db.psql.db-settings()>>
 * <<dbconfigparse,db.config.parse()>>
 * <<gitopen,git.open()>>
+* <<isvalidationerror,__is.validation.error()>>
+* <<is-validations,is-validations()>>
+* <<isvalidationignore-error,__is.validation.ignore-error()>>
+* <<isvalidationreport-error,__is.validation.report-error()>>
+* <<whenever,whenever()>>
+* <<unless,unless()>>
+* <<osxappis-installed,osx.app.is-installed()>>
+* <<is-dbg,is-dbg()>>
+* <<dbg,dbg()>>
 * <<pdfcombine,pdf.combine()>>
+* <<shell-setis-set,shell-set.is-set()>>
 * <<utilrot13-stdin,util.rot13-stdin()>>
 
 == array.has-element()
@@ -115,6 +126,105 @@ git.open origin # same thing
 
 * *$1* (optional): name of the remote to open, defaults to "orogin"
 
+== __is.validation.error()
+
+  Invoke a validation on the value, and process
+               the invalid case using a customizable error handler.
+
+=== Arguments
+
+* {blank}
++
+= @arg1 func        Validation function name to invoke
+* {blank}
++
+= @arg2 var         Value under the test
+* {blank}
++
+= @arg4 error_func  Error function to call when validation fails
+
+[discrete]
+=== Exit codes
+
+* *0*: if validation passes
+
+== is-validations()
+
+Returns the list of validation functions available
+
+== __is.validation.ignore-error()
+
+Private function that ignores errors
+
+== __is.validation.report-error()
+
+Private function that ignores errors
+
+== whenever()
+
+a convenient DSL for validating things
+
+=== Example
+
+[source,bash]
+----
+   whenever /var/log/postgresql.log is.an-empty-file && {
+      touch /var/log/postgresql.log
+   }
+----
+
+== unless()
+
+a convenient DSL for validating things
+
+=== Example
+
+[source,bash]
+----
+   unless /var/log/postgresql.log is.an-non-empty-file && {
+      touch /var/log/postgresql.log
+   }
+----
+
+== osx.app.is-installed()
+
+@description
+  Checks if a given parameter matches any of the installed applications
+  under /Applications and ~/Applications
+
+By the default prints the matched application. Pass `-q` as a second
+  argument to disable output.
+
+=== Example
+
+[source,bash]
+----
+ ❯ osx.app.is-installed safari
+ Safari.app
+ ❯ osx.app.is-installed safari -q && echo installed
+ installed
+ ❯ osx.app.is-installed microsoft -c
+ 6
+----
+
+=== Arguments
+
+* *$1* (a): string value to match (case insentively) for an app name
+* $2.. additional arguments to the last invocation of `grep`
+
+=== Exit codes
+
+* *0*: if match was found
+* *1*: if not
+
+== is-dbg()
+
+Checks if we have debug mode enabled
+
+== dbg()
+
+Local debugging helper, activate it with DEBUG=1
+
 == pdf.combine()
 
 Combine multiple PDFs into a single one using ghostscript.
@@ -130,6 +240,31 @@ pdf.combine ~/merged.pdf 'my-book-chapter*'
 
 * *$1* (pathname): to the merged file
 * *...* (the): rest of the PDF files to combine
+
+== shell-set.is-set()
+
+My super function.
+Not thread-safe.
+
+=== Example
+
+[source,bash]
+----
+ echo "test: $(say-hello World)"
+----
+
+=== Arguments
+
+* *$1* (string): A value to print
+
+=== Exit codes
+
+* *0*: If successful.
+* *1*: If an empty string passed.
+
+==== See also
+
+* <<validate(),validate()>>
 
 == util.rot13-stdin()
 

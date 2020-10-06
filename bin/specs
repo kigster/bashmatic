@@ -6,20 +6,74 @@
 
 # IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
 export BASHMATIC_TEST_DIR="${BASHMATIC_TEST_DIR:-"test"}"
+for loc in "${BASHMATIC_HOME}/init.sh" "${HOME}/.bashmatic/init.sh" "${PWD}/init.sh"; do
+  if [[ -s "${loc}" ]]; then
+    export BASHMATIC_HOME="$(dirname "${loc}")"
+    break
+  fi
+done
 
-# @description Checks if we have debug mode enabled
-is-dbg() {
-  [[ -n $DEBGUG ]]
+[[ -s "${BASHMATIC_HOME}/init.sh" ]] || {
+  echo "Unable to find Bashmatic installation in ${BASHMATIC_HOME}..."
+  exit 1
 }
 
-# @description Local debugging helper, activate it with DEBUG=1
-dbg() {
-  is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" >&2
+source "${BASHMATIC_HOME}/init.sh"
+
+test-group() {
+  box.black-on-blue "$@"
+  echo
 }
 
-# @description
-#     Find project root containing our test folder by
-#     checking all path components up to /
+# @description Initialize specs
+function specs.init() {
+  dbg "Script Source: ${BASH_SOURCE[0]}"
+
+  export TERM=${TERM:-xterm-256color}
+  export MIN_WIDTH=${MIN_WIDTH:-"100"}
+
+  export ProjectRoot="$(specs.find-project-root)"
+  dbg "ProjectRoot is ${ProjectRoot}"
+
+  # shellcheck disable=SC2064
+  [[ ! -f "${ProjectRoot}/Gemfile.lock" ]] && trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT
+
+  export BatsRoot="${ProjectRoot}/.bats-sources"
+  export BatsSource="${ProjectRoot}/.bats-sources"
+  export BatsPrefix="${ProjectRoot}/.bats-prefix"
+
+  export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:${ProjectRoot}/test/bin:/usr/bin:/usr/local/bin:/bin:/sbin"
+
+  dbg "BatsPrefix is ${BatsPrefix}"
+
+  declare -a TestFiles=()
+
+  export True=1
+  export False=0
+  export GrepCommand="$(which grep) -E -e "
+
+  export Bashmatic__Test=${True}
+
+  (mkdir -p "${BatsPrefix}" 2>/dev/null) || true
+  (mkdir -p "${BatsPrefix}"/bin 2>/dev/null) || true
+  (mkdir -p "${BatsPrefix}"/libexec 2>/dev/null) || true
+
+  export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
+
+  export Bashmatic__BatsInstallMethod="sources"
+  declare -a Bashmatic__BatsInstallPrefixes
+  export Bashmatic__BatsInstallPrefixes=($(util.functions-matching.diff specs.install-bats.))
+  export Bashmatic__BatsInstallMethods="$(array.to.csv "${Bashmatic__BatsInstallPrefixes[@]}")"
+
+  if [[ -n ${CI} ]]; then
+    .output.set-indent 0
+    color.disable
+  else
+    .output.set-indent 1
+    color.enable
+  fi
+}
+
 function specs.find-project-root() {
   local dir="${PWD}"
   while true; do
@@ -39,89 +93,19 @@ function specs.find-project-root() {
   return 1
 }
 
-# AUTOMATIC variables
-export BashmaticBin="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-export BashmaticHome="$(dirname "${BashmaticBin}")"
-
-# Load Bashmatic...
-[[ -f "${BashmaticHome}/init.sh" ]] && source "${BashmaticHome}/init.sh"
-
-dbg "Script Source: ${BASH_SOURCE[0]}"
-
-export TERM=${TERM:-xterm-256color}
-export MIN_WIDTH=${MIN_WIDTH:-"100"}
-
-export ProjectRoot="$(specs.find-project-root)"
-dbg "ProjectRoot is ${ProjectRoot}"
-
-[[ ! -f "${ProjectRoot}/Gemfile.lock" ]] && trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT
-
-export BatsRoot="${ProjectRoot}/.bats-sources"
-export BatsSource="${ProjectRoot}/.bats-sources"
-export BatsPrefix="${ProjectRoot}/.bats-prefix"
-
-export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:${ProjectRoot}/test/bin:/usr/bin:/usr/local/bin:/bin:/sbin"
-
-dbg "BatsPrefix is ${BatsPrefix}"
-
-declare -a TestFiles=()
-
-export True=1
-export False=0
-export GrepCommand="$(which grep) -E -e "
-
-export Bashmatic__Test=${True}
-
-(mkdir -p "${BatsPrefix}" 2>/dev/null) || true
-(mkdir -p "${BatsPrefix}"/bin 2>/dev/null) || true
-(mkdir -p "${BatsPrefix}"/libexec 2>/dev/null) || true
-
-export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
-
-if [[ -n ${CI} ]]; then
-  .output.set-indent 0
-  color.disable
-else
-  .output.set-indent 1
-  color.enable
-fi
-
-specs.test-filename() {
-  file=$1
-  for f in "${file}" "test/${file}" "test/${file}_tests.bats"; do
-    if [[ -s ${f} ]]; then
-      printf "%s" "${f}"
-      break
-    fi
-  done
-}
-
-specs.usage() {
-  echo
-  printf "USAGE\n    ${bldgrn}specs [ test1 test2 ... ]${clr}\n\n"
-  printf "    ${txtblu}where test1 can be a full filename, or a partial, eg.\n"
-  printf "    ${txtblu}'test/util_tests.bats' or just 'util'.\n\n"
-
-  printf "DESCRIPTION\n    ${txtblu}Run BASH tests using Bats framework\n"
-  printf "    ${txtblu}Use to run the Bats Test Suite.\n\n"
-
-  printf "OPTIONS\n"
-  printf "    -h | --help     Show help message\n\n"
-
-  exit 0
-}
-
-specs.install-bats-brew() {
+#------------------------------------------------------------------
+# Bats Installation
+function specs.install-bats.brew() {
   run "brew tap kaos/shell"
-  brew.install.packages bats-assert bats-file bats-assert
+  brew.install.packages bats-core bats-assert bats-file
 }
 
-specs.install-bats-sources() {
-  [[ -n $(which bats) ]] && return 0
+function specs.install-bats.sources() {
+  [[ -x ${BatsPrefix}/bin/bats ]] && return 0
 
   run.set-next show-output-off abort-on-error
 
-  [[ ! -d ${BatsRoot} ]] &&
+  [[ ! -d "${BatsRoot}" ]] &&
     run "git clone https://github.com/sstephenson/bats.git ${BatsRoot}"
 
   [[ ! -d "${BatsSource}" ]] &&
@@ -143,9 +127,9 @@ specs.install-bats-sources() {
     export PATH="${ProjectRoot}/bin:${ProjectRoot}/test/bin:${PATH}"
 }
 
-specs.install-bats() {
-  local install_type="${1:-"sources"}"
-  local func="specs.install-bats-${install_type}"
+function specs.install() {
+  local install_type="${1:-"${Bashmatic__BatsIntallMethod}"}"
+  local func="specs.install-bats.${install_type}"
 
   util.is-a-function "${func}" || {
     error "Install method ${install_type} is unsupported." \
@@ -156,86 +140,177 @@ specs.install-bats() {
   ${func}
 }
 
-spec.find-bats() {
+function spec.find-bats() {
   command -v bats || which bats || find . -name bats -perm "-u=x" | ${GrepCommand} -v 'fixtures|libexec'
 }
 
-specs.run-file() {
-  local file="$1"
-  if [[ -z "${file}" ]]; then
-    error "No argument provided"
-    return 1
-  fi
-  if [[ ! -s "${file}" ]]; then
-    error "File ${file} is not found."
-    return 1
-  fi
-  test-group "${file}"
-  set -e
-
+function spec.validate-bats() {
   local bats=$(spec.find-bats)
-
   [[ -z ${bats} ]] && {
-    echo "ERROR: can't find bats executable :("
-    echo
-    echo "which bats:                      $(which bats)"
-    echo "command -v bats:                 $(command -v bats)"
-    echo "find ${BatsRoot} -name bats:     $(find ${BatsRoot} -name bats)"
+    error "Can't find bats executable 😩  even after attemping to install it."
+    info
+    info "which bats:                      ${bldylw}$(which bats)"
+    info "command -v bats:                 ${bldylw}$(command -v bats)"
+    info "find ${BatsRoot} -name bats:     ${bldylw}$(find "${BatsRoot}" -name bats)"
     exit 1
   }
-
-  ${bats} -p "${file}"
-  set +e
 }
 
-specs.select-files() {
+#------------------------------------------------------------------
+# Spec Runner
+function specs.run-one-file() {
+  local file="$1"
+
+  is.not-blank "${file}" || return 1
+  is.a-non-empty-file "${file}" || return 1
+
+  test-group " 🚀  ${file}"
+  local bats=$(spec.find-bats)
+  export Specs__FileCount=$((Specs__FileCount + 1))
+  [[ ${Specs__BatsFlags} == "-t" ]] && printf "${txtgrn}"
+
+  ${bats} "${Specs__BatsFlags}" "${file}"
+  local exitcode=$?
+
+  ((exitcode)) || return 0
+
+  export Specs__FailedFileCount=$((Specs__FailedFileCount + 1))
+  return "${exitcode}"
+}
+
+function specs.run() {
+  local result=0
+
+  for file in "${TestFiles[@]}"; do
+    specs.run-one-file "${file}"
+    local code=$?
+
+    ((code)) && {
+      result="${code}"
+      error "File ${file} had failing test(s)!"
+      ((Specs__ContinueAfterFailure)) && continue
+      info "To run all test files regardless of error status, pass -c | --continue flag.\n"
+      exit "${code}"
+    }
+  done
+
+  return "${result}"
+}
+
+#------------------------------------------------------------------
+# Auxillary
+function specs.select-files() {
   export os="$(uname -s | tr '[:upper:]' '[:lower:]')"
   if [[ -z ${TestFiles[*]} ]]; then
-    TestFiles=($(find "${BASHMATIC_TEST_DIR}" -name '*test*.bats' -depth 1 | sort))
-    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && TestFiles+=($(find "${BASHMATIC_TEST_DIR}/${os}" -name '*test*.bats' -depth 1 | sort))
+    TestFiles=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
+    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && TestFiles+=($(find "${BASHMATIC_TEST_DIR}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
   fi
   export TestFiles
 }
 
-specs.run-all() {
-  for file in ${TestFiles[@]}; do
-    set +e
-    specs.run-file "${file}"
+# @description Based on a shortname attempt to determine the actual test file names
+function specs.determine-test-filename() {
+  local file="$1"
+  for test_file in "${file}" "test/${file}" "test/${file}.bats" "test/${file}_test.bats"; do
+    is.a-non-empty-file "${test_file}" && {
+      printf "%s" "${test_file}"
+      return 0
+    }
+  done
+  return 1
+}
+
+function specs.parse-opts() {
+  export Specs__FileCount=0
+  export Specs__FailedFileCount=0
+  export Specs__ContinueAfterFailure=0
+  export Specs__BatsFlags="-p"
+
+  trap 'printf "\n\n\n${bldred}Ctrl-C detected, aborting tests.${clr}\n\n"; exit 1' SIGINT
+
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -h | -\? | --help)
+      shift
+      specs.usage
+      exit 0
+      ;;
+    -c | --continue)
+      shift
+      export Specs__ContinueAfterFailure=1
+      ;;
+    -t | --taps)
+      shift
+      export Specs__BatsFlags="-t"
+      ;;
+    -i | --install)
+      shift
+      local method="$1"
+      shift
+      is.blank "${method}" && {
+        error "--install requires an argument"
+        exit 1
+      }
+      local func="specs.install-bats.${method}"
+      is.a-function "${func}" || {
+        # shellcheck disable=SC2086
+        error "Invalid installation method — ${method}. Supported methods: " "${Bashmatic__BatsInstallMethods}"
+        exit 1
+      }
+      ${func}
+      exit $?
+      ;;
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    -?*)
+      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
+    *) # Default case: If no more options then break out of the loop.
+      is.blank "$1" && break
+      local file="$(specs.determine-test-filename "$1")"
+      unless "${file}" is.a-non-empty-file && {
+        error "Can't determine proper test path for argument $1, got file ${file}"
+        exit 2
+      }
+      export TestFiles+=("${file}")
+      shift
+      ;;
+    esac
   done
 }
 
-specs.main() {
-  specs.install-bats sources
-  specs.select-files
-  specs.run-all
+function specs.usage() {
+  echo
+  printf "USAGE\n    ${bldgrn}specs [ test1 test2 ... ]${clr}\n\n"
+  printf "    ${txtblu}where test1 can be a full filename, or a partial, eg.\n"
+  printf "    ${txtblu}'test/util_tests.bats' or just 'util'.\n\n"
+
+  printf "DESCRIPTION\n    ${txtblu}Run BASH tests using Bats framework\n"
+  printf "    ${txtblu}Use to run the Bats Test Suite.\n"
+  printf "    ${txtblu}Auto-installs Bats if not already there.\n\n"
+
+  printf "OPTIONS\n"
+  printf "    -i | --install METHOD   Install Bats using the provided methjod.\n"
+  printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtblu}\n"
+  printf "    -c | --continue         Continue after a failing test file.\n"
+  printf "    -t | --taps             Use taps bats formatter, instead of pretty.\n"
+  printf "    -h | --help             Show help message\n\n"
+
+  exit 0
 }
 
-trap 'printf "\n\n\n${bldred}BOOOOM! Ctrl-C will set you free...${clr}\n\n"; exit 1' SIGINT
+function specs.main() {
+  dbgf specs.init "$@"
+  dbgf specs.parse-opts "$@"
+  dbgf specs.install sources
+  dbgf spec.validate-bats
+  dbgf specs.select-files # Populates TestFiles[@] if not already populated
+  dbgf specs.run "$@"
+}
 
-# Parse additional flags
-while :; do
-  case $1 in
-  -h | -\? | --help)
-    shift
-    specs.usage
-    exit 0
-    ;;
-  --) # End of all options; anything after will be passed to the action function
-    shift
-    break
-    ;;
-  -?*)
-    printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-    exit 127
-    shift
-    ;;
-  *) # Default case: If no more options then break out of the loop.
-    [[ -z ${1} ]] && break
-    file=$(specs.test-filename "$1")
-    [[ -n "${file}" ]] && TestFiles=(${TestFiles[@]} ${file})
-    shift
-    ;;
-  esac
-done
-
-specs.main "$@"
+is.sourced-in || specs.main "$@"

@@ -9,12 +9,12 @@ bashmatic.reload() {
 }
 
 bashmatic.version() {
-  cat $(dirname "${BASHMATIC_INIT}")/.version
+  cat "$(dirname "${BASHMATIC_INIT}")/.version"
 }
 
 bashmatic.load-at-login() {
   local init_file="${1}"
-  local -a init_files=(~/.bashrc ~/.bash_profile ~/.profile)
+  local -a init_files=(~/.bashrc ~/.bash_profile ~/.profile ~/.zshrc)
 
   [[ -n "${init_file}" && -f "${init_file}" ]] && init_files=("${init_file}")
 
@@ -44,11 +44,11 @@ bashmatic.functions-from() {
 
   export SCREEN_WIDTH=$(screen-width)
 
-  if [[ ! ${pattern} =~ "*" && ! ${pattern} =~ ".sh" ]]; then
+  if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
     pattern="${pattern}.sh"
   fi
 
-  ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} |
+  ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' "lib/${pattern}" |
     sedx 's/^lib\/.*\.sh://g' |
     sedx 's/^function //g' |
     sedx 's/\(\) *\{.*$//g' |
