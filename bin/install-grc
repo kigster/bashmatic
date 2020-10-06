@@ -42,7 +42,7 @@ function grc.install.extras() {
   run "cp -rpnv ${BASHMATIC_HOME}/conf/grc/conf.* /usr/local/share/grc | sed 's/^/       ❯ /g' || true"
   run "cp -rpnv ${BASHMATIC_HOME}/conf/grc/.[a-z]* ${HOME}             | sed 's/^/       ❯ /g' || true"
 
-  for file in "$(find ${BASHMATIC_HOME}/conf/grc -type f -depth 1 -name 'conf.*' -print)"; do
+  for file in "$(find ${BASHMATIC_HOME}/conf/grc -type f -maxdepth 1 -name 'conf.*' -print)"; do
     command=$(basename "${file}" | sed 's/conf\.//')
     if grep -q "colourify ${command}" "${shellrc}"; then
       info "command ${command} is already aliased, skipping."

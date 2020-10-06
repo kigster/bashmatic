@@ -27,6 +27,7 @@
 * xref:#module-gem[gem]
 * xref:#module-git[git]
 * xref:#module-github[github]
+* xref:#module-is[is]
 * xref:#module-jemalloc[jemalloc]
 * xref:#module-json[json]
 * xref:#module-maths[maths]
@@ -44,6 +45,7 @@
 * xref:#module-runtime-config[runtime-config]
 * xref:#module-set[set]
 * xref:#module-settings[settings]
+* xref:#module-shdoc[shdoc]
 * xref:#module-shell-set[shell-set]
 * xref:#module-ssh[ssh]
 * xref:#module-subshell[subshell]
@@ -767,10 +769,10 @@ bashmatic.functions-from ()
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
     cd "${BASHMATIC_HOME}" > /dev/null || return 1
     export SCREEN_WIDTH=$(screen-width)
-    if [[ ! ${pattern} =~ "*" && ! ${pattern} =~ ".sh" ]]; then
+    if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
         pattern="${pattern}.sh"
     fi
-    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' lib/${pattern} | sedx 's/^lib\/.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^_' -v | sort | uniq | columnize "$@"
+    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' "lib/${pattern}" | sedx 's/^lib\/.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^_' -v | sort | uniq | columnize "$@"
     cd - > /dev/null || return 1
 }
 
@@ -805,7 +807,7 @@ bashmatic.functions.runtime ()
 bashmatic.load-at-login () 
 { 
     local init_file="${1}"
-    local -a init_files=(~/.bashrc ~/.bash_profile ~/.profile)
+    local -a init_files=(~/.bashrc ~/.bash_profile ~/.profile ~/.zshrc)
     [[ -n "${init_file}" && -f "${init_file}" ]] && init_files=("${init_file}")
     for file in "${init_files[@]}"
     do
@@ -925,7 +927,7 @@ bashmatic.source-dir ()
 ----
 bashmatic.version () 
 { 
-    cat $(dirname "${BASHMATIC_INIT}")/.version
+    cat "$(dirname "${BASHMATIC_INIT}")/.version"
 }
 
 ----
@@ -939,7 +941,15 @@ bashmatic.version ()
 ----
 brew.cache-reset () 
 { 
-    rm -f "${LibBrew__PackageCacheList}" "${LibBrew__CaskCacheList}"
+    if [[ "$1" == "cask" ]]; then
+        rm -f "${LibBrew__CaskCacheList}"
+    else
+        if [[ "$2" == "package" ]]; then
+            rm -f "${LibBrew__PackageCacheList}"
+        else
+            rm -f "${LibBrew__PackageCacheList}" "${LibBrew__CaskCacheList}"
+        fi
+    fi
 }
 
 ----
@@ -950,7 +960,23 @@ brew.cache-reset ()
 ----
 brew.cache-reset.delayed () 
 { 
-    ( "${BASH_IN_SUBSHELL}" ) || brew.cache-reset
+    ((BASH_IN_SUBSHELL)) || brew.cache-reset both
+}
+
+----
+
+==== `brew.cask.all-installed`
+
+[source,bash]
+----
+brew.cask.all-installed () 
+{ 
+    local -a installed_casks=($(brew.cask.list))
+    for item in "$@"
+    do
+        array.includes "${item}" "${installed_casks[@]}" || return 1
+    done
+    return 0
 }
 
 ----
@@ -961,9 +987,11 @@ brew.cache-reset.delayed ()
 ----
 brew.cask.is-installed () 
 { 
-    local cask="${1}"
-    local -a installed_casks=($(brew.cask.list))
-    array.has-element ${cask} "${installed_casks[@]}"
+    if brew.cask.all-installed "$@"; then
+        echo "true"
+    else
+        echo "false"
+    fi
 }
 
 ----
@@ -974,7 +1002,7 @@ brew.cask.is-installed ()
 ----
 brew.cask.list () 
 { 
-    cache-or-command ${LibBrew__CaskCacheList} 30 brew cask ls -1
+    cache-or-command ${LibBrew__CaskCacheList} 10 "--cask -1"
 }
 
 ----
@@ -1018,19 +1046,20 @@ brew.install.cask ()
     local verbose=
     [[ -n "${opts_force}" ]] && force="--force"
     [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-    inf "verifying brew cask ${bldylw}{cask}"
-    if [[ -n "$(ls -al /Applications/*.app | grep -i ${cask})" && -z "${opts_force}" ]]; then
+    local installed_app="$(osx.app.is-installed "${cask}")"
+    inf "checking if cask is installed: ${bldylw}${cask}"
+    brew.cask.all-installed "${cask}" && { 
+        ok:
+        return 0
+    }
+    if [[ -n "${installed_app}" && -z "${opts_force}" ]]; then
         ui.closer.ok:
+        return 0
     else
-        if [[ $(brew.cask.is-installed ${cask}) == "true" ]]; then
-            ui.closer.ok:
-            return 0
-        else
-            ui.closer.kind-of-ok:
-            run "brew cask install"${cask}"${force} ${verbose}"
-        fi
+        ui.closer.kind-of-ok:
+        run "brew cask install ${cask} ${force} ${verbose}"
+        brew.cache-reset cask
     fi
-    brew.cache-reset.delayed
 }
 
 ----
@@ -1044,11 +1073,11 @@ brew.install.package ()
     local package="$1"
     local force=
     local verbose=
+    local code
     [[ -n "${opts_force}" ]] && force="--force"
     [[ -n "${opts_verbose}" ]] && verbose="--verbose"
     [[ -z "${opt_terse}" ]] && inf "checking for 🍻 ${bldylw}${package}..."
-    local code
-    if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
+    if brew.package.all-installed "${package}"; then
         [[ -z "${opt_terse}" ]] && ok:
         [[ -z "${opt_terse}" ]] || printf "${bldgrn}○ "
         export LibRun__LastExitCode=0
@@ -1056,26 +1085,29 @@ brew.install.package ()
         if [[ -z "${opt_terse}" ]]; then
             hl.subtle "Brew is installing package: ${package}"
             run "brew install ${package} ${force} ${verbose}"
-            code=${LibRun__LastExitCode}
+            code="${LibRun__LastExitCode}"
         else
             brew install "${package}" ${force} ${verbose} > /dev/null 2>&1
             code=$?
+            brew.cache-reset package
         fi
-        run "brew link ${package} --overwrite ${force} ${verbose}"
-        run "hash -r"
+        [[ -n ${force} ]] && { 
+            run.set-next continue-on-error
+            run "brew link ${package} --overwrite ${force} ${verbose}"
+        }
+        hash -r > /dev/null
         [[ "${code}" -eq 0 ]] || { 
             warning "Reinstalling ${package} as I couldn't find it after instal..."
             brew.reinstall.package "${package}"
         }
         export LibRun__LastExitCode=0
-        if [[ "$(brew.package.is-installed ${package})" == "true" ]]; then
+        if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
             [[ -n "${opt_terse}" ]] && printf "\n 🟢 "
         else
             [[ -n "${opt_terse}" ]] && printf "\n 🔴 "
             export LibRun__LastExitCode=1
         fi
     fi
-    set +x
     return ${LibRun__LastExitCode}
 }
 
@@ -1093,6 +1125,22 @@ brew.install.packages ()
     do
         brew.install.package "${package}"
     done
+}
+
+----
+
+==== `brew.package.all-installed`
+
+[source,bash]
+----
+brew.package.all-installed () 
+{ 
+    local -a installed_packages=($(brew.package.list))
+    for item in "$@"
+    do
+        array.includes "${item}" "${installed_packages[@]}" || return 1
+    done
+    return 0
 }
 
 ----
@@ -1115,9 +1163,11 @@ brew.package.available-versions ()
 ----
 brew.package.is-installed () 
 { 
-    local package="${1}"
-    local -a installed_packages=($(brew.package.list))
-    array.has-element "${package}" "${installed_packages[@]}"
+    if brew.package.all-installed "$@"; then
+        echo "true"
+    else
+        echo "false"
+    fi
 }
 
 ----
@@ -1131,7 +1181,7 @@ brew.package.link ()
     local package="${1}"
     shift
     [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-    run "brew link"${verbose}"${package} $*"
+    run "brew link ${verbose} ${package} $*"
 }
 
 ----
@@ -1142,7 +1192,7 @@ brew.package.link ()
 ----
 brew.package.list () 
 { 
-    cache-or-command ${LibBrew__PackageCacheList} 30 brew ls -1
+    cache-or-command ${LibBrew__PackageCacheList} 10 "--formula -1"
 }
 
 ----
@@ -1311,7 +1361,7 @@ brew.upgrade.packages ()
         error "usage: brew.upgrade.packages package1 package2 ..."
         return 1
     }
-    run "brew upgrade $@"
+    run "brew upgrade $*"
 }
 
 ----
@@ -1326,13 +1376,17 @@ cache-or-command ()
     shift
     local stale_minutes="$1"
     shift
-    local command="$*"
-    file.exists-and-newer-than "${file}""${stale_minutes}" && { 
-        cat "${file}"
-        return 0
-    }
-    cp /dev/null ${file} > /dev/null
-    eval "${command}" | tee -a "${file}"
+    local brew_list_flags="$1"
+    shift
+    if file.exists-and-newer-than "${file}" "${stale_minutes}"; then
+        if [[ -s "${file}" ]]; then
+            cat "${file}"
+            return 0
+        fi
+    fi
+    info "REFRESHING CACHE with command: ${bldylw}brew list ${brew_list_flags} >${file}"
+    rm -f "${file}" && touch "${file}"
+    brew list ${brew_list_flags} > "${file}"
 }
 
 ----
@@ -3318,7 +3372,7 @@ git.sync-dirs ()
     local pattern="${1:-'*'}"
     set -e
     run.set-all abort-on-error
-    for dir in $(find . -type d -depth 1 -name "${pattern}*")
+    for dir in $(find . -type d -maxdepth 1 -name "${pattern}*")
     do
         hl.yellow-on-gray "syncing [$dir]..."
         cd $dir > /dev/null
@@ -3446,6 +3500,228 @@ github.validate ()
         github.setup
         return $?
     fi
+}
+
+----
+
+
+=== Module `is`
+
+==== `is-validations`
+
+[source,bash]
+----
+is-validations () 
+{ 
+    util.functions-matching.diff is\\. | sedx 's/^/is./g'
+}
+
+----
+
+==== `is.a-directory`
+
+[source,bash]
+----
+is.a-directory () 
+{ 
+    [[ -d "${1}" ]]
+}
+
+----
+
+==== `is.a-function`
+
+[source,bash]
+----
+is.a-function () 
+{ 
+    type "$1" 2> /dev/null | head -1 | grep -q 'is a function'
+}
+
+----
+
+==== `is.a-non-empty-file`
+
+[source,bash]
+----
+is.a-non-empty-file () 
+{ 
+    [[ -s "${1}" ]]
+}
+
+----
+
+==== `is.a-script`
+
+[source,bash]
+----
+is.a-script () 
+{ 
+    bashmatic.detect-subshell
+    [[ ${BASH_IN_SUBSHELL} -eq 1 ]]
+}
+
+----
+
+==== `is.a-variable`
+
+[source,bash]
+----
+is.a-variable () 
+{ 
+    local var_name="$1"
+    [[ -n ${!var_name+x} ]]
+}
+
+----
+
+==== `is.an-empty-file`
+
+[source,bash]
+----
+is.an-empty-file () 
+{ 
+    [[ ! -s "${1}" ]]
+}
+
+----
+
+==== `is.an-existing-file`
+
+[source,bash]
+----
+is.an-existing-file () 
+{ 
+    [[ -f "${1}" ]]
+}
+
+----
+
+==== `is.blank`
+
+[source,bash]
+----
+is.blank () 
+{ 
+    [[ -z "${1}" ]]
+}
+
+----
+
+==== `is.not-a-blank-var`
+
+[source,bash]
+----
+is.not-a-blank-var () 
+{ 
+    local var="$1"
+    [[ -n "${!var}" ]]
+}
+
+----
+
+==== `is.not-blank`
+
+[source,bash]
+----
+is.not-blank () 
+{ 
+    [[ -n "${1}" ]]
+}
+
+----
+
+==== `is.sourced-in`
+
+[source,bash]
+----
+is.sourced-in () 
+{ 
+    bashmatic.detect-subshell
+    [[ ${BASH_IN_SUBSHELL} -eq 0 ]]
+}
+
+----
+
+==== `unless`
+
+[source,bash]
+----
+unless () 
+{ 
+    ! __is.validation.error "${2}" "${1}" __is.validation.ignore-error "${@:3}"
+}
+
+----
+
+==== `validations.add-error`
+
+[source,bash]
+----
+validations.add-error () 
+{ 
+    local error="$1"
+    local value="$2"
+    is.not-blank "${error}" && is.not-blank "${value}" && { 
+        export Bashmatic__IsErrors+=("${error}")
+        export Bashmatic__IsValues+=("${value}")
+    }
+}
+
+----
+
+==== `validations.begin`
+
+[source,bash]
+----
+validations.begin () 
+{ 
+    export Bashmatic__IsErrors=()
+    export Bashmatic__IsValues=()
+    export Bashmatic__IsSessionName="$1"
+}
+
+----
+
+==== `validations.end`
+
+[source,bash]
+----
+validations.end () 
+{ 
+    validations.print-errors "$@"
+    validations.begin ""
+}
+
+----
+
+==== `validations.print-errors`
+
+[source,bash]
+----
+validations.print-errors () 
+{ 
+    local error_count="${#Bashmatic__IsErrors}"
+    ((error_count)) || return 0
+    is.not-blank "${Bashmatic__IsSessionName}" && hl.salmon "Reporing errors for ${Bashmatic__IsSessionName}"
+    for i in $(seq 1 "${error_count}")
+    do
+        local error=${Bashmatic__IsErrors[$((i - 1))]}
+        local value=${Bashmatic__IsValues[$((i - 1))]}
+        error "${error}" "Invalid value: ${value}"
+    done
+    return "${error_count}"
+}
+
+----
+
+==== `whenever`
+
+[source,bash]
+----
+whenever () 
+{ 
+    __is.validation.error "${2}" "${1}" __is.validation.report-error "${@:3}"
 }
 
 ----
@@ -3953,6 +4229,19 @@ https.servers ()
 
 ----
 
+==== `osx.app.is-installed`
+
+[source,bash]
+----
+osx.app.is-installed () 
+{ 
+    local app="$1"
+    shift
+    /bin/ls -1 /Applications ~/Applications | grep -E '\.app$' | sort -u | grep "$@" -E -i "${app}|${app/*-/}"
+}
+
+----
+
 ==== `osx.cookie-dump`
 
 [source,bash]
@@ -3964,8 +4253,8 @@ osx.cookie-dump ()
     if [[ ! -s ${file} ]]; then
         tmp=$(mktemp)
         file=${tmp}
-        pbpaste > ${file}
-        local size=$(file.size ${file})
+        pbpaste > "${file}"
+        local size=$(file.size "${file}")
         if [[ ${size} -lt 4 ]]; then
             error "Pasted data is too small to be a valid cookie?"
             info "Here is what we got in your clipboard:\n\n$(cat ${file})\n"
@@ -4007,7 +4296,7 @@ osx.dropbox.exclude ()
 ----
 osx.dropbox.exclude-pwd () 
 { 
-    xattr -w com.dropbox.ignored 1 $(pwd)
+    xattr -w com.dropbox.ignored 1 "${PWD}"
 }
 
 ----
@@ -4202,6 +4491,61 @@ ask ()
 
 ----
 
+==== `box.black-on-blue`
+
+[source,bash]
+----
+box.black-on-blue () 
+{ 
+    .output.box "${txtblk}${bakblu}" "${bakblu}" "$@"
+}
+
+----
+
+==== `box.black-on-green`
+
+[source,bash]
+----
+box.black-on-green () 
+{ 
+    .output.box "${txtblk}${bakgrn}" "${bakgrn}" "$@"
+}
+
+----
+
+==== `box.black-on-purple`
+
+[source,bash]
+----
+box.black-on-purple () 
+{ 
+    .output.box "${txtblk}${bakpur}" "${bakpur}" "$@"
+}
+
+----
+
+==== `box.black-on-red`
+
+[source,bash]
+----
+box.black-on-red () 
+{ 
+    .output.box "${txtblk}${bakred}" "${bakred}" "$@"
+}
+
+----
+
+==== `box.black-on-yellow`
+
+[source,bash]
+----
+box.black-on-yellow () 
+{ 
+    .output.box "${txtblk}${bakylw}" "${bakylw}" "$@"
+}
+
+----
+
 ==== `box.blue-in-green`
 
 [source,bash]
@@ -4329,7 +4673,7 @@ box.red-in-yellow ()
 ----
 box.white-on-blue () 
 { 
-    .output.box "${bakblu}" "${bldwht}" "$@"
+    .output.box "${bakblu}${bldwht}" "${bakblu}${bldwht}" "$@"
 }
 
 ----
@@ -4340,7 +4684,18 @@ box.white-on-blue ()
 ----
 box.white-on-green () 
 { 
-    .output.box "${bakgrn}" "${bldwht}" "$@"
+    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldwht}" "$@"
+}
+
+----
+
+==== `box.white-on-red`
+
+[source,bash]
+----
+box.white-on-red () 
+{ 
+    .output.box "${bakred}${bldwht}" "${bakred}${bldwht}" "$@"
 }
 
 ----
@@ -4374,6 +4729,17 @@ box.yellow-in-red ()
 box.yellow-in-yellow () 
 { 
     .output.box "${bldylw}" "${txtylw}" "$@"
+}
+
+----
+
+==== `box.yellow-on-green`
+
+[source,bash]
+----
+box.yellow-on-green () 
+{ 
+    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldylw}" "$@"
 }
 
 ----
@@ -4535,6 +4901,46 @@ cursor.up ()
 
 ----
 
+==== `dbg`
+
+[source,bash]
+----
+dbg () 
+{ 
+    is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" 1>&2
+    return 0
+}
+
+----
+
+==== `dbgf`
+
+[source,bash]
+----
+dbgf () 
+{ 
+    local func="$1"
+    shift
+    is.a-function "${func}" || { 
+        error "${func} is not a function"
+        return 1
+    }
+    dbg "${func}(" "$@" ")"
+    ${func} "$@"
+    local code=$?
+    is-dbg || return "${code}"
+    cursor.up 1
+    cursor.at.x 0
+    if [[ ${code} -eq 0 ]]; then
+        ok:
+    else
+        not-ok:
+    fi
+    return ${code}
+}
+
+----
+
 ==== `debug`
 
 [source,bash]
@@ -4587,8 +4993,8 @@ err ()
 ----
 error () 
 { 
-    header=$(printf -- "${bldwht}${bakred} « ERROR » ${clr}")
-    box.red-in-red "${header} ${bldylw}$@" 1>&2
+    header=$(printf -- "« ERROR » ")
+    box.white-on-red "${header} $1" "${@:2}" 1>&2
 }
 
 ----
@@ -4633,9 +5039,7 @@ h.blue ()
 ----
 h.e () 
 { 
-    local header="$1"
-    shift
-    box.red-in-red "${bakred}${bldwht} ${bldylw}${header}" "$@" 1>&2
+    .output.box "${bakred}${txtblk}" "${bakred}" "$@"
 }
 
 ----
@@ -4997,6 +5401,17 @@ info: ()
 
 ----
 
+==== `is-dbg`
+
+[source,bash]
+----
+is-dbg () 
+{ 
+    [[ -n $DEBUG ]]
+}
+
+----
+
 ==== `left`
 
 [source,bash]
@@ -5342,18 +5757,6 @@ success ()
     printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
     echo
     echo
-}
-
-----
-
-==== `test-group`
-
-[source,bash]
-----
-test-group () 
-{ 
-    [[ -z ${white_on_salmon} ]] && hr
-    h.salmon "$@"
 }
 
 ----
@@ -7311,6 +7714,9 @@ set-e-status ()
 === Module `settings`
 
 
+=== Module `shdoc`
+
+
 === Module `shell-set`
 
 ==== `save-restore-x`
@@ -7416,44 +7822,6 @@ shell-set.show-stack ()
 
 === Module `ssh`
 
-==== `ssh.keys.generate`
-
-[source,bash]
-----
-ssh.keys.generate () 
-{ 
-    local email="$(user.gitconfig.email)"
-    [[ -z ${email} ]] && { 
-        info "Couldnt' get your email from ~/.gitconfig..."
-        run.ui.ask-user-value email "What's the email you'd like to use with this key?"
-    }
-    local date=$( time.now.db )
-    if [[ -f ~/.ssh/id_rsa ]]; then
-        warning "There is an existing file ${bldred}~/.ssh/id_rsa"
-        info "It will be backed up into ~/.ssh/id_rsa.bak.${date}"
-        for file in ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
-        do
-            [[ -f ${file} ]] && run "mv ${file} ${file}.bak.${date}"
-        done
-    fi
-    run.set-next show-output-on
-    run "ssh-keygen -t rsa -b 4096 -C ${email}"
-}
-
-----
-
-==== `ssh.load-keys`
-
-[source,bash]
-----
-ssh.load-keys () 
-{ 
-    local pattern="$1"
-    find ${HOME}/.ssh -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \
-}
-
-----
-
 
 === Module `subshell`
 
@@ -7464,7 +7832,7 @@ ssh.load-keys ()
 bashmatic.detect-subshell () 
 { 
     bashmatic.subshell-init
-    [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && return ${BASH_IN_SUBSHELL}
+    [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && return "${BASH_IN_SUBSHELL}"
     unset BASH_IN_SUBSHELL
     export BASH_SUBSHELL_DETECTED=true
     local len="${#BASH_SOURCE[@]}"
@@ -7503,7 +7871,7 @@ bashmatic.validate-sourced-in ()
 { 
     bashmatic.detect-subshell
     [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || { 
-        echo "This script to be sourced in, not run in a subshell." 1>&2
+        echo "This script is meant to be sourced in, not run in a subshell." 1>&2
         return 1
     }
     return 0
@@ -7519,7 +7887,7 @@ bashmatic.validate-subshell ()
 { 
     bashmatic.detect-subshell
     [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || { 
-        echo "This script to be run, not sourced-in" 1>&2
+        echo "This script is meant to be run, not sourced-in" 1>&2
         return 1
     }
     return 0
@@ -7999,6 +8367,23 @@ time.now.file-extension ()
 
 ----
 
+==== `time.now.with-ms`
+
+[source,bash]
+----
+time.now.with-ms () 
+{ 
+    local date_runnable
+    date_runnable='date'
+    if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+        [[ -z $(command -v gdate) ]] && .time.osx.coreutils
+        [[ -n $(command -v gdate) ]] && date_runnable='gdate'
+    fi
+    ${date_runnable} '+%T.%3N'
+}
+
+----
+
 ==== `today`
 
 [source,bash]
@@ -8388,7 +8773,7 @@ user.username ()
 ----
 is-func () 
 { 
-    util.is-a-function "$@"
+    is.a-function "$@"
 }
 
 ----
@@ -8697,24 +9082,30 @@ util.install-direnv ()
 
 ----
 
+==== `util.invoke-if-function`
+
+[source,bash]
+----
+util.invoke-if-function () 
+{ 
+    local namespace="$1"
+    shift
+    local action="$1"
+    shift
+    local func="${namespace}.${action}"
+    util.is-a-function "${func}" || return 255
+    ${func} "$@"
+}
+
+----
+
 ==== `util.is-a-function`
 
 [source,bash]
 ----
 util.is-a-function () 
 { 
-    type "$1" 2> /dev/null | head -1 | grep -q 'is a function'
-}
-
-----
-
-==== `util.is-numeric`
-
-[source,bash]
-----
-util.is-numeric () 
-{ 
-    [[ -z $(echo ${1} | sed -E 's/^[0-9]+$//g') ]]
+    is.a-function "$@"
 }
 
 ----
@@ -8909,7 +9300,7 @@ watch.ls-al ()
 { 
     while true; do
         ls -al
-        sleep ${LibUtil__WatchRefreshSeconds}
+        sleep "${LibUtil__WatchRefreshSeconds}"
         clear
     done
 }

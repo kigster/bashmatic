@@ -33,7 +33,7 @@ git.sync-dirs() {
   local pattern="${1:-'*'}"
   set -e
   run.set-all abort-on-error
-  for dir in $(find . -type d -depth 1 -name "${pattern}*"); do
+  for dir in $(find . -type d -maxdepth 1 -name "${pattern}*"); do
     hl.yellow-on-gray "syncing [$dir]..."
     cd $dir>/dev/null
     run "git pull --rebase"

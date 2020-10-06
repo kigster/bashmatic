@@ -6,6 +6,7 @@ https://github.com/kigster/bashmatic/compare/v1.3.0...HEAD[Full Changelog]
 
 *Merged pull requests:*
 
+* Adding a color test + fixing coloring issue https://github.com/kigster/bashmatic/pull/15[#15] (https://github.com/kigster[kigster])
 * Adding array.sort, array.uniq and array.sort-numeric https://github.com/kigster/bashmatic/pull/14[#14] (https://github.com/kigster[kigster])
 
 == https://github.com/kigster/bashmatic/tree/v1.3.0[v1.3.0] (2020-09-22)

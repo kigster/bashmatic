@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+set -e
+source "${HOME}/.bashmatic/init.sh" 1>/dev/null
+
+export tag="bashmatic:latest"
+
+dock.build() {
+  docker build . -t "${tag}"
+}
+
+dock.run() {
+  dock.build
+  docker run -it ${tag} /bin/bash -l
+}
+
+main() {
+  local cmd="$1"
+  shift
+
+  util.invoke-if-function dock "${cmd}" "$@"
+  local code=$?
+
+  case "${code}" in
+  255)
+    error "Invalid action ${cmd}" \
+      "Available actions: ${bldgrn}$(util.functions-matching.diff dock\\. | tr '\n' '  ')"
+    ;;
+  0)
+    success "Saul Goodman."
+    ;;
+  *)
+    error "Docker command returned error ${code}"
+    ;;
+  esac
+}
+
+main "$@"
