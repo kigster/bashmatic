@@ -828,10 +828,10 @@ warn() {
 }
 
 warning() {
-  header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}")
+  header=$(printf -- " « WARNING » ")
   local first="$1"
   shift
-  box.yellow-in-yellow "${header} ${bldylw}$first" "$@" >&2
+  box.yellow-in-yellow "${header} $first" "$@" >&2
 }
 
 br() {
