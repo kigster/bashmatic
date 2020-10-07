@@ -34,6 +34,8 @@
 * xref:#module-net[net]
 * xref:#module-osx[osx]
 * xref:#module-output[output]
+* xref:#module-output-boxes[output-boxes]
+* xref:#module-output-repeat-char[output-repeat-char]
 * xref:#module-pdf[pdf]
 * xref:#module-pids[pids]
 * xref:#module-pipe[pipe]
@@ -767,12 +769,12 @@ bashmatic.functions-from ()
     local pattern="${1}"
     [[ -n ${pattern} ]] && shift
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
-    cd "${BASHMATIC_HOME}" > /dev/null || return 1
+    cd "${BASHMATIC_LIBDIR}" > /dev/null || return 1
     export SCREEN_WIDTH=$(screen-width)
     if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
         pattern="${pattern}.sh"
     fi
-    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' "lib/${pattern}" | sedx 's/^lib\/.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^_' -v | sort | uniq | columnize "$@"
+    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} | sedx 's/^lib\/.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^_' -v | sort | uniq | columnize "$@"
     cd - > /dev/null || return 1
 }
 
@@ -1384,9 +1386,9 @@ cache-or-command ()
             return 0
         fi
     fi
-    info "REFRESHING CACHE with command: ${bldylw}brew list ${brew_list_flags} >${file}"
-    rm -f "${file}" && touch "${file}"
+    is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${brew_list_flags} >${file}"
     brew list ${brew_list_flags} > "${file}"
+    cat "${file}"
 }
 
 ----
@@ -4491,270 +4493,6 @@ ask ()
 
 ----
 
-==== `box.black-on-blue`
-
-[source,bash]
-----
-box.black-on-blue () 
-{ 
-    .output.box "${txtblk}${bakblu}" "${bakblu}" "$@"
-}
-
-----
-
-==== `box.black-on-green`
-
-[source,bash]
-----
-box.black-on-green () 
-{ 
-    .output.box "${txtblk}${bakgrn}" "${bakgrn}" "$@"
-}
-
-----
-
-==== `box.black-on-purple`
-
-[source,bash]
-----
-box.black-on-purple () 
-{ 
-    .output.box "${txtblk}${bakpur}" "${bakpur}" "$@"
-}
-
-----
-
-==== `box.black-on-red`
-
-[source,bash]
-----
-box.black-on-red () 
-{ 
-    .output.box "${txtblk}${bakred}" "${bakred}" "$@"
-}
-
-----
-
-==== `box.black-on-yellow`
-
-[source,bash]
-----
-box.black-on-yellow () 
-{ 
-    .output.box "${txtblk}${bakylw}" "${bakylw}" "$@"
-}
-
-----
-
-==== `box.blue-in-green`
-
-[source,bash]
-----
-box.blue-in-green () 
-{ 
-    .output.box "${bldblu}" "${bldgrn}" "$@"
-}
-
-----
-
-==== `box.blue-in-yellow`
-
-[source,bash]
-----
-box.blue-in-yellow () 
-{ 
-    .output.box "${bldylw}" "${bldblu}" "$@"
-}
-
-----
-
-==== `box.green-in-cyan`
-
-[source,bash]
-----
-box.green-in-cyan () 
-{ 
-    .output.box "${bldgrn}" "${bldcyn}" "$@"
-}
-
-----
-
-==== `box.green-in-green`
-
-[source,bash]
-----
-box.green-in-green () 
-{ 
-    .output.box "${bldgrn}" "${bldgrn}" "$@"
-}
-
-----
-
-==== `box.green-in-magenta`
-
-[source,bash]
-----
-box.green-in-magenta () 
-{ 
-    .output.box "${bldgrn}" "${bldpur}" "$@"
-}
-
-----
-
-==== `box.green-in-yellow`
-
-[source,bash]
-----
-box.green-in-yellow () 
-{ 
-    .output.box "${bldgrn}" "${bldylw}" "$@"
-}
-
-----
-
-==== `box.magenta-in-blue`
-
-[source,bash]
-----
-box.magenta-in-blue () 
-{ 
-    .output.box "${bldblu}" "${bldpur}" "$@"
-}
-
-----
-
-==== `box.magenta-in-green`
-
-[source,bash]
-----
-box.magenta-in-green () 
-{ 
-    .output.box "${bldpur}" "${bldgrn}" "$@"
-}
-
-----
-
-==== `box.red-in-magenta`
-
-[source,bash]
-----
-box.red-in-magenta () 
-{ 
-    .output.box "${bldred}" "${bldpur}" "$@"
-}
-
-----
-
-==== `box.red-in-red`
-
-[source,bash]
-----
-box.red-in-red () 
-{ 
-    .output.box "${txtred}" "${txtred}" "$@"
-}
-
-----
-
-==== `box.red-in-yellow`
-
-[source,bash]
-----
-box.red-in-yellow () 
-{ 
-    .output.box "${bldred}" "${bldylw}" "$@"
-}
-
-----
-
-==== `box.white-on-blue`
-
-[source,bash]
-----
-box.white-on-blue () 
-{ 
-    .output.box "${bakblu}${bldwht}" "${bakblu}${bldwht}" "$@"
-}
-
-----
-
-==== `box.white-on-green`
-
-[source,bash]
-----
-box.white-on-green () 
-{ 
-    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldwht}" "$@"
-}
-
-----
-
-==== `box.white-on-red`
-
-[source,bash]
-----
-box.white-on-red () 
-{ 
-    .output.box "${bakred}${bldwht}" "${bakred}${bldwht}" "$@"
-}
-
-----
-
-==== `box.yellow-in-blue`
-
-[source,bash]
-----
-box.yellow-in-blue () 
-{ 
-    .output.box "${bldylw}" "${bldblu}" "$@"
-}
-
-----
-
-==== `box.yellow-in-red`
-
-[source,bash]
-----
-box.yellow-in-red () 
-{ 
-    .output.box "${bldred}" "${bldylw}" "$@"
-}
-
-----
-
-==== `box.yellow-in-yellow`
-
-[source,bash]
-----
-box.yellow-in-yellow () 
-{ 
-    .output.box "${bldylw}" "${txtylw}" "$@"
-}
-
-----
-
-==== `box.yellow-on-green`
-
-[source,bash]
-----
-box.yellow-on-green () 
-{ 
-    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldylw}" "$@"
-}
-
-----
-
-==== `box.yellow-on-purple`
-
-[source,bash]
-----
-box.yellow-on-purple () 
-{ 
-    .output.box "${bakpur}" "${bldylw}" "$@"
-}
-
-----
-
 ==== `br`
 
 [source,bash]
@@ -4993,8 +4731,8 @@ err ()
 ----
 error () 
 { 
-    header=$(printf -- "« ERROR » ")
-    box.white-on-red "${header} $1" "${@:2}" 1>&2
+    header=$(printf -- "${clr}${txtred}  « ERROR » ")
+    box.white-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" 1>&2
 }
 
 ----
@@ -5005,338 +4743,8 @@ error ()
 ----
 error: () 
 { 
-    err $*
+    err "$*"
     ui.closer.not-ok:
-}
-
-----
-
-==== `h.black`
-
-[source,bash]
-----
-h.black () 
-{ 
-    center "${bldylw}${bakblk}" "$@"
-}
-
-----
-
-==== `h.blue`
-
-[source,bash]
-----
-h.blue () 
-{ 
-    center "${txtblk}${bakblu}" "$@"
-}
-
-----
-
-==== `h.e`
-
-[source,bash]
-----
-h.e () 
-{ 
-    .output.box "${bakred}${txtblk}" "${bakred}" "$@"
-}
-
-----
-
-==== `h.green`
-
-[source,bash]
-----
-h.green () 
-{ 
-    center "${txtblk}${bakgrn}" "$@"
-}
-
-----
-
-==== `h.orange`
-
-[source,bash]
-----
-h.orange () 
-{ 
-    left "${white_on_orange}" "$@"
-}
-
-----
-
-==== `h.orange-center`
-
-[source,bash]
-----
-h.orange-center () 
-{ 
-    center "${white_on_orange}" "$@"
-}
-
-----
-
-==== `h.red`
-
-[source,bash]
-----
-h.red () 
-{ 
-    center "${txtblk}${bakred}" "$@"
-}
-
-----
-
-==== `h.salmon`
-
-[source,bash]
-----
-h.salmon () 
-{ 
-    left "${white_on_salmon}" "$@"
-}
-
-----
-
-==== `h.salmon-center`
-
-[source,bash]
-----
-h.salmon-center () 
-{ 
-    center "${white_on_salmon}" "$@"
-}
-
-----
-
-==== `h.yellow`
-
-[source,bash]
-----
-h.yellow () 
-{ 
-    center "${txtblk}${bakylw}" "$@"
-}
-
-----
-
-==== `h1`
-
-[source,bash]
-----
-h1 () 
-{ 
-    box.blue-in-yellow "$@"
-}
-
-----
-
-==== `h1.blue`
-
-[source,bash]
-----
-h1.blue () 
-{ 
-    box.magenta-in-blue "$@"
-}
-
-----
-
-==== `h1.green`
-
-[source,bash]
-----
-h1.green () 
-{ 
-    box.green-in-magenta "$@"
-}
-
-----
-
-==== `h1.purple`
-
-[source,bash]
-----
-h1.purple () 
-{ 
-    box.magenta-in-green "$@"
-}
-
-----
-
-==== `h1.red`
-
-[source,bash]
-----
-h1.red () 
-{ 
-    box.red-in-red "$@"
-}
-
-----
-
-==== `h1.yellow`
-
-[source,bash]
-----
-h1.yellow () 
-{ 
-    box.yellow-in-red "$@"
-}
-
-----
-
-==== `h1bg`
-
-[source,bash]
-----
-h1bg () 
-{ 
-    box.white-on-blue "$@"
-}
-
-----
-
-==== `h2`
-
-[source,bash]
-----
-h2 () 
-{ 
-    box.blue-in-green "$@"
-}
-
-----
-
-==== `h2.green`
-
-[source,bash]
-----
-h2.green () 
-{ 
-    box.green-in-cyan "$@"
-}
-
-----
-
-==== `h2bg`
-
-[source,bash]
-----
-h2bg () 
-{ 
-    box.white-on-green "$@"
-}
-
-----
-
-==== `h3`
-
-[source,bash]
-----
-h3 () 
-{ 
-    box.magenta-in-green "$@"
-}
-
-----
-
-==== `h3bg`
-
-[source,bash]
-----
-h3bg () 
-{ 
-    box.yellow-on-purple "$@"
-}
-
-----
-
-==== `h4`
-
-[source,bash]
-----
-h4 () 
-{ 
-    box.magenta-in-green "$@"
-}
-
-----
-
-==== `hdr`
-
-[source,bash]
-----
-hdr () 
-{ 
-    h1 "$@"
-}
-
-----
-
-==== `hl.blue`
-
-[source,bash]
-----
-hl.blue () 
-{ 
-    left "${bldwht}${bakpur}" "$@"
-}
-
-----
-
-==== `hl.desc`
-
-[source,bash]
-----
-hl.desc () 
-{ 
-    left "${bakylw}${txtblk}${bakylw}" "$@"
-}
-
-----
-
-==== `hl.green`
-
-[source,bash]
-----
-hl.green () 
-{ 
-    left "${txtblk}${bakgrn}" "$@"
-}
-
-----
-
-==== `hl.subtle`
-
-[source,bash]
-----
-hl.subtle () 
-{ 
-    left "${bldwht}${bakblk}${underlined}" "$@"
-}
-
-----
-
-==== `hl.yellow`
-
-[source,bash]
-----
-hl.yellow () 
-{ 
-    left "${txtblk}${bakylw}" "$@"
-}
-
-----
-
-==== `hl.yellow-on-gray`
-
-[source,bash]
-----
-hl.yellow-on-gray () 
-{ 
-    left "${yellow_on_gray}" "$@"
 }
 
 ----
@@ -5395,7 +4803,7 @@ info ()
 ----
 info: () 
 { 
-    inf $*
+    inf "$*"
     ui.closer.ok:
 }
 
@@ -5850,10 +5258,10 @@ warn ()
 ----
 warning () 
 { 
-    header=$(printf -- "${txtblk}${bakylw} « WARNING » ${clr}")
+    header=$(printf -- "${clr}${txtylw}  « WARNING » ")
     local first="$1"
     shift
-    box.yellow-in-yellow "${header} ${bldylw}$first" "$@" 1>&2
+    box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" 1>&2
 }
 
 ----
@@ -5864,11 +5272,611 @@ warning ()
 ----
 warning: () 
 { 
-    warn $*
+    warn "$*"
     ui.closer.kind-of-ok:
 }
 
 ----
+
+
+=== Module `output-boxes`
+
+==== `box.black-on-blue`
+
+[source,bash]
+----
+box.black-on-blue () 
+{ 
+    .output.box "${txtblk}${bakblu}" "${bakblu}" "$@"
+}
+
+----
+
+==== `box.black-on-green`
+
+[source,bash]
+----
+box.black-on-green () 
+{ 
+    .output.box "${txtblk}${bakgrn}" "${bakgrn}" "$@"
+}
+
+----
+
+==== `box.black-on-purple`
+
+[source,bash]
+----
+box.black-on-purple () 
+{ 
+    .output.box "${txtblk}${bakpur}" "${bakpur}" "$@"
+}
+
+----
+
+==== `box.black-on-red`
+
+[source,bash]
+----
+box.black-on-red () 
+{ 
+    .output.box "${txtblk}${bakred}" "${bakred}" "$@"
+}
+
+----
+
+==== `box.black-on-yellow`
+
+[source,bash]
+----
+box.black-on-yellow () 
+{ 
+    .output.box "${txtblk}${bakylw}" "${txtblk}${bakylw}" "$@"
+}
+
+----
+
+==== `box.blue-in-green`
+
+[source,bash]
+----
+box.blue-in-green () 
+{ 
+    .output.box "${bldblu}" "${bldgrn}" "$@"
+}
+
+----
+
+==== `box.blue-in-yellow`
+
+[source,bash]
+----
+box.blue-in-yellow () 
+{ 
+    .output.box "${bldylw}" "${bldblu}" "$@"
+}
+
+----
+
+==== `box.green-in-cyan`
+
+[source,bash]
+----
+box.green-in-cyan () 
+{ 
+    .output.box "${bldgrn}" "${bldcyn}" "$@"
+}
+
+----
+
+==== `box.green-in-green`
+
+[source,bash]
+----
+box.green-in-green () 
+{ 
+    .output.box "${bldgrn}" "${bldgrn}" "$@"
+}
+
+----
+
+==== `box.green-in-magenta`
+
+[source,bash]
+----
+box.green-in-magenta () 
+{ 
+    .output.box "${bldgrn}" "${bldpur}" "$@"
+}
+
+----
+
+==== `box.green-in-yellow`
+
+[source,bash]
+----
+box.green-in-yellow () 
+{ 
+    .output.box "${bldgrn}" "${bldylw}" "$@"
+}
+
+----
+
+==== `box.magenta-in-blue`
+
+[source,bash]
+----
+box.magenta-in-blue () 
+{ 
+    .output.box "${bldblu}" "${bldpur}" "$@"
+}
+
+----
+
+==== `box.magenta-in-green`
+
+[source,bash]
+----
+box.magenta-in-green () 
+{ 
+    .output.box "${bldpur}" "${bldgrn}" "$@"
+}
+
+----
+
+==== `box.red-in-magenta`
+
+[source,bash]
+----
+box.red-in-magenta () 
+{ 
+    .output.box "${bldred}" "${bldpur}" "$@"
+}
+
+----
+
+==== `box.red-in-red`
+
+[source,bash]
+----
+box.red-in-red () 
+{ 
+    .output.box "${txtred}" "${txtred}" "$@"
+}
+
+----
+
+==== `box.red-in-yellow`
+
+[source,bash]
+----
+box.red-in-yellow () 
+{ 
+    .output.box "${bldred}" "${bldylw}" "$@"
+}
+
+----
+
+==== `box.white-on-blue`
+
+[source,bash]
+----
+box.white-on-blue () 
+{ 
+    .output.box "${bakblu}${bldwht}" "${bakblu}${bldwht}" "$@"
+}
+
+----
+
+==== `box.white-on-green`
+
+[source,bash]
+----
+box.white-on-green () 
+{ 
+    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldwht}" "$@"
+}
+
+----
+
+==== `box.white-on-red`
+
+[source,bash]
+----
+box.white-on-red () 
+{ 
+    .output.box "${bakred}${bldwht}" "${bakred}${bldwht}" "$@"
+}
+
+----
+
+==== `box.yellow-in-blue`
+
+[source,bash]
+----
+box.yellow-in-blue () 
+{ 
+    .output.box "${bldylw}" "${bldblu}" "$@"
+}
+
+----
+
+==== `box.yellow-in-red`
+
+[source,bash]
+----
+box.yellow-in-red () 
+{ 
+    .output.box "${bldred}" "${bldylw}" "$@"
+}
+
+----
+
+==== `box.yellow-in-yellow`
+
+[source,bash]
+----
+box.yellow-in-yellow () 
+{ 
+    .output.box "${bldylw}" "${txtylw}" "$@"
+}
+
+----
+
+==== `box.yellow-on-green`
+
+[source,bash]
+----
+box.yellow-on-green () 
+{ 
+    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldylw}" "$@"
+}
+
+----
+
+==== `box.yellow-on-purple`
+
+[source,bash]
+----
+box.yellow-on-purple () 
+{ 
+    .output.box "${bakpur}" "${bldylw}" "$@"
+}
+
+----
+
+==== `h.black`
+
+[source,bash]
+----
+h.black () 
+{ 
+    center "${bldylw}${bakblk}" "$@"
+}
+
+----
+
+==== `h.blue`
+
+[source,bash]
+----
+h.blue () 
+{ 
+    center "${txtblk}${bakblu}" "$@"
+}
+
+----
+
+==== `h.e`
+
+[source,bash]
+----
+h.e () 
+{ 
+    .output.box "${bakred}${txtblk}" "${bakred}" "$@"
+}
+
+----
+
+==== `h.green`
+
+[source,bash]
+----
+h.green () 
+{ 
+    center "${txtblk}${bakgrn}" "$@"
+}
+
+----
+
+==== `h.orange`
+
+[source,bash]
+----
+h.orange () 
+{ 
+    left "${white_on_orange}" "$@"
+}
+
+----
+
+==== `h.orange-center`
+
+[source,bash]
+----
+h.orange-center () 
+{ 
+    center "${white_on_orange}" "$@"
+}
+
+----
+
+==== `h.red`
+
+[source,bash]
+----
+h.red () 
+{ 
+    center "${txtblk}${bakred}" "$@"
+}
+
+----
+
+==== `h.salmon`
+
+[source,bash]
+----
+h.salmon () 
+{ 
+    left "${white_on_salmon}" "$@"
+}
+
+----
+
+==== `h.salmon-center`
+
+[source,bash]
+----
+h.salmon-center () 
+{ 
+    center "${white_on_salmon}" "$@"
+}
+
+----
+
+==== `h.yellow`
+
+[source,bash]
+----
+h.yellow () 
+{ 
+    center "${txtblk}${bakylw}" "$@"
+}
+
+----
+
+==== `h1`
+
+[source,bash]
+----
+h1 () 
+{ 
+    box.blue-in-yellow "$@"
+}
+
+----
+
+==== `h1.blue`
+
+[source,bash]
+----
+h1.blue () 
+{ 
+    box.magenta-in-blue "$@"
+}
+
+----
+
+==== `h1.green`
+
+[source,bash]
+----
+h1.green () 
+{ 
+    box.green-in-magenta "$@"
+}
+
+----
+
+==== `h1.purple`
+
+[source,bash]
+----
+h1.purple () 
+{ 
+    box.magenta-in-green "$@"
+}
+
+----
+
+==== `h1.red`
+
+[source,bash]
+----
+h1.red () 
+{ 
+    box.red-in-red "$@"
+}
+
+----
+
+==== `h1.yellow`
+
+[source,bash]
+----
+h1.yellow () 
+{ 
+    box.yellow-in-red "$@"
+}
+
+----
+
+==== `h1bg`
+
+[source,bash]
+----
+h1bg () 
+{ 
+    box.white-on-blue "$@"
+}
+
+----
+
+==== `h2`
+
+[source,bash]
+----
+h2 () 
+{ 
+    box.blue-in-green "$@"
+}
+
+----
+
+==== `h2.green`
+
+[source,bash]
+----
+h2.green () 
+{ 
+    box.green-in-cyan "$@"
+}
+
+----
+
+==== `h2bg`
+
+[source,bash]
+----
+h2bg () 
+{ 
+    box.white-on-green "$@"
+}
+
+----
+
+==== `h3`
+
+[source,bash]
+----
+h3 () 
+{ 
+    box.magenta-in-green "$@"
+}
+
+----
+
+==== `h3bg`
+
+[source,bash]
+----
+h3bg () 
+{ 
+    box.yellow-on-purple "$@"
+}
+
+----
+
+==== `h4`
+
+[source,bash]
+----
+h4 () 
+{ 
+    box.magenta-in-green "$@"
+}
+
+----
+
+==== `hdr`
+
+[source,bash]
+----
+hdr () 
+{ 
+    h1 "$@"
+}
+
+----
+
+==== `hl.blue`
+
+[source,bash]
+----
+hl.blue () 
+{ 
+    left "${bldwht}${bakpur}" "$@"
+}
+
+----
+
+==== `hl.desc`
+
+[source,bash]
+----
+hl.desc () 
+{ 
+    left "${bakylw}${txtblk}${bakylw}" "$@"
+}
+
+----
+
+==== `hl.green`
+
+[source,bash]
+----
+hl.green () 
+{ 
+    left "${txtblk}${bakgrn}" "$@"
+}
+
+----
+
+==== `hl.subtle`
+
+[source,bash]
+----
+hl.subtle () 
+{ 
+    left "${bldwht}${bakblk}${underlined}" "$@"
+}
+
+----
+
+==== `hl.yellow`
+
+[source,bash]
+----
+hl.yellow () 
+{ 
+    left "${txtblk}${bakylw}" "$@"
+}
+
+----
+
+==== `hl.yellow-on-gray`
+
+[source,bash]
+----
+hl.yellow-on-gray () 
+{ 
+    left "${yellow_on_gray}" "$@"
+}
+
+----
+
+
+=== Module `output-repeat-char`
 
 
 === Module `pdf`
@@ -8182,6 +8190,18 @@ sym.install.symit ()
 
 === Module `text`
 
+==== `text.chr`
+
+[source,bash]
+----
+text.chr () 
+{ 
+    [ "$1" -lt 256 ] || return 1
+    printf "\\$(printf '%03o' "$1")"
+}
+
+----
+
 ==== `text.markdown-to-asciidoc`
 
 [source,bash]
@@ -8218,6 +8238,17 @@ text.markdown-to-asciidoc ()
         args="$*"
     fi
     run "kramdoc -o ${target} ${args} ${file}"
+}
+
+----
+
+==== `text.ord`
+
+[source,bash]
+----
+text.ord () 
+{ 
+    LC_CTYPE=C printf '%d' "'$1"
 }
 
 ----

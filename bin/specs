@@ -193,6 +193,12 @@ function specs.run() {
       exit "${code}"
     }
   done
+  
+  if [[ ${Specs__FailedFileCount} -gt 0 ]]; then
+    error "Total of ${Specs__FailedFileCount} out of ${Specs__FileCount} Test Suites had errors."
+  else
+    success "All ${Specs__FileCount} Test Suites had passed."
+  fi 
 
   return "${result}"
 }
