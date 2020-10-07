@@ -174,6 +174,22 @@ function is.a-script() {
   [[ ${BASH_IN_SUBSHELL} -eq 1 ]]
 }
 
+# https://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
+function is.integer() {
+  is.numeric "$1" && [[ ! $1 =~ \. ]]
+}
+
+function is.numeric() {
+  case $1 in
+    ''|*[!\-0-9.]*) 
+      return 1
+      ;;
+    *) 
+      return 0
+      ;;
+  esac
+}
+
 #------------------------------------------------------------------
 # Public API
 # Part 3. error versions of each validation, which print an error messages

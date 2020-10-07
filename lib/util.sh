@@ -341,3 +341,9 @@ pause() { sleep "${1:-1}"; }
 pause.medium() { sleep "${1:-0.3}"; }
 pause.short() { sleep "${1:-0.1}"; }
 pause.long() { sleep "${1:-10}"; }
+
+
+util.is-numeric() {
+  is.numeric "$1"
+}
+
