@@ -40,7 +40,7 @@ bashmatic.functions-from() {
   [[ -n ${pattern} ]] && shift
   [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
 
-  cd "${BASHMATIC_HOME}" >/dev/null || return 1
+  cd "${BASHMATIC_LIBDIR}" >/dev/null || return 1
 
   export SCREEN_WIDTH=$(screen-width)
 
@@ -48,7 +48,7 @@ bashmatic.functions-from() {
     pattern="${pattern}.sh"
   fi
 
-  ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' "lib/${pattern}" |
+  ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} |
     sedx 's/^lib\/.*\.sh://g' |
     sedx 's/^function //g' |
     sedx 's/\(\) *\{.*$//g' |
