@@ -650,7 +650,7 @@ dev-setup.install() {
     block_size=${#DevSetup__BrewPackages[@]}
     [[ ${block_size} -gt 0 ]] && {
       h2 "Installing ${block_size} Brew Packages"
-      brew.cache-reset
+      brew.cache-reset package
       dev-setup.install.packages "brew.install.package" "${DevSetup__BrewPackages[@]}" || {
         failures=$((failures + 1))
       }
@@ -660,7 +660,7 @@ dev-setup.install() {
     block_size=${#DevSetup__BrewCasks[@]}
     [[ "${block_size}" -gt 0 ]] && {
       h2 "Installing ${block_size} Brew Casks"
-      brew.cache-reset
+      brew.cache-reset cask
       dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewCasks[@]}" || {
         failures=$((failures + 1))
       }

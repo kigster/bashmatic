@@ -110,9 +110,9 @@ function cache-or-command() {
     fi
   fi
 
-  info "REFRESHING CACHE with command: ${bldylw}brew list ${brew_list_flags} >${file}"
-  rm -f "${file}" && touch "${file}"
+  is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${brew_list_flags} >${file}"
   brew list ${brew_list_flags} >"${file}"
+  cat "${file}"
 }
 
 function brew.package.is-installed() {
