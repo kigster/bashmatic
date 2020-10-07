@@ -28,9 +28,9 @@ IMPORTANT:
 ====
 **Compatiblity**
 
-* ✅  BASH version 4+
-* ✅  BASH version 3 (partial compatibility, some functions are disabled)
-* ✅  ZSH
+* ✅   BASH version 4+
+* ✅   BASH version 3 (partial compatibility, some functions are disabled)
+* ✅   ZSH
 
 **Not Supported:**
 
