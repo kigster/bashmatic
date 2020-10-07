@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# vim: ft=bash
 
 text.markdown-to-asciidoc() {
   local file="$1"; shift
@@ -38,4 +40,13 @@ text.markdown-to-asciidoc() {
   fi
 
   run "kramdoc -o ${target} ${args} ${file}"
+}
+
+text.ord() {
+  LC_CTYPE=C printf '%d' "'$1"
+}
+
+text.chr() {
+  [ "$1" -lt 256 ] || return 1
+  printf "\\$(printf '%03o' "$1")"
 }

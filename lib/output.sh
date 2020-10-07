@@ -8,6 +8,10 @@ export LibOutput__LeftPrefix="       "
 export LibOutput__MinWidth__Default=80
 export LibOutput__MaxWidth__Default=
 
+export LibOutput__RepeatCharImplementation="printf"
+
+export LibOutput__CachedScreenWidthMs=10000 # how long to cache screen-width for.
+
 export bashmatic_spacer_width="${bashmatic_spacer_width:-4}"
 
 output.reset-min-max-width() {
@@ -87,7 +91,7 @@ output.print-at-x-y() {
 
 .ver-to-i() {
   version=${1}
-  echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
+  echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
 }
 
 output.color.on() {
@@ -119,7 +123,7 @@ output.color.off() {
     fi
   fi
 
-  printf -- "%d" $w
+  printf -- "%d" "$w"
 }
 
 .output.screen-width() {
@@ -128,17 +132,19 @@ output.color.off() {
     return 0
   fi
 
-  if [[ -n "${AppCurrentScreenWidth}" && $(($(millis) - ${AppCurrentScreenMillis})) -lt 1000 ]]; then
-    printf -- "${AppCurrentScreenWidth}"
+  local now="$(millis)"
+
+  if [[ -n "${LibOutput__CachedScreenWidth}" && $((now - LibOutput__CachedScreenMillis)) -lt ${LibOutput__CachedScreenWidthMs} ]]; then
+    printf -- "${LibOutput__CachedScreenWidth}"
     return
   fi
 
   local w=$(.output.current-screen-width)
 
-  export AppCurrentScreenWidth=${w}
-  export AppCurrentScreenMillis=$(millis)
+  export LibOutput__CachedScreenWidth="${w}"
+  export LibOutput__CachedScreenMillis="${now}"
 
-  printf -- "%d" ${w}
+  printf -- "%d" "${w}"
 }
 
 .output.screen-height() {
@@ -159,7 +165,7 @@ output.color.off() {
 }
 
 .output.line() {
-  .output.repeat-char "─" $(.output.width)
+  .output.repeat-char "─" "$(.output.width)"
 }
 
 .output.hr() {
@@ -184,41 +190,6 @@ output.color.off() {
   printf "\n"
 }
 
-.output.repeat-char.impl-looping() {
-  local char="${1}"
-  local width=${2}
-  [[ -z "${width}" ]] && width=$(.output.screen-width)
-  local line=""
-  for i in {1..300}; do
-    [[ $i -gt ${width} ]] && {
-      printf -- "${line}"
-      return
-    }
-    line="${line}${char}"
-  done
-  printf -- "${line}"
-}
-
-.output.repeat-char.impl-product() {
-  local char="${1}"
-  local width=${2}
-  [[ -z "${width}" ]] && width=$(.output.screen-width)
-  printf -- "${char}" * ${width}
-  local line=""
-  for i in {1..300}; do
-    [[ $i -gt ${width} ]] && {
-      printf -- "${line}"
-      return
-    }
-    line="${line}${char}"
-  done
-  printf -- "${line}"
-}
-
-.output.repeat-char() {
-  .output.repeat-char.impl-looping "$@"
-}
-
 # set background color to something before calling this
 .output.bar() {
   .output.repeat-char " "
@@ -226,8 +197,7 @@ output.color.off() {
 }
 
 .output.box-separator() {
-  printf "$1"
-  printf "├"
+  printf "$1├"
   .output.line
   .output.cursor-left-by 1
   printf "┤${clr}\n"
@@ -265,26 +235,40 @@ ascii-clean() {
 }
 
 .output.boxed-text() {
-  local __color_bdr=${1}
+  local __color_bdr="${1}"
   shift
-  local __color_fg=${1}
+  local __color_fg="${1}"
   shift
   local text="$*"
 
   output.is-terminal || {
-    printf ">>> %80.80s <<< \n" ${text}
+    printf ">>> %80.80s <<< \n" "${text}"
     return
   }
 
-  local clean_text="$(.output.clean "${text}")"
-  local clean_text_len="${#clean_text}"
+  # local clean_text="$(.output.clean "${text}")"
+  # local clean_text_len="${#clean_text}"
+    # local remaining_space_len=$((width - clean_text_len - 1))
   local width="$(.output.width)"
-  local w=$((width - 1))
-  # local remaining_space_len=$((width - clean_text_len - 1))
-  printf -- "${__color_bdr}%s ${__color_fg}" '│'
-  printf "%-${width}.${width}s" "${text}"
-  cursor.at.x ${width}
-  printf -- "${__color_bdr}%s${clr}\n" '│'
+
+  local border_right=$((width - 2))
+  local inner_width=$((width - 3))
+
+  # left border
+  printf -- "${__color_bdr}%s${__color_fg}" '│'
+
+  # whitespace padding
+  .output.repeat-char " " "${inner_width}"
+
+  # right border
+  cursor.at.x "${border_right}"
+  printf -- "${__color_bdr}%s${clr}" '│'
+
+  # back to beginning
+  cursor.at.x 3
+  printf "${__color_fg}${text}${clr}\n"
+
+  
 }
 
 #
@@ -442,237 +426,6 @@ output.is-redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 
-box.white-on-blue() {
-  .output.box "${bakblu}" "${bldwht}" "$@"
-}
-
-box.white-on-green() {
-  .output.box "${bakgrn}" "${bldwht}" "$@"
-}
-
-box.yellow-on-purple() {
-  .output.box "${bakpur}" "${bldylw}" "$@"
-}
-
-box.yellow-in-red() {
-  .output.box "${bldred}" "${bldylw}" "$@"
-}
-
-box.yellow-in-yellow() {
-  .output.box "${bldylw}" "${txtylw}" "$@"
-}
-
-box.blue-in-yellow() {
-  .output.box "${bldylw}" "${bldblu}" "$@"
-}
-
-box.blue-in-green() {
-  .output.box "${bldblu}" "${bldgrn}" "$@"
-}
-
-box.yellow-in-blue() {
-  .output.box "${bldylw}" "${bldblu}" "$@"
-}
-
-box.red-in-yellow() {
-  .output.box "${bldred}" "${bldylw}" "$@"
-}
-
-box.red-in-red() {
-  .output.box "${txtred}" "${txtred}" "$@"
-}
-
-box.green-in-magenta() {
-  .output.box "${bldgrn}" "${bldpur}" "$@"
-}
-
-box.red-in-magenta() {
-  .output.box "${bldred}" "${bldpur}" "$@"
-}
-
-box.green-in-green() {
-  .output.box "${bldgrn}" "${bldgrn}" "$@"
-}
-
-box.green-in-yellow() {
-  .output.box "${bldgrn}" "${bldylw}" "$@"
-}
-
-box.green-in-cyan() {
-  .output.box "${bldgrn}" "${bldcyn}" "$@"
-}
-
-box.magenta-in-green() {
-  .output.box "${bldpur}" "${bldgrn}" "$@"
-}
-
-box.magenta-in-blue() {
-  .output.box "${bldblu}" "${bldpur}" "$@"
-}
-
-#————————————————————
-# Backgrounds
-#————————————————————
-
-box.yellow-on-green() {
-  .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldylw}" "$@"
-}
-
-box.white-on-red() {
-  .output.box "${bakred}${bldwht}" "${bakred}${bldwht}" "$@"
-}
-
-box.white-on-green() {
-  .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldwht}" "$@"
-}
-
-box.white-on-blue() {
-  .output.box "${bakblu}${bldwht}" "${bakblu}${bldwht}" "$@"
-}
-
-box.black-on-yellow() {
-  .output.box "${txtblk}${bakylw}" "${bakylw}" "$@"
-}
-
-box.black-on-red() {
-  .output.box "${txtblk}${bakred}" "${bakred}" "$@"
-}
-
-box.black-on-green() {
-  .output.box "${txtblk}${bakgrn}" "${bakgrn}" "$@"
-}
-
-box.black-on-blue() {
-  .output.box "${txtblk}${bakblu}" "${bakblu}" "$@"
-}
-
-box.black-on-purple() {
-  .output.box "${txtblk}${bakpur}" "${bakpur}" "$@"
-}
-
-h.e() {
-  .output.box "${bakred}${txtblk}" "${bakred}" "$@"
-}
-
-#————————————————————
-# Centered
-#————————————————————
-h.orange-center() {
-  center "${white_on_orange}" "$@"
-}
-
-h.orange() {
-  left "${white_on_orange}" "$@"
-}
-
-h.salmon-center() {
-  center "${white_on_salmon}" "$@"
-}
-
-h.salmon() {
-  left "${white_on_salmon}" "$@"
-}
-
-hl.yellow-on-gray() {
-  left "${yellow_on_gray}" "$@"
-}
-
-hl.blue() {
-  left "${bldwht}${bakpur}" "$@"
-}
-
-hl.green() {
-  left "${txtblk}${bakgrn}" "$@"
-}
-
-hl.yellow() {
-  left "${txtblk}${bakylw}" "$@"
-}
-
-hl.subtle() {
-  left "${bldwht}${bakblk}${underlined}" "$@"
-}
-
-hl.desc() {
-  left "${bakylw}${txtblk}${bakylw}" "$@"
-}
-
-h.yellow() {
-  center "${txtblk}${bakylw}" "$@"
-}
-
-h.red() {
-  center "${txtblk}${bakred}" "$@"
-}
-
-h.green() {
-  center "${txtblk}${bakgrn}" "$@"
-}
-
-h.blue() {
-  center "${txtblk}${bakblu}" "$@"
-}
-
-h.black() {
-  center "${bldylw}${bakblk}" "$@"
-}
-
-h2.green() {
-  box.green-in-cyan "$@"
-}
-
-h1.green() {
-  box.green-in-magenta "$@"
-}
-
-h1.purple() {
-  box.magenta-in-green "$@"
-}
-
-h1.blue() {
-  box.magenta-in-blue "$@"
-}
-
-h1.red() {
-  box.red-in-red "$@"
-}
-
-h1.yellow() {
-  box.yellow-in-red "$@"
-}
-
-h1() {
-  box.blue-in-yellow "$@"
-}
-
-h1bg() {
-  box.white-on-blue "$@"
-}
-
-h2() {
-  box.blue-in-green "$@"
-}
-
-h2bg() {
-  box.white-on-green "$@"
-}
-
-h3() {
-  box.magenta-in-green "$@"
-}
-
-h3bg() {
-  box.yellow-on-purple "$@"
-}
-
-h4() {
-  box.magenta-in-green "$@"
-}
-
-hdr() {
-  h1 "$@"
-}
-
 screen-width() {
   .output.screen-width
 }
@@ -828,10 +581,10 @@ warn() {
 }
 
 warning() {
-  header=$(printf -- " « WARNING » ")
+  header=$(printf -- "${clr}${txtylw}  « WARNING » ")
   local first="$1"
   shift
-  box.yellow-in-yellow "${header} $first" "$@" >&2
+  box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" >&2
 }
 
 br() {
@@ -844,22 +597,22 @@ info() {
 }
 
 error() {
-  header=$(printf -- "« ERROR » ")
-  box.white-on-red "${header} $1" "${@:2}" >&2
+  header=$(printf -- "${clr}${txtred}  « ERROR » ")
+  box.white-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" >&2
 }
 
 info:() {
-  inf $*
+  inf "$*"
   ui.closer.ok:
 }
 
 error:() {
-  err $*
+  err "$*"
   ui.closer.not-ok:
 }
 
 warning:() {
-  warn $*
+  warn "$*"
   ui.closer.kind-of-ok:
 }
 
