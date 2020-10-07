@@ -24,6 +24,19 @@ WARNING:
 * Additionally please checkout the xref:CHANGELOG.md[CHANGELOG] and the xref:LICENSE.adoc[LICENSE].
 ====
 
+IMPORTANT:
+====
+**Compatiblity**
+
+* ✅  BASH version 4+
+* ✅  BASH version 3 (partial compatibility, some functions are disabled)
+* ✅  ZSH
+
+**Not Supported:**
+
+* Fish
+
+====
 
 _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
 
@@ -47,6 +60,61 @@ Despite the above points, it is also generally accepted that:
 * When BASH errors occur, shit generally hits the fan and someone decides that they should rewrite the 20-line BASH script in C{pp} or Go, because, well, it's a goddamn BASH script and it ain't working.
 
 IMPORTANT: _Bashmatic_'s goal is to make BASH programming both fun, consistent, and provide plenty of visible output to the user so that there is no mystery as to what is going on.
+
+
+== Installing Bashmatic
+
+Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script.
+
+=== Bootstrapping _Bashmatic®_ using `curl`
+
+First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
+
+NOTE: The Bitly link resolves to the HEAD version of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bootstrap[`bin/bootstrap`] script in Bashmatic Repo.
+
+[source,bash]
+----
+$ bash -c "$(curl -fsSL https://bit.ly/bashmatic-install)"
+----
+
+This not only will check out _bashmatic®_ into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
+
+Restart your shell, and make sure that when you type `bashmatic.version` in the command line (and press Enter) you see the version number printed like so:
+
+[source,bash]
+----
+$ bashmatic.version
+1.4.0
+----
+
+If you get an error, perhaps _Bashmatic®_ did not properly install.
+
+Next, to discover the breadth of available functions, type the following command to see all imported shell functions:
+
+[source,bash]
+----
+# Numeric argument specifies the number of columns to use for output
+$ bashmatic.functions 3 
+----
+
+=== Manual Install
+
+To install Bashmatic explicitly, without trusting some Bitly link 😎  you can run the following commands:
+
+[source,bash]
+----
+test -d ~/.bashmatic || \
+  git clone https://github.com/kigster/bashmatic.git ~/.bashmatic
+
+source ~/.bashmatic/init.sh
+
+# Finally, to ensure _Bashmatic®_ loads every time you login, run the following command:
+bashmatic.load-at-login
+----
+
+When you run the `bashmatic.load-at-login` function, it will add a hook to one of your shell initialization files, so all of its functions are available in your shell.
+
+Note -- you can always reload _Bashmatic®_ with `bashmatic.reload` function.
 
 == Three Examples to Showcase Bashmatic
 
@@ -223,55 +291,6 @@ You can configure the following settings for `dbtop`:
 
 1. You can change the location of the `database.yml` file with `db.config.set-file <filepath>`
 2. You can change the refresh rate of the `dbtop` with eg. `db.top.set-refresh 0.5` (in seconds, fractional values allowed). This sets the sleep time between the screen is fully refreshed.
-
-== Installing Bashmatic
-
-Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script.
-
-=== Bootstrapping _Bashmatic®_ using `curl`
-
-First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal (NOTE: you can change 1-2-0 to a version you'd like to install):
-
-[source,bash]
-----
-$ bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)"
-----
-
-This not only will check out _bashmatic®_ into `~/.bashmatic`, but will also add the enabling hook to your `~/.bashrc` file.
-
-Restart your shell, and make sure that when you type `bashmatic.version` in the command line (and press Enter) you see the version number printed like so:
-
-[source,bash]
-----
-$ bashmatic.version
-1.0.0
-----
-
-If you get an error, perhaps _Bashmatic®_ did not properly install.
-
-=== Installing Manually
-
-For the impatient, here is how to install _Bashmatic®_ very quickly and easily. You can add the following script to your `~/.bashrc`  or any other script:
-
-[source,bash]
-----
-
-[[ -d ${HOME}/.bashmatic ]] || {
-  git clone https://github.com/kigster/bashmatic.git ~/.bashmatic
-}
-source ~/.bashmatic/init.sh
-----
-
-Finally, to ensure _Bashmatic®_ loads every time you login, run the following command:
-
-[source,bash]
-----
-bashmatic.load-at-login
-----
-
-When you run the `bashmatic.load-at-login` function, it will add a _bashmatic®_ hook to one of your BASH initialization files, so all of its functions are available in your shell.
-
-Note -- you can always reload _Bashmatic®_ with `bashmatic.reload` function.
 
 == Usage
 
