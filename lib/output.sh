@@ -279,17 +279,15 @@ ascii-clean() {
   # left border
   printf -- "${__color_bdr}%s${__color_fg}" '│'
 
-  if output.is-tty; then
-    # whitespace padding
-    .output.repeat-char " " "${inner_width}"
+  # whitespace padding
+  .output.repeat-char " " "${inner_width}"
 
-    # right border
-    cursor.at.x "${border_right}"
-    printf -- " ${__color_bdr}%s${clr}" '│'
+  # right border
+  cursor.at.x "${border_right}"
+  printf -- " ${__color_bdr}%s${clr}" '│'
 
-    # back to beginning
-    cursor.at.x 3
-  fi
+  # back to beginning
+  cursor.at.x 3
 
   printf "${__color_fg}${text}${clr}\n"
 }
