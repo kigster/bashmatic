@@ -190,6 +190,14 @@ function is.numeric() {
   esac
 }
 
+function is.command() {
+  command -v "$1" >/dev/null
+}
+
+function is.missing() {
+  ! is.command "$@"
+}
+
 #------------------------------------------------------------------
 # Public API
 # Part 3. error versions of each validation, which print an error messages
