@@ -217,27 +217,6 @@ output.color.off() {
   reset-color
 }
 
-.output.box-separator() {
-  printf "$1├"
-  .output.line
-  #.output.cursor-left-by 1
-  printf "┤${clr}\n"
-}
-
-.output.box-top() {
-  printf "$1┌"
-  .output.line
-  #.output.cursor-left-by 1
-  printf "┐${clr}\n"
-}
-
-.output.box-bottom() {
-  printf "└"
-  .output.line
-  #.output.cursor-left-by 1
-  printf "┘${clr}\n"
-}
-
 .output.clean.pipe() {
   sedx 's/(\x1b|\\\e)\[[0-9]*;?[0-9]?+m//g; s/\r//g'
 }
@@ -255,6 +234,32 @@ ascii-clean() {
   .output.clean "$@"
 }
 
+################################################################################
+# <box>
+################################################################################
+# shellcheck disable=SC2120
+.output.box-separator() {
+  printf "$1├"
+  .output.line
+  #.output.cursor-left-by 1
+  printf "┤${clr}\n"
+}
+
+# shellcheck disable=SC2120
+.output.box-top() {
+  printf "$1┌"
+  .output.line
+  #.output.cursor-left-by 1
+  printf "┐${clr}\n"
+}
+
+.output.box-bottom() {
+  printf "└"
+  .output.line
+  #.output.cursor-left-by 1
+  printf "┘${clr}\n"
+}
+
 .output.boxed-text() {
   local __color_bdr="${1}"
   shift
@@ -267,34 +272,29 @@ ascii-clean() {
     return
   }
 
-  # local clean_text="$(.output.clean "${text}")"
-  # local clean_text_len="${#clean_text}"
-    # local remaining_space_len=$((width - clean_text_len - 1))
   local width="$(.output.width)"
-
   local border_right=$((width))
   local inner_width=$((width - 1))
 
   # left border
   printf -- "${__color_bdr}%s${__color_fg}" '│'
 
-  # whitespace padding
-  .output.repeat-char " " "${inner_width}"
+  if output.is-tty; then
+    # whitespace padding
+    .output.repeat-char " " "${inner_width}"
 
-  # right border
-  cursor.at.x "${border_right}"
-  printf -- " ${__color_bdr}%s${clr}" '│'
+    # right border
+    cursor.at.x "${border_right}"
+    printf -- " ${__color_bdr}%s${clr}" '│'
 
-  # back to beginning
-  cursor.at.x 3
+    # back to beginning
+    cursor.at.x 3
+  fi
+
   printf "${__color_fg}${text}${clr}\n"
-
-  
 }
 
-#
 # Usage: .output.box border-color text-color "line 1" "line 2" ....
-#
 .output.box() {
   local __color_bdr=${1}
   shift
@@ -311,7 +311,7 @@ ascii-clean() {
 
   [[ -n "${opts_suppress_headers}" ]] && return
 
-  printf "${__color_bdr}"
+  printf "\n${__color_bdr}"
   .output.box-top
 
   local __i=0
@@ -326,7 +326,12 @@ ascii-clean() {
 
   printf "${__color_bdr}"
   .output.box-bottom
+  echo
 }
+
+################################################################################
+# </box>
+################################################################################
 
 .output.center() {
   local color="${1}"
@@ -336,14 +341,13 @@ ascii-clean() {
   local width=$(.output.width)
 
   printf "${color}"
-  cursor.at.x 0
-  .output.repeat-char " " "${width}"
-  cursor.at.x 4
+  output.is-tty && {
+    cursor.at.x 0
+    .output.repeat-char " " "${width}"
+    cursor.at.x 4
+  }
   printf "${color}%s${clr}" "${text}"  
   echo
-  # reset-color
-  # cursor.at.x 0
-  # echo
 }
 
 .output.set-indent() {

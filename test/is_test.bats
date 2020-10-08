@@ -8,6 +8,24 @@ set -e
 export not_blank_var="blah"
 export blank_var=
 
+@test "is.a-variable(valid var)" {
+  BLERGH=1
+  var_name="BLERGH"
+  is.a-variable ${var_name}
+}
+
+@test "is.a-variable(invalid var)" {
+  ! is.a-variable BLERGH123
+}
+
+@test "is.a-variable(invalid chars)" {
+  ! is.a-variable file/hello.txt
+}
+
+@test "is.a-variable(blank)" {
+  ! is.a-variable 
+}
+
 @test "is.not-blank(not blank)" {
   not_blank="blah"
   is.not-blank "${not_blank}"

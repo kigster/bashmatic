@@ -161,7 +161,7 @@ function is.a-function() {
 
 function is.a-variable() {
   local var_name="$1"
-  [[ ${!var_name+x} ]]
+  [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${!var_name+x} ]]
 }
 
 function is.sourced-in() {
@@ -201,7 +201,6 @@ function is.missing() {
 function is.alias() {
   alias "$1" 2>/dev/null
 }
-
 
 #------------------------------------------------------------------
 # Public API
