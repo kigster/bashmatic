@@ -198,6 +198,11 @@ function is.missing() {
   ! is.command "$@"
 }
 
+function is.alias() {
+  alias "$1" 2>/dev/null
+}
+
+
 #------------------------------------------------------------------
 # Public API
 # Part 3. error versions of each validation, which print an error messages
