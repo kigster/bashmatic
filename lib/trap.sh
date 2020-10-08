@@ -5,7 +5,7 @@
 #
 #   trap-setup INT
 #   while true; do
-#     trap-fired && {
+#     trap-was-fired && {
 #       abort;
 #       return 1
 #     }

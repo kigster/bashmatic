@@ -32,8 +32,10 @@ export LibProgress__BarChar="${LibProgress__BarChar__Default}"
 .progress.bar() {
   local full_cycle_seconds=${1:-"10"}; shift
   local loops=${1:-"1"}; shift
-  local width=$3
-  [[ -z ${width} ]] && width=$(($(.output.screen-width) - 5))
+  local width=$1
+
+  is.integer ${width} && shift
+  is.integer ${width} || width=$(($(.output.screen-width) - 2))
 
   local delay_seconds=$(ruby -e "printf('%.6f', ${full_cycle_seconds}.to_f / ${width}.to_f)")
 
