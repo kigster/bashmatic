@@ -15,6 +15,11 @@ export BASHMATIC_INIT="${BASH_SOURCE[0]}"
 
 [[ -f ${BASHMATIC_HOME}/init.sh ]] && export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
 
+[[ -n $DEBUG ]] && {
+  [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source ${BASHMATIC_HOME}/lib/time.sh
+  start=$(millis)
+}
+
 # If defined BASHMATIC_AUTOLOAD_FILES, we source these files together with BASHMATIC
 for _init in ${BASHMATIC_AUTOLOAD_FILES}; do
   [[ -s "${PWD}/${_init}" ]] && {
@@ -51,3 +56,9 @@ main() {
 }
 
 main "$@"
+
+[[ -n $DEBUG ]] && {
+  end=$(millis)
+  attention "Bashmatic Library took $((end - start)) milliseconds to load."
+}
+

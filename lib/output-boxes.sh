@@ -2,6 +2,47 @@
 # Private functions
 # shellcheck disable=SC2155
 
+#————————————————————
+# Sections
+#————————————————————
+
+section.green() {
+  .output.left-powerline grn "$@"
+}
+
+section.yellow() {
+  .output.left-powerline ylw "$@"
+}
+
+section.red() {
+  .output.left-powerline red "$@"
+}
+
+section.blue() {
+  .output.left-powerline blu "$@"
+}
+
+section.purple() {
+  .output.left-powerline pur "$@"
+}
+
+section.cyan() {
+  .output.left-powerline cyn "$@"
+}
+
+section.white() {
+  .output.left-powerline wht "$@"
+}
+
+attention() {
+  .output.left-powerline blu 65 "${txtwht}${bakblu}$@"
+}
+
+#————————————————————
+# Boxes
+#————————————————————
+
+
 box.white-on-blue() {
   .output.box "${bakblu}" "${bldwht}" "$@"
 }
@@ -226,7 +267,11 @@ h3bg() {
 }
 
 h4() {
-  box.magenta-in-green "$@"
+  section.blue "$@"
+}
+
+h5() {
+  section.purple "$@"
 }
 
 hdr() {

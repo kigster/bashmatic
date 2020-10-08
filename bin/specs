@@ -21,7 +21,8 @@ done
 source "${BASHMATIC_HOME}/init.sh"
 
 test-group() {
-  box.black-on-blue "$@"
+  #box.black-on-blue "$@"
+  section.purple "$@"
   echo
 }
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
+export LibOutput__RepeatCharImplementation="product"
+
 # Repeat character implementations
 # See: https://stackoverflow.com/questions/5349718/how-can-i-repeat-a-character-in-bash
 # 

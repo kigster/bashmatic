@@ -8,23 +8,34 @@ export LibOutput__LeftPrefix="       "
 export LibOutput__MinWidth__Default=80
 export LibOutput__MaxWidth__Default=
 
-export LibOutput__RepeatCharImplementation="printf"
+export LibOutput__WidthDetectionStrategy="unconstrained"
 
 export LibOutput__CachedScreenWidthMs=10000 # how long to cache screen-width for.
-
 export bashmatic_spacer_width="${bashmatic_spacer_width:-4}"
 
 output.reset-min-max-width() {
-  export LibOutput__MinWidth=${LibOutput__MinWidth__Default}
-  export LibOutput__MaxWidth=${LibOutput__MaxWidth__Default}
+  export LibOutput__MinWidth=${LibOutput__MinWidth:-${LibOutput__MinWidth__Default}}
+  export LibOutput__MaxWidth=${LibOutput__MaxWidth:-${LibOutput__MaxWidth__Default}}
+}
+
+output.reset-min-max-width
+
+output.constrain-screen-width() {
+  export LibOutput__WidthDetectionStrategy="constrained"
+  [[ $1 -gt 0 ]] && output.set-max-width "$1"
+  [[ $2 -gt 0 ]] && output.set-min-width "$2"
+}
+
+output.unconstrain-screen-width() {
+  export LibOutput__WidthDetectionStrategy="unconstrained"
 }
 
 output.set-max-width() {
-  export LibOutput__MaxWidth="$1"
+  [[ $1 -gt 0 ]] && export LibOutput__MaxWidth="$1"
 }
 
 output.set-min-width() {
-  export LibOutput__MinWidth="$1"
+  [[ $1 -gt 0 ]] && export LibOutput__MinWidth="$1"
 }
 
 .output.cursor-right-by() {
@@ -105,6 +116,16 @@ output.color.off() {
 }
 
 .output.current-screen-width() {
+  local strategy="${LibOutput__WidthDetectionStrategy}"
+  local func=".output.current-screen-width.${strategy}"
+  util.is-a-function "${func}" || {
+    echo "invalid strategy: ${strategy}" >&2
+    return 1
+  }
+  ${func}
+}
+
+.output.current-screen-width.unconstrained() {
   local w
   local os=$(uname -s)
 
@@ -113,15 +134,19 @@ output.color.off() {
   elif [[ $os == 'Linux' ]]; then
     w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')
   fi
+  printf -- "%d" "$w"
+}
 
-  [[ -z ${w} ]] && w=${LibOutput__MinWidth}
-  [[ ${w} -lt ${LibOutput__MinWidth} ]] && w=${LibOutput__MinWidth}
+.output.current-screen-width.constrained() {
+  local w=$(.output.current-screen-width.unconstrained)
 
-  if [[ -n ${LibOutput__MaxWidth} ]]; then
-    if [[ ${w} -gt ${LibOutput__MaxWidth} ]]; then
-      w=${LibOutput__MaxWidth}
-    fi
-  fi
+  local min_w="${LibOutput__MinWidth}"
+  local max_w="${LibOutput__MaxWidth}"
+
+  [[ -z ${w} ]] && w="${min_w}"
+
+  [[ -n ${min_w} && ${w} -lt ${min_w} ]] && w="${min_w}"
+  [[ -n ${max_w} && ${w} -gt ${max_w} ]] && w="${max_w}"
 
   printf -- "%d" "$w"
 }
@@ -157,11 +182,7 @@ output.color.off() {
   MIN_HEIGHT=${MIN_HEIGHT:-30}
   h=${h:-${MIN_HEIGHT}}
   [[ "${h}" -lt "${MIN_HEIGHT}" ]] && h=${MIN_HEIGHT}
-  printf -- $(($h - 2))
-}
-
-.output.width() {
-  printf '%d' "$(($(.output.screen-width) - 2))"
+  printf -- $((h - 2))
 }
 
 .output.line() {
@@ -199,21 +220,21 @@ output.color.off() {
 .output.box-separator() {
   printf "$1├"
   .output.line
-  .output.cursor-left-by 1
+  #.output.cursor-left-by 1
   printf "┤${clr}\n"
 }
 
 .output.box-top() {
   printf "$1┌"
   .output.line
-  .output.cursor-left-by 1
+  #.output.cursor-left-by 1
   printf "┐${clr}\n"
 }
 
 .output.box-bottom() {
   printf "└"
   .output.line
-  .output.cursor-left-by 1
+  #.output.cursor-left-by 1
   printf "┘${clr}\n"
 }
 
@@ -251,8 +272,8 @@ ascii-clean() {
     # local remaining_space_len=$((width - clean_text_len - 1))
   local width="$(.output.width)"
 
-  local border_right=$((width - 2))
-  local inner_width=$((width - 3))
+  local border_right=$((width))
+  local inner_width=$((width - 1))
 
   # left border
   printf -- "${__color_bdr}%s${__color_fg}" '│'
@@ -262,7 +283,7 @@ ascii-clean() {
 
   # right border
   cursor.at.x "${border_right}"
-  printf -- "${__color_bdr}%s${clr}" '│'
+  printf -- " ${__color_bdr}%s${clr}" '│'
 
   # back to beginning
   cursor.at.x 3
@@ -312,25 +333,17 @@ ascii-clean() {
   shift
   local text="$*"
 
-  local clean_text="$(printf -- "${text}" | ascii-pipe)"
-  local clean_text_len=${#clean_text}
-  local clean_text_len=$((clean_text_len * 2))
-  local screen_width=$(.output.screen-width)
-  local width=$((screen_width - 4))
-  local remainder="$((width - clean_text_len))"
-  local half_remainder=$((remainder / 2))
-
-  local offset=0
-  [[ "" -eq "1" ]] && offset=1
+  local width=$(.output.width)
 
   printf "${color}"
-  cursor.at.x 1
-  .output.repeat-char " " ${half_remainder}
-  printf "%s" "${text}"
-  .output.repeat-char " " $((half_remainder + offset - 1))
-  reset-color
   cursor.at.x 0
+  .output.repeat-char " " "${width}"
+  cursor.at.x 4
+  printf "${color}%s${clr}" "${text}"  
   echo
+  # reset-color
+  # cursor.at.x 0
+  # echo
 }
 
 .output.set-indent() {
@@ -345,21 +358,57 @@ ascii-clean() {
   .output.set-indent "$@"
 }
 
+.output.width() {
+  local w=$(screen.width)
+  printf "%d" $((w  - 4))
+}
+
 .output.left-justify() {
   local color="${1}"
   shift
   local text="$*"
-  local spacer="                   "
-  spacer=${spacer:1:${bashmatic_spacer_width}}
   printf "\n${color}"
   if output.is-terminal; then
-    local width=$(($(.output.screen-width) - ${#spacer}))
-    #local width=$((2 * $(.output.screen-width) / 3))
-    [[ ${width} -lt 70 ]] && width="70"
-    printf -- "${spacer}%-${width}.${width}s${clr}\n\n" "❯❯ ${text} ❯❯"
+    local width=$(( $(.output.width) - 4 ))
+    printf -- "    %-${width}.${width}s${clr}\n\n" "${text}"
   else
-    printf -- "${spacer}❯❯ ${text} ❯❯ ${clr}\n\n"
+    printf -- " ❯❯ %-${width}.${width}s${clr}\n\n" "${text}"
   fi
+}
+
+.output.left-powerline() {
+  local color="$1"
+  shift
+
+  local width
+  is.numeric "$1" && {
+    width="$1"
+    shift
+  }
+
+  local v_bg="bak${color}"
+  local v_fg="txt${color}"
+
+  local bg="${!v_bg}"
+  local fg="${!v_fg}"
+
+  local normal="${txtblk}${bg}"
+  local inverse="${fg}"
+
+  local text="$*"
+  printf "\n"
+  if output.is-terminal; then
+    [[ -z ${width} ]] && width=$(.output.width)
+
+    printf -- "${normal}%${width}.${width}s${inverse}${clr}" " "
+    cursor.at.x 3
+    printf -- "${normal}${text}${clr}"
+    echo
+    cursor.down 1
+  else
+    printf -- "——❯❯ ${text} ——❯❯\n\n"
+  fi
+  echo
 }
 
 ################################################################################
@@ -375,6 +424,13 @@ center() {
 
 left() {
   .output.left-justify "$@"
+}
+
+# @description Prints a "arrow-like" line using powerline characters
+# @arg1 Width (optional) — only intepretered as width if the first argument is a number.
+# @args Text to print
+section() {
+  .output.left-powerline pur "$@"
 }
 
 cursor.at.x() {

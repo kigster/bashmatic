@@ -60,6 +60,11 @@ color.enable() {
     export underlined='\e[4m'
     export strikethrough='\e[9m'
 
+    export inverse_on='\e[7m'
+    export inverse_off='\e[27m'
+    export default_bg='\e[49m'
+    export default_fg='\e[39m'
+
     export white_on_orange="\e[48;5;208m"
     export white_on_yellow="\e[48;5;214m"
     export white_on_red="\e[48;5;9m"
