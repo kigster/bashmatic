@@ -53,12 +53,12 @@ main() {
     echo "  🙁 Bashmatic appears to be broken, file not found: ${setup_script}"
     return 1
   fi
+  if [[ -n $DEBUG ]]; then
+    end=$(millis)
+    attention "Bashmatic Library took $((end - start)) milliseconds to load."
+  fi
 }
 
 main "$@"
 
-[[ -n $DEBUG ]] && {
-  end=$(millis)
-  attention "Bashmatic Library took $((end - start)) milliseconds to load."
-}
 
