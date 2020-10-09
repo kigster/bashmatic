@@ -62,6 +62,7 @@ function brew.install() {
     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   else
     info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
+    run "brew update"
   fi
 }
 

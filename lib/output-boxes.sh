@@ -34,6 +34,18 @@ section.white() {
   .output.left-powerline wht "$@"
 }
 
+section.gray() {
+  .output.left-powerline blk "$@"
+}
+
+section.gray-yellow() {
+  section.gray "${bldylw}${bakblk}$*"
+}
+
+notice() {
+  .output.left-powerline ylw 65 "${itablk}${bakylw}$@"
+}
+
 attention() {
   .output.left-powerline blu 65 "${txtwht}${bakblu}$@"
 }
@@ -172,6 +184,10 @@ h.salmon-center() {
 
 h.salmon() {
   left "${white_on_salmon}" "$@"
+}
+
+hl.yellow-on-black() {
+  left "${yellow_on_black}" "$@"
 }
 
 hl.yellow-on-gray() {
