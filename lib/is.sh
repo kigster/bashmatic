@@ -164,6 +164,14 @@ function is.a-variable() {
   [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${!var_name+x} ]]
 }
 
+function is.a-non-empty-array() {
+  local var_name="$1"
+  local -a array
+  echo "array=( \"\${${var_name}[@]}\" )"
+  eval "array=( \"\${${var_name}[@]}\" )"
+  [[ -n ${array[*]} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${#array[@]} -gt 0 ]]
+}
+
 function is.sourced-in() {
   bashmatic.detect-subshell
   [[ ${BASH_IN_SUBSHELL} -eq 0 ]]
