@@ -57,12 +57,12 @@ bashmatic.git.sync() {
 export HOME=${HOME:-"/"}
 export BASHMATIC_HOME="${HOME}/.bashmatic"
 export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
-export BASHMATIC_URL="https://github.com/kigster/bashmatic"
+export _bashmatic_url="https://github.com/kigster/bashmatic"
 
 if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
   bashmatic.git.sync
 else
-  git clone ${BASHMATIC_URL} ${BASHMATIC_HOME} >/dev/null
+  git clone ${_bashmatic_url} ${BASHMATIC_HOME} >/dev/null
 fi
 
 if [[ -s "${BASHMATIC_INIT}" ]]; then
@@ -73,6 +73,6 @@ if [[ -s "${BASHMATIC_INIT}" ]]; then
   exit 0
 else
   err "Bashmatic did not install correctly, please run the following command by hand:"
-  err "${bldgrn}git clone ${BASHMATIC_URL} ${BASHMATIC_HOME}"
+  err "${bldgrn}git clone ${_bashmatic_url} ${BASHMATIC_HOME}"
   exit 1
 fi

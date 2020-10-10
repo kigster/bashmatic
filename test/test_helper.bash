@@ -11,7 +11,7 @@ set +e
   load '/usr/local/lib/bats-file/load.bash'
 }
 
-export Bashmatic__Test=1
+export _bashmatic__test=1
 
 
 load.deps() {

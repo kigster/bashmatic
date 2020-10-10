@@ -7,8 +7,8 @@ source "lib/db.sh"
 setup() { 
   set -e 
   rm -f /tmp/a
-  export bashmatic_db_config="${BATS_TMPDIR}/dbtop.yml"
-  [[ -f ${bashmatic_db_config} ]] || cp -n conf/dbtop.yml $BATS_TMPDIR
+  export _bashmatic_db_config="${BATS_TMPDIR}/dbtop.yml"
+  [[ -f ${_bashmatic_db_config} ]] || cp -n conf/dbtop.yml $BATS_TMPDIR
   set -e
 }
 
@@ -22,7 +22,7 @@ setup() {
 }
 
 @test "db.config.parse non-existent file" {
-  export bashmatic_db_config=${BATS_TMPDIR}/none-existant.yml
+  export _bashmatic_db_config=${BATS_TMPDIR}/none-existant.yml
   set +e
   db.config.parse development
   local rc=$?

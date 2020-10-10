@@ -10,7 +10,7 @@ source lib/gem.sh
 
 
 @test "gem.gemfile.version returns correct 4-part version" {
-  alias ${GrepCommand} ="grep -E -e "
+  alias ${_bashmatic_grep} ="grep -E -e "
   gem.cache-refresh
   set -e
   cp test/Gemfile.lock .
@@ -19,7 +19,7 @@ source lib/gem.sh
 }
 
 @test "gem.gemfile.version returns correct 3-part version" {
-  alias ${GrepCommand} ="grep -E -e "
+  alias ${_bashmatic_grep} ="grep -E -e "
   gem.cache-refresh
   set -e
   cp test/Gemfile.lock .

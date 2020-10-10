@@ -154,6 +154,6 @@ versions_array() {
 
   result="$(cat "${tmp}")"
   [[ ${lines} -eq 2                              ]]
-  [[ $(cat "${tmp}" | ${GrepCommand}  -c ' • kig') -eq 1  ]]
-  [[ $(cat "${tmp}" | ${GrepCommand}  -c ' • pig') -eq 1  ]]
+  [[ $(cat "${tmp}" | ${_bashmatic_grep}  -c ' • kig') -eq 1  ]]
+  [[ $(cat "${tmp}" | ${_bashmatic_grep}  -c ' • pig') -eq 1  ]]
 }

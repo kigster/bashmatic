@@ -21,7 +21,7 @@ export __downloader_image_urls
 __downloader_tempfile="${__downloader_tempfile}.html"
 export __downloader_tempfile
 
-__downloader_command=${BashMatic__Downloader:-"$(which curl) -fsSL "}
+__downloader_command=${_bashmatic__downloader:-"$(which curl) -fsSL "}
 export __downloader_command
 
 __downloader_image_command="${__downloader_command}"

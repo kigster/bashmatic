@@ -5,7 +5,7 @@
 # Distributed under the MIT LICENSE.
 
 # IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
-export BASHMATIC_TEST_DIR="${BASHMATIC_TEST_DIR:-"test"}"
+export _bashmatic_test_dir="${_bashmatic_test_dir:-"test"}"
 for loc in "${BASHMATIC_HOME}/init.sh" "${HOME}/.bashmatic/init.sh" "${PWD}/init.sh"; do
   if [[ -s "${loc}" ]]; then
     export BASHMATIC_HOME="$(dirname "${loc}")"
@@ -51,9 +51,9 @@ function specs.init() {
 
   export True=1
   export False=0
-  export GrepCommand="$(which grep) -E -e "
+  export _bashmatic_grep="$(which grep) -E -e "
 
-  export Bashmatic__Test=${True}
+  export _bashmatic__test=1
 
   (mkdir -p "${BatsPrefix}" 2>/dev/null) || true
   (mkdir -p "${BatsPrefix}"/bin 2>/dev/null) || true
@@ -61,10 +61,10 @@ function specs.init() {
 
   export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
 
-  export Bashmatic__BatsInstallMethod="sources"
-  declare -a Bashmatic__BatsInstallPrefixes
-  export Bashmatic__BatsInstallPrefixes=($(util.functions-matching.diff specs.install-bats.))
-  export Bashmatic__BatsInstallMethods="$(array.to.csv "${Bashmatic__BatsInstallPrefixes[@]}")"
+  export _bashmatic__batsinstallmethod="sources"
+  declare -a _bashmatic__batsinstallprefixes
+  export _bashmatic__batsinstallprefixes=($(util.functions-matching.diff specs.install-bats.))
+  export _bashmatic__batsinstallmethods="$(array.to.csv "${_bashmatic__batsinstallprefixes[@]}")"
 
   if [[ -n ${CI} ]]; then
     .output.set-indent 0
@@ -79,17 +79,17 @@ function specs.find-project-root() {
   local dir="${PWD}"
   while true; do
     [[ "${dir}" == "/" || -z "${dir}" ]] && break
-    [[ -d "${dir}/${BASHMATIC_TEST_DIR}" ]] && {
+    [[ -d "${dir}/${_bashmatic_test_dir}" ]] && {
       echo "${dir}"
       return 0
     }
     dir="$(dirname "${dir}")"
   done
 
-  error "Can't find project root containing directory '${BASHMATIC_TEST_DIR}'" \
+  error "Can't find project root containing directory '${_bashmatic_test_dir}'" \
     "If your tests are located in differently named folder (eg 'specs'), please set"
   "the environment variable before running specs, eg:" \
-    "\$ ${bldylw}export BASHMATIC_TEST_DIR=specs; specs" >&2
+    "\$ ${bldylw}export _bashmatic_test_dir=specs; specs" >&2
 
   return 1
 }
@@ -129,7 +129,7 @@ function specs.install-bats.sources() {
 }
 
 function specs.install() {
-  local install_type="${1:-"${Bashmatic__BatsIntallMethod}"}"
+  local install_type="${1:-"${_bashmatic__batsintallmethod}"}"
   local func="specs.install-bats.${install_type}"
 
   util.is-a-function "${func}" || {
@@ -142,7 +142,7 @@ function specs.install() {
 }
 
 function spec.find-bats() {
-  command -v bats || which bats || find . -name bats -perm "-u=x" | ${GrepCommand} -v 'fixtures|libexec'
+  command -v bats || which bats || find . -name bats -perm "-u=x" | ${_bashmatic_grep} -v 'fixtures|libexec'
 }
 
 function spec.validate-bats() {
@@ -209,8 +209,8 @@ function specs.run() {
 function specs.select-files() {
   export os="$(uname -s | tr '[:upper:]' '[:lower:]')"
   if [[ -z ${TestFiles[*]} ]]; then
-    TestFiles=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
-    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && TestFiles+=($(find "${BASHMATIC_TEST_DIR}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
+    TestFiles=($(find "${_bashmatic_test_dir}" -maxdepth 1 -name '*test*.bats' | sort))
+    [[ -d "${_bashmatic_test_dir}/${os}" ]] && TestFiles+=($(find "${_bashmatic_test_dir}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
   fi
   export TestFiles
 }
@@ -262,7 +262,7 @@ function specs.parse-opts() {
       local func="specs.install-bats.${method}"
       is.a-function "${func}" || {
         # shellcheck disable=SC2086
-        error "Invalid installation method — ${method}. Supported methods: " "${Bashmatic__BatsInstallMethods}"
+        error "Invalid installation method — ${method}. Supported methods: " "${_bashmatic__batsinstallmethods}"
         exit 1
       }
       ${func}
@@ -303,7 +303,7 @@ function specs.usage() {
 
   printf "OPTIONS\n"
   printf "    -i | --install METHOD   Install Bats using the provided methjod.\n"
-  printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtblu}\n"
+  printf "                            Supported methods: ${bldylw}${_bashmatic__batsinstallmethods}${txtblu}\n"
   printf "    -c | --continue         Continue after a failing test file.\n"
   printf "    -t | --taps             Use taps bats formatter, instead of pretty.\n"
   printf "    -h | --help             Show help message\n\n"
