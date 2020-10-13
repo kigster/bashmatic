@@ -3,7 +3,7 @@
 export True="1"
 export False="0"
 
-export AppCurrentOS=$(uname -s)
+export AppCurrentOS=$(/usr/bin/uname -s)
 
 # Last updated 12/06/2019
 

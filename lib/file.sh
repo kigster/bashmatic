@@ -88,11 +88,11 @@ file.install-with-backup() {
   fi
 
   if [[ -f "${dest}" ]]; then
-    if [[ -z $(diff ${dest} ${source} 2>/dev/null) ]]; then
+    if [[ -z $(diff "${dest}" "${source}" 2>/dev/null) ]]; then
       info: "${dest} is up to date"
       return 0
     else
-      ((${LibFile__ForceOverwrite})) || {
+      ((LibFile__ForceOverwrite)) || {
         info "file ${dest} already exists, skipping (use -f to overwrite)"
         return 0
       }

@@ -2,7 +2,15 @@
 # vi: ft=sh
 #
 # Public Functions
-#
+
+bashmatic.detect-outer-shell() {
+  basename "${SHELL}" | tr -d '-'
+}
+
+bashmatic.detect-inner-shell() {
+  local inner="$(ps -p $$ -o command | grep -v COMMAND | tr -d '-' | awk '{print $1}' | xargs basename)"
+  echo "${inner}"
+}
 
 bashmatic.reload() {
   source "${BASHMATIC_INIT}"
@@ -77,7 +85,7 @@ bashmatic.functions.runtime() {
 
 # Setup
 bashmatic.bash.version() {
-  echo "${BASH_VERSION}" | cut -d '.' -f 1
+  echo "${BASH_VERSION/[^0-9]*/}"
 }
 
 bashmatic.bash.version-four-or-later() {
@@ -177,7 +185,18 @@ bashmatic.source-dir() {
   fi
 }
 
+function bashmatic.shell-check() {
+  local shell
+  shell=$(bashmatic.detect-inner-shell)
+
+  if [[ ! "${shell}" =~ bash ]]; then
+    cat "${BASHMATIC_HOME}/.init.sh" >&2
+    return 120
+  fi
+}
+
 bashmatic.setup() {
+  bashmatic.shell-check || return 1
 
   [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] &&
     export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "

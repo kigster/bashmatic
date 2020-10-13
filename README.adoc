@@ -116,6 +116,7 @@ When you run the `bashmatic.load-at-login` function, it will add a hook to one o
 
 Note -- you can always reload _Bashmatic®_ with `bashmatic.reload` function.
 
+
 == Three Examples to Showcase Bashmatic
 
 **Why do we need another BASH framework?**

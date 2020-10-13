@@ -8,7 +8,7 @@
 # © 2020 Konstantin Gredeskoul, distributed as part of Bashmatic Framework.
 #
 
-[[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-2-0)"
+[[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-install)"
 source "${HOME}/.bashmatic/init.sh" 1>/dev/null
 
 run.set-all abort-on-error

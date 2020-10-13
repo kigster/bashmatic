@@ -4,7 +4,9 @@
 # © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
-source ${BASHMATIC_INIT}
+# shellcheck disable=2046
+export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
+source "${BASHMATIC_INIT}"
 
 function setup() {
   [[ -n $(command -V gawk) ]] || brew.install.package gawk

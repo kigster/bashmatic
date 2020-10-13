@@ -3,20 +3,26 @@
 
 # DEFINE CORE VARIABLES
 export BASHMATIC_URL="https://github.com/kigster/bashmatic"
-export BASHMATIC_INIT="${BASH_SOURCE[0]}"
+# shellcheck disable=2046
+export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
 
-[[ -z "${BASHMATIC_HOME}" ]] && {
-  BASHMATIC_HOME="$(
-    cd "$(dirname "${BASHMATIC_INIT}")" || exit
-    pwd
-  )"
-  export BASHMATIC_HOME
-}
+# [[ -z "${BASHMATIC_HOME}" ]] && {
+#   BASHMATIC_HOME="$(
+#     cd "$(dirname "${BASHMATIC_INIT}")" || exit
+#     pwd
+#   )"
+#   export BASHMATIC_HOME
+# }
 
-[[ -f ${BASHMATIC_HOME}/init.sh ]] && export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
+if [[ -f ${BASHMATIC_HOME}/init.sh ]] ; then 
+  export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
+else
+  echo "Can't determine BASHMATIC_HOME, giving up sorry!"
+  return
+fi
 
 [[ -n $DEBUG ]] && {
-  [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source ${BASHMATIC_HOME}/lib/time.sh
+  [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source "${BASHMATIC_HOME}/lib/time.sh"
   start=$(millis)
 }
 
@@ -61,4 +67,4 @@ main() {
 
 main "$@"
 
-
+set +x

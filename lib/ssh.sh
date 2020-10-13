@@ -1,23 +1,54 @@
 #!/usr/bin/env bash
 
-ssh.load-keys() {
-  local pattern="$1"
-  find ${HOME}/.ssh -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \;
+function ssh.key.filenames() {
+  local name="$1"
+
+  is.blank "${name}" || name="_${name}"
+  export __bm__private_key_path="${HOME}/.ssh/id_rsa${name}"
+  export __bm__public_key_path="${HOME}/.ssh/id_rsa${name}.pub"
+  export __bm__ssh_folder="${HOME}/.ssh"
 }
 
-ssh.keys.generate() {
-  local email="$(user.gitconfig.email)"
-  [[ -z ${email} ]] && {
-    info "Couldnt' get your email from ~/.gitconfig..."
-    run.ui.ask-user-value email "What's the email you'd like to use with this key?"
-  }
+function ssh.load-keys() {
+  local pattern="$1"
 
-  local date=$( time.now.db )
-  if [[ -f ~/.ssh/id_rsa ]]; then
-    warning "There is an existing file ${bldred}~/.ssh/id_rsa"
-    info "It will be backed up into ~/.ssh/id_rsa.bak.${date}"
-    for file in ~/.ssh/id_rsa ~/.ssh/id_rsa.pub; do 
-      [[ -f ${file} ]] && run "mv ${file} ${file}.bak.${date}"
+  find "${__bm__ssh_folder}" -type f \
+    -name "id_*${pattern}*" -and -not \
+    -name '*.pub' -print \
+    -exec ssh-add {} \;
+}
+
+function ssh.keys.generate() {
+  local name="$1"
+  local code=0
+
+  local email
+  local date="$( time.now.db )"
+
+  ssh.key.filenames "$@"
+
+  if is.a-non-empty-file "${__bm__private_key_path}" ; then
+    warning "Private key already exists at the path:" "${bldred}${__bm__private_key_path}"
+
+    is.blank "${name}" && \
+      info "NOTE You can pass an optional name argument to this function"
+      info "so that the key file will be unique."
+
+    ( run.ui.ask "Replace the existing key (previous key will be backed up)?" )
+    
+    code=$?
+    ((code)) && return 1    
+  fi
+
+  is.a-function user.gitconfig.email && \
+    email="$(user.gitconfig.email)"
+  
+  is.blank "${email}" && \
+    run.ui.ask-user-value email "Please enter the email address for this key:"
+
+  if [[ -f "${__bm__private_key_path}"  ]]; then
+    for file in "${__bm__private_key_path}" "${__bm__public_key_path}"; do 
+      [[ -f ${file} ]] && run "mv ${file} ${file}.backup.${date}"
     done 
   fi
 

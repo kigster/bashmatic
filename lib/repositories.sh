@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export LibRepo__Interrupted=false
-source "${BASH_SOURCE%/*}/color.sh"
+source "${BASHMATIC_HOME}/lib/color.sh"
 
 repo.rebase() {
   run "git pull origin master --rebase"
