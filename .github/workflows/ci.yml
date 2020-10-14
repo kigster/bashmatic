@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run Bats Test Suite
-      run: MIN_WIDTH=100 bin/specs -t
+      run: MIN_WIDTH=100 bin/specs -t -c
 
   shellcheck:
     runs-on: ubuntu-latest

@@ -3,8 +3,8 @@
 
 # shellcheck disable=2120
 function path.dirs() {
-    local path="${1:-${PATH}}"
-   echo "${path//:/$'\n'}" | /usr/bin/tr -d "'" | /usr/bin/sed -E '/^$/d'
+   local path="${1:-${PATH}}"
+   echo "${path//:/$'\n'}" | /usr/bin/tr -d "'" | sedx '/^$/d'
 }
 
 function path.size() {
@@ -20,7 +20,7 @@ function path.uniq() {
 }
 
 function path.uniqify() {
-    path.uniq "$@" | /usr/bin/tr '\n' ':' | sed -E 's/[$%]//g'
+    path.uniq "$@" | /usr/bin/tr '\n' ':' | sedx 's/[$%]//g'
 }
 
 function path.uniqify-and-export() {

@@ -50,7 +50,7 @@ setup() {
 
 @test "db.psql.args.config development — ARGS" {
   local args=$(db.psql.args development)
-  [[ "${args}" == "-U dbuser -h dbhost dbname"  ]]
+  [[ "${args}" == "-U dbuser -h dbhost -d dbname"  ]]
 }
 
 @test "db.psql.args.config development — ENV" {

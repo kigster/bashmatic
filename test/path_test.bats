@@ -2,6 +2,7 @@
 
 load test_helper
 
+source lib/util.sh
 source lib/array.sh
 source lib/path.sh
 source lib/is.sh
