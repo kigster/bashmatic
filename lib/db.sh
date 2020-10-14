@@ -85,7 +85,7 @@ db.psql.args.config() {
   dbpass=${params[3]}
 
   export PGPASSWORD="${dbpass}"
-  printf -- "-U ${dbuser} -h ${dbhost} ${dbname}"
+  printf -- "-U ${dbuser} -h ${dbhost} -d ${dbname}"
 }
 
 db.psql.connect() {

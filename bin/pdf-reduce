@@ -7,7 +7,7 @@
 # downloads them all to a local folder.
 
 # shellcheck disable=SC1134,SC2155
-[[ -d "${HOME}/.bashmatic" ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-1-2-0)" 1>/dev/null 2>&1
+[[ -d "${HOME}/.bashmatic" ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-install)" 1>/dev/null 2>&1
 
 # shellcheck source=/dev/null
 . "${HOME}/.bashmatic/init.sh" >/dev/null 2>&1

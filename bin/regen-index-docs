@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # vim: ft=sh
 
+# shellcheck disable=2046
+export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
+
 source "${HOME}/.bashmatic/init.sh"
 
 list.modules() {

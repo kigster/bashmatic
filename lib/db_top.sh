@@ -6,21 +6,47 @@
 
 export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
 
+.db.primary-or-replica() {
+  [[ "${1}" =~ master|primary|replica|slave ]]
+}
+
 .db.top.psql.replication() {
   local dbname="$1"
   shift
+
+  .db.primary-or-replica "${dbname}" || return 0
+
   local toc="$1"
   shift
+  
+  local code
+  local stderr="$(mktemp /tmp/repl.err.$$.${RANDOM})"
 
-  if [[ "${dbname}" =~ "master" ]]; then
-    psql -X -P pager "$@" -c "select * from hb_stat_replication" >>"${toc}"
-  elif [[ "${dbname}" =~ "replica" || "${dbname}" =~ "slave" ]]; then
-    psql -X -P pager "$@" -c "select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS" >>"${toc}"
+  if [[ "${dbname}" =~ master|primary ]]; then
+    printf "${bldgrn} Replication Status on the Primary.${clr}${txtcyn}\n" >>"${toc}"
+
+    # shellcheck disable=SC2116
+    ( eval "psql $* -X -P pager -c \"select client_addr, state, write_lag + flush_lag + replay_lag as REPLICATION_CUMULATIVE_LAG from pg_stat_replication\"" | grep -v 'rows)') 2>"${stderr}" 1>>"${toc}" 
+    code=$?
+  elif [[ "${dbname}" =~ slave|replica ]]; then
+    printf "${bldcyn} Replication Status on the Replica.${clr}${txtgrn}\n" >>"${toc}"
+
+    # shellcheck disable=SC2116
+    ( eval "psql $* -X -P pager -c \"select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS\"" ) 2>"${stderr}" 1>>"${toc}"
+    code=$?
   else
     return
   fi
 
-  printf "${bldcyn}[${dbname}] ${bldpur}Above: Replication Status${clr}\n\n${bldylw}" >>"${toc}"
+  ((code)) && {
+    error "Unable to compute replication information for ${dbname}, psql exited with ${code}" >&2
+    info "psql produced the following STDERR:" >&2
+    printf "${txtred}"; cat "${stderr}"; printf "${clr}\n" >&2
+    rm -f "${stderr}"
+    exit 1
+  }
+
+  printf "${clr}\n" >>"${toc}"
 }
 
 .db.top.psql.active() {
@@ -49,19 +75,25 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
   local displayname=$(printf "  %-15.15s" "$dbname")
   rm -f "${tof}.errors" >/dev/null
 
-  printf "${bldwht}${bakblu} Database: ${txtblu}${bakpur}${bldwht}${bakpur}${bldylw}${displayname} ${txtpur}${bakylw}${clr}${txtblk}${bakylw} Active Queries (refresh: ${bashmatic_db_top_refresh}secs, Max Queries Shown: ${height}): ${clr}${txtylw}${clr}\n${clr}" >>"${tof}"
-
   export PGPASSWORD="${dbpass}"
 
+  printf "${bldwht}${bakblu} Database: ${txtblu}${bakpur}${bldwht}${bakpur}${bldylw}${displayname} ${txtpur}${bakylw}${clr}${txtblk}${bakylw} Active Queries (refresh: ${bashmatic_db_top_refresh}secs, Max Queries Shown: ${height}): ${clr}${txtylw}${clr}\n${clr}" >>"${tof}"
   .db.top.psql.active "${dbname}" "${tof}" "${height}" "$@"
+
   .db.top.psql.replication "${dbname}" "${tof}" "$@"
 
   local query="${tof}.query"
-  (eval "$(echo psql -X -P pager -f "${query}" "$@")") >"${tof}.out"
+  # shellcheck disable=SC2116
+  #(eval "$(echo psql -X -P pager -f "${query}" "$@")") >"${tof}.out"
+  psql -X -P pager -f "${query}" $* >"${tof}.out"
   local code=$?
 
   local sw=$(screen-width)
   local h=$((height + 4))
+
+  .db.primary-or-replica "${dbname}" && h=$((h - 3))
+  [[ ${dbname} =~ primary|master ]] && h=$((h - 4))
+
   local fh=$(wc -l "${tof}.out" | awk '{print $1}')
 
   [[ ${fh} -gt $h ]] && {
@@ -74,6 +106,7 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
     printf "${bldwht}${bakblu} Truncated ${txtblu}${alert_color_bg}${bldwht}${alert_color_bg}${bldylw}$(printf " %2d Rows" $((fh - h)))  ${alert_color_fg}${bakylw}${clr}${alert_color_fg}${bakylw} Total: $((fh - 4)) Active Queries ${txtylw}${bakblk}${clr}\n" >>"${tof}"
   }
 
+  # shellcheck disable=2002
   cat "${tof}.out" |
     grep -E -v -- ' select pid, client_addr ' |
     GREP_COLOR=34 grep -E -C 1000 -i --color=always -e ' (((auto)?(analyze|vacuum))|delete|update|insert|create (table|index|materialized view)?|drop (table|index|materialized view)?|alter (table|index)?|\[a-z\])' |
@@ -124,6 +157,12 @@ db.top() {
   local width=$(screen.width)
   local height=$(screen.height)
 
+  if [[ "$1" == "-l" || "$1" == "--list" ]]; then
+    db.config.connections
+    echo
+    return
+  fi
+
   if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
     error "Your screen is too small for db.top."
     info "Minimum required screen dimensions are ${width_min} columns, ${height_min} rows."
@@ -143,9 +182,7 @@ db.top() {
   cp /dev/null "${tof}" >/dev/null
 
   for connection in "$@"; do
-    db.psql.args.config "${connection}" 2>&1 >/dev/null || {
-      return 1
-    }
+    db.psql.args.config "${connection}" 1>/dev/null 2>&1 || return 1
 
     db.psql.args "${connection}" >"${tof}"
 
