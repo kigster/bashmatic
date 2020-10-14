@@ -151,7 +151,9 @@ bashmatic.auto-update() {
 
   git.repo-is-clean || {
     output.is-ssh || {
-      output.is-terminal && attention "Bashmatic folder has local changes, can't auto-update." >&2
+      output.is-terminal && \
+      bashmatic.is-developer && \
+      attention "Bashmatic folder has local changes, can't auto-update." >&2
     }
     return 1
   }

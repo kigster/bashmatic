@@ -11,16 +11,6 @@ unset bashmatic_db_password
 unset bashmatic_db_host
 unset bashmatic_db_database
 
-# @description Print out PostgreSQL settings for a connection specified by args
-#
-# @example
-#    db.psql.db-settings -h localhost -U postgres appdb
-#
-# @requires
-#    Local psql CLI client
-db.psql.db-settings() {
-  psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
-}
 
 db.config.init() {
   export bashmatic_db_connection=(host database username password)
@@ -46,12 +36,12 @@ db.config.parse() {
   for field in "${bashmatic_db_connection[@]}"; do
     script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
   done
-  cat "${bashmatic_db_config}" | ruby -e "${script[*]}"
+  ruby -e "${script[*]}"<"${bashmatic_db_config}"
 }
 
 db.config.connections() {
   [[ -f ${bashmatic_db_config} ]] || return 2
-  cat "${bashmatic_db_config}" | ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")"
+  ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")" <"${bashmatic_db_config}"
 }
 
 db.config.set-file() {
@@ -68,8 +58,11 @@ db.psql.args.config() {
   local -a params
 
   [[ -z ${output} || "${output}" =~ "null" ]] && {
-    error "Database $1 is not defined." >&2
-    return 1
+    section.red 65 "Unknown database connection — ${bldylw}$1." >&2
+    info "The following are connections defined in ${bldylw}${bashmatic_db_config/${HOME}/\~}:\n" >&2
+    for c in $(db.config.connections); do info " • ${c}" >&2; done
+    echo >&2
+    exit 1
   }
 
   params=($(db.config.parse "$1"))
@@ -89,7 +82,7 @@ db.psql.args.config() {
 }
 
 db.psql.connect() {
-  local dbname="$1"
+  local dbname="$1"; shift
   if [[ -z ${dbname} ]]; then
     h1 "USAGE: db.connect connection-name" \
       "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file."
@@ -102,11 +95,43 @@ db.psql.connect() {
   printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
   printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
   hr
-  psql "${args[@]}"
+  psql "${args[@]}" "$@"
 }
 
-db.connect() {
-  db.psql.connect "$@"
+# @description Print out PostgreSQL settings for a connection specified by args
+#
+# @example
+#    db.psql.db-settings -h localhost -U postgres appdb
+#
+# @requires
+#    Local psql CLI client
+db.psql.db-settings() {
+  psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+}
+
+# @description Print out PostgreSQL settings for a named connection
+# @arg1 dbname database entry name in ~/.db/database.yml
+# @example
+#    db.psql.connect.settings primary
+db.psql.connect.settings() {
+  db.connect "$@" -A -X -q -c 'show all' | \
+    grep -v 'rows)' | \
+    sort | \
+    awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-40.40s         ## %s\n\", \$1, \$2, \$3) }" | \
+    sedx '/##\s*$/d' | \
+    GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | \
+    GREP_COLOR="3;1;30" grep -E -C 1000 -i --color=always -e '##.*$|$'
+}
+
+# @description Print out PostgreSQL settings for a named connection
+# @arg1 dbname database entry name in ~/.db/database.yml
+# @example
+#    db.psql.connect.raw-settings primary
+db.psql.connect.raw-settings() {
+  db.connect "$@" -A -X -q -c 'show all' | \
+    grep -v 'rows)' | \
+    sort | \
+    awk "BEGIN{FS=\"|\"}{ printf(\"%s=%s\\n\", \$1, \$2) }"
 }
 
 db.psql.args() {
@@ -162,6 +187,26 @@ db.datetime() {
   else
     printf "${checksum}.$(util.arch).${dbname}.dump"
   fi
+}
+
+db.actions.top() {
+  db.top "$@" 
+}
+
+db.actions.connect() {
+  db.psql.connect "$@"
+}
+
+db.actions.connections() {
+  db.config.connections
+}
+
+db.actions.settings-table() {
+  db.psql.connect.settings "$@"
+}
+
+db.actions.settings-raw() {
+  db.psql.connect.raw-settings "$@"
 }
 
 # db.dump() {

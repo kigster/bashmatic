@@ -3,6 +3,12 @@
 #
 # Public Functions
 
+# True if .envrc.local file is present. We take it as a sign 
+# you may be developing bashmatic.
+bashmatic.is-developer() {
+  [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
+}
+
 bashmatic.detect-outer-shell() {
   basename "${SHELL}" | tr -d '-'
 }

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# vim: ft=sh
+
+[[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-install)"
+source "${HOME}/.bashmatic/init.sh" 1>/dev/null
+
+action="$1"
+shift
+
+func="db.actions.${action}"
+
+is.a-function "${func}" || {
+  info   "USAGE: "
+  printf "          ${bldgrn}db <action> [ arguments ]${clr}\n\n"
+  info   "WHERE: "
+  printf "          An action can be one of:\n"
+  printf "${bldylw}"
+  array.to.bullet-list $(util.functions-matching.diff db.actions.) | sed 's/^ /           /g'
+  printf "${clr}\n"
+  exit 1
+}
+
+${func} "$@"
+

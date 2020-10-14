@@ -626,7 +626,7 @@ ask() {
 }
 
 inf() {
-  printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
+  printf -- "${LibOutput__LeftPrefix}${clr}${txtcyn}$*${clr}"
 }
 
 debug() {
@@ -657,6 +657,12 @@ info() {
 error() {
   header=$(printf -- "${clr}${txtred}  « ERROR » ")
   box.white-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" >&2
+}
+
+fatal() {
+  header=$(printf -- "${clr}${bldwht}  « ABORT » ")
+  box.black-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" >&2
+  exit 1
 }
 
 info:() {
