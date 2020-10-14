@@ -18,8 +18,12 @@ Miscellaneous utilities.
 * <<whenever,whenever()>>
 * <<unless,unless()>>
 * <<osxappis-installed,osx.app.is-installed()>>
+* <<section,section()>>
 * <<is-dbg,is-dbg()>>
 * <<dbg,dbg()>>
+* <<pathadd,path.add()>>
+* <<pathappend,path.append()>>
+* <<pathadd,PATH_add()>>
 * <<pdfcombine,pdf.combine()>>
 * <<shell-setis-set,shell-set.is-set()>>
 * <<utilrot13-stdin,util.rot13-stdin()>>
@@ -217,6 +221,19 @@ By the default prints the matched application. Pass `-q` as a second
 * *0*: if match was found
 * *1*: if not
 
+== section()
+
+Prints a "arrow-like" line using powerline characters
+
+=== Arguments
+
+* {blank}
++
+= @arg1 Width (optional) -- only intepretered as width if the first argument is a number.
+* {blank}
++
+= @args Text to print
+
 == is-dbg()
 
 Checks if we have debug mode enabled
@@ -224,6 +241,22 @@ Checks if we have debug mode enabled
 == dbg()
 
 Local debugging helper, activate it with DEBUG=1
+
+== path.add()
+
+Adds valid directories to those in the PATH and prints
+             to the output. DOES NOT MODIFY $PATH
+
+== path.append()
+
+Appends valid directories to those in the PATH, and
+             exports the new value of the PATH
+
+== PATH_add()
+
+This function exists within direnv, but since we
+             are sourcing in .envrc we need to have this defined
+             to avoid errors.
 
 == pdf.combine()
 

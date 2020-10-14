@@ -1,5 +1,13 @@
 = Changelog
 
+== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+
+https://github.com/kigster/bashmatic/compare/v1.4.0...HEAD[Full Changelog]
+
+*Merged pull requests:*
+
+* An attempt to remove constructs that were breaking when invoked from ZSH https://github.com/kigster/bashmatic/pull/18[#18] (https://github.com/kigster[kigster])
+
 == https://github.com/kigster/bashmatic/tree/v1.4.0[v1.4.0] (2020-10-06)
 
 https://github.com/kigster/bashmatic/compare/v1.3.1...v1.4.0[Full Changelog]
@@ -21,12 +29,9 @@ https://github.com/kigster/bashmatic/compare/v1.3.0...v1.3.1[Full Changelog]
 
 https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0[Full Changelog]
 
-*Implemented enhancements:*
-
-* Adding documentation for dbtop + PDF generator https://github.com/kigster/bashmatic/pull/13[#13] (https://github.com/kigster[kigster])
-
 *Merged pull requests:*
 
+* Adding documentation for dbtop + PDF generator https://github.com/kigster/bashmatic/pull/13[#13] (https://github.com/kigster[kigster])
 * Fixing dbtop https://github.com/kigster/bashmatic/pull/11[#11] (https://github.com/kigster[kigster])
 * Add license scan report and status https://github.com/kigster/bashmatic/pull/10[#10] (https://github.com/fossabot[fossabot])
 * Adding bin/pdf-reduce and other tweaks https://github.com/kigster/bashmatic/pull/9[#9] (https://github.com/kigster[kigster])

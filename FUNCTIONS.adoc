@@ -36,6 +36,7 @@
 * xref:#module-output[output]
 * xref:#module-output-boxes[output-boxes]
 * xref:#module-output-repeat-char[output-repeat-char]
+* xref:#module-path[path]
 * xref:#module-pdf[pdf]
 * xref:#module-pids[pids]
 * xref:#module-pipe[pipe]
@@ -688,7 +689,7 @@ bashmatic.bash.exit-unless-version-four-or-later ()
 ----
 bashmatic.bash.version () 
 { 
-    echo "${BASH_VERSION}" | cut -d '.' -f 1
+    echo "${BASH_VERSION/[^0-9]*/}"
 }
 
 ----
@@ -745,6 +746,29 @@ bashmatic.cache.list ()
     do
         echo $f
     done
+}
+
+----
+
+==== `bashmatic.detect-inner-shell`
+
+[source,bash]
+----
+bashmatic.detect-inner-shell () 
+{ 
+    local inner="$(ps -p $$ -o command | grep -v COMMAND | tr -d '-' | awk '{print $1}' | xargs basename)"
+    echo "${inner}"
+}
+
+----
+
+==== `bashmatic.detect-outer-shell`
+
+[source,bash]
+----
+bashmatic.detect-outer-shell () 
+{ 
+    basename "${SHELL}" | tr -d '-'
 }
 
 ----
@@ -847,6 +871,7 @@ bashmatic.reload ()
 ----
 bashmatic.setup () 
 { 
+    bashmatic.shell-check || return 1
     [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
     [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
     if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
@@ -856,6 +881,22 @@ bashmatic.setup ()
     bashmatic.source util.sh git.sh file.sh color.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
     [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+}
+
+----
+
+==== `bashmatic.shell-check`
+
+[source,bash]
+----
+bashmatic.shell-check () 
+{ 
+    local shell
+    shell=$(bashmatic.detect-inner-shell)
+    if [[ ! "${shell}" =~ bash ]]; then
+        cat "${BASHMATIC_HOME}/.init.sh" 1>&2
+        return 120
+    fi
 }
 
 ----
@@ -1032,6 +1073,7 @@ brew.install ()
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     else
         info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
+        run "brew update"
     fi
 }
 
@@ -1552,6 +1594,10 @@ color.enable ()
         export italic='\e[3m'
         export underlined='\e[4m'
         export strikethrough='\e[9m'
+        export inverse_on='\e[7m'
+        export inverse_off='\e[27m'
+        export default_bg='\e[49m'
+        export default_fg='\e[39m'
         export white_on_orange="\e[48;5;208m"
         export white_on_yellow="\e[48;5;214m"
         export white_on_red="\e[48;5;9m"
@@ -1808,7 +1854,7 @@ db.psql.args.config ()
     dbuser=${params[2]}
     dbpass=${params[3]}
     export PGPASSWORD="${dbpass}"
-    printf -- "-U ${dbuser} -h ${dbhost} ${dbname}"
+    printf -- "-U ${dbuser} -h ${dbhost} -d ${dbname}"
 }
 
 ----
@@ -1950,6 +1996,11 @@ db.top ()
     local height_min=30
     local width=$(screen.width)
     local height=$(screen.height)
+    if [[ "$1" == "-l" || "$1" == "--list" ]]; then
+        db.config.connections
+        echo
+        return
+    fi
     if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
         error "Your screen is too small for db.top."
         info "Minimum required screen dimensions are ${width_min} columns, ${height_min} rows."
@@ -1966,9 +2017,7 @@ db.top ()
     cp /dev/null "${tof}" > /dev/null
     for connection in "$@"
     do
-        db.psql.args.config "${connection}" 2>&1 > /dev/null || { 
-            return 1
-        }
+        db.psql.args.config "${connection}" > /dev/null 2>&1 || return 1
         db.psql.args "${connection}" > "${tof}"
         arguments="$(cat "${tof}" | tr -d '\n')"
         connections_arguments+=("${arguments}")
@@ -2586,11 +2635,11 @@ file.install-with-backup ()
         return 4
     fi
     if [[ -f "${dest}" ]]; then
-        if [[ -z $(diff ${dest} ${source} 2>/dev/null) ]]; then
+        if [[ -z $(diff "${dest}" "${source}" 2>/dev/null) ]]; then
             info: "${dest} is up to date"
             return 0
         else
-            ((${LibFile__ForceOverwrite})) || { 
+            ((LibFile__ForceOverwrite)) || { 
                 info "file ${dest} already exists, skipping (use -f to overwrite)"
                 return 0
             }
@@ -3155,7 +3204,7 @@ bashmatic.auto-update ()
     git.configure-auto-updates
     git.repo-is-clean || { 
         output.is-ssh || { 
-            h1 "${BASHMATIC_HOME} has locally modified changes." "Will wait with auto-update until it's sync'd up." 1>&2
+            output.is-terminal && attention "Bashmatic folder has local changes, can't auto-update." 1>&2
         }
         return 1
     }
@@ -3354,7 +3403,7 @@ git.sync ()
     local dir="$(pwd)"
     cd "${BASHMATIC_HOME}" > /dev/null
     git.repo-is-clean || { 
-        output.is-ssh || warning "${bldylw}${BASHMATIC_HOME} has locally modified files." "Please commit or stash them to allow auto-upgrade to function as designed." 1>&2
+        output.is-ssh || warning "${BASHMATIC_HOME} has locally modified files." "Please commit or stash them to allow auto-upgrade to function as designed." 1>&2
         cd "${dir}" > /dev/null
         return 1
     }
@@ -3542,6 +3591,21 @@ is.a-function ()
 
 ----
 
+==== `is.a-non-empty-array`
+
+[source,bash]
+----
+is.a-non-empty-array () 
+{ 
+    local var_name="$1"
+    local -a array
+    echo "array=( \"\${${var_name}[@]}\" )"
+    eval "array=( \"\${${var_name}[@]}\" )"
+    [[ -n ${array[*]} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${#array[@]} -gt 0 ]]
+}
+
+----
+
 ==== `is.a-non-empty-file`
 
 [source,bash]
@@ -3572,7 +3636,18 @@ is.a-script ()
 is.a-variable () 
 { 
     local var_name="$1"
-    [[ -n ${!var_name+x} ]]
+    [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && -n ${!var_name+x} ]]
+}
+
+----
+
+==== `is.alias`
+
+[source,bash]
+----
+is.alias () 
+{ 
+    alias "$1" 2> /dev/null
 }
 
 ----
@@ -3610,6 +3685,39 @@ is.blank ()
 
 ----
 
+==== `is.command`
+
+[source,bash]
+----
+is.command () 
+{ 
+    command -v "$1" > /dev/null
+}
+
+----
+
+==== `is.integer`
+
+[source,bash]
+----
+is.integer () 
+{ 
+    is.numeric "$1" && [[ ! $1 =~ \. ]]
+}
+
+----
+
+==== `is.missing`
+
+[source,bash]
+----
+is.missing () 
+{ 
+    ! is.command "$@"
+}
+
+----
+
 ==== `is.not-a-blank-var`
 
 [source,bash]
@@ -3629,6 +3737,24 @@ is.not-a-blank-var ()
 is.not-blank () 
 { 
     [[ -n "${1}" ]]
+}
+
+----
+
+==== `is.numeric`
+
+[source,bash]
+----
+is.numeric () 
+{ 
+    case $1 in 
+        '' | *[!\-0-9.]*)
+            return 1
+        ;
+        *)
+            return 0
+        ;
+    esac
 }
 
 ----
@@ -4925,6 +5051,19 @@ output.color.on ()
 
 ----
 
+==== `output.constrain-screen-width`
+
+[source,bash]
+----
+output.constrain-screen-width () 
+{ 
+    export LibOutput__WidthDetectionStrategy="constrained"
+    [[ $1 -gt 0 ]] && output.set-max-width "$1"
+    [[ $2 -gt 0 ]] && output.set-min-width "$2"
+}
+
+----
+
 ==== `output.has-stdin`
 
 [source,bash]
@@ -5016,8 +5155,8 @@ output.print-at-x-y ()
 ----
 output.reset-min-max-width () 
 { 
-    export LibOutput__MinWidth=${LibOutput__MinWidth__Default}
-    export LibOutput__MaxWidth=${LibOutput__MaxWidth__Default}
+    export LibOutput__MinWidth=${LibOutput__MinWidth:-${LibOutput__MinWidth__Default}}
+    export LibOutput__MaxWidth=${LibOutput__MaxWidth:-${LibOutput__MaxWidth__Default}}
 }
 
 ----
@@ -5028,7 +5167,7 @@ output.reset-min-max-width ()
 ----
 output.set-max-width () 
 { 
-    export LibOutput__MaxWidth="$1"
+    [[ $1 -gt 0 ]] && export LibOutput__MaxWidth="$1"
 }
 
 ----
@@ -5039,7 +5178,18 @@ output.set-max-width ()
 ----
 output.set-min-width () 
 { 
-    export LibOutput__MinWidth="$1"
+    [[ $1 -gt 0 ]] && export LibOutput__MinWidth="$1"
+}
+
+----
+
+==== `output.unconstrain-screen-width`
+
+[source,bash]
+----
+output.unconstrain-screen-width () 
+{ 
+    export LibOutput__WidthDetectionStrategy="unconstrained"
 }
 
 ----
@@ -5106,6 +5256,17 @@ screen.height ()
 screen.width () 
 { 
     .output.screen-width
+}
+
+----
+
+==== `section`
+
+[source,bash]
+----
+section () 
+{ 
+    .output.left-powerline pur "$@"
 }
 
 ----
@@ -5280,6 +5441,17 @@ warning: ()
 
 
 === Module `output-boxes`
+
+==== `attention`
+
+[source,bash]
+----
+attention () 
+{ 
+    .output.left-powerline blu 65 "${txtwht}${bakblu}$@"
+}
+
+----
 
 ==== `box.black-on-blue`
 
@@ -5793,7 +5965,18 @@ h3bg ()
 ----
 h4 () 
 { 
-    box.magenta-in-green "$@"
+    section.blue "$@"
+}
+
+----
+
+==== `h5`
+
+[source,bash]
+----
+h5 () 
+{ 
+    section.purple "$@"
 }
 
 ----
@@ -5864,6 +6047,17 @@ hl.yellow ()
 
 ----
 
+==== `hl.yellow-on-black`
+
+[source,bash]
+----
+hl.yellow-on-black () 
+{ 
+    left "${yellow_on_black}" "$@"
+}
+
+----
+
 ==== `hl.yellow-on-gray`
 
 [source,bash]
@@ -5875,8 +6069,227 @@ hl.yellow-on-gray ()
 
 ----
 
+==== `notice`
+
+[source,bash]
+----
+notice () 
+{ 
+    .output.left-powerline ylw 65 "${itablk}${bakylw}$@"
+}
+
+----
+
+==== `section.blue`
+
+[source,bash]
+----
+section.blue () 
+{ 
+    .output.left-powerline blu "$@"
+}
+
+----
+
+==== `section.cyan`
+
+[source,bash]
+----
+section.cyan () 
+{ 
+    .output.left-powerline cyn "$@"
+}
+
+----
+
+==== `section.gray`
+
+[source,bash]
+----
+section.gray () 
+{ 
+    .output.left-powerline blk "$@"
+}
+
+----
+
+==== `section.gray-yellow`
+
+[source,bash]
+----
+section.gray-yellow () 
+{ 
+    section.gray "${bldylw}${bakblk}$*"
+}
+
+----
+
+==== `section.green`
+
+[source,bash]
+----
+section.green () 
+{ 
+    .output.left-powerline grn "$@"
+}
+
+----
+
+==== `section.purple`
+
+[source,bash]
+----
+section.purple () 
+{ 
+    .output.left-powerline pur "$@"
+}
+
+----
+
+==== `section.red`
+
+[source,bash]
+----
+section.red () 
+{ 
+    .output.left-powerline red "$@"
+}
+
+----
+
+==== `section.white`
+
+[source,bash]
+----
+section.white () 
+{ 
+    .output.left-powerline wht "$@"
+}
+
+----
+
+==== `section.yellow`
+
+[source,bash]
+----
+section.yellow () 
+{ 
+    .output.left-powerline ylw "$@"
+}
+
+----
+
 
 === Module `output-repeat-char`
+
+
+=== Module `path`
+
+==== `PATH_add`
+
+[source,bash]
+----
+PATH_add () 
+{ 
+    path.add "$@"
+}
+
+----
+
+==== `path.add`
+
+[source,bash]
+----
+path.add () 
+{ 
+    local new_path="${PATH}"
+    for path in "$@"
+    do
+        is.a-directory "${path}" || { 
+            error "Argument ${path} is not a valid directory, abort."
+            return 1
+        }
+        [[ ":${PATH}:" =~ :${path}: ]] && continue
+        export new_path="${new_path}:${path}"
+        export new_path="${new_path/::/:}"
+    done
+    echo "${new_path}"
+}
+
+----
+
+==== `path.append`
+
+[source,bash]
+----
+path.append () 
+{ 
+    export PATH="$(path.add "$@")"
+}
+
+----
+
+==== `path.dirs`
+
+[source,bash]
+----
+path.dirs () 
+{ 
+    local path="${1:-${PATH}}"
+    echo "${path//:/'
+'}" | /usr/bin/tr -d "'" | sedx '/^$/d'
+}
+
+----
+
+==== `path.size`
+
+[source,bash]
+----
+path.size () 
+{ 
+    path.dirs "$@" | /usr/bin/wc -l | /usr/bin/tr -d ' '
+}
+
+----
+
+==== `path.uniq`
+
+[source,bash]
+----
+path.uniq () 
+{ 
+    local -a paths
+    for dir in $(path.dirs "$@")
+    do
+        array.includes "${dir}" "${paths[@]}" || paths+=("${dir}")
+    done
+    echo "${paths[@]}" | /usr/bin/tr ' ' '\n'
+}
+
+----
+
+==== `path.uniqify`
+
+[source,bash]
+----
+path.uniqify () 
+{ 
+    path.uniq "$@" | /usr/bin/tr '\n' ':' | sedx 's/[$%]//g'
+}
+
+----
+
+==== `path.uniqify-and-export`
+
+[source,bash]
+----
+path.uniqify-and-export () 
+{ 
+    export PATH=$(path.uniqify "$@")
+}
+
+----
 
 
 === Module `pdf`
@@ -9137,6 +9550,17 @@ util.invoke-if-function ()
 util.is-a-function () 
 { 
     is.a-function "$@"
+}
+
+----
+
+==== `util.is-numeric`
+
+[source,bash]
+----
+util.is-numeric () 
+{ 
+    is.numeric "$1"
 }
 
 ----
