@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
+function ssh.key.copy() {
+  cat ~/.ssh/id_rsa.pub | pbcopy
+}
+
 function ssh.key.filenames() {
   local name="$1"
 
-  is.blank "${name}" || name="_${name}"
+  is.not-blank "${name}" && name="_${name}"
+
   export __bm__private_key_path="${HOME}/.ssh/id_rsa${name}"
   export __bm__public_key_path="${HOME}/.ssh/id_rsa${name}.pub"
   export __bm__ssh_folder="${HOME}/.ssh"
@@ -37,6 +42,7 @@ function ssh.keys.generate() {
     ( run.ui.ask "Replace the existing key (previous key will be backed up)?" )
     
     code=$?
+
     ((code)) && return 1    
   fi
 
