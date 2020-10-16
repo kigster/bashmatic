@@ -104,6 +104,15 @@ ruby.default-gems() {
   printf "${DEFAULT_RUBY_GEMS[*]}"
 }
 
+ruby.handle-missing() {
+  command -v ruby >/dev/null || {
+    info "Couldn't find Ruby, installing it..." >&2
+    ruby.install-ruby "$(ruby.numeric-version)"
+  }
+
+  command -v ruby >/dev/null
+}
+
 ##——————————————————————————————————————————————————————————————————————————————————
 ##
 ##    function: ruby.rbenv
@@ -151,7 +160,7 @@ ruby.gems.install() {
       gem_info="${bldgrn} ✔  ${gem}${clr}\n"
     else
       gem_info="${bldred} x  ${gem}${clr}\n"
-      gems_to_be_installed=(${gems_to_be_installed[@]} ${gem})
+      gems_to_be_installed+=("${gem}")
     fi
     printf "   ${gem_info}"
   done
@@ -163,10 +172,10 @@ ruby.gems.install() {
 
   info "Looks like ${#gems_to_be_installed[@]} gems are left to install..."
 
-  local -a gems_installed=()
+  local -a gem_installed
 
   #trap-setup
-  for gem in ${gems_to_be_installed[@]}; do
+  for gem in "${gems_to_be_installed[@]}"; do
     #trapped && {
     #  error "Interrupt was detected. Aborting!"
     #  exit
@@ -178,7 +187,7 @@ ruby.gems.install() {
         "${bldgrn}Action: Skip and Continuing..."
       break
     else
-      gem_installed=(${gem_installed[@]} ${gem})
+      gem_installed+=("${gem}")
       continue
     fi
   done
@@ -197,7 +206,8 @@ interrupted() {
 
 ##——————————————————————————————————————————————————————————————————————————————————
 ruby.gems.uninstall() {
-  local -a gems=($@)
+  local -a gems
+  gems=("$@")
 
   gem.clear-cache
 
@@ -215,7 +225,7 @@ ruby.gems.uninstall() {
   local deleted=0
 
   #trap-setup
-  for gem in ${gems[@]}; do
+  for gem in "${gems[@]}"; do
     #trapped && {
     #  abort
     #  return 1
@@ -224,7 +234,7 @@ ruby.gems.uninstall() {
     local gem_info=
     if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
       run "gem uninstall -a -x -I -D --force ${gem}"
-      deleted=$(($deleted + 1))
+      deleted=$((deleted + 1))
     else
       gem_info="${bldred} x [not found] ${bldylw}${gem}${clr}\n"
     fi

@@ -12,6 +12,11 @@ unset bashmatic_db_host
 unset bashmatic_db_database
 
 
+
+db.psql.args-data-only() {
+  printf -- "%s" "--no-align --pset footer -q -X --tuples-only"
+}
+
 db.config.init() {
   export bashmatic_db_connection=(host database username password)
 }
@@ -36,11 +41,13 @@ db.config.parse() {
   for field in "${bashmatic_db_connection[@]}"; do
     script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
   done
+  ruby.handle-missing
   ruby -e "${script[*]}"<"${bashmatic_db_config}"
 }
 
 db.config.connections() {
   [[ -f ${bashmatic_db_config} ]] || return 2
+  ruby.handle-missing
   ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")" <"${bashmatic_db_config}"
 }
 
@@ -81,21 +88,48 @@ db.psql.args.config() {
   printf -- "-U ${dbuser} -h ${dbhost} -d ${dbname}"
 }
 
+# @description Connect to one of the databases named in the YAML file, and 
+#              optionally pass additional arguments to psql.
+#              Informational messages are sent to STDERR.
+#
+# @example
+#    db.psql.connect production 
+#    db.psql.connect production -c 'show all'
+#
 db.psql.connect() {
   local dbname="$1"; shift
+
   if [[ -z ${dbname} ]]; then
     h1 "USAGE: db.connect connection-name" \
-      "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file."
+      "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file." >&2
     return 0
   fi
-  local tempfile=$(mktemp /tmp/.bashmatic.db.${RANDOM} || exit 1)
+
+  local tempfile=$(mktemp)
   db.psql.args.config "${dbname}" >"${tempfile}"
+
   local -a args=($(cat "${tempfile}"))
+
   rm -f "${tempfile}" >/dev/null
-  printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
-  printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
-  hr
+
+  (
+    printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
+    printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
+    hr
+  ) >&2
+  
   psql "${args[@]}" "$@"
+}
+
+# @description Similar to the db.psql.connect, but outputs
+#              just the raw data with no headers.
+#
+# @example
+#    db.psql.connect.just-data production -c 'select datname from pg_database;'
+db.psql.connect.just-data() {
+  local dbname="$1"; shift
+  # shellcheck disable=SC2046
+  db.psql.connect "${dbname}" $(db.psql.args-data-only) "$@"
 }
 
 # @description Print out PostgreSQL settings for a connection specified by args
@@ -112,26 +146,27 @@ db.psql.db-settings() {
 # @description Print out PostgreSQL settings for a named connection
 # @arg1 dbname database entry name in ~/.db/database.yml
 # @example
-#    db.psql.connect.settings primary
-db.psql.connect.settings() {
+#    db.psql.connect.settings-table primary
+#
+db.psql.connect.settings-table() {
   db.psql.connect "$@" -A -X -q -c 'show all' | \
     grep -v 'rows)' | \
     sort | \
-    awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-40.40s         ## %s\n\", \$1, \$2, \$3) }" | \
+    awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | \
     sedx '/##\s*$/d' | \
     GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | \
-    GREP_COLOR="3;1;30" grep -E -C 1000 -i --color=always -e '##.*$|$'
+    GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
 }
 
-# @description Print out PostgreSQL settings for a named connection
+# @description Print out PostgreSQL settings for a named connection using TOML/ini
+#              format.
+#
 # @arg1 dbname database entry name in ~/.db/database.yml
 # @example
-#    db.psql.connect.raw-settings primary
-db.psql.connect.raw-settings() {
-  db.psql.connect "$@" -A -X -q -c 'show all' | \
-    grep -v 'rows)' | \
-    sort | \
-    awk "BEGIN{FS=\"|\"}{ printf(\"%s=%s\\n\", \$1, \$2) }"
+#    db.psql.connect.settings-ini primary > primary.ini
+#
+db.psql.connect.settings-ini() {
+  db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
 }
 
 db.psql.args() {
@@ -202,78 +237,9 @@ db.actions.connections() {
 }
 
 db.actions.settings-table() {
-  db.psql.connect.settings "$@"
+  db.psql.connect.settings-table "$@"
 }
 
-db.actions.settings-raw() {
-  db.psql.connect.raw-settings "$@"
+db.actions.settings-ini() {
+  db.psql.connect.settings-ini "$@"
 }
-
-# db.dump() {
-#   local dbname=${1}
-#   shift
-#   local psql_args="$*"
-
-#   [[ -z "${psql_args}" ]] && psql_args="-U postgres -h localhost"
-#   local filename=$(.db.backup-filename ${dbname})
-#   [[ $? != 0 ]] && return
-
-#   [[ ${LibRun__Verbose} -eq ${True} ]] && {
-#     info "dumping from: ${bldylw}${dbname}"
-#     info "saving to...: ${bldylw}${filename}"
-#   }
-
-#   cmd="pg_dump -Fc -Z5 ${psql_args} -f ${filename} ${dbname}"
-#   run "${cmd}"
-
-#   code=${LibRun__LastExitCode}
-#   if [[ ${code} != 0 ]]; then
-#     ui.closer.not-ok:
-#     error "pg_dump exited with code ${code}"
-#     return ${code}
-#   else
-#     ui.closer.ok:
-#     return 0
-#   fi
-# }
-
-# db.restore() {
-#   local dbname="$1"
-#   shift
-#   local filename="$1"
-#   [[ -n ${filename} ]] && shift
-
-#   [[ -z ${filename} ]] && filename=$(.db.backup-filename ${dbname})
-
-#   [[ dbname =~ 'production' ]] && {
-#     error 'This script is not meant for production'
-#     return 1
-#   }
-
-#   [[ -s ${filename} ]] || {
-#     error "can't find valid backup file in ${bldylw}${filename}"
-#     return 2
-#   }
-
-#   psql_args=$(db.psql.args.default)
-#   maint_args=$(db.psql.args.maint)
-
-#   run "dropdb ${maint_args} ${dbname} 2>/dev/null; true"
-
-#   export LibRun__AbortOnError=${True}
-#   run "createdb ${maint_args} ${dbname} ${psql_args}"
-
-#   [[ ${LibRun__Verbose} -eq ${True} ]] && {
-#     info "restoring from..: ${bldylw}${filename}"
-#     info "restoring to....: ${bldylw}${dbname}"
-#   }
-
-#   run "pg_restore -Fc -j 8 ${psql_args} -d ${dbname} ${filename}"
-#   code=${LibRun__LastExitCode}
-
-#   if [[ ${code} != 0 ]]; then
-#     warning "pg_restore completed with exit code ${code}"
-#     return ${code}
-#   fi
-#   return ${LibRun__LastExitCode}
-# }
