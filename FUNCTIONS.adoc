@@ -826,6 +826,17 @@ bashmatic.functions.runtime ()
 
 ----
 
+==== `bashmatic.is-developer`
+
+[source,bash]
+----
+bashmatic.is-developer () 
+{ 
+    [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
+}
+
+----
+
 ==== `bashmatic.load-at-login`
 
 [source,bash]
@@ -1712,6 +1723,61 @@ underline ()
 
 === Module `db`
 
+==== `db.actions.connect`
+
+[source,bash]
+----
+db.actions.connect () 
+{ 
+    db.psql.connect "$@"
+}
+
+----
+
+==== `db.actions.connections`
+
+[source,bash]
+----
+db.actions.connections () 
+{ 
+    db.config.connections
+}
+
+----
+
+==== `db.actions.settings-raw`
+
+[source,bash]
+----
+db.actions.settings-raw () 
+{ 
+    db.psql.connect.raw-settings "$@"
+}
+
+----
+
+==== `db.actions.settings-table`
+
+[source,bash]
+----
+db.actions.settings-table () 
+{ 
+    db.psql.connect.settings "$@"
+}
+
+----
+
+==== `db.actions.top`
+
+[source,bash]
+----
+db.actions.top () 
+{ 
+    db.top "$@"
+}
+
+----
+
 ==== `db.config.connections`
 
 [source,bash]
@@ -1719,7 +1785,7 @@ underline ()
 db.config.connections () 
 { 
     [[ -f ${bashmatic_db_config} ]] || return 2
-    cat "${bashmatic_db_config}" | ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")"
+    ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")" < "${bashmatic_db_config}"
 }
 
 ----
@@ -1761,7 +1827,7 @@ db.config.parse ()
     do
         script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
     done
-    cat "${bashmatic_db_config}" | ruby -e "${script[*]}"
+    ruby -e "${script[*]}" < "${bashmatic_db_config}"
 }
 
 ----
@@ -1774,17 +1840,6 @@ db.config.set-file ()
 { 
     [[ -s "$1" ]] || return 1
     export bashmatic_db_config="$1"
-}
-
-----
-
-==== `db.connect`
-
-[source,bash]
-----
-db.connect () 
-{ 
-    db.psql.connect "$@"
 }
 
 ----
@@ -1841,8 +1896,14 @@ db.psql.args.config ()
     local output="$(db.config.parse "$1")"
     local -a params
     [[ -z ${output} || "${output}" =~ "null" ]] && { 
-        error "Database $1 is not defined." 1>&2
-        return 1
+        section.red 65 "Unknown database connection — ${bldylw}$1." 1>&2
+        info "The following are connections defined in ${bldylw}${bashmatic_db_config/${HOME}/\~}:\n" 1>&2
+        for c in $(db.config.connections)
+        do
+            info " • ${c}" 1>&2
+        done
+        echo 1>&2
+        exit 1
     }
     params=($(db.config.parse "$1"))
     local dbhost
@@ -1888,6 +1949,7 @@ db.psql.args.maintenance ()
 db.psql.connect () 
 { 
     local dbname="$1"
+    shift
     if [[ -z ${dbname} ]]; then
         h1 "USAGE: db.connect connection-name" "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file."
         return 0
@@ -1899,7 +1961,29 @@ db.psql.connect ()
     printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
     printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
     hr
-    psql "${args[@]}"
+    psql "${args[@]}" "$@"
+}
+
+----
+
+==== `db.psql.connect.raw-settings`
+
+[source,bash]
+----
+db.psql.connect.raw-settings () 
+{ 
+    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%s=%s\\n\", \$1, \$2) }"
+}
+
+----
+
+==== `db.psql.connect.settings`
+
+[source,bash]
+----
+db.psql.connect.settings () 
+{ 
+    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-40.40s         ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;1;30" grep -E -C 1000 -i --color=always -e '##.*$|$'
 }
 
 ----
@@ -3204,7 +3288,7 @@ bashmatic.auto-update ()
     git.configure-auto-updates
     git.repo-is-clean || { 
         output.is-ssh || { 
-            output.is-terminal && attention "Bashmatic folder has local changes, can't auto-update." 1>&2
+            output.is-terminal && bashmatic.is-developer && attention "Bashmatic folder has local changes, can't auto-update." 1>&2
         }
         return 1
     }
@@ -4875,6 +4959,19 @@ error: ()
 
 ----
 
+==== `fatal`
+
+[source,bash]
+----
+fatal () 
+{ 
+    header=$(printf -- "${clr}${bldwht}  « ABORT » ")
+    box.black-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" 1>&2
+    exit 1
+}
+
+----
+
 ==== `hr`
 
 [source,bash]
@@ -4906,7 +5003,7 @@ hr.colored ()
 ----
 inf () 
 { 
-    printf -- "${LibOutput__LeftPrefix}${txtblu}${clr}${txtblu}$*${clr}"
+    printf -- "${LibOutput__LeftPrefix}${clr}${txtcyn}$*${clr}"
 }
 
 ----

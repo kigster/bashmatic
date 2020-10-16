@@ -8,8 +8,10 @@ Miscellaneous utilities.
 * <<arraysort,array.sort()>>
 * <<arraysort-numeric,array.sort-numeric()>>
 * <<arrayuniq,array.uniq()>>
-* <<dbpsqldb-settings,db.psql.db-settings()>>
 * <<dbconfigparse,db.config.parse()>>
+* <<dbpsqldb-settings,db.psql.db-settings()>>
+* <<dbpsqlconnectsettings,db.psql.connect.settings()>>
+* <<dbpsqlconnectraw-settings,db.psql.connect.raw-settings()>>
 * <<gitopen,git.open()>>
 * <<isvalidationerror,__is.validation.error()>>
 * <<is-validations,is-validations()>>
@@ -84,17 +86,6 @@ Sorts and uniqs the array and prints it to STDOUT
   local uniqued="$(array.sort-numeric "${unsorted[@]}")"
 ----
 
-== db.psql.db-settings()
-
-Print out PostgreSQL settings for a connection specified by args
-
-=== Example
-
-[source,bash]
-----
- db.psql.db-settings -h localhost -U postgres appdb
-----
-
 == db.config.parse()
 
 Returns a space-separated values of db host, db name, username and password
@@ -108,6 +99,53 @@ Returns a space-separated values of db host, db name, username and password
  #=> hostname dbname dbuser dbpass
  declare -a params=($(db.config.parse development))
  echo ${params[0]} # host
+----
+
+== db.psql.db-settings()
+
+Print out PostgreSQL settings for a connection specified by args
+
+=== Example
+
+[source,bash]
+----
+ db.psql.db-settings -h localhost -U postgres appdb
+----
+
+== db.psql.connect.settings()
+
+Print out PostgreSQL settings for a named connection
+
+=== Arguments
+
+* {blank}
++
+= @arg1 dbname database entry name in ~/.db/database.yml
+
+[discrete]
+=== Example
+
+[source,bash]
+----
+ db.psql.connect.settings primary
+----
+
+== db.psql.connect.raw-settings()
+
+Print out PostgreSQL settings for a named connection
+
+=== Arguments
+
+* {blank}
++
+= @arg1 dbname database entry name in ~/.db/database.yml
+
+[discrete]
+=== Example
+
+[source,bash]
+----
+ db.psql.connect.raw-settings primary
 ----
 
 == git.open()

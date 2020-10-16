@@ -114,7 +114,7 @@ db.psql.db-settings() {
 # @example
 #    db.psql.connect.settings primary
 db.psql.connect.settings() {
-  db.connect "$@" -A -X -q -c 'show all' | \
+  db.psql.connect "$@" -A -X -q -c 'show all' | \
     grep -v 'rows)' | \
     sort | \
     awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-40.40s         ## %s\n\", \$1, \$2, \$3) }" | \
@@ -128,7 +128,7 @@ db.psql.connect.settings() {
 # @example
 #    db.psql.connect.raw-settings primary
 db.psql.connect.raw-settings() {
-  db.connect "$@" -A -X -q -c 'show all' | \
+  db.psql.connect "$@" -A -X -q -c 'show all' | \
     grep -v 'rows)' | \
     sort | \
     awk "BEGIN{FS=\"|\"}{ printf(\"%s=%s\\n\", \$1, \$2) }"
