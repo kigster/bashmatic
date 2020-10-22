@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Private
 
-.usage.setup() {
+function .usage.setup() {
   export __color_fg=${1:-${txtylw}}
   export __color_bdr=${2:-${txtblu}}
   export __color_cmd=${3:-${txtgrn}}
@@ -10,7 +10,7 @@
   export __color_sub_headers=${5:-${bldcyn}}
 }
 
-.usage.begin() {
+function .usage.begin() {
   .usage.setup "$@"
   .output.box-top "${__color_bdr}"
 }
@@ -40,10 +40,10 @@ export LibUsage__MinFlagLen=14
 export LibUsage__NoFlagsIndent=15
 
 usage.set-min-flag-len() {
-  export LibUsage__MinFlagLen="${1}"
+export LibUsage__MinFlagLen="${1}"
 }
 
-.usage.flags() {
+function .usage.flags() {
   local -a flags=("$@")
   local line=""
   local n=0
@@ -96,7 +96,7 @@ usage.set-min-flag-len() {
   .output.box-bottom
 }
 
-.usage-cache-file() {
+function .usage-cache-file() {
   local script_name="${BASH_SOURCE[-1]}"
   local script_dir="$(dirname ${script_name})"
   local script_base="$(basename ${script_name})"
@@ -104,7 +104,7 @@ usage.set-min-flag-len() {
   printf "%s" "${script_usage_cache}"
 }
 
-.usage.box() {
+function .usage.box() {
   local command
   local title
 
@@ -135,7 +135,7 @@ usage.set-min-flag-len() {
 
 export EXPIRE_USAGE_CACHE=${EXPIRE_USAGE_CACHE:-"0"}
 
-usage-box() {
+function usage-box() {
   local backup="$(.usage-cache-file)"
   if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
     cat "${backup}"
@@ -144,12 +144,38 @@ usage-box() {
   fi
 }
 
-usage-box.section() {
+function usage-box.section() {
   printf "${__color_headers}"
   .usage.hdr "$*"
 }
 
-usage-box.sub-section() {
+function usage-box.sub-section() {
   .output.box-separator "${__color_bdr}"
   .output.boxed-text "${__color_bdr}" "${__color_sub_headers}" "$(.usage.hdr "$1")"
+}
+
+# Help Helpers that are typically online lineers.
+
+function help-name() {
+  box.white-on-green "$@"
+}
+
+function help-section() {
+  printf "\n${bldgrn}$(echo "$*" | tr '[:lower:]' '[:upper:]')\n"
+}
+
+function help-command() {
+  printf "    ${bldylw}\$ $*\n"
+}
+
+function help-example() {
+  printf "    ${bldgrn}\$ $*\n"
+}
+
+function help-comment() {
+  printf "    ${txtblk}# $*\n"
+}
+
+function help-details() {
+  printf "    ${txtblu}$*\n"
 }
