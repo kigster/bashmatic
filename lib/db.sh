@@ -11,8 +11,6 @@ unset bashmatic_db_password
 unset bashmatic_db_host
 unset bashmatic_db_database
 
-
-
 db.psql.args-data-only() {
   printf -- "%s" "--no-align --pset footer -q -X --tuples-only"
 }
@@ -45,10 +43,26 @@ db.config.parse() {
   ruby -e "${script[*]}"<"${bashmatic_db_config}"
 }
 
-db.config.connections() {
+db.config.connections-list() {
   [[ -f ${bashmatic_db_config} ]] || return 2
   ruby.handle-missing
-  ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")" <"${bashmatic_db_config}"
+  gem.install colored2 >/dev/null
+  __yaml_source="${bashmatic_db_config}" ruby <<RUBY
+  require 'yaml'
+  require 'colored2'
+  h = YAML.load(File.read(ENV['__yaml_source']))
+  h.each_pair do |name, params| 
+    printf "%50s → %s@%s/%s\n", 
+      name.bold.yellow, 
+      params['username'].blue,
+      params['host'].green,
+      params['database'].cyan
+  end
+RUBY
+}
+
+db.config.connections() {
+  ascii-clean "$(db.config.connections-list | awk '{print $1}')"
 }
 
 db.config.set-file() {
