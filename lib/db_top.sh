@@ -4,7 +4,7 @@
 # DB Top Library Functions
 #===============================================================================
 
-export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.5}
+export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.9}
 
 .db.primary-or-replica() {
   [[ "${1}" =~ master|primary|replica|slave ]]
