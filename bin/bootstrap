@@ -35,7 +35,67 @@ command -v git >/dev/null || {
   exit 1
 }
 
-bashmatic.git.sync() {
+sudo-ask() {
+  echo "Please enter your SUDO password if asked:"
+  sudo echo
+}
+
+export __sudoers_dir="/private/etc/sudoers.d"
+
+sudo-enable() {
+  sudo mkdir -p ${__sudoers_dir}
+  [[ -s ${__sudoers_dir}/${USER} ]] || {
+    echo ${USER} 'ALL=(ALL) NOPASSWD: ALL' | \
+      sudo tee -a ${__sudoers_dir}/${USER}
+  }
+}
+
+sudo-disable() {
+  sudo rm -f "${__sudoers_dir}/${USER}"
+}
+
+export BashVersion="5.1-rc2"
+
+bash-install() {
+  local version="${1:-${BashVersion}}"
+  echo "Instaling BASH version ${version}, please wait..."
+  bash-compile "${version}" >/dev/null
+}
+
+bash-compile() {
+  local version="$1"
+  local BashTar="bash-${version}.tar.gz"
+  local BashURL="http://ftp.gnu.org/gnu/bash/${BashTar}"
+  local pwd="${PWD}"
+  set -e
+  local temp=/tmp/bash-sources
+  mkdir -p ${temp}
+  trap "cd ${pwd}" EXIT
+  cd ${temp}
+  curl -O "${BashURL}"
+  tar xvzf "${BashTar}"
+  cd bash-${version}
+  ./configure --prefix=/usr/local
+  make -j 12
+  sudo make install
+  [[ -x /usr/local/bin/bash ]] && {
+    export PATH="/usr/local/bin:${PATH}"
+    echo /usr/local/bin/bash | sudo tee -a /private/etc/shells
+  }
+}
+
+brew-install() {
+  echo "Installing Homebrew, please wait..."
+  /usr/bin/ruby -e \
+       "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+}
+
+brew-uninstall() {
+  echo y | /usr/bin/env bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
+}
+
+
+git-sync() {
   cd "${BASHMATIC_HOME}" >/dev/null
   [[ -d ".git" ]] || return
 
@@ -54,25 +114,37 @@ bashmatic.git.sync() {
   cd - >/dev/null
 }
 
-export HOME=${HOME:-"/"}
-export BASHMATIC_HOME="${HOME}/.bashmatic"
-export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
-export BASHMATIC_URL="https://github.com/kigster/bashmatic"
+main() {
+  sudo-ask
+  sudo-enable
+  [[ $BASH_VERSION =~ ^3 ]] && bash-install 
+  command -v brew >/dev/null || brew-install
+  command -v gdate >/dev/null && brew install coreutils >/dev/null
 
-if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
-  bashmatic.git.sync
-else
-  git clone ${BASHMATIC_URL} ${BASHMATIC_HOME} >/dev/null
-fi
+  export HOME=${HOME:-"/"}
+  export BASHMATIC_HOME="${HOME}/.bashmatic"
+  export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
+  export BASHMATIC_URL="https://github.com/kigster/bashmatic"
 
-if [[ -s "${BASHMATIC_INIT}" ]]; then
-  # shellcheck disable=SC1090
-  source "${BASHMATIC_INIT}"
-  bashmatic.load-at-login
-  success "Your BashMatic has been successfully installed."
-  exit 0
-else
-  err "Bashmatic did not install correctly, please run the following command by hand:"
-  err "${bldgrn}git clone ${BASHMATIC_URL} ${BASHMATIC_HOME}"
-  exit 1
-fi
+  if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
+    git-sync
+  else
+    git clone ${BASHMATIC_URL} ${BASHMATIC_HOME} >/dev/null
+  fi
+
+  if [[ -s "${BASHMATIC_INIT}" ]]; then
+    # shellcheck disable=SC1090
+    source "${BASHMATIC_INIT}"
+    bashmatic.load-at-login
+    success "Your BashMatic has been successfully installed."
+    exit 0
+  else
+    err "Bashmatic did not install correctly, please run the following command by hand:"
+    err "${bldgrn}git clone ${BASHMATIC_URL} ${BASHMATIC_HOME}"
+    exit 1
+  fi
+}
+
+main "$@"
+
+

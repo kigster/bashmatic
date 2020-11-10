@@ -5,6 +5,7 @@
 
 # True if .envrc.local file is present. We take it as a sign 
 # you may be developing bashmatic.
+
 bashmatic.is-developer() {
   [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
 }
@@ -105,13 +106,25 @@ bashmatic.bash.exit-unless-version-four-or-later() {
   }
 }
 
+CacheEnabled=0
+
 #——————————————————————————————————————————————————————
 # CACHING
 #——————————————————————————————————————————————————————
+function bashmatic.cache.init() {
+  return
+  if bashmatic.bash.version-four-or-later ; then
+    declare -A BashMatic__LoadCache 2>/dev/null
+    export BashMatic__LoadCache
+  else 
+    CacheEnabled=0
+  fi
+
+}
 
 bashmatic.cache.has-file() {
+  ((CacheEnabled)) || return 1
   local file="$1"
-  bashmatic.bash.version-four-or-later || return 1
   test -z "$file" && return 1
   if [[ -n "$1" && -n "${BashMatic__LoadCache["${file}"]}" ]]; then
     return 0
@@ -121,12 +134,12 @@ bashmatic.cache.has-file() {
 }
 
 bashmatic.cache.add-file() {
-  bashmatic.bash.version-four-or-later || return 1
+  ((CacheEnabled)) || return
   [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
 }
 
 bashmatic.cache.list() {
-  bashmatic.bash.version-four-or-later || return 1
+  ((CacheEnabled)) || return
   for f in "${!BashMatic__LoadCache[@]}"; do echo $f; done
 }
 
@@ -139,14 +152,17 @@ bashmatic.source() {
       return 1
     }
     # avoid sourcing the same file twice
-    if ! bashmatic.cache.has-file "${file}"; then
+    if [[ ${CacheEnabled} -eq 0 ]]; then
+      [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
+      source "${file}"
+    elif bashmatic.cache.has-file "${file}"; then
+      [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" >&2
+    else
       [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" >&2
       set +e
       # shellcheck disable=SC1090
       source "${file}"
       bashmatic.cache.add-file "${file}"
-    else
-      [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" >&2
     fi
   done
   return 0
@@ -202,6 +218,7 @@ function bashmatic.shell-check() {
 }
 
 bashmatic.setup() {
+  bashmatic.cache.init
   bashmatic.shell-check || return 1
 
   [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] &&
@@ -215,7 +232,10 @@ bashmatic.setup() {
     return 1
   fi
 
-  bashmatic.source util.sh git.sh file.sh color.sh
+  bashmatic.source is.sh output.sh util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
   [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
 }
+
+
+

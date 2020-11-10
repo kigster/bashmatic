@@ -66,6 +66,10 @@ function brew.install() {
   fi
 }
 
+function brew.uninstall() {
+  echo y | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
+}
+
 function brew.setup() {
   brew.upgrade
 }
