@@ -45,7 +45,7 @@ export False=0
 export LoadedShown=${LoadedShown:-1}
 export LibGit__QuietUpdate=1
 
-dependences() {
+dependencies() {
   if command -v brew >/dev/null || command -v gdate >/dev/null || [[ $BASH_VERSION =~ ^3 ]]; then
     ${BASHMATIC_HOME}/bin/bootstrap
   fi
