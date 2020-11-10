@@ -45,7 +45,14 @@ export False=0
 export LoadedShown=${LoadedShown:-1}
 export LibGit__QuietUpdate=1
 
+dependences() {
+  if command -v brew >/dev/null || command -v gdate >/dev/null || [[ $BASH_VERSION =~ ^3 ]]; then
+    ${BASHMATIC_HOME}/bin/bootstrap
+  fi
+}
+
 main() {
+  dependencies
   local setup_script="${BASHMATIC_LIBDIR}/bashmatic.sh"
 
   if [[ -s "${setup_script}" ]]; then
