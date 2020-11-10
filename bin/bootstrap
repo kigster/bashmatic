@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
-# vim: ft=sh
+# vim: ft=bash
 set -e
 
+# Configuration 
+export BashVersion="5.1-rc2"
+export SudoersDir="/private/etc/sudoers.d"
+
+export HOME=${HOME:-"/"}
+export BASHMATIC_HOME="${HOME}/.bashmatic"
+export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
+export BASHMATIC_URL="https://github.com/kigster/bashmatic"
+
+# Constants
 export clr='\e[0m'       # Text Reset
 export bldblk='\e[1;30m' # Black - Bold
 export bldred='\e[1;31m' # Red
@@ -12,49 +22,39 @@ export bldpur='\e[1;35m' # Purple
 export bldcyn='\e[1;36m' # Cyan
 export bldwht='\e[1;37m' # White
 
+ts() {
+  date '+%Y/%m/%d %I:%M:%S%p'
+}
+
 puts() {
-  printf "${bldgrn}✓   ${bldblu}${*}${clr}\n"
+  printf "${bldblu}INFO  | ${bldcyn}$(ts) | ${clr}${*}${clr}\n"
 }
 
 err() {
-  printf "${bldred}ERROR:\n"
-  for s in "${@}"; do
-    printf "${bldred}✘   ${bldylw}${s}${clr}\n"
+  printf "${bldred}————————————————————————————————————————————————————————————${clr}\n"
+  for str in "$@"; do
+    printf "${bldred}ERROR | ${bldcyn}$(ts) | ${bldred}$str\n"
   done
 }
 
-command -v git >/dev/null || {
-  OS="$(uname -s)"
-  if [[ "${OS}" == "Darwin" ]]; then
-    puts "Please install xcode command line tools, "
-    puts "by running: xcode-select --install"
-  elif [[ "${OS}" == "Linux" ]]; then
-    puts "Please install Git."
-    puts "eg. apt-get install git"
-  fi
-  exit 1
-}
 
 sudo-ask() {
   echo "Please enter your SUDO password if asked:"
   sudo echo
 }
 
-export __sudoers_dir="/private/etc/sudoers.d"
-
 sudo-enable() {
-  sudo mkdir -p ${__sudoers_dir}
-  [[ -s ${__sudoers_dir}/${USER} ]] || {
+  sudo mkdir -p ${SudoersDir}
+  [[ -s ${SudoersDir}/${USER} ]] || {
     echo ${USER} 'ALL=(ALL) NOPASSWD: ALL' | \
-      sudo tee -a ${__sudoers_dir}/${USER}
+      sudo tee -a ${SudoersDir}/${USER}
   }
 }
 
 sudo-disable() {
-  sudo rm -f "${__sudoers_dir}/${USER}"
+  sudo rm -f "${SudoersDir}/${USER}"
 }
 
-export BashVersion="5.1-rc2"
 
 bash-install() {
   local version="${1:-${BashVersion}}"
@@ -114,17 +114,104 @@ git-sync() {
   cd - >/dev/null
 }
 
+os-init() {
+  OS="$(uname -s)"
+  if [[ "${OS}" == "Darwin" ]]; then
+    osx-reqs
+  elif [[ "${OS}" == "Linux" ]]; then
+    puts "Please install Git."
+    puts "eg. apt-get install git"
+    exit 1
+  fi
+}
+
+osx-reqs() {
+    puts "Verifying and installing XCode Dependencies..."
+
+    local xcode_app="/Applications/Xcode.app"
+    local xcode_tools="${xcode_app}/Contents/Developer"
+    local cli_tools="/Library/Developer/CommandLineTools"
+
+    if [[ -d "${xcode_app}" && -d "${xcode_tools}" ]]; then
+      [[ $(xcode-select -p) == "${xcode_tools}" ]] || sudo xcode-select --switch "${xcode_tools}"
+    else
+      command -v xcodebuild >/dev/null || xcode-select --install 2>&1
+      [[ -d "${cli_tools}" && $(xcode-select -p) == "${cli_tools}" ]] || sudo xcode-select --switch ${cli_tools} 2>/dev/null
+    fi
+
+    bash -c 'command -v xcodebuild >/dev/null && sudo xcodebuild -license accept 2>&1 1>/dev/null; true ' > /dev/null
+    echo
+}
+
+is-debug() {
+ ((bootstrap__debug))
+}
+
+export bootstrap__debug=0
+export bootstrap__verbose=0
+
+usage() {
+  printf "
+${bldylw}USAGE: 
+  ${bldgrn}bin/bootstrap [ flags ]
+
+${bldylw}DESCRIPTION:
+  ${bldblu}Install Bashmatic, and on OSX also installs build tools, brew and latest bash
+  into /usr/local/bin/bash
+
+${bldylw}FLAGS:${bldpur}
+  -v, --verbose           See additional output
+  -d, --debug             Turn on 'set -x' to see all commands running
+  -h, --help              Show this help message.
+  ${clr}
+  "
+}
+
+
+parse-opts() {
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -d | --debug)
+      shift
+      export bootstrap__debug=1
+      set -x
+      ;;
+    -v | --verbose)
+      shift
+      export bootstrap__verbose=1
+      ;;
+    -h | -\? | --help)
+      shift
+      usage
+      exit 0
+      ;;
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    -?*)
+      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
+    *)
+      [[ -z "$1" ]] && break
+      shift
+      ;;
+    esac
+  done
+}
+
 main() {
+  parse-opts "$@"
   sudo-ask
   sudo-enable
+  os-init
+
   [[ $BASH_VERSION =~ ^3 ]] && bash-install 
   command -v brew >/dev/null || brew-install
-  command -v gdate >/dev/null && brew install coreutils >/dev/null
-
-  export HOME=${HOME:-"/"}
-  export BASHMATIC_HOME="${HOME}/.bashmatic"
-  export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
-  export BASHMATIC_URL="https://github.com/kigster/bashmatic"
+  command -v gdate >/dev/null || brew install coreutils >/dev/null
 
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
     git-sync
