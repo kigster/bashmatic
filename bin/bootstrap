@@ -9,7 +9,12 @@ export SudoersDir="/private/etc/sudoers.d"
 export HOME=${HOME:-"/"}
 export BASHMATIC_HOME="${HOME}/.bashmatic"
 export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
-export BASHMATIC_URL="https://github.com/kigster/bashmatic"
+
+if [[ ${USER} == "kig" ]]; then
+  export BASHMATIC_URL="git@github.com:kigster/bashmatic"
+else
+  export BASHMATIC_URL="https://github.com/kigster/bashmatic"
+fi
 
 # Constants
 export clr='\e[0m'       # Text Reset
