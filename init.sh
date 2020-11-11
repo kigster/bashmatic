@@ -45,14 +45,22 @@ export False=0
 export LoadedShown=${LoadedShown:-1}
 export LibGit__QuietUpdate=1
 
-dependencies() {
-  if command -v brew >/dev/null || command -v gdate >/dev/null || [[ $BASH_VERSION =~ ^3 ]]; then
-    ${BASHMATIC_HOME}/bin/bootstrap
+osx-dependencies() {
+  [[ $(uname -s) == "Darwin" ]] || return
+
+  if command -v brew >/dev/null && command -v gdate >/dev/null ; then
+    return
+  else
+    source "${BASHMATIC_HOME}/bin/bootstrap" init
+    set +e
+    bootstrap-dependencies
   fi
 }
 
 main() {
-  dependencies
+  set +e
+  osx-dependencies || true
+
   local setup_script="${BASHMATIC_LIBDIR}/bashmatic.sh"
 
   if [[ -s "${setup_script}" ]]; then
@@ -71,5 +79,3 @@ main() {
 }
 
 main "$@"
-
-set +x
