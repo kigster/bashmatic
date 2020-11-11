@@ -5,16 +5,11 @@
 
 os="$(uname -s | tr [:upper:] [:lower:])"
 set +e
-[[ ${os} =~ darwin ]] && {
-  load '/usr/local/lib/bats-support/load.bash'
-  load '/usr/local/lib/bats-assert/load.bash'
-  load '/usr/local/lib/bats-file/load.bash'
-}
 
 export Bashmatic__Test=1
 
-
 load.deps() {
+  ( git submodule update && git submodule sync ) 1>/dev/null 2>&1
   declare -a deps=(support file assert)
   for dep in ${deps[@]}; do
     local file="${TEST_BREW_PREFIX}/lib/bats-${dep}/load.bash"

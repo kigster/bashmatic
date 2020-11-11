@@ -147,6 +147,8 @@ export DevSetup__Callbacks
     git
     geoip
     gh
+    gpg
+    gnu-sed
     htop
     libevent
     imagemagick
