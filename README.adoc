@@ -1,4 +1,6 @@
 = Bashmatic™ — BASH primitives for humans, and for fun.
+
+image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 :safe: unsafe
 :allow-uri-read:
 :doctype: book
