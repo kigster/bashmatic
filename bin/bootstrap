@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+# 
+# The purpose of this script is to bootstrap Bashmatic on a 
+# new system. We are supporting OS-X and Linux, although on 
+# OS-X we do a lot more initialization to ensure Bashmatic
+# can properly function.
+#
+# Bootstrap script is required to run at least once on a new
+# system, which happens automatically if you install it via
+# 
+# bash -c "$(curl -fsSL https://bashmatic.re1.re)"
+#
 set -e
 
 # Configuration 
-export BashVersion="5.1-rc2"
-export SudoersDir="/private/etc/sudoers.d"
-
 export HOME=${HOME:-"/"}
 export BASHMATIC_HOME="${HOME}/.bashmatic"
 export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
@@ -27,80 +35,100 @@ export bldpur='\e[1;35m' # Purple
 export bldcyn='\e[1;36m' # Cyan
 export bldwht='\e[1;37m' # White
 
+# Output Helpers
+
 ts() {
   date '+%Y/%m/%d %I:%M:%S%p'
 }
 
 puts() {
-  printf "${bldblu}INFO  | ${bldcyn}$(ts) | ${clr}${*}${clr}\n"
+  printf "${bldblu}INFO  ${bldwht}|$(ts)| ${clr}${*}${clr}\n"
 }
 
 err() {
-  printf "${bldred}————————————————————————————————————————————————————————————${clr}\n"
+  printf "${bldred}_______  ${clr}\n"
+  printf "${bldred}       ⤵${clr}\n"
   for str in "$@"; do
-    printf "${bldred}ERROR | ${bldcyn}$(ts) | ${bldred}$str\n"
+  printf "${bldred}ERROR ${bldwht}|$(ts)| ${bldred}$str\n"
   done
 }
 
-
+# Sudo Helpers
 sudo-ask() {
-  echo "Please enter your SUDO password if asked:"
+  echo "Please enter your SUDO password if asked..."
   sudo echo
 }
 
 sudo-enable() {
-  sudo mkdir -p ${SudoersDir}
-  [[ -s ${SudoersDir}/${USER} ]] || {
-    echo ${USER} 'ALL=(ALL) NOPASSWD: ALL' | \
-      sudo tee -a ${SudoersDir}/${USER}
+  sudo mkdir -p "${bootstrap__sudoers_dir}"
+  [[ -s ${bootstrap__sudoers_dir}/${USER} ]] || {
+    echo "${USER}" 'ALL=(ALL) NOPASSWD: ALL' | \
+      sudo tee -a "${bootstrap__sudoers_dir}/${USER}"
   }
 }
 
 sudo-disable() {
-  sudo rm -f "${SudoersDir}/${USER}"
+  sudo rm -f "${bootstrap__sudoers_dir}/${USER}"
 }
 
-
+# Bash Installer Helpers
 bash-install() {
-  local version="${1:-${BashVersion}}"
-  echo "Instaling BASH version ${version}, please wait..."
+  local version="${bootstrap__bash_version}"
+  echo "Installing BASH version ${version}, please wait..."
   bash-compile "${version}" >/dev/null
 }
 
+# Install a modern BASH on Mac OS-X in /usr/local/bin/bash
 bash-compile() {
   local version="$1"
-  local BashTar="bash-${version}.tar.gz"
-  local BashURL="http://ftp.gnu.org/gnu/bash/${BashTar}"
-  local pwd="${PWD}"
+  local bash_tar="bash-${version}.tar.gz"
+  local bash_url="http://ftp.gnu.org/gnu/bash/${bash_tar}"
   set -e
   local temp=/tmp/bash-sources
+  rm -rf ${temp}
   mkdir -p ${temp}
-  trap "cd ${pwd}" EXIT
+  # shellcheck disable=SC2064
+  trap "cd ${PWD} || true" EXIT
   cd ${temp}
-  curl -O "${BashURL}"
-  tar xvzf "${BashTar}"
-  cd bash-${version}
+  curl -O "${bash_url}"
+  tar xvzf "${bash_tar}"
+  cd "bash-${version}"
   ./configure --prefix=/usr/local
   make -j 12
   sudo make install
-  [[ -x /usr/local/bin/bash ]] && {
+  if [[ -x /usr/local/bin/bash ]] ; then
     export PATH="/usr/local/bin:${PATH}"
-    echo /usr/local/bin/bash | sudo tee -a /private/etc/shells
+    grep -q /usr/local/bin/bash /private/etc/shells || {
+      echo /usr/local/bin/bash | sudo tee -a /private/etc/shells
+    }
+  fi
+}
+
+# Brew Installer Helpers
+# Install Brew
+brew-install() {
+  command -v brew>/dev/null || {
+    puts "Installing Homebrew, please wait..."
+    /usr/bin/ruby -e \
+        "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   }
 }
 
-brew-install() {
-  echo "Installing Homebrew, please wait..."
-  /usr/bin/ruby -e \
-       "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew-deps() {
+  set +e
+  command -v gdate >/dev/null   || brew install coreutils 1>/dev/null 2>&1 
+  command -v gnu-sed >/dev/null || brew install gnu-sed 1>/dev/null 2>&1
 }
 
+# Uninstall Brew (just for completeness, we never actually use this)
 brew-uninstall() {
   echo y | /usr/bin/env bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
 }
 
-
+# Complain if bashmatic folder has locally modified files.
 git-sync() {
+  ((bootstrap__skip_git_check)) && return
+
   cd "${BASHMATIC_HOME}" >/dev/null
   [[ -d ".git" ]] || return
 
@@ -119,41 +147,66 @@ git-sync() {
   cd - >/dev/null
 }
 
-os-init() {
-  OS="$(uname -s)"
-  if [[ "${OS}" == "Darwin" ]]; then
-    osx-reqs
-  elif [[ "${OS}" == "Linux" ]]; then
-    puts "Please install Git."
-    puts "eg. apt-get install git"
-    exit 1
-  fi
+os-requirements() {
+  local os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
+  case ${os} in
+    darwin)  
+      darwin-requirements
+      ;;
+    linux)
+      linux-requirements
+      ;;
+    *)
+      err "Operating system ${os} is not supported."
+      exit 1
+  esac
 }
 
-osx-reqs() {
-    puts "Verifying and installing XCode Dependencies..."
+linux-requirements() {
+  command -v git >/dev/null || {
+    err "Please install git on your system first." \
+      "Perhaps try apt-get install git?"
+    exit 1
+  }
+}
 
-    local xcode_app="/Applications/Xcode.app"
-    local xcode_tools="${xcode_app}/Contents/Developer"
-    local cli_tools="/Library/Developer/CommandLineTools"
+darwin-requirements-xcode() {
+  puts "Verifying and installing XCode Dependencies..."
 
-    if [[ -d "${xcode_app}" && -d "${xcode_tools}" ]]; then
-      [[ $(xcode-select -p) == "${xcode_tools}" ]] || sudo xcode-select --switch "${xcode_tools}"
-    else
-      command -v xcodebuild >/dev/null || xcode-select --install 2>&1
-      [[ -d "${cli_tools}" && $(xcode-select -p) == "${cli_tools}" ]] || sudo xcode-select --switch ${cli_tools} 2>/dev/null
-    fi
+  local xcode_app="/Applications/Xcode.app"
+  local xcode_tools="${xcode_app}/Contents/Developer"
+  local cli_tools="/Library/Developer/CommandLineTools"
 
-    bash -c 'command -v xcodebuild >/dev/null && sudo xcodebuild -license accept 2>&1 1>/dev/null; true ' > /dev/null
-    echo
+  if [[ -d "${xcode_app}" && -d "${xcode_tools}" ]]; then
+    [[ $(xcode-select -p) == "${xcode_tools}" ]] || sudo xcode-select --switch "${xcode_tools}"
+  else
+    command -v xcodebuild >/dev/null || xcode-select --install 2>&1
+    [[ -d "${cli_tools}" && $(xcode-select -p) == "${cli_tools}" ]] || sudo xcode-select --switch ${cli_tools} 2>/dev/null
+  fi
+
+  bash -c 'command -v xcodebuild >/dev/null && sudo xcodebuild -license accept 2>&1 1>/dev/null; true ' > /dev/null
+  echo
+}
+
+darwin-requirements() {
+  darwin-requirements-xcode
+  [[ ! -x /usr/local/bin/bash || $BASH_VERSION =~ ^3 ]] && bash-install 
+  brew-install
+  brew-deps
 }
 
 is-debug() {
  ((bootstrap__debug))
 }
 
+#——————————————————————————————————————————————————————————
+
 export bootstrap__debug=0
+export bootstrap__skip_git_check=0
 export bootstrap__verbose=0
+export bootstrap__bash_version="5.1-rc2"
+export bootstrap__sudoers_dir="/private/etc/sudoers.d"
 
 usage() {
   printf "
@@ -162,21 +215,27 @@ ${bldylw}USAGE:
 
 ${bldylw}DESCRIPTION:
   ${bldblu}Install Bashmatic, and on OSX also installs build tools, brew and latest bash
-  into /usr/local/bin/bash
+  into /usr/local/bin/bash.
 
 ${bldylw}FLAGS:${bldpur}
-  -v, --verbose           See additional output
-  -d, --debug             Turn on 'set -x' to see all commands running
-  -h, --help              Show this help message.
+  -b, --bash-version VERSION    Install VERSION instead of ${bootstrap__bash_version}
+  -g, --skip-git                Skip check for locally modified files
+  -v, --verbose                 See additional output
+  -d, --debug                   Turn on 'set -x' to see all commands running
+  -h, --help                    Show this help message.
   ${clr}
   "
 }
-
 
 parse-opts() {
   # Parse additional flags
   while :; do
     case $1 in
+    -b| --bash-version)
+      shift
+      export bootstrap__bash_version=$1
+      shift
+      ;;
     -d | --debug)
       shift
       export bootstrap__debug=1
@@ -185,6 +244,10 @@ parse-opts() {
     -v | --verbose)
       shift
       export bootstrap__verbose=1
+      ;;
+    -g | --skip-git)
+      shift
+      export bootstrap__skip_git_check=1
       ;;
     -h | -\? | --help)
       shift
@@ -208,20 +271,20 @@ parse-opts() {
   done
 }
 
-main() {
-  parse-opts "$@"
+bootstrap-dependencies() {
   sudo-ask
   sudo-enable
-  os-init
+  os-requirements
+}
 
-  [[ $BASH_VERSION =~ ^3 ]] && bash-install 
-  command -v brew >/dev/null || brew-install
-  command -v gdate >/dev/null || brew install coreutils >/dev/null
+bootstrap-main() {
+  parse-opts "$@"
+  bootstrap-dependencies
 
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
     git-sync
   else
-    git clone ${BASHMATIC_URL} ${BASHMATIC_HOME} >/dev/null
+    git clone ${BASHMATIC_URL} "${BASHMATIC_HOME}" >/dev/null
   fi
 
   if [[ -s "${BASHMATIC_INIT}" ]]; then
@@ -237,6 +300,8 @@ main() {
   fi
 }
 
-main "$@"
-
-
+# Allow sourcing in bin/bootstrap and using it's shell functions, eg:
+# source bin/bootstrap init
+if [[ "$1" != "init" ]]; then
+  bootstrap-main "$@"
+fi
