@@ -1,4 +1,5 @@
 = Bashmatic™ — BASH primitives for humans, and for fun.
+
 :safe: unsafe
 :allow-uri-read:
 :doctype: book
@@ -8,6 +9,8 @@
 
 image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
 image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield]
+
+image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"] — Please join Gitter to discuss this library, any suggestions or ideas you might have are welcome!
 
 WARNING: 
 ====
