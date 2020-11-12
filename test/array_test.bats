@@ -2,6 +2,23 @@
 
 load test_helper
 source lib/array.sh
+source lib/is.sh
+
+@test "array.min/max positive" {
+  declare -a array=(1 495 -2 435 12 0 hello)
+  local max="$(array.max "${array[@]}")"
+  local min="$(array.min "${array[@]}")"
+  set -e
+  [[ "${max}" -eq 495 && "${min}" -eq -2 ]]
+}
+
+@test "array.min/max negative" {
+  declare -a array=(-10 -24 -1 shit)
+  local max="$(array.max "${array[@]}")"
+  local min="$(array.min "${array[@]}")"
+  set -e
+  [[ "${max}" -eq -1 && "${min}" -eq -24 ]]
+}
 
 @test "array.sort" {
   declare -a array=(hello begin again again)

@@ -77,6 +77,13 @@ array.includes-or-exit() {
   array.includes-or-complain "$@" || exit 1
 }
 
+# @description 
+#     Joins a given array with a custom character
+#
+# @example
+#     $ declare -a array=(one two three)
+#     $ array.join "," "${array[@]}"
+#     one,two,three
 array.join() {
   local sep="$1"; shift
   local lines="$1"
@@ -127,6 +134,42 @@ array.sort-numeric() {
   export IFS=$'\0'
   printf "%s\n" "$@" | sort -n | tr '\n' ' ' | sed 's/ $//g'
   IFS="${IFS_previous}"
+}
+
+# @description 
+#     Returns a minimum integer from an array.
+#     Non-numeric elements are ignored and skipped over.
+#     Negative numbers are supported, but non-integers are not.
+#
+# @example
+#     $ declare -a array=(10 20 30 -5 5)
+#     $ array.min "," "${array[@]}"
+#     -5
+array.min() {
+  local min="$1"; shift
+  for v in "$@"; do
+    is.numeric "$v" || continue
+    [[ ${v} -lt ${min} ]] && min="$v"
+  done
+  printf -- "%d" "${min}"
+}
+
+# @description 
+#     Returns a maximum integer from an array.
+#     Non-numeric elements are ignored and skipped over.
+#     Negative numbers are supported, but non-integers are not.
+#
+# @example
+#     $ declare -a array=(10 20 30 -5 5)
+#     $ array.min "," "${array[@]}"
+#     30
+array.max() {
+  local max="$1"; shift
+  for v in "$@"; do
+    is.numeric "$v" || continue
+    [[ ${v} -gt ${max} ]] && max="$v"
+  done
+  printf -- "%d" "${max}"
 }
 
 # @description Sorts and uniqs the array and prints it to STDOUT

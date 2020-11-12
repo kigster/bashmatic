@@ -51,7 +51,7 @@ util.generate-password() {
 
 util.ver-to-i() {
   version=${1}
-  echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
+  echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
 }
 
 # Convert a result of .ver-to-i() back to a regular version.
