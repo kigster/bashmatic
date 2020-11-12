@@ -2,10 +2,8 @@
 # vim: ft=bash
 
 # shellcheck disable=2046
-export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
-
-set +x
-source "${BASHMATIC_HOME}/init.sh" 1>/dev/null
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
 
 run.set-all abort-on-error
 output.set-max-width 100

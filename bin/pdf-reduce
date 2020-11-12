@@ -6,11 +6,9 @@
 # This script can extract image URLs from a remote HTML document(s) and
 # downloads them all to a local folder.
 
-# shellcheck disable=SC1134,SC2155
-[[ -d "${BASHMATIC_HOME}" ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v" 1>/dev/null 2>&1
-
-# shellcheck source=/dev/null
-. "${BASHMATIC_HOME}/init.sh" >/dev/null 2>&1
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
 
 # This project is derived from the +shrinkpdf+ open source project:
 #

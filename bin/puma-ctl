@@ -7,15 +7,10 @@
 
 set +e
 
-export BashMatic="${BASHMATIC_HOME}"
-
-[[ -s ${BashMatic}/init.sh ]] || {
-  rm -rf "${BashMatic}" 2>/dev/null
-  bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
-}
-
-source ${BASHMATIC_HOME}/init.sh
-
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
+\
 # https://blog.phusion.nl/2017/10/13/why-ruby-app-servers-break-on-macos-high-sierra-and-what-can-be-done-about-it/
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 export RAILS_ENV="${RAILS_ENV:-"development"}"

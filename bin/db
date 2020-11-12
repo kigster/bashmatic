@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # vim: ft=sh
-
-[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
-source "${BASHMATIC_HOME}/init.sh" 1>/dev/null
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
 
 action="$1"
 shift
