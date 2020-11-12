@@ -24,7 +24,7 @@ export opt_terse=
 export ruby_version=
 declare -a pg_versions
 declare -a mysql_versions
-export DevSetup__Version="0.2.0"
+export DevSetup__Version="0.3.0"
 
 .dev-setup.detect.pg-version() {
   export pg_versions=($(brew.package.available-versions postgresql))
@@ -135,9 +135,7 @@ export DevSetup__Callbacks
     asciidoc
     asciidoctor
     awscli
-    bash
     bash-completion
-    bats-core
     cloc
     coreutils
     curl
@@ -375,7 +373,7 @@ export DevSetup__Callbacks
 }
 
 .dev-setup.brew.grc() {
-  ${BASHMATIC_HOME}/bin/install-grc
+  bash "${BASHMATIC_HOME}/bin/install-grc"
 
   local code=$?
   [[ ${code} -ne 0 ]] && {
@@ -638,6 +636,8 @@ dev-setup.install() {
   local failures=0
   local total=0
   local block_size
+
+  "${BASHMATIC_HOME}/bin/bashmatic-install" --skip-install
 
   brew.install
   brew.cache-reset

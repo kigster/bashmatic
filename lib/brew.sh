@@ -183,7 +183,7 @@ function brew.install.package() {
     export LibRun__LastExitCode=0
   else
     if [[ -z "${opt_terse}" ]]; then
-      hl.subtle "Brew is installing package: ${package}"
+      ui.closer.kind-of-ok:
       run "brew install ${package} ${force} ${verbose}"
       code="${LibRun__LastExitCode}"
     else

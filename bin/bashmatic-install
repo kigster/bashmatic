@@ -17,7 +17,7 @@ set -e
 export HOME=${HOME:-"/"}
 declare -a CHOWN_DIRS
 declare -a BREW_PACKAGES
-export CHOWN_DIRS=(/usr/local /Library/Ruby /Library/Python)
+export CHOWN_DIRS=(/usr/local/* /Library/Ruby /Library/Python)
 export BREW_PACKAGES=(coreutils gnu-sed)
 
 if [[ ${USER} == "kig" ]]; then
@@ -94,17 +94,17 @@ sudo-disable() {
 # BASH Upgrade Functionality (OS-X/Linux)
 #——————————————————————————————————————————————————————————————————————————————————————
 bash-major-version() {
-  local bash="${1:-"/usr/bin/env bash"}"
+  local bash="${1:-"bash"}"
   ${bash} --version | head -1 | sed 's/[^0-9.]//g; s/\..*$//g'
 }
 
 bash-latest-installed-version() {
-  local version=$(bash-major-version)
+  local version=$(bash-major-version "$(command -v bash)")
   if [[ -x /usr/local/bin/bash ]]; then
     local v=$(bash-major-version /usr/local/bin/bash)
     [[ ${v} -gt ${version} ]] && version="${v}"
   fi
-  printf -- "%d" "${version}"
+  echo "${version}"
 }
 
 bash-install-required() {
@@ -130,7 +130,7 @@ bash-compile() {
   fi
 
   local bash_tar="bash-${version}.tar.gz"
-  local bash_url="http://ftp.gnu.org/gnu/b  ash/${bash_tar}"
+  local bash_url="http://ftp.gnu.org/gnu/bash/${bash_tar}"
   set -e
   local temp=/tmp/bash-sources
   rm -rf ${temp}
@@ -139,24 +139,25 @@ bash-compile() {
   # shellcheck disable=SC2064
   trap "cd ${PWD} || true" EXIT
   cd "${temp}" || return 1
-  is-verbose && puts "Downloading BASH from ${bash_url}..."
+  is-verbose && puts "Downloading BASH from ${bldylw}${bash_url}..."
   curl -sO "${bash_url}"
   tar xzf "${bash_tar}"
   cd "bash-${version}"
   is-verbose && puts "Configuring BASH in ${temp}, please wait..."
   ./configure --prefix="${prefix}" >/dev/null
   is-verbose && puts "Building BASH, please wait..."
-  make -j 12 --silent
+  make -j 12 --silent 
   set +e
-  make --silent install || sudo make --silent install
+  is-verbose && puts "Installing BASH into ${prefix}, please wait..."
+  (make --silent install || sudo make --silent install) 2>/dev/null
   if [[ -x "${bash_path}" ]]; then
     export PATH="${prefix}/bin:${PATH}"
     grep -q "${bash_path}" /private/etc/shells || {
-      puts "Appending ${bash_path} to /etc/shells..."
-      echo "${bash_path}" | sudo tee -a /private/etc/shells
+      is-verbose && puts "Appending ${bash_path} to /etc/shells..."
+      echo "${bash_path}" | sudo tee -a /private/etc/shells >/dev/null
     }
   fi
-  puts "  ✅  BASH version ${bootstrap__bash_version} is ${bldgrn}installed in ${bootstrap__bash_prefix}."
+  puts " ✅  BASH version ${version} is ${bldgrn}installed in ${bldylw}${prefix}."
   return 0
 }
 
@@ -312,6 +313,7 @@ os-requirements() {
 
 export bootstrap__debug=0
 export bootstrap__skip_git_check=0
+export bootstrap__skip_install=0
 export bootstrap__verbose=0
 export bootstrap__bashmatic_home=${HOME}/.bashmatic
 export bootstrap__bash_version="5.1-rc2"
@@ -339,6 +341,7 @@ ${bldylw}FLAGS:${bldpur}
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
   -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
   -g, --skip-git                Do not abort if existing bashmatic home has local changes
+  -i, --skip-install            Do not download/install bashmatic
   -v, --verbose                 See additional output as bootstrap is running.
   -d, --debug                   Turn on 'set -x' to see all commands running.
   -h, --help                    Show this help message.
@@ -381,6 +384,10 @@ parse-opts() {
       shift
       export bootstrap__skip_git_check=1
       ;;
+    -i | --skip-install)
+      shift
+      export bootstrap__skip_install=1
+      ;;
     -h | -\? | --help)
       shift
       usage
@@ -403,10 +410,7 @@ parse-opts() {
   done
 }
 
-bashmatic-install() {
-  parse-opts "$@" || return
-  os-requirements
-
+bashmatic-download-and-install() {
   export BASHMATIC_HOME="${bootstrap__bashmatic_home}"
 
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
@@ -430,15 +434,24 @@ bashmatic-install() {
   fi
 }
 
+
+bashmatic-install() {
+  parse-opts "$@" || return
+  os-requirements
+  ((bootstrap__skip_install)) || bashmatic-download-and-install
+}
+
 len="${#BASH_SOURCE[@]}"
 last_index=$((len - 1))
 [[ ${last_index} -lt 0 ]] && last_index=0
+current_shell=$(ps -p $$ -o comm | grep -v COMM | sed 's/-//g')
 
 set +e
 
 # Allow sourcing in bin/bashmatic-install and using it's shell functions, eg:
 # source bin/bashmatic-install init
-if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
+if [[ ${current_shell} != "bash" ]] ||
+   [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
    [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
   echo >/dev/null
 else
