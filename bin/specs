@@ -6,22 +6,10 @@
 
 # IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
 # shellcheck disable=2046
-export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
 
 export BASHMATIC_TEST_DIR="${BASHMATIC_TEST_DIR:-"test"}"
-for loc in "${BASHMATIC_HOME}/init.sh" "${BASHMATIC_HOME}/init.sh" "${PWD}/init.sh"; do
-  if [[ -s "${loc}" ]]; then
-    export BASHMATIC_HOME="$(dirname "${loc}")"
-    break
-  fi
-done
-
-[[ -s "${BASHMATIC_HOME}/init.sh" ]] || {
-  echo "Unable to find Bashmatic installation in ${BASHMATIC_HOME}..."
-  exit 1
-}
-
-source "${BASHMATIC_HOME}/init.sh"
 
 test-group() {
   #box.black-on-blue "$@"

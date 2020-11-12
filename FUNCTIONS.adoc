@@ -847,12 +847,12 @@ bashmatic.functions-from ()
     local pattern="${1}"
     [[ -n ${pattern} ]] && shift
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
-    cd "${BASHMATIC_LIBDIR}" > /dev/null || return 1
+    cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
     export SCREEN_WIDTH=$(screen-width)
     if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
         pattern="${pattern}.sh"
     fi
-    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} | sedx 's/^lib\/.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^_' -v | sort | uniq | columnize "$@"
+    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^(_|\.)' -v | sort | uniq | columnize "$@"
     cd - > /dev/null || return 1
 }
 
@@ -4402,20 +4402,6 @@ net.local-subnet ()
 
 
 === Module `openssl`
-
-==== `.openssl.certs.print-generated`
-
-[source,bash]
-----
-.openssl.certs.print-generated () 
-{ 
-    local file="$1"
-    h.blue "Would you like to view the generated certificate?"
-    run.ui.ask "Press any key to view, or Ctrl-C to abort."
-    openssl req -text -in "${file}" -noout -verify
-}
-
-----
 
 ==== `openssl.certs.generate-csr`
 
@@ -9288,128 +9274,6 @@ url.valid-status ()
 
 
 === Module `usage`
-
-==== `.usage-cache-file`
-
-[source,bash]
-----
-.usage-cache-file () 
-{ 
-    local script_name="${BASH_SOURCE[-1]}"
-    local script_dir="$(dirname ${script_name})"
-    local script_base="$(basename ${script_name})"
-    local script_usage_cache="${script_dir}/.${script_base}"
-    printf "%s" "${script_usage_cache}"
-}
-
-----
-
-==== `.usage.begin`
-
-[source,bash]
-----
-.usage.begin () 
-{ 
-    .usage.setup "$@"
-    .output.box-top "${__color_bdr}"
-}
-
-----
-
-==== `.usage.box`
-
-[source,bash]
-----
-.usage.box () 
-{ 
-    local command
-    local title
-    if [[ "${1}" =~ "©" ]]; then
-        command="${1/ © */}"
-        title="${1/* © /}"
-    else
-        command="$1"
-        title=
-    fi
-    shift
-    .usage.begin
-    .usage.command "${command}"
-    [[ -n ${title} ]] && .usage.title "${title}"
-    [[ -n "$*" ]] && .usage.flags "$@"
-}
-
-----
-
-==== `.usage.flags`
-
-[source,bash]
-----
-.usage.flags () 
-{ 
-    local -a flags=("$@")
-    local line=""
-    local n=0
-    local l=0
-    local l_flags=0
-    local l_desc=0
-    for arg in "$@"
-    do
-        if (($(($n % 2)) == 0)); then
-            l=${#arg}
-            [[ $l -gt ${l_flags} ]] && l_flags=$l
-        else
-            [[ $l -gt ${l_desc} ]] && l_desc=$l
-        fi
-        n=$((n + 1))
-    done
-    if [[ ${l_flags} -eq 0 ]]; then
-        l_flags="${LibUsage__NoFlagsIndent}"
-    else
-        if [[ ${l_flags} -lt ${LibUsage__MinFlagLen} ]]; then
-            l_flags=${LibUsage__MinFlagLen}
-        fi
-    fi
-    local n=0
-    .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr flags)"
-    for arg in "$@"
-    do
-        if (($(($n % 2)) == 0)); then
-            local left_color=${__color_flag}
-            local left_prefix="    "
-            if [[ ${arg:0:1} == "├" ]]; then
-                .output.box-separator "${__color_bdr}"
-                arg=${arg:1}
-                left_color="${__color_sub_headers}"
-                left_prefix=""
-            fi
-            line=$(printf "${left_prefix}${left_color}%-${l_flags}s" "${arg}")
-        else
-            line=$(printf "%s${__color_fg}  %s\n" "${line}" "${arg}")
-            .output.boxed-text "${__color_bdr}" "${__color_cmd}" "${line}"
-        fi
-        n=$((n + 1))
-    done
-    printf "${__color_bdr}"
-    .output.box-bottom
-}
-
-----
-
-==== `.usage.setup`
-
-[source,bash]
-----
-.usage.setup () 
-{ 
-    export __color_fg=${1:-${txtylw}}
-    export __color_bdr=${2:-${txtblu}}
-    export __color_cmd=${3:-${txtgrn}}
-    export __color_flag=${4:-${txtpur}}
-    export __color_headers=${5:-${bldred}}
-    export __color_sub_headers=${5:-${bldcyn}}
-}
-
-----
 
 ==== `help-command`
 

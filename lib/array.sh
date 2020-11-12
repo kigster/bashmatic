@@ -8,8 +8,8 @@
 #———————————————————————————————————————————————————————————————————————————————
 
 # @description 
-#     Returns "true" if the first argument is a member of the array
-#     passed as the second argument:
+#   Returns "true" if the first argument is a member of the array
+#   passed as the second argument:
 #
 # @example
 #     $ declare -a array=("a string" test2000 moo)
@@ -34,8 +34,8 @@ array.has-element() {
 }
 
 # @description 
-#     Similar to array.has-elements, but does not print anything, just
-#     returns 0 if includes, 1 if not.
+#   Similar to array.has-elements, but does not print anything, just
+#   returns 0 if includes, 1 if not.
 array.includes() {
   local search="$1"; shift
   [[ "$*" =~ ${search} ]] || return 1
@@ -78,7 +78,7 @@ array.includes-or-exit() {
 }
 
 # @description 
-#     Joins a given array with a custom character
+#   Joins a given array with a custom character
 #
 # @example
 #     $ declare -a array=(one two three)
@@ -137,9 +137,9 @@ array.sort-numeric() {
 }
 
 # @description 
-#     Returns a minimum integer from an array.
-#     Non-numeric elements are ignored and skipped over.
-#     Negative numbers are supported, but non-integers are not.
+#   Returns a minimum integer from an array.
+#   Non-numeric elements are ignored and skipped over.
+#   Negative numbers are supported, but non-integers are not.
 #
 # @example
 #     $ declare -a array=(10 20 30 -5 5)
@@ -155,9 +155,9 @@ array.min() {
 }
 
 # @description 
-#     Returns a maximum integer from an array.
-#     Non-numeric elements are ignored and skipped over.
-#     Negative numbers are supported, but non-integers are not.
+#   Returns a maximum integer from an array.
+#   Non-numeric elements are ignored and skipped over.
+#   Negative numbers are supported, but non-integers are not.
 #
 # @example
 #     $ declare -a array=(10 20 30 -5 5)

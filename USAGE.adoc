@@ -38,8 +38,8 @@ Miscellaneous utilities.
 
 == array.has-element()
 
- Returns "true" if the first argument is a member of the array
- passed as the second argument:
+Returns "true" if the first argument is a member of the array
+  passed as the second argument:
 
 === Example
 
@@ -53,12 +53,12 @@ Miscellaneous utilities.
 
 == array.includes()
 
- Similar to array.has-elements, but does not print anything, just
- returns 0 if includes, 1 if not.
+Similar to array.has-elements, but does not print anything, just
+  returns 0 if includes, 1 if not.
 
 == array.join()
 
- Joins a given array with a custom character
+Joins a given array with a custom character
 
 === Example
 
@@ -95,9 +95,9 @@ Sorts the array numerically and prints it to STDOUT
 
 == array.min()
 
- Returns a minimum integer from an array.
- Non-numeric elements are ignored and skipped over.
- Negative numbers are supported, but non-integers are not.
+Returns a minimum integer from an array.
+  Non-numeric elements are ignored and skipped over.
+  Negative numbers are supported, but non-integers are not.
 
 === Example
 
@@ -110,9 +110,9 @@ Sorts the array numerically and prints it to STDOUT
 
 == array.max()
 
- Returns a maximum integer from an array.
- Non-numeric elements are ignored and skipped over.
- Negative numbers are supported, but non-integers are not.
+Returns a maximum integer from an array.
+  Non-numeric elements are ignored and skipped over.
+  Negative numbers are supported, but non-integers are not.
 
 === Example
 

@@ -16,26 +16,9 @@
 #
 # syntax.
 
-[[ -z ${BASHMATIC_HOME} ]] && {
-  if [[ -d ${HOME}/.bashmatic ]]; then
-    export BASHMATIC_HOME=${HOME}/.bashmatic
-  elif [[ $0 =~ bin/bashmatic$ ]]; then
-    export BASHMATIC_HOME="$( cd $(dirname $(dirname $0)); pwd -P)"
-  else
-    for source in "${BASH_SOURCE[@]}"; do
-      if [[ ${source} =~ bin/bashmatic ]]; then
-        export BASHMATIC_HOME="$( cd $(dirname $(dirname ${source})); pwd -P)"
-      fi
-    done
-  fi
-
-  [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
-  echo "BASHMATIC_HOME=${BASHMATIC_HOME}" >&2
-}
-
-( [[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v -H ${BASHMATIC_HOME}" )
-
-source "${BASHMATIC_HOME}/init.sh" 2>/dev/null
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
 
 if is.a-function "$1"; then
   eval "$@"

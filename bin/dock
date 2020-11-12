@@ -2,7 +2,9 @@
 # vim: ft=bash
 
 set -e
-source "${BASHMATIC_HOME}/init.sh" 1>/dev/null
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
 
 export tag="bashmatic:latest"
 
