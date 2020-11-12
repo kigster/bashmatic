@@ -9,8 +9,9 @@
 
 image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
 image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield]
+image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 
-image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"] — Please join Gitter to discuss this library, any suggestions or ideas you might have are welcome!
+image::https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large]
 
 WARNING: 
 ====
@@ -29,21 +30,21 @@ WARNING:
 
 IMPORTANT:
 ====
-**Compatiblity**
+**Fully Supported**
 
-* ✅   BASH version 4+
-* ✅   BASH version 3 (partial compatibility, some functions are disabled)
-* ✅   ZSH
+* BASH version 4+
+* BASH version 3 (partial compatibility, some functions are disabled)
 
-**Not Supported:**
+**Partially Supported**
 
-* Fish
+* ZSH (with caveat – you can't `source ~/.bashmatic/init.sh` but you can run its executables)
+* FISH (although you could use Bashmatic via `bin/bashmatic` script helper, or its executables)
 
 ====
 
 _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
 
-*_Bashmatic®_ is meant to be used primarily with Mac OS-X, although some functions will also work under Linux.*.
+*_Bashmatic®_ is meant to be used primarily with Mac OS-X, although many useful functions will also work under Linux.* Note that our CI test suite runs on Ubuntu.
 
 Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:FUNCTIONS.adoc[functions index page].
 
@@ -75,22 +76,22 @@ First, make sure that you have Curl installed, run `which curl` to see. Then cop
 
 NOTE: The shortcut link resolves to the HEAD version of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in Bashmatic Repo.
 
+[source,bash]
+----
+bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
+----
+
+ * If you prefer to see detailed output about what the installer is doing, add the `-v` (or `--verbose`) flag.
+ * If you prefer to install Bashmatic in a non-standard location (the default is `~/.bashmatic`),  you can use the `-H PATH` flag.
+
+For instance:
 
 [source,bash]
 ----
-$ bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
+bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v -H ~/workspace/bashmatic"
 ----
 
-What this command does:
-
-* It downloads the `bin/bashmatic-install` script with `curl` and evaluates it using the built-in bash interpreter.
-* The script will attempt to `git clone` the bashmatic repo into your home folder: `${BASHMATIC_HOME}`, or (if it already exists), it will `git pull` latest changes.
-* The script may ask for your password to enable sudo access — this may be required on OS-X to install XCode Developer tools (which include `git`), as well as the latest version of BASH (5+) into `/usr/local/bin/bash`
-* The script will also install Homebrew on OS-X, if not already there.
-* Once Brew is installed, it additionally ensures that you have `coreutils` and `gnu-sed` brew packages, both of which are required and are relied upon by Bashmatic.
-* Finally, it will add the enabling hook to your `~/.bashrc` file.
-
-Once Bashmatic is downloaded, you can run `bootstrap` script with `-h` to see this usage screen:
+Here is the complete list of options accepted by the installer:
 
 [source,bash]
 ----
@@ -111,8 +112,21 @@ FLAGS:
   -v, --verbose               See additional output.
   -d, --debug                 Turn on 'set -x' to see all commands running.
   -h, --help                  Show this help message.
-
 ----
+
+=== What Installer Does
+
+When you run `bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"`, the following typically happens:
+
+* `curl` downloads the `bin/bashmatic-install` script and passes it to the built-in BASH for evaluation.
+* Once evaluated, function `bashmatic-install` is invoked, which actually performs the installation.
+** This is the function that accepts the above listed arguments.
+* The script may ask for your password to enable sudo access — this may be required on OS-X to install XCode Developer tools (which include `git`)
+* If your version of BASH is 3 or older, the script will download and build from sources version 5+ of BASH,  and install it into `/usr/local/bin/bash`. SUDO may be required for this step.
+* On OS-X the script will install Homebrew on OS-X, if not already there.
+** Once Brew is installed, brew packages `coreutils` and `gnu-sed` are installed, as both are required and are relied upon by Bashmatic.
+* The script will then attempt to `git clone` the bashmatic repo into the Bashmatic home folder, or — if it already exists — it will `git pull` latest changes.
+* Finally, the script will check your bash dot files, and will add the hook to load Bashmatic from either `~/.bashrc` or `~/.bash_profile`.
 
 Restart your shell, and make sure that when you type `bashmatic.version` in the command line (and press Enter) you see the version number printed like so:
 
@@ -132,27 +146,25 @@ Next, to discover the breadth of available functions, type the following command
 $ bashmatic.functions 3 
 ----
 
-=== Manual Install
+=== Manual Installation
 
-To install Bashmatic explicitly, without trusting some Bitly link 😎  you can run the following commands:
+To install Bashmatic manually, follow these steps (feel free to change `BASHMATIC_HOME` if you like):
 
 [source,bash]
 ----
-test -d ${BASHMATIC_HOME} || \
-  git clone https://github.com/kigster/bashmatic.git ${BASHMATIC_HOME}
-
-source ${BASHMATIC_HOME}/init.sh
-
-# Finally, to ensure _Bashmatic®_ loads every time you login, run the following command:
-bashmatic.load-at-login
+export BASHMATIC_HOME="${HOME}/.bashmatic"
+test -d "${BASHMATIC_HOME}" || \
+  git clone https://github.com/kigster/bashmatic.git \
+  "${BASHMATIC_HOME}"
+cd "${BASHMATIC_HOME}" && ./bin/bashmatic-install -v
+cd ->/dev/null
 ----
 
-When you run the `bashmatic.load-at-login` function, it will add a hook to one of your shell initialization files, so all of its functions are available in your shell.
+=== Reloading Bashmatic
 
-Note -- you can always reload _Bashmatic®_ with `bashmatic.reload` function.
+You can always reload _Bashmatic®_ with `bashmatic.reload` function.
 
-
-== Three Examples to Showcase Bashmatic
+== Bashmatic in Action — Practical Examples
 
 **Why do we need another BASH framework?**
 
@@ -302,7 +314,7 @@ production:
 Given the above file, you should be able to run:
 
 [source,bash]
-$ db.config.connections
+$ db connections
 
 And see the newline separated list:
 
@@ -316,14 +328,14 @@ Once that's working, you should be able run `dbtop`:
 
 [source,bash]
 ----
-$ dbtop development staging production
+db top development staging production
 ----
 
 NOTE: At the moment, only the default port 5432 is supported. If you are using an alternative port, and as long as it's shared across the connections you can set the `PGPORT` environment variable that `psql` will read.
 
-**DBTop Configuration**:
+**DB Top Configuration**:
 
-You can configure the following settings for `dbtop`:
+You can configure the following settings for `db top`:
 
 1. You can change the location of the `database.yml` file with `db.config.set-file <filepath>`
 2. You can change the refresh rate of the `dbtop` with eg. `db.top.set-refresh 0.5` (in seconds, fractional values allowed). This sets the sleep time between the screen is fully refreshed.
@@ -972,8 +984,6 @@ Submit a pull request!
 ## License
 
 This project is distributed under the MIT License.
-
-image::https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large]
 
 
 
