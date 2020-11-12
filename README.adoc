@@ -78,13 +78,13 @@ NOTE: The shortcut link resolves to the HEAD version of the https://raw.githubus
 
 [source,bash]
 ----
-$ bash -c "$(curl -fsSL https://bashmatic.re1.re)"
+$ bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
 ----
 
 What this command does:
 
 * It downloads the `bin/bootstrap` script with `curl` and evaluates it using the built-in bash interpreter.
-* The script will attempt to `git clone` the bashmatic repo into your home folder: `~/.bashmatic`, or (if it already exists), it will `git pull` latest changes.
+* The script will attempt to `git clone` the bashmatic repo into your home folder: `${BASHMATIC_HOME}`, or (if it already exists), it will `git pull` latest changes.
 * The script may ask for your password to enable sudo access — this may be required on OS-X to install XCode Developer tools (which include `git`), as well as the latest version of BASH (5+) into `/usr/local/bin/bash`
 * The script will also install Homebrew on OS-X, if not already there.
 * Once Brew is installed, it additionally ensures that you have `coreutils` and `gnu-sed` brew packages, both of which are required and are relied upon by Bashmatic.
@@ -93,7 +93,9 @@ What this command does:
 Once Bashmatic is downloaded, you can run `bootstrap` script with `-h` to see this usage screen:
 
 [source,bash]
-====
+----
+❯ bin/bootstrap -h
+
 USAGE:
   bin/bootstrap [ flags ]
 
@@ -102,12 +104,15 @@ DESCRIPTION:
   into /usr/local/bin/bash.
 
 FLAGS:
-  -b, --bash-version VERSION    Install VERSION instead of 5.1-rc2
-  -g, --skip-git                Skip check for locally modified files
-  -v, --verbose                 See additional output
-  -d, --debug                   Turn on 'set -x' to see all commands running
+  -H, --bashmatic-home PATH     Install bashmatic into PATH (default: /Users/kig/.bashmatic)
+  -V, --bash-version VERSION    Install BASH VERSION (default: 5.1-rc2)
+  -P, --bash-prefix PATH        Install BASH into PATH (default: /usr/local)
+  -g, --skip-git                Do not abort if existing bashmatic home has local changes
+  -v, --verbose                 See additional output as bootstrap is running.
+  -d, --debug                   Turn on 'set -x' to see all commands running.
   -h, --help                    Show this help message.
-====  
+
+----
 
 Restart your shell, and make sure that when you type `bashmatic.version` in the command line (and press Enter) you see the version number printed like so:
 
@@ -133,10 +138,10 @@ To install Bashmatic explicitly, without trusting some Bitly link 😎  you can 
 
 [source,bash]
 ----
-test -d ~/.bashmatic || \
-  git clone https://github.com/kigster/bashmatic.git ~/.bashmatic
+test -d ${BASHMATIC_HOME} || \
+  git clone https://github.com/kigster/bashmatic.git ${BASHMATIC_HOME}
 
-source ~/.bashmatic/init.sh
+source ${BASHMATIC_HOME}/init.sh
 
 # Finally, to ensure _Bashmatic®_ loads every time you login, run the following command:
 bashmatic.load-at-login
@@ -161,7 +166,7 @@ Just look at this tiny, five-line script:
 ----
 #!/usr/bin/env bash
 
-source ~/.bashmatic/init.sh
+source ${BASHMATIC_HOME}/init.sh
 
 h2 "Installing ruby gem sym and brew package curl..." \
    "Please standby..."
@@ -232,7 +237,7 @@ We'll run this from a folder where our application is installed, because then th
 
 [source,bash]
 ----
-~/.bashmatic/bin/dev-setup \
+${BASHMATIC_HOME}/bin/dev-setup \
   -g "ruby postgres mysql caching js monitoring" \
   -r $(cat .ruby-version) \
   -p 9.5 \ # use PostgreSQL version 9.5
@@ -249,7 +254,7 @@ This is a great tool that colorizes nearly any other tool's output.
 Run it like so:
 
 [source,bash]
-~/.bashmatic/bin/install-grc
+${BASHMATIC_HOME}/bin/install-grc
 
 You might need to enter your password for SUDO.
 
@@ -360,7 +365,7 @@ Now let's run it properly:
 $ gem.install simple-feed
        installing simple-feed (latest)...
   ✔︎    $ gem install simple-feed   ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔   5685 ms 〕    0
-  ✔︎    $ gem list > /tmp/.bashmatic/.gem/gem.list ▪▪▪▪▪▪〔    503 ms 〕    0
+  ✔︎    $ gem list > ${BASHMATIC_TEMP}/.gem/gem.list ▪▪▪▪▪▪〔    503 ms 〕    0
 ----
 
 The naming convention we use is a derivative of Google's Bash StyleGuide, using `.` to separate BASH function namespaces instead of much more verbose `::`.
@@ -391,13 +396,13 @@ docker.actions.update
 
 === Various Modules
 
-You can list various modules by listing the `lib` sub-directory of the `~/.bashmatic` folder.
+You can list various modules by listing the `lib` sub-directory of the `${BASHMATIC_HOME}` folder.
 
 Note how we use _Bashmatic®_ helper `columnize [ columns ]` to display a long list in five columns.
 
 [source,bash]
 ----
-$ ls -1 ~/.bashmatic/lib | sed 's/\.sh//g' | columnize 5
+$ ls -1 ${BASHMATIC_HOME}/lib | sed 's/\.sh//g' | columnize 5
 7z                deploy            jemalloc          runtime-config    time
 array             dir               json              runtime           trap
 audio             docker            net               set               url
@@ -470,7 +475,7 @@ Programming style used in this project lends itself nicely to using a DSL-like a
 #!/usr/bin/env bash
 
 # (See below on the location of .bashmatic and ways to install it)
-source ~/.bashmatic/init.sh
+source ${BASHMATIC_HOME}/init.sh
 
 # configure global behavior of all run() invocations
 run.set-all abort-on-error show-output-off
@@ -609,7 +614,7 @@ You can reliably install ruby gems or brew packages with the following syntax:
 ----
 #!/usr/bin/env bash
 
-source ~/.bashmatic/init.sh
+source ${BASHMATIC_HOME}/init.sh
 
 h2 "Installing ruby gem sym and brew package curl..." \
    "Please standby..."
@@ -913,7 +918,7 @@ _Bashmatic®_ offers a reliable way to test this:
 ----
 #!/usr/bin/env bash
 # load library
-if [[ -f "${Bashmatic__Init}" ]]; then source "${Bashmatic__Init}"; else source ~/.bashmatic/init.sh; fi
+if [[ -f "${Bashmatic__Init}" ]]; then source "${Bashmatic__Init}"; else source ${BASHMATIC_HOME}/init.sh; fi
 bashmatic.validate-subshell || return 1
 ----
 
@@ -923,7 +928,7 @@ If you'rather require a library to be sourced in, but not run, use the code as f
 ----
 #!/usr/bin/env bash
 # load library
-if [[ -f "${Bashmatic__Init}" ]]; then source "${Bashmatic__Init}"; else source ~/.bashmatic/init.sh; fi
+if [[ -f "${Bashmatic__Init}" ]]; then source "${Bashmatic__Init}"; else source ${BASHMATIC_HOME}/init.sh; fi
 bashmatic.validate-sourced-in || exit 1
 ----
 
@@ -936,7 +941,7 @@ To run all tests:
 
 [source,bash]
 ----
-cd ~/.bashmatic
+cd ${BASHMATIC_HOME}
 bin/specs
 ----
 

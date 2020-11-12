@@ -5,14 +5,8 @@
 export BASHMATIC_URL="https://github.com/kigster/bashmatic"
 # shellcheck disable=2046
 export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
-
-# [[ -z "${BASHMATIC_HOME}" ]] && {
-#   BASHMATIC_HOME="$(
-#     cd "$(dirname "${BASHMATIC_INIT}")" || exit
-#     pwd
-#   )"
-#   export BASHMATIC_HOME
-# }
+export BASHMATIC_TEMP="/tmp/${USER}/.bashmatic"
+[[ -d ${BASHMATIC_TEMP} ]] || mkdir -p "${BASHMATIC_TEMP}"
 
 if [[ -f ${BASHMATIC_HOME}/init.sh ]] ; then 
   export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"

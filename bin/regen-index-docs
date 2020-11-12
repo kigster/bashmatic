@@ -2,9 +2,9 @@
 # vim: ft=sh
 
 # shellcheck disable=2046
-export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
+export BASHMATIC_HOME="${BASHMATIC_HOME:-"$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"}"
 
-source "${HOME}/.bashmatic/init.sh"
+source "${BASHMATIC_HOME}/init.sh"
 
 list.modules() {
   find "${BASHMATIC_HOME}/lib/" -type f | sedx 's/.*lib\///g; s/\.sh//g; s/^\///g' | sort
@@ -51,8 +51,8 @@ HEADER
   printf "\n\n== Copyright\n\n" >>${temp}
   printf "\n\n© 2020 Konstantin Gredeskoul, All rights reserved, MIT License." >>${temp}
 
-  run "mv ${temp} ${HOME}/.bashmatic"
-  eval "code ~/.bashmatic/FUNCTIONS.adoc"
+  run "mv ${temp} ${BASHMATIC_HOME}"
+  eval "code ${BASHMATIC_HOME}/FUNCTIONS.adoc"
 }
 
 .install.kramdoc() {
@@ -70,7 +70,12 @@ generate-shdoc() {
 generate-changelog() {
   gem.install github_changelog_generator
 
-  github_changelog_generator --project bashmatic --user kigster
+  [[ -z  ${GITHUB_TOKEN} ]] && {
+    error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
+    exit 1
+  }
+
+  github_changelog_generator --project bashmatic --user kigster -t ${GITHUB_TOKEN}
   .install.kramdoc
   kramdoc CHANGELOG.md
   rm -f CHANGELOG.md

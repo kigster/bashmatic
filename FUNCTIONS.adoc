@@ -32,6 +32,7 @@
 * xref:#module-json[json]
 * xref:#module-maths[maths]
 * xref:#module-net[net]
+* xref:#module-openssl[openssl]
 * xref:#module-osx[osx]
 * xref:#module-output[output]
 * xref:#module-output-boxes[output-boxes]
@@ -333,6 +334,42 @@ array.join ()
         fi
         index=$(( index + 1 ))
     done
+}
+
+----
+
+==== `array.max`
+
+[source,bash]
+----
+array.max () 
+{ 
+    local max="$1"
+    shift
+    for v in "$@"
+    do
+        is.numeric "$v" || continue
+        [[ ${v} -gt ${max} ]] && max="$v"
+    done
+    printf -- "%d" "${max}"
+}
+
+----
+
+==== `array.min`
+
+[source,bash]
+----
+array.min () 
+{ 
+    local min="$1"
+    shift
+    for v in "$@"
+    do
+        is.numeric "$v" || continue
+        [[ ${v} -lt ${min} ]] && min="$v"
+    done
+    printf -- "%d" "${min}"
 }
 
 ----
@@ -711,7 +748,7 @@ bashmatic.bash.version-four-or-later ()
 ----
 bashmatic.cache.add-file () 
 { 
-    bashmatic.bash.version-four-or-later || return 1
+    ((CacheEnabled)) || return
     [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
 }
 
@@ -723,13 +760,30 @@ bashmatic.cache.add-file ()
 ----
 bashmatic.cache.has-file () 
 { 
+    ((CacheEnabled)) || return 1
     local file="$1"
-    bashmatic.bash.version-four-or-later || return 1
     test -z "$file" && return 1
     if [[ -n "$1" && -n "${BashMatic__LoadCache["${file}"]}" ]]; then
         return 0
     else
         return 1
+    fi
+}
+
+----
+
+==== `bashmatic.cache.init`
+
+[source,bash]
+----
+bashmatic.cache.init () 
+{ 
+    return
+    if bashmatic.bash.version-four-or-later; then
+        declare -A BashMatic__LoadCache 2> /dev/null
+        export BashMatic__LoadCache
+    else
+        CacheEnabled=0
     fi
 }
 
@@ -741,7 +795,7 @@ bashmatic.cache.has-file ()
 ----
 bashmatic.cache.list () 
 { 
-    bashmatic.bash.version-four-or-later || return 1
+    ((CacheEnabled)) || return
     for f in "${!BashMatic__LoadCache[@]}"
     do
         echo $f
@@ -882,6 +936,7 @@ bashmatic.reload ()
 ----
 bashmatic.setup () 
 { 
+    bashmatic.cache.init
     bashmatic.shell-check || return 1
     [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
     [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
@@ -889,7 +944,7 @@ bashmatic.setup ()
         printf "\e[1;31mUnable to establish BashMatic's library source folder.\e[0m\n"
         return 1
     fi
-    bashmatic.source util.sh git.sh file.sh color.sh
+    bashmatic.source is.sh output.sh util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
     [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
 }
@@ -926,13 +981,18 @@ bashmatic.source ()
             echo "Can't source file ${file} — fils is invalid."
             return 1
         }
-        if ! bashmatic.cache.has-file "${file}"; then
-            [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" 1>&2
-            set +e
+        if [[ ${CacheEnabled} -eq 0 ]]; then
+            [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
             source "${file}"
-            bashmatic.cache.add-file "${file}"
         else
-            [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" 1>&2
+            if bashmatic.cache.has-file "${file}"; then
+                [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" 1>&2
+            else
+                [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" 1>&2
+                set +e
+                source "${file}"
+                bashmatic.cache.add-file "${file}"
+            fi
         fi
     done
     return 0
@@ -1351,6 +1411,17 @@ brew.setup ()
 
 ----
 
+==== `brew.uninstall`
+
+[source,bash]
+----
+brew.uninstall () 
+{ 
+    echo y | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
+}
+
+----
+
 ==== `brew.uninstall.package`
 
 [source,bash]
@@ -1660,7 +1731,7 @@ red ()
 ----
 reset-color () 
 { 
-    printf "${clr}\n"
+    echo -en "${clr}"
 }
 
 ----
@@ -1745,13 +1816,13 @@ db.actions.connections ()
 
 ----
 
-==== `db.actions.settings-raw`
+==== `db.actions.settings-ini`
 
 [source,bash]
 ----
-db.actions.settings-raw () 
+db.actions.settings-ini () 
 { 
-    db.psql.connect.raw-settings "$@"
+    db.psql.connect.settings-ini "$@"
 }
 
 ----
@@ -1762,7 +1833,7 @@ db.actions.settings-raw ()
 ----
 db.actions.settings-table () 
 { 
-    db.psql.connect.settings "$@"
+    db.psql.connect.settings-table "$@"
 }
 
 ----
@@ -1784,8 +1855,33 @@ db.actions.top ()
 ----
 db.config.connections () 
 { 
+    ascii-clean "$(db.config.connections-list | awk '{print $1}')"
+}
+
+----
+
+==== `db.config.connections-list`
+
+[source,bash]
+----
+db.config.connections-list () 
+{ 
     [[ -f ${bashmatic_db_config} ]] || return 2
-    ruby -e "require 'yaml'; h = YAML.load(STDIN); puts h.keys.join(\"\n\")" < "${bashmatic_db_config}"
+    ruby.handle-missing
+    gem.install colored2 > /dev/null
+    __yaml_source="${bashmatic_db_config}" ruby <<RUBY
+  require 'yaml'
+  require 'colored2'
+  h = YAML.load(File.read(ENV['__yaml_source']))
+  h.each_pair do |name, params| 
+    printf "%50s → %s@%s/%s\n", 
+      name.bold.yellow, 
+      params['username'].blue,
+      params['host'].green,
+      params['database'].cyan
+  end
+RUBY
+
 }
 
 ----
@@ -1827,6 +1923,7 @@ db.config.parse ()
     do
         script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
     done
+    ruby.handle-missing
     ruby -e "${script[*]}" < "${bashmatic_db_config}"
 }
 
@@ -1883,6 +1980,17 @@ db.psql.args ()
         export PGPASSWORD="${bashmatic_db_password}"
         printf -- "-U ${bashmatic_db_username} -h ${bashmatic_db_host} ${bashmatic_db_database}"
     fi
+}
+
+----
+
+==== `db.psql.args-data-only`
+
+[source,bash]
+----
+db.psql.args-data-only () 
+{ 
+    printf -- "%s" "--no-align --pset footer -q -X --tuples-only"
 }
 
 ----
@@ -1951,39 +2059,52 @@ db.psql.connect ()
     local dbname="$1"
     shift
     if [[ -z ${dbname} ]]; then
-        h1 "USAGE: db.connect connection-name" "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file."
+        h1 "USAGE: db.connect connection-name" "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file." 1>&2
         return 0
     fi
-    local tempfile=$(mktemp /tmp/.bashmatic.db.${RANDOM} || exit 1)
+    local tempfile=$(mktemp)
     db.psql.args.config "${dbname}" > "${tempfile}"
     local -a args=($(cat "${tempfile}"))
     rm -f "${tempfile}" > /dev/null
-    printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
+    ( printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
     printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
-    hr
+    hr ) 1>&2
     psql "${args[@]}" "$@"
 }
 
 ----
 
-==== `db.psql.connect.raw-settings`
+==== `db.psql.connect.just-data`
 
 [source,bash]
 ----
-db.psql.connect.raw-settings () 
+db.psql.connect.just-data () 
 { 
-    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%s=%s\\n\", \$1, \$2) }"
+    local dbname="$1"
+    shift
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) "$@"
 }
 
 ----
 
-==== `db.psql.connect.settings`
+==== `db.psql.connect.settings-ini`
 
 [source,bash]
 ----
-db.psql.connect.settings () 
+db.psql.connect.settings-ini () 
 { 
-    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-40.40s         ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;1;30" grep -E -C 1000 -i --color=always -e '##.*$|$'
+    db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
+}
+
+----
+
+==== `db.psql.connect.settings-table`
+
+[source,bash]
+----
+db.psql.connect.settings-table () 
+{ 
+    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
 }
 
 ----
@@ -3064,7 +3185,7 @@ gem.clear-cache ()
 ----
 gem.configure-cache () 
 { 
-    export LibGem__GemListCacheBase=/tmp/.bashmatic/.gem/gem.list
+    export LibGem__GemListCacheBase="${BASHMATIC_TEMP}/.gem/gem.list"
     export LibGem__GemListCache=
     export LibGem__GemInstallFlags=" -N --force --quiet "
     local ruby_version=$(ruby.numeric-version)
@@ -3337,8 +3458,8 @@ git.commits.last.sha ()
 git.configure-auto-updates () 
 { 
     export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-    export LibGit__LastUpdateTimestampFile="/tmp/.bashmatic/.config/$(echo ${USER} | util.checksum.stdin)"
-    mkdir -p $(dirname ${LibGit__LastUpdateTimestampFile})
+    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | util.checksum.stdin)"
+    mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
 }
 
 ----
@@ -4275,6 +4396,44 @@ net.local-subnet ()
     uniq |
     head -1).0/24"
     printf '%s' ${subnet}
+}
+
+----
+
+
+=== Module `openssl`
+
+==== `.openssl.certs.print-generated`
+
+[source,bash]
+----
+.openssl.certs.print-generated () 
+{ 
+    local file="$1"
+    h.blue "Would you like to view the generated certificate?"
+    run.ui.ask "Press any key to view, or Ctrl-C to abort."
+    openssl req -text -in "${file}" -noout -verify
+}
+
+----
+
+==== `openssl.certs.generate-csr`
+
+[source,bash]
+----
+openssl.certs.generate-csr () 
+{ 
+    local domain="${1:-"domain"}"
+    local subject="${2:-"${default_certificate_info}"}${domain}"
+    local server="${domain/\*/star}"
+    hl.desc "Generating CSR + Private Key for domain [${domain}]"
+    set -e
+    openssl req -new -newkey rsa:4096 -nodes -keyout "${server}.key" -out "${server}.csr" -subj "${subject}"
+    pbcopy < "${server}.csr"
+    success "CSR is now in the file ${server}.csr and your clipboard."
+    set +e
+    .openssl.certs.print-generated "${server}.csr" 2> /dev/null
+    return 0
 }
 
 ----
@@ -5308,7 +5467,7 @@ puts ()
 ----
 reset-color () 
 { 
-    printf "${clr}\n"
+    echo -en "${clr}"
 }
 
 ----
@@ -7036,11 +7195,11 @@ repos.update ()
 { 
     export root_folder="$(pwd)"
     bash -c "
-    [[ -d ~/.bashmatic ]] || {
+    [[ -d ${BASHMATIC_HOME} ]] || {
       echo 'Can not find bashmatic installation sorry'
       return
     }
-    source ~/.bashmatic/init.sh
+    source ${BASHMATIC_HOME}/init.sh
     repos.init-interrupt
     repos.recursive-update '$*'
   "
@@ -7233,7 +7392,7 @@ ruby.gems.install ()
             gem_info="${bldgrn} ✔  ${gem}${clr}\n"
         else
             gem_info="${bldred} x  ${gem}${clr}\n"
-            gems_to_be_installed=(${gems_to_be_installed[@]} ${gem})
+            gems_to_be_installed+=("${gem}")
         fi
         printf "   ${gem_info}"
     done
@@ -7242,15 +7401,15 @@ ruby.gems.install ()
         return 0
     fi
     info "Looks like ${#gems_to_be_installed[@]} gems are left to install..."
-    local -a gems_installed=()
-    for gem in ${gems_to_be_installed[@]}
+    local -a gem_installed
+    for gem in "${gems_to_be_installed[@]}"
     do
         run "gem install -q --force --no-document $gem"
         if [[ ${LibRun__LastExitCode} -ne 0 ]]; then
             error "Gem ${gem} refuses to install." "Perhaps try installing it manually?" "${bldgrn}Action: Skip and Continuing..."
             break
         else
-            gem_installed=(${gem_installed[@]} ${gem})
+            gem_installed+=("${gem}")
             continue
         fi
     done
@@ -7267,7 +7426,8 @@ ruby.gems.install ()
 ----
 ruby.gems.uninstall () 
 { 
-    local -a gems=($@)
+    local -a gems
+    gems=("$@")
     gem.clear-cache
     [[ ${#gems[@]} -eq 0 ]] && declare -a gems=($(ruby.default-gems))
     local -a existing=($(ruby.installed-gems))
@@ -7277,12 +7437,12 @@ ruby.gems.uninstall ()
     }
     h1.blue "There are a total of ${#existing[@]} of gems installed in a global namespace." "Total of ${#gems[@]} need to be removed."
     local deleted=0
-    for gem in ${gems[@]}
+    for gem in "${gems[@]}"
     do
         local gem_info=
         if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
             run "gem uninstall -a -x -I -D --force ${gem}"
-            deleted=$(($deleted + 1))
+            deleted=$((deleted + 1))
         else
             gem_info="${bldred} x [not found] ${bldylw}${gem}${clr}\n"
         fi
@@ -7292,6 +7452,21 @@ ruby.gems.uninstall ()
     echo
     success "Total of ${deleted} gems were successfully obliterated."
     echo
+}
+
+----
+
+==== `ruby.handle-missing`
+
+[source,bash]
+----
+ruby.handle-missing () 
+{ 
+    command -v ruby > /dev/null || { 
+        info "Couldn't find Ruby, installing it..." 1>&2
+        ruby.install-ruby "$(ruby.numeric-version)"
+    }
+    command -v ruby > /dev/null
 }
 
 ----
@@ -9114,6 +9289,194 @@ url.valid-status ()
 
 === Module `usage`
 
+==== `.usage-cache-file`
+
+[source,bash]
+----
+.usage-cache-file () 
+{ 
+    local script_name="${BASH_SOURCE[-1]}"
+    local script_dir="$(dirname ${script_name})"
+    local script_base="$(basename ${script_name})"
+    local script_usage_cache="${script_dir}/.${script_base}"
+    printf "%s" "${script_usage_cache}"
+}
+
+----
+
+==== `.usage.begin`
+
+[source,bash]
+----
+.usage.begin () 
+{ 
+    .usage.setup "$@"
+    .output.box-top "${__color_bdr}"
+}
+
+----
+
+==== `.usage.box`
+
+[source,bash]
+----
+.usage.box () 
+{ 
+    local command
+    local title
+    if [[ "${1}" =~ "©" ]]; then
+        command="${1/ © */}"
+        title="${1/* © /}"
+    else
+        command="$1"
+        title=
+    fi
+    shift
+    .usage.begin
+    .usage.command "${command}"
+    [[ -n ${title} ]] && .usage.title "${title}"
+    [[ -n "$*" ]] && .usage.flags "$@"
+}
+
+----
+
+==== `.usage.flags`
+
+[source,bash]
+----
+.usage.flags () 
+{ 
+    local -a flags=("$@")
+    local line=""
+    local n=0
+    local l=0
+    local l_flags=0
+    local l_desc=0
+    for arg in "$@"
+    do
+        if (($(($n % 2)) == 0)); then
+            l=${#arg}
+            [[ $l -gt ${l_flags} ]] && l_flags=$l
+        else
+            [[ $l -gt ${l_desc} ]] && l_desc=$l
+        fi
+        n=$((n + 1))
+    done
+    if [[ ${l_flags} -eq 0 ]]; then
+        l_flags="${LibUsage__NoFlagsIndent}"
+    else
+        if [[ ${l_flags} -lt ${LibUsage__MinFlagLen} ]]; then
+            l_flags=${LibUsage__MinFlagLen}
+        fi
+    fi
+    local n=0
+    .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr flags)"
+    for arg in "$@"
+    do
+        if (($(($n % 2)) == 0)); then
+            local left_color=${__color_flag}
+            local left_prefix="    "
+            if [[ ${arg:0:1} == "├" ]]; then
+                .output.box-separator "${__color_bdr}"
+                arg=${arg:1}
+                left_color="${__color_sub_headers}"
+                left_prefix=""
+            fi
+            line=$(printf "${left_prefix}${left_color}%-${l_flags}s" "${arg}")
+        else
+            line=$(printf "%s${__color_fg}  %s\n" "${line}" "${arg}")
+            .output.boxed-text "${__color_bdr}" "${__color_cmd}" "${line}"
+        fi
+        n=$((n + 1))
+    done
+    printf "${__color_bdr}"
+    .output.box-bottom
+}
+
+----
+
+==== `.usage.setup`
+
+[source,bash]
+----
+.usage.setup () 
+{ 
+    export __color_fg=${1:-${txtylw}}
+    export __color_bdr=${2:-${txtblu}}
+    export __color_cmd=${3:-${txtgrn}}
+    export __color_flag=${4:-${txtpur}}
+    export __color_headers=${5:-${bldred}}
+    export __color_sub_headers=${5:-${bldcyn}}
+}
+
+----
+
+==== `help-command`
+
+[source,bash]
+----
+help-command () 
+{ 
+    printf "    ${bldylw}\$ $*\n"
+}
+
+----
+
+==== `help-comment`
+
+[source,bash]
+----
+help-comment () 
+{ 
+    printf "    ${txtblk}# $*\n"
+}
+
+----
+
+==== `help-details`
+
+[source,bash]
+----
+help-details () 
+{ 
+    printf "    ${txtblu}$*\n"
+}
+
+----
+
+==== `help-example`
+
+[source,bash]
+----
+help-example () 
+{ 
+    printf "    ${bldgrn}\$ $*\n"
+}
+
+----
+
+==== `help-name`
+
+[source,bash]
+----
+help-name () 
+{ 
+    box.white-on-green "$@"
+}
+
+----
+
+==== `help-section`
+
+[source,bash]
+----
+help-section () 
+{ 
+    printf "\n${bldgrn}$(echo "$*" | tr '[:lower:]' '[:upper:]')\n"
+}
+
+----
+
 ==== `usage-box`
 
 [source,bash]
@@ -9504,10 +9867,10 @@ util.checksum.stdin ()
 ----
 util.dev-setup.update () 
 { 
-    run "rm -f ~/.bashmatic/bin/.dev-setup"
+    run "rm -f ${BASHMATIC_HOME}/bin/.dev-setup"
     run "dev-setup -N -h > /tmp/a"
-    run "mv /tmp/a ~/.bashmatic/bin/.dev-setup"
-    run "cd ~/.bashmatic && git add bin/.dev-setup"
+    run "mv /tmp/a ${BASHMATIC_HOME}/bin/.dev-setup"
+    run "cd ${BASHMATIC_HOME} && git add bin/.dev-setup"
     run "cd -"
 }
 
@@ -9802,7 +10165,7 @@ util.shell-name ()
 util.ver-to-i () 
 { 
     version=${1}
-    echo ${version} | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
+    echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
 }
 
 ----

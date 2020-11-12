@@ -8,13 +8,13 @@
 #     1. In a script to reject sourcing in, and only support running it:
 #
 #           #!/usr/bin/env bash
-#           source ~/.bashmatic/init.sh
+#           source ${BASHMATIC_HOME}/init.sh
 #           bashmatic.validate-subshell || return 1
 #
 #     2. Reject running as a script, but only support sourcing in:
 #
 #           #!/usr/bin/env bash
-#           source ~/.bashmatic/init.sh
+#           source ${BASHMATIC_HOME}/init.sh
 #           bashmatic.validate-sourced-in || exit 1
 
 bashmatic.subshell-init() {

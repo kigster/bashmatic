@@ -28,7 +28,7 @@
 # Example:
 #
 #    #!/usr/bin/env bash
-#    source ~/.bashmatic/lib/shell-set.sh
+#    source ${BASHMATIC_HOME}/lib/shell-set.sh
 #    # we set this because we want to fail on errors
 #    set -e
 #

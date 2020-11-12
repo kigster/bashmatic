@@ -5,10 +5,10 @@
 # Ported from the licensed under the MIT license Project Pullulant, at
 # shellcheck disable=SC1134
 #
-LibBrew__PackageCacheList="/tmp/.lib_brew_packages.txt"
+LibBrew__PackageCacheList="${BASHMATIC_TEMP}/brew-package-cache.txt"
 export LibBrew__PackageCacheList
 
-LibBrew__CaskCacheList="/tmp/.lib_brew_casks.txt"
+LibBrew__CaskCacheList="${BASHMATIC_TEMP}/brew-cask-cache.txt"
 export LibBrew__CaskCacheList
 
 # This returns the sorted list of versions that are specified

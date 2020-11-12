@@ -5,13 +5,18 @@ Miscellaneous utilities.
 
 * <<arrayhas-element,array.has-element()>>
 * <<arrayincludes,array.includes()>>
+* <<arrayjoin,array.join()>>
 * <<arraysort,array.sort()>>
 * <<arraysort-numeric,array.sort-numeric()>>
+* <<arraymin,array.min()>>
+* <<arraymax,array.max()>>
 * <<arrayuniq,array.uniq()>>
 * <<dbconfigparse,db.config.parse()>>
+* <<dbpsqlconnect,db.psql.connect()>>
+* <<dbpsqlconnectjust-data,db.psql.connect.just-data()>>
 * <<dbpsqldb-settings,db.psql.db-settings()>>
-* <<dbpsqlconnectsettings,db.psql.connect.settings()>>
-* <<dbpsqlconnectraw-settings,db.psql.connect.raw-settings()>>
+* <<dbpsqlconnectsettings-table,db.psql.connect.settings-table()>>
+* <<dbpsqlconnectsettings-ini,db.psql.connect.settings-ini()>>
 * <<gitopen,git.open()>>
 * <<isvalidationerror,__is.validation.error()>>
 * <<is-validations,is-validations()>>
@@ -19,6 +24,7 @@ Miscellaneous utilities.
 * <<isvalidationreport-error,__is.validation.report-error()>>
 * <<whenever,whenever()>>
 * <<unless,unless()>>
+* <<opensslcertsprint-generated,.openssl.certs.print-generated()>>
 * <<osxappis-installed,osx.app.is-installed()>>
 * <<section,section()>>
 * <<is-dbg,is-dbg()>>
@@ -50,6 +56,19 @@ Miscellaneous utilities.
  Similar to array.has-elements, but does not print anything, just
  returns 0 if includes, 1 if not.
 
+== array.join()
+
+ Joins a given array with a custom character
+
+=== Example
+
+[source,bash]
+----
+  $ declare -a array=(one two three)
+  $ array.join "," "${array[@]}"
+  one,two,three
+----
+
 == array.sort()
 
 Sorts the array alphanumerically and prints it to STDOUT
@@ -72,6 +91,36 @@ Sorts the array numerically and prints it to STDOUT
 ----
   declare -a unsorted=(1 2 34 45 6)
   local sorted="$(array.sort-numeric "${unsorted[@]}")"
+----
+
+== array.min()
+
+ Returns a minimum integer from an array.
+ Non-numeric elements are ignored and skipped over.
+ Negative numbers are supported, but non-integers are not.
+
+=== Example
+
+[source,bash]
+----
+  $ declare -a array=(10 20 30 -5 5)
+  $ array.min "," "${array[@]}"
+  -5
+----
+
+== array.max()
+
+ Returns a maximum integer from an array.
+ Non-numeric elements are ignored and skipped over.
+ Negative numbers are supported, but non-integers are not.
+
+=== Example
+
+[source,bash]
+----
+  $ declare -a array=(10 20 30 -5 5)
+  $ array.min "," "${array[@]}"
+  30
 ----
 
 == array.uniq()
@@ -101,6 +150,32 @@ Returns a space-separated values of db host, db name, username and password
  echo ${params[0]} # host
 ----
 
+== db.psql.connect()
+
+Connect to one of the databases named in the YAML file, and
+             optionally pass additional arguments to psql.
+             Informational messages are sent to STDERR.
+
+=== Example
+
+[source,bash]
+----
+ db.psql.connect production
+ db.psql.connect production -c 'show all'
+----
+
+== db.psql.connect.just-data()
+
+Similar to the db.psql.connect, but outputs
+             just the raw data with no headers.
+
+=== Example
+
+[source,bash]
+----
+ db.psql.connect.just-data production -c 'select datname from pg_database;'
+----
+
 == db.psql.db-settings()
 
 Print out PostgreSQL settings for a connection specified by args
@@ -112,7 +187,7 @@ Print out PostgreSQL settings for a connection specified by args
  db.psql.db-settings -h localhost -U postgres appdb
 ----
 
-== db.psql.connect.settings()
+== db.psql.connect.settings-table()
 
 Print out PostgreSQL settings for a named connection
 
@@ -127,12 +202,13 @@ Print out PostgreSQL settings for a named connection
 
 [source,bash]
 ----
- db.psql.connect.settings primary
+ db.psql.connect.settings-table primary
 ----
 
-== db.psql.connect.raw-settings()
+== db.psql.connect.settings-ini()
 
-Print out PostgreSQL settings for a named connection
+Print out PostgreSQL settings for a named connection using TOML/ini
+             format.
 
 === Arguments
 
@@ -145,7 +221,7 @@ Print out PostgreSQL settings for a named connection
 
 [source,bash]
 ----
- db.psql.connect.raw-settings primary
+ db.psql.connect.settings-ini primary > primary.ini
 ----
 
 == git.open()
@@ -227,6 +303,10 @@ a convenient DSL for validating things
       touch /var/log/postgresql.log
    }
 ----
+
+== .openssl.certs.print-generated()
+
+Generate a CSR for NGINX domain
 
 == osx.app.is-installed()
 

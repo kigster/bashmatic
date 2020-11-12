@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
-source ~/.bashmatic/init.sh
+source ${BASHMATIC_HOME}/init.sh
 
 main() {
   local file="${1:-"README.adoc"}"

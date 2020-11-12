@@ -2,7 +2,7 @@
 # vim: ft=bash
 
 set -e
-source "${HOME}/.bashmatic/init.sh" 1>/dev/null
+source "${BASHMATIC_HOME}/init.sh" 1>/dev/null
 
 export tag="bashmatic:latest"
 

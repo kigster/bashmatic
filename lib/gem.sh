@@ -15,7 +15,7 @@
 }
 
 gem.configure-cache() {
-  export LibGem__GemListCacheBase=/tmp/.bashmatic/.gem/gem.list
+  export LibGem__GemListCacheBase="${BASHMATIC_TEMP}/.gem/gem.list"
   export LibGem__GemListCache=
   export LibGem__GemInstallFlags=" -N --force --quiet "
 

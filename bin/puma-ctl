@@ -7,14 +7,14 @@
 
 set +e
 
-export BashMatic="${HOME}/.bashmatic"
+export BashMatic="${BASHMATIC_HOME}"
 
 [[ -s ${BashMatic}/init.sh ]] || {
   rm -rf "${BashMatic}" 2>/dev/null
-  bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-1-0)"
+  bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
 }
 
-source ~/.bashmatic/init.sh
+source ${BASHMATIC_HOME}/init.sh
 
 # https://blog.phusion.nl/2017/10/13/why-ruby-app-servers-break-on-macos-high-sierra-and-what-can-be-done-about-it/
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES

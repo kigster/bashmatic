@@ -9,14 +9,13 @@
 # Bootstrap script is required to run at least once on a new
 # system, which happens automatically if you install it via
 #
-# bash -c "$(curl -fsSL https://bashmatic.re1.re)"
+# bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
 #
 set -e
 
 # Configuration
 export HOME=${HOME:-"/"}
 export BASHMATIC_HOME="${HOME}/.bashmatic"
-export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
 declare -a CHOWN_DIRS
 declare -a BREW_PACKAGES
 export CHOWN_DIRS=(/usr/local /Library/Ruby /Library/Python)
@@ -315,6 +314,7 @@ os-requirements() {
 export bootstrap__debug=0
 export bootstrap__skip_git_check=0
 export bootstrap__verbose=0
+export bootstrap__bashmatic_home=${HOME}/.bashmatic
 export bootstrap__bash_version="5.1-rc2"
 export bootstrap__bash_prefix="/usr/local"
 export bootstrap__sudoers_dir="/private/etc/sudoers.d"
@@ -336,32 +336,37 @@ ${bldylw}DESCRIPTION:
   into /usr/local/bin/bash.
 
 ${bldylw}FLAGS:${bldpur}
-  -b, --bash-version VERSION    Install BASH VERSION   (default: ${bootstrap__bash_version})
-  -p, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
-  -g, --skip-git                Skip check for locally modified files
-  -v, --verbose                 See additional output (currently unused)
-  -d, --debug                   Turn on 'set -x' to see all commands running
+  -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home})
+  -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
+  -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
+  -g, --skip-git                Do not abort if existing bashmatic home has local changes
+  -v, --verbose                 See additional output as bootstrap is running.
+  -d, --debug                   Turn on 'set -x' to see all commands running.
   -h, --help                    Show this help message.
-  ${clr}
-  "
+${clr}\n\n"
 }
 
 parse-opts() {
   # Parse additional flags
   while :; do
     case $1 in
-    -b | --bash-version)
+    -V | --bash-version)
       shift
       export bootstrap__bash_version=$1
       shift
       ;;
-    -p | --bash-prefix)
+    -P | --bash-prefix)
       shift
       export bootstrap__bash_prefix="$1"
       [[ -d ${bootstrap__bash_prefix} ]] && { 
         err "Prefix PATH ${bootstrap__bash_prefix} does not exist."
         exit 1
       }
+      shift
+      ;;
+    -H | --bashmatic-home)
+      shift
+      export bootstrap__bashmatic_home="$1"
       shift
       ;;
     -d | --debug)
@@ -399,15 +404,19 @@ parse-opts() {
   done
 }
 
-bootstrap-main() {
+bashmatic-install() {
   parse-opts "$@"
   os-requirements
+
+  export BASHMATIC_HOME="${bootstrap__bashmatic_home}"
 
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
     git-sync
   else
     git clone ${BASHMATIC_URL} "${BASHMATIC_HOME}" >/dev/null
   fi
+
+  export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
 
   if [[ -s "${BASHMATIC_INIT}" ]]; then
     # shellcheck disable=SC1090
@@ -433,5 +442,5 @@ if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
    [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
   echo >/dev/null
 else
-  bootstrap-main "$@"
+  bashmatic-install "$@"
 fi

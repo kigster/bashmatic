@@ -5,13 +5,13 @@
 #
 # Kuberneties & Minikube downloader and installer.
 
-[[ -d ${HOME}/.bashmatic ]] || bash -c "$(curl -fsSL http://bit.ly/bashmatic-1-0-1)"
-[[ -f ${HOME}/.bashmatic/init.sh ]] || {
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
+[[ -f ${BASHMATIC_HOME}/init.sh ]] || {
   echo "Can't find or install Bashmatic. Exiting."
   exit 1
 }
 
-source ${HOME}/.bashmatic/init.sh
+source ${BASHMATIC_HOME}/init.sh
 
 bashmatic.bash.exit-unless-version-four-or-later
 

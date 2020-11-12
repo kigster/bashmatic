@@ -66,11 +66,11 @@ repos.recursive-update() {
 repos.update() {
   export root_folder="$(pwd)"
   bash -c "
-    [[ -d ~/.bashmatic ]] || {
+    [[ -d ${BASHMATIC_HOME} ]] || {
       echo 'Can not find bashmatic installation sorry'
       return
     }
-    source ~/.bashmatic/init.sh
+    source ${BASHMATIC_HOME}/init.sh
     repos.init-interrupt
     repos.recursive-update '$*'
   "
