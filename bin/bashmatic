@@ -1,7 +1,39 @@
 #!/usr/bin/env bash
 # vim: ft=sh
+#
+# Bashmatic Framework® 
+# Copyright © 2017-2020 Konstantin Gredeskoul, All rights reserved, MIT License.
+#
+# This is a simple helper that serves three functions:
+#   1. If BASHMATIC_HOME is not set, it tries very hard to figure it out
+#   2. If Bashmatic is not installed, it attempts to install it.
+#   3. If an argument is a Bashmatic function, it executes it.
+#
+# This script is particularly useful when your defualt shell is not BASH.
+# It allows you to still invoke most of Bashmatic's helpers using:
+#
+#   $ bashmatic <helper> <args> 
+#
+# syntax.
 
-( [[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-install)" ) 2>&1 1>/dev/null
+[[ -z ${BASHMATIC_HOME} ]] && {
+  if [[ -d ${HOME}/.bashmatic ]]; then
+    export BASHMATIC_HOME=${HOME}/.bashmatic
+  elif [[ $0 =~ bin/bashmatic$ ]]; then
+    export BASHMATIC_HOME="$( cd $(dirname $(dirname $0)); pwd -P)"
+  else
+    for source in "${BASH_SOURCE[@]}"; do
+      if [[ ${source} =~ bin/bashmatic ]]; then
+        export BASHMATIC_HOME="$( cd $(dirname $(dirname ${source})); pwd -P)"
+      fi
+    done
+  fi
+
+  [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+  echo "BASHMATIC_HOME=${BASHMATIC_HOME}" >&2
+}
+
+( [[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v -H ${BASHMATIC_HOME}" )
 
 source "${BASHMATIC_HOME}/init.sh" 2>/dev/null
 

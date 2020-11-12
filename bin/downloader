@@ -6,7 +6,7 @@
 # This script can extract image URLs from a remote HTML document(s) and
 # downloads them all to a local folder.
 
-[[ -d "${BASHMATIC_HOME}" ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-install)" 1>/dev/null 2>/dev/null
+[[ -d "${BASHMATIC_HOME}" ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v" 1>/dev/null 2>/dev/null
 
 # vim: ft=bash
 # shellcheck source=/dev/null

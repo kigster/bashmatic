@@ -1,35 +1,11 @@
 #!/usr/bin/env bash
-# vim: ft=bash
+# vim: ft=sh
 #
-# The purpose of this script is to bootstrap Bashmatic on a
-# new system. We are supporting OS-X and Linux, although on
-# OS-X we do a lot more initialization to ensure Bashmatic
-# can properly function.
-#
-# Bootstrap script is required to run at least once on a new
-# system, which happens automatically if you install it via
-#
-# bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
-#
+# NOTE: this script is DEPRECATED and is obsoleted by bin/bashmatic-install
+#       it is provided here for backwards compatibility only.
 set -e
 
-# Configuration
-export HOME=${HOME:-"/"}
-export BASHMATIC_HOME="${HOME}/.bashmatic"
-declare -a CHOWN_DIRS
-declare -a BREW_PACKAGES
-export CHOWN_DIRS=(/usr/local /Library/Ruby /Library/Python)
-export BREW_PACKAGES=(coreutils gnu-sed)
-
-if [[ ${USER} == "kig" ]]; then
-  export BASHMATIC_URL="git@github.com:kigster/bashmatic"
-else
-  export BASHMATIC_URL="https://github.com/kigster/bashmatic"
-fi
-
-# Constants
 export clr='\e[0m'       # Text Reset
-
 export bldblk='\e[1;30m' # Black - Bold
 export bldred='\e[1;31m' # Red
 export bldgrn='\e[1;32m' # Green
@@ -39,144 +15,30 @@ export bldpur='\e[1;35m' # Purple
 export bldcyn='\e[1;36m' # Cyan
 export bldwht='\e[1;37m' # White
 
-export txtblk='\e[0;30m' # Black - Regular
-export txtred='\e[0;31m' # Red
-export txtgrn='\e[0;32m' # Green
-export txtylw='\e[0;33m' # Yellow
-export txtblu='\e[0;34m' # Blue
-export txtpur='\e[0;35m' # Purple
-export txtcyn='\e[0;36m' # Cyan
-export txtwht='\e[0;37m' # White
-
-
-# Output Helpers
-
-ts() {
-  date '+%Y/%m/%d %I:%M:%S%p'
-}
-
 puts() {
-  printf "${bldblu} INFO  ${txtpur}〈$(ts)〉 ${txtcyn}${*}${clr}\n"
+  printf "${bldgrn}✓   ${bldblu}${*}${clr}\n"
 }
 
 err() {
-  printf "${bldred}_______  ${clr}\n"
-  printf "${bldred}       ⤵${clr}\n"
-  for str in "$@"; do
-    printf "${bldred} ERROR ${txtpur}〈$(ts)〉 ${bldred}${str}\n"
+  printf "${bldred}ERROR:\n"
+  for s in "${@}"; do
+    printf "${bldred}✘   ${bldylw}${s}${clr}\n"
   done
 }
 
-
-#——————————————————————————————————————————————————————————————————————————————————————
-# Sudo Helpers
-#——————————————————————————————————————————————————————————————————————————————————————
-sudo-ask() {
-  sudo -n true 2>/dev/null || {
-    puts "Please enter your SUDO password: "
-    sudo -v 
-  } 
-}
-
-sudo-enable() {
-  sudo mkdir -p "${bootstrap__sudoers_dir}"
-  [[ -s ${bootstrap__sudoers_dir}/${USER} ]] || {
-    echo "${USER}" 'ALL=(ALL) NOPASSWD: ALL' |
-      sudo tee -a "${bootstrap__sudoers_dir}/${USER}" >/dev/null
-    trap "sudo-disable" EXIT
-  }
-}
-
-sudo-disable() {
-  sudo rm -f "${bootstrap__sudoers_dir}/${USER}"
-}
-
-#——————————————————————————————————————————————————————————————————————————————————————
-# BASH Upgrade Functionality (OS-X/Linux)
-#——————————————————————————————————————————————————————————————————————————————————————
-bash-major-version() {
-  local bash="${1:-"/usr/bin/env bash"}"
-  ${bash} --version | head -1 | sed 's/[^0-9.]//g; s/\..*$//g'
-}
-
-bash-latest-installed-version() {
-  local version=$(bash-major-version)
-  if [[ -x /usr/local/bin/bash ]]; then
-    local v=$(bash-major-version /usr/local/bin/bash)
-    [[ ${v} -gt ${version} ]] && version="${v}"
+command -v git >/dev/null || {
+  OS="$(uname -s)"
+  if [[ "${OS}" == "Darwin" ]]; then
+    puts "Please install xcode command line tools, "
+    puts "by running: xcode-select --install"
+  elif [[ "${OS}" == "Linux" ]]; then
+    puts "Please install Git."
+    puts "eg. apt-get install git"
   fi
-  printf -- "%d" "${version}"
+  exit 1
 }
 
-bash-install-required() {
-  [[ $(bash-latest-installed-version) -lt 4 ]]
-}
-
-# Bash Installer Helpers
-bash-install() {
-  puts "Installing BASH v${bootstrap__bash_version} into ${bldylw}${bootstrap__bash_prefix}"
-  puts "Please wait..."
-  bash-compile "${bootstrap__bash_version}" "${bootstrap__bash_prefix}"
-}
-
-# Install BASH from sources
-bash-compile() {
-  local version="$1"
-  local prefix="${2:-"/usr/local"}"
-  local bash_path="${prefix}/bin/bash"
-
-  if [[ -x ${bash_path} ]]; then
-    err "BASH is already installed in ${bash_path}, version $(${bash_path} --version | head 1)"
-    return 1
-  fi
-
-  local bash_tar="bash-${version}.tar.gz"
-  local bash_url="http://ftp.gnu.org/gnu/b  ash/${bash_tar}"
-  set -e
-  local temp=/tmp/bash-sources
-  rm -rf ${temp}
-  mkdir -p ${temp}
-  trap "rm -rf ${temp}" EXIT
-  # shellcheck disable=SC2064
-  trap "cd ${PWD} || true" EXIT
-  cd "${temp}" || return 1
-  is-verbose && puts "Downloading BASH from ${bash_url}..."
-  curl -sO "${bash_url}"
-  tar xzf "${bash_tar}"
-  cd "bash-${version}"
-  is-verbose && puts "Configuring BASH in ${temp}, please wait..."
-  ./configure --prefix="${prefix}" >/dev/null
-  is-verbose && puts "Building BASH, please wait..."
-  make -j 12 --silent
-  set +e
-  make --silent install || sudo make --silent install
-  if [[ -x "${bash_path}" ]]; then
-    export PATH="${prefix}/bin:${PATH}"
-    grep -q "${bash_path}" /private/etc/shells || {
-      puts "Appending ${bash_path} to /etc/shells..."
-      echo "${bash_path}" | sudo tee -a /private/etc/shells
-    }
-  fi
-  puts "  ✅  BASH version ${bootstrap__bash_version} is ${bldgrn}installed in ${bootstrap__bash_prefix}."
-  return 0
-}
-
-bash-install-if-needed() {
-  is-verbose && puts "Checking if I need to install modern BASH version..."
-  bash-install-required || return
-  sudo-ask && sudo-enable
-  bash-install
-}
-
-#——————————————————————————————————————————————————————————————————————————————————————
-# Check for locally modiifed files
-# Complain if bashmatic folder has locally modified files.
-#——————————————————————————————————————————————————————————————————————————————————————
-git-sync() {
-  is-verbose && puts "Checking if existing bashmatic folder is locally modified..."
-
-  ((bootstrap__skip_git_check)) && return
-
+bashmatic.git.sync() {
   cd "${BASHMATIC_HOME}" >/dev/null
   [[ -d ".git" ]] || return
 
@@ -195,252 +57,31 @@ git-sync() {
   cd - >/dev/null
 }
 
+export HOME=${HOME:-"/"}
+export BASHMATIC_HOME="${HOME}/.bashmatic"
+export BASHMATIC_INIT="${HOME}/.bashmatic/init.sh"
+export BASHMATIC_URL="https://github.com/kigster/bashmatic"
 
-#——————————————————————————————————————————————————————————————————————————————————————
-# LINUX
-#——————————————————————————————————————————————————————————————————————————————————————
+puts "WARNING: ${bldred}This script is now deprecated and will be removed eventually."
+puts "         ${bldred}Please use the following to install Bashmatic moving forward:"
+puts "         ${bldylw}bash -c \"\$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v\""
+sleep 2
 
-linux-requirements() {
-  command -v git >/dev/null || {
-    err "Please install git on your system first." \
-      "Perhaps try apt-get install git?"
-    exit 1
-  }
-}
-
-#——————————————————————————————————————————————————————————————————————————————————————
-# OS-X
-#——————————————————————————————————————————————————————————————————————————————————————
-osx-permissions() {
-  sudo-ask && sudo-enable
-  for dir in ${CHOWN_DIRS[@]}; do
-    is-verbose && puts "Checking (and possibly changing) permissions of ${bldylw}${dir}..."
-    [[ $(stat -f %u "${dir}") -eq $(id -u) ]] && continue
-    sudo chown -R "${USER}" "${dir}"
-  done
-}
-
-# Brew Installer Helpers
-# Install Brew
-brew-install() {
-  is-verbose && puts "Installing HomeBrew if not already there..."
-  command -v brew >/dev/null || {
-    puts "Installing Homebrew, please wait..."
-    /usr/bin/ruby -e \
-      "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  }
-}
-
-brew-deps() {
-  set +e
-  is-verbose && puts "Installing required brew packages..."
-  local brew_cache=/tmp/brew_cache.$$
-  trap "rm -f ${brew_cache}" EXIT
-  brew list --formulae -1 >"${brew_cache}"
-  for package in "${BREW_PACKAGES[@]}"; do
-    is-verbose && puts "Checking/installing brew package ${bldylw}${package}..."
-     grep -q "${package}" "${brew_cache}" || brew install "${package}" 1>/dev/null 2>&1
-  done
-}
-
-# Uninstall Brew (just for completeness, we never actually use this)
-brew-uninstall() {
-  echo y | /usr/bin/env bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
-}
-
-darwin-requirements-xcode() {
-  is-verbose && puts "Verifying and installing XCode Dependencies..."
-  
-  command -v git >/dev/null && return
-
-  local xcode_app="/Applications/Xcode.app"
-  local xcode_tools="${xcode_app}/Contents/Developer"
-  local cli_tools="/Library/Developer/CommandLineTools"
-
-  if [[ -d "${xcode_app}" && -d "${xcode_tools}" ]]; then
-    [[ $(xcode-select -p) == "${xcode_tools}" ]] || sudo xcode-select --switch "${xcode_tools}"
-  else
-    command -v xcodebuild >/dev/null && command -v xcode-select >/dev/null && {
-      xcode-select --install 2>&1 || {
-        err "Error running xcode-select --install" "You may need to download and install XCode Command Line Tools Manually."
-        puts "We'll open the URL where you can download the tools in 5 seconds."
-        puts "You will need to login with your Apple ID."
-        sleep 1
-        puts "When you are finished installing the tools, re-run Bashmatic Install script."
-        sleep 4
-        puts "Opening Apple website..."
-        sleep 0.5
-        open "https://developer.apple.com/download/more/?=command%20line%20tools"
-        exit 1
-      }
-    }
-    [[ -d "${cli_tools}" && $(xcode-select -p) == "${cli_tools}" ]] || sudo xcode-select --switch ${cli_tools} 2>/dev/null
-  fi
-  is-verbose && puts "Accepting XCode license..."
-  bash -c 'command -v xcodebuild >/dev/null && sudo xcodebuild -license accept 2>&1 1>/dev/null; true ' >/dev/null
-}
-
-darwin-requirements() {
-  darwin-requirements-xcode
-  osx-permissions
-  brew-install
-  brew-deps
-}
-
-#——————————————————————————————————————————————————————————————————————————————————————
-# Ensure OS-specific reqquirements are satisfied
-#——————————————————————————————————————————————————————————————————————————————————————
-os-requirements() {
-  local os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-
-  case ${os} in
-  darwin)
-    darwin-requirements
-    ;;
-  linux)
-    linux-requirements
-    ;;
-  *)
-    err "Operating system ${os} is not supported."
-    exit 1
-    ;;
-  esac
-}
-
-#——————————————————————————————————————————————————————————————————————————————————————
-# Main Body
-#——————————————————————————————————————————————————————————————————————————————————————
-
-export bootstrap__debug=0
-export bootstrap__skip_git_check=0
-export bootstrap__verbose=0
-export bootstrap__bashmatic_home=${HOME}/.bashmatic
-export bootstrap__bash_version="5.1-rc2"
-export bootstrap__bash_prefix="/usr/local"
-export bootstrap__sudoers_dir="/private/etc/sudoers.d"
-
-is-debug() {
-  ((bootstrap__debug))
-}
-is-verbose() {
-  ((bootstrap__verbose))
-}
-
-usage() {
-  printf "
-${bldylw}USAGE: 
-  ${bldgrn}bin/bootstrap [ flags ]
-
-${bldylw}DESCRIPTION:
-  ${bldblu}Install Bashmatic, and on OSX also installs build tools, brew and latest bash
-  into /usr/local/bin/bash.
-
-${bldylw}FLAGS:${bldpur}
-  -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home})
-  -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
-  -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
-  -g, --skip-git                Do not abort if existing bashmatic home has local changes
-  -v, --verbose                 See additional output as bootstrap is running.
-  -d, --debug                   Turn on 'set -x' to see all commands running.
-  -h, --help                    Show this help message.
-${clr}\n\n"
-}
-
-parse-opts() {
-  # Parse additional flags
-  while :; do
-    case $1 in
-    -V | --bash-version)
-      shift
-      export bootstrap__bash_version=$1
-      shift
-      ;;
-    -P | --bash-prefix)
-      shift
-      export bootstrap__bash_prefix="$1"
-      [[ -d ${bootstrap__bash_prefix} ]] && { 
-        err "Prefix PATH ${bootstrap__bash_prefix} does not exist."
-        exit 1
-      }
-      shift
-      ;;
-    -H | --bashmatic-home)
-      shift
-      export bootstrap__bashmatic_home="$1"
-      shift
-      ;;
-    -d | --debug)
-      shift
-      export bootstrap__debug=1
-      set -x
-      ;;
-    -v | --verbose)
-      shift
-      export bootstrap__verbose=1
-      ;;
-    -g | --skip-git)
-      shift
-      export bootstrap__skip_git_check=1
-      ;;
-    -h | -\? | --help)
-      shift
-      usage
-      exit 0
-      ;;
-    --) # End of all options; anything after will be passed to the action function
-      shift
-      break
-      ;;
-    -?*)
-      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-      exit 127
-      shift
-      ;;
-    *)
-      [[ -z "$1" ]] && break
-      shift
-      ;;
-    esac
-  done
-}
-
-bashmatic-install() {
-  parse-opts "$@"
-  os-requirements
-
-  export BASHMATIC_HOME="${bootstrap__bashmatic_home}"
-
-  if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
-    git-sync
-  else
-    git clone ${BASHMATIC_URL} "${BASHMATIC_HOME}" >/dev/null
-  fi
-
-  export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
-
-  if [[ -s "${BASHMATIC_INIT}" ]]; then
-    # shellcheck disable=SC1090
-    source "${BASHMATIC_INIT}"
-    bashmatic.load-at-login
-    success "Your BashMatic has been successfully installed."
-    exit 0
-  else
-    err "Bashmatic did not install correctly, please run the following command by hand:"
-    err "${bldgrn}git clone ${BASHMATIC_URL} ${BASHMATIC_HOME}"
-    exit 1
-  fi
-}
-
-len="${#BASH_SOURCE[@]}"
-last_index=$((len - 1))
-[[ ${last_index} -lt 0 ]] && last_index=0
-
-set +e
-# Allow sourcing in bin/bootstrap and using it's shell functions, eg:
-# source bin/bootstrap init
-if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
-   [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
-  echo >/dev/null
+if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
+  bashmatic.git.sync
 else
-  bashmatic-install "$@"
+  git clone ${BASHMATIC_URL} ${BASHMATIC_HOME} >/dev/null
 fi
+
+if [[ -s "${BASHMATIC_INIT}" ]]; then
+  # shellcheck disable=SC1090
+  source "${BASHMATIC_INIT}"
+  bashmatic.load-at-login
+  success "Your BashMatic has been successfully installed."
+  exit 0
+else
+  err "Bashmatic did not install correctly, please run the following command by hand:"
+  err "${bldgrn}git clone ${BASHMATIC_URL} ${BASHMATIC_HOME}"
+  exit 1
+fi
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=sh
 
-[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bit.ly/bashmatic-install)"
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
 source "${BASHMATIC_HOME}/init.sh" 1>/dev/null
 
 db.top "$@"
