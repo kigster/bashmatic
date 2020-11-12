@@ -440,8 +440,7 @@ set +e
 # source bin/bootstrap init
 if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
    [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
-  puts "It looks like you sourced this file in. To run it, append: ${bldylw} ; bashmatic-install -v "
-  puts "NOTE: you can append -h flag to see the usage."
+  echo >/dev/null
 else
   bashmatic-install "$@"
 fi
