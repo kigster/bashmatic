@@ -1,8 +1,8 @@
 = Changelog
 
-== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+== https://github.com/kigster/bashmatic/tree/v1.5.0[v1.5.0] (2020-11-12)
 
-https://github.com/kigster/bashmatic/compare/v1.4.0...HEAD[Full Changelog]
+https://github.com/kigster/bashmatic/compare/v1.4.0...v1.5.0[Full Changelog]
 
 *Closed issues:*
 
