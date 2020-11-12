@@ -45,9 +45,10 @@ osx-dependencies() {
   if command -v brew >/dev/null && command -v gdate >/dev/null ; then
     return
   else
-    source "${BASHMATIC_HOME}/bin/bootstrap" init
+    source "${BASHMATIC_HOME}/bin/bashmatic-install"
     set +e
-    bootstrap-dependencies
+    darwin-requirements
+
   fi
 }
 

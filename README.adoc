@@ -73,7 +73,7 @@ Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping sc
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
 
-NOTE: The shortcut link resolves to the HEAD version of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bootstrap[`bin/bootstrap`] script in Bashmatic Repo.
+NOTE: The shortcut link resolves to the HEAD version of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in Bashmatic Repo.
 
 
 [source,bash]
@@ -83,7 +83,7 @@ $ bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
 
 What this command does:
 
-* It downloads the `bin/bootstrap` script with `curl` and evaluates it using the built-in bash interpreter.
+* It downloads the `bin/bashmatic-install` script with `curl` and evaluates it using the built-in bash interpreter.
 * The script will attempt to `git clone` the bashmatic repo into your home folder: `${BASHMATIC_HOME}`, or (if it already exists), it will `git pull` latest changes.
 * The script may ask for your password to enable sudo access — this may be required on OS-X to install XCode Developer tools (which include `git`), as well as the latest version of BASH (5+) into `/usr/local/bin/bash`
 * The script will also install Homebrew on OS-X, if not already there.
@@ -94,23 +94,23 @@ Once Bashmatic is downloaded, you can run `bootstrap` script with `-h` to see th
 
 [source,bash]
 ----
-❯ bin/bootstrap -h
+$ bin/bashmatic-install -h
 
 USAGE:
-  bin/bootstrap [ flags ]
+  bin/bashmatic-install [ flags ]
 
 DESCRIPTION:
   Install Bashmatic, and on OSX also installs build tools, brew and latest bash
   into /usr/local/bin/bash.
 
 FLAGS:
-  -H, --bashmatic-home PATH     Install bashmatic into PATH (default: /Users/kig/.bashmatic)
-  -V, --bash-version VERSION    Install BASH VERSION (default: 5.1-rc2)
-  -P, --bash-prefix PATH        Install BASH into PATH (default: /usr/local)
-  -g, --skip-git                Do not abort if existing bashmatic home has local changes
-  -v, --verbose                 See additional output as bootstrap is running.
-  -d, --debug                   Turn on 'set -x' to see all commands running.
-  -h, --help                    Show this help message.
+  -H, --bashmatic-home PATH   (default: /Users/kig/.bashmatic)
+  -V, --bash-version VERSION  BASH VERSION (default: 5.1-rc2)
+  -P, --bash-prefix PATH      BASH into PATH (default: /usr/local)
+  -g, --skip-git              Do not abort if bashmatic home has local changes
+  -v, --verbose               See additional output.
+  -d, --debug                 Turn on 'set -x' to see all commands running.
+  -h, --help                  Show this help message.
 
 ----
 
@@ -119,7 +119,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 [source,bash]
 ----
 $ bashmatic.version
-1.4.0
+1.5.0
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.

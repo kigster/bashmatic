@@ -328,7 +328,7 @@ is-verbose() {
 usage() {
   printf "
 ${bldylw}USAGE: 
-  ${bldgrn}bin/bootstrap [ flags ]
+  ${bldgrn}bin/bashmatic-install [ flags ]
 
 ${bldylw}DESCRIPTION:
   ${bldblu}Install Bashmatic, and on OSX also installs build tools, brew and latest bash
@@ -436,8 +436,8 @@ last_index=$((len - 1))
 
 set +e
 
-# Allow sourcing in bin/bootstrap and using it's shell functions, eg:
-# source bin/bootstrap init
+# Allow sourcing in bin/bashmatic-install and using it's shell functions, eg:
+# source bin/bashmatic-install init
 if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
    [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
   echo >/dev/null
