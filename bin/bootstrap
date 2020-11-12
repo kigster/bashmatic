@@ -1,4 +1,4 @@
-  #!/usr/bin/env bash
+#!/usr/bin/env bash
 # vim: ft=bash
 #
 # The purpose of this script is to bootstrap Bashmatic on a
