@@ -182,6 +182,7 @@ export DevSetup__Callbacks
     readline
     rsync
     shellcheck
+    svn
     the_silver_searcher
     tree
     vim
