@@ -1,5 +1,13 @@
 = Changelog
 
+== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+
+https://github.com/kigster/bashmatic/compare/v1.5.0...HEAD[Full Changelog]
+
+*Merged pull requests:*
+
+* Enhanced dev-setup; consolidated load-at-login https://github.com/kigster/bashmatic/pull/24[#24] (https://github.com/kigster[kigster])
+
 == https://github.com/kigster/bashmatic/tree/v1.5.0[v1.5.0] (2020-11-12)
 
 https://github.com/kigster/bashmatic/compare/v1.4.0...v1.5.0[Full Changelog]
@@ -10,6 +18,7 @@ https://github.com/kigster/bashmatic/compare/v1.4.0...v1.5.0[Full Changelog]
 
 *Merged pull requests:*
 
+* This PR fixes auto-detection of BASHMATIC_HOME https://github.com/kigster/bashmatic/pull/23[#23] (https://github.com/kigster[kigster])
 * Better bootstrap process https://github.com/kigster/bashmatic/pull/22[#22] (https://github.com/kigster[kigster])
 * Add a Gitter chat badge to README.adoc https://github.com/kigster/bashmatic/pull/21[#21] (https://github.com/gitter-badger[gitter-badger])
 * Fixed Typo in init.sh for dependencies line#55 https://github.com/kigster/bashmatic/pull/19[#19] (https://github.com/inderpreet[inderpreet])

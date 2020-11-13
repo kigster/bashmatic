@@ -34,6 +34,8 @@ Miscellaneous utilities.
 * <<pathadd,PATH_add()>>
 * <<pdfcombine,pdf.combine()>>
 * <<shell-setis-set,shell-set.is-set()>>
+* <<userlogin-shell-path,user.login-shell-path()>>
+* <<usercurrent-shell,user.current-shell()>>
 * <<utilrot13-stdin,util.rot13-stdin()>>
 
 == array.has-element()
@@ -416,6 +418,19 @@ Not thread-safe.
 ==== See also
 
 * <<validate(),validate()>>
+
+== user.login-shell-path()
+
+@description
+  Attempts to resolve users' login shell with full path.
+
+== user.current-shell()
+
+@description
+   Determines the current session shell by looking at the
+   command running under the current PID $$.
+
+Prints current shell without the path, eg 'bash'
 
 == util.rot13-stdin()
 
