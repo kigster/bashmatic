@@ -4,10 +4,10 @@
 # DB Top Library Functions
 #===============================================================================
 
-export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.9}
+export bashmatic_db_top_refresh="${bashmatic_db_top_refresh:-"0.9"}"
 
-.db.primary-or-replica() {
-  [[ "${1}" =~ master|primary|replica|slave ]]
+function .db.primary-or-replica() {
+  echo "${1}" | grep -E -q "master|primary|replica|slave"
 }
 
 .db.top.psql.replication() {
@@ -22,13 +22,13 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.9}
   local code
   local stderr="$(mktemp /tmp/repl.err.$$.${RANDOM})"
 
-  if [[ "${dbname}" =~ master|primary ]]; then
+  if echo "${dbname}" | grep -E -q "master|primary"; then
     printf "${bldgrn} Replication Status on the Primary.${clr}${txtcyn}\n" >>"${toc}"
 
     # shellcheck disable=SC2116
     ( eval "psql $* -X -P pager -c \"select client_addr, state, write_lag + flush_lag + replay_lag as REPLICATION_CUMULATIVE_LAG from pg_stat_replication\"" | grep -v 'rows)') 2>"${stderr}" 1>>"${toc}" 
     code=$?
-  elif [[ "${dbname}" =~ slave|replica ]]; then
+  elif echo "${dbname}" | grep -E -q "slave|replica"; then
     printf "${bldcyn} Replication Status on the Replica.${clr}${txtgrn}\n" >>"${toc}"
 
     # shellcheck disable=SC2116
@@ -92,7 +92,7 @@ export bashmatic_db_top_refresh=${bashmatic_db_top_refresh:-0.9}
   local h=$((height + 4))
 
   .db.primary-or-replica "${dbname}" && h=$((h - 3))
-  [[ ${dbname} =~ primary|master ]] && h=$((h - 4))
+  echo "${dbname}" | grep -E -q "primary|master" && h=$((h - 4))
 
   local fh=$(wc -l "${tof}.out" | awk '{print $1}')
 

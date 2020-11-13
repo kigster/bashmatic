@@ -24,7 +24,7 @@ export opt_terse=
 export ruby_version=
 declare -a pg_versions
 declare -a mysql_versions
-export DevSetup__Version="0.3.0"
+export DevSetup__Version="0.4.0"
 
 .dev-setup.detect.pg-version() {
   export pg_versions=($(brew.package.available-versions postgresql))
@@ -79,24 +79,23 @@ export DevSetup__Callbacks
     font-andale-mono
     font-anonymice-powerline
     font-arvo
-    font-aurulentsansmono-nerd-font
+    font-aurulent-sans-mono-nerd-font
     font-average-mono
     font-awesome-terminal-fonts
-    font-bitstreamverasansmono-nerd-font
-    font-blexmono-nerd-font
+    font-bitstream-vera-sans-mono-nerd-font
+    font-blex-mono-nerd-font
     font-cascadia-mono
     font-consolas-for-powerline
     font-cousine
     font-cutive-mono
     font-d2coding
-    font-daddytimemono-nerd-font
+    font-daddy-time-mono-nerd-font
     font-dejavu-sans-mono-for-powerline
     font-denk-one
     font-envy-code-r
     font-everson-mono
     font-fantasque-sans-mono
     font-fontawesome
-    font-gomono-nerd-font
     font-ia-writer-mono
     font-inconsolata
     font-jetbrains-mono
@@ -117,7 +116,7 @@ export DevSetup__Callbacks
     font-powerline-symbols
     font-pt-mono
     font-roboto
-    font-roboto-condensed
+    font-roboto-mono-nerd-font
     font-share-tech-mono
     font-sometype-mono
     font-source-code-pro
@@ -275,19 +274,22 @@ export DevSetup__Callbacks
 
 .dev-setup.install-rbenv-hook() {
   local login_shell=$(user.login-shell)
-  local rcfile
+  local rcfile=$(user.login-shell-init-file)
   local rbenv_init
 
   if [[ ${login_shell} == "bash" ]]; then
-    rcfile="${HOME}/.bash_profile"
     rbenv_init='eval "$(rbenv init -)"'
-  else
-    rcfile="${HOME}/.zshrc"
+  elif [[ ${login_shell} == "zsh" ]]; then
     rbenv_init='eval "$(rbenv init - zsh)"'
   fi
 
-  grep -q 'rbenv init' ${rcfile} || echo "${rbenv_init}" >>"${rcfile}"
-  grep -q -E 'PATH.*\.rbenv/bin' ${rcfile} || echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH' >>"${rcfile}"
+  [[ -z ${rbenv_init} ]] && return 1
+
+  grep -q 'rbenv init' "${rcfile}" || \
+    echo "${rbenv_init}" >>"${rcfile}"
+    
+  grep -q -E 'PATH.*\.rbenv/bin' "${rcfile}" || \
+    echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"' >>"${rcfile}"
 }
 
 .dev-setup.callbacks.ruby() {
@@ -362,6 +364,21 @@ export DevSetup__Callbacks
   export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
     "postgresql@${postgres_version}"
   )
+
+  export DevSetup__Callbacks+=(.dev-setup.callbacks.postgres)
+}
+
+.dev-setup.callbacks.postgres() {
+  local package="postgresql@${postgres_version}"
+
+  set +e
+  brew unlink "${package}" 1>/dev/null 2>&1 
+  run "brew link ${package} 2>/dev/null"
+
+  [[ -f ~/.psqlrc ]] && mv ~/.psqlrc ~/.psqlrc.bak
+  run "cp ${BASHMATIC_HOME}/conf/.psqlrc ${HOME}"
+  run "createuser -s postgres -U ${USER}"
+  run "createdb -E UTF8 -U ${USER} ${USER}"
 }
 
 .dev-setup.brew.mysql() {
@@ -373,7 +390,8 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.grc() {
+# TODO: fix install-grc script
+__dev-setup.brew.grc() {
   bash "${BASHMATIC_HOME}/bin/install-grc"
 
   local code=$?
@@ -561,7 +579,7 @@ usage() {
 
   echo
   info "    ${bldblk}# Installs the following packages, and ruby 2.7.1 with PostgreSQL version 10"
-  info "    ${bldblu}❯ dev-setup -g 'dev caching fonts gnu grc js postgres ruby' -r 2.7.1 -p 10 "
+  info "    ${bldblu}❯ dev-setup -g 'dev caching fonts gnu js postgres ruby' -r 2.7.1 -p 10 "
   echo
   info "    ${bldblk}# Dry run to see what would be installed"
   info "    ${bldblu}❯ dev-setup -n -g 'cpp gnu fonts load-balancing'"
@@ -576,7 +594,7 @@ dev.setup.print-versions() {
       error "Can not install Ruby dependencies, without Ruby Version."
       exit 1
     else
-      h.salmon-center "Using Ruby version ${ruby_version}..."
+      info "Using Ruby version ${ruby_version}..."
     fi
   }
 
@@ -586,7 +604,7 @@ dev.setup.print-versions() {
       error "Missing PostgreSQL version!"
       exit 1
     else
-      h.salmon-center "Using PostgreSQL version ${postgres_version}..."
+      info "Using PostgreSQL version ${postgres_version}..."
     fi
   }
 
@@ -596,7 +614,7 @@ dev.setup.print-versions() {
       error "Missing MySQL version!"
       exit 1
     else
-      h.salmon-center "Using MySQL version ${mysql_version}..."
+      info "Using MySQL version ${mysql_version}..."
     fi
   }
 }
@@ -639,7 +657,7 @@ dev-setup.install() {
   local block_size
 
   "${BASHMATIC_HOME}/bin/bashmatic-install" --skip-install
-
+  bashmatic.load-at-login
   brew.install
   brew.cache-reset
 

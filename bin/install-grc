@@ -52,7 +52,6 @@ function grc.install.extras() {
       echo "alias ${command}='colourify ${command}'" >>"${shellrc}"
     fi
   done
-  echo "alias ls='colourify ls'" >>"${shellrc}"
 }
 
 function grc.install.core() {

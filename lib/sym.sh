@@ -4,8 +4,8 @@ sym.dev.install-shell-helpers() {
   local found=
   declare -a init_files=($(util.shell-init-files))
 
-  for file in ${init_files[@]}; do
-    f=${HOME}/${file}
+  for file in "${init_files[@]}"; do
+    f="${file}"
     [[ ! -f "${f}" ]] && continue
     [[ -n $(grep sym.symit ${f}) ]] && {
       found=${f}
@@ -14,8 +14,8 @@ sym.dev.install-shell-helpers() {
   done
 
   if [[ -z ${found} ]]; then
-    for file in ${init_files[@]}; do
-      f="${HOME}/${file}"
+    for file in "${init_files[@]}"; do
+      f="${file}"
       if [[ -f "${f}" ]]; then
         run "sym -B ${f} 1>/dev/null"
         return $?

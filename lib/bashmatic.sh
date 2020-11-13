@@ -10,15 +10,6 @@ bashmatic.is-developer() {
   [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
 }
 
-bashmatic.detect-outer-shell() {
-  basename "${SHELL}" | tr -d '-'
-}
-
-bashmatic.detect-inner-shell() {
-  local inner="$(ps -p $$ -o command | grep -v COMMAND | tr -d '-' | awk '{print $1}' | xargs basename)"
-  echo "${inner}"
-}
-
 bashmatic.reload() {
   source "${BASHMATIC_INIT}"
 }
@@ -28,25 +19,18 @@ bashmatic.version() {
 }
 
 bashmatic.load-at-login() {
-  local init_file="${1}"
-  local -a init_files=(~/.bashrc ~/.bash_profile ~/.profile ~/.zshrc)
+  local file="${1}"
+  [[ -z ${file} ]] && file="$(user.login-shell-init-file)"
 
-  [[ -n "${init_file}" && -f "${init_file}" ]] && init_files=("${init_file}")
-
-  for file in "${init_files[@]}"; do
-    if [[ -f "${file}" ]]; then
-      grep -q bashmatic "${file}" && {
-        success "BashMatic is already loaded from ${bldblu}${file}"
-        return 0
-      }
-      grep -q bashmatic "${file}" || {
-        h2 "Adding BashMatic auto-loader to ${bldgrn}${file}..."
-        echo "source ${BASHMATIC_HOME}/init.sh" >>"${file}"
-      }
-      source "${file}"
-      break
-    fi
-  done
+  grep -q -E 'BASHMATIC_HOME' "${file}" || {
+    {
+      echo "export BASHMATIC_HOME=\"${BASHMATIC_HOME:-"~/.bashmatic"}\""
+      echo '[[ -f ${BASHMATIC_HOME}/init.sh ]] && source ${BASHMATIC_HOME}/init.sh'
+      echo 'export PATH="${PATH}:${BASHMATIC_HOME}/bin"'
+    } >>"${file}"
+    
+    source "${file}"
+  }
 }
 
 bashmatic.functions-from() {
@@ -208,10 +192,10 @@ bashmatic.source-dir() {
 }
 
 function bashmatic.shell-check() {
-  local shell
-  shell=$(bashmatic.detect-inner-shell)
-
-  if [[ ! "${shell}" =~ bash ]]; then
+  local shell="$(user.current-shell)"
+  if [[ "${shell}" =~ bash$ || "${shell}" =~ zsh$ ]]; then
+    return 0
+  else
     cat "${BASHMATIC_HOME}/.init.sh" >&2
     return 120
   fi

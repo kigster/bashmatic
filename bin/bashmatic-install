@@ -434,7 +434,6 @@ bashmatic-download-and-install() {
   fi
 }
 
-
 bashmatic-install() {
   parse-opts "$@" || return
   os-requirements
