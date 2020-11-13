@@ -60,6 +60,10 @@ main() {
 
   if [[ -s "${setup_script}" ]]; then
     # shellcheck disable=SC1090
+    source "${BASHMATIC_LIBDIR}/user.sh"
+    source "${BASHMATIC_LIBDIR}/util.sh"
+    source "${BASHMATIC_LIBDIR}/is.sh"
+    source "${BASHMATIC_LIBDIR}/output.sh"
     source "${setup_script}"
     bashmatic.setup
   else

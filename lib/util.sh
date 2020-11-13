@@ -60,21 +60,22 @@ util.i-to-ver() {
   /usr/bin/env ruby -e "ver='${version}'; printf %Q{%d.%d.%d}, ver[1..2].to_i, ver[3..5].to_i, ver[6..8].to_i"
 }
 
-# Returns name of the current shell, eg 'bash'
-util.shell-name() {
-  echo $(basename $(printf $SHELL))
-}
-
 util.arch() {
   echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'
 }
 
+# shellcheck disable=SC2120
 util.shell-init-files() {
-  shell_name=$(util.shell-name)
+  local shell_function="${1:-"user.login-shell"}"
+  local shell_name=$(${shell_function})
+
   if [[ ${shell_name} == "bash" ]]; then
-    echo ".bash_${USER} .bash_profile .bashrc .profile"
+    echo "${HOME}/.bash_profile ${HOME}/.bash_login ${HOME}/.bashrc ${HOME}/.profile"
   elif [[ ${shell_name} == "zsh" ]]; then
-    echo ".zsh_${USER} .zshrc .profile"
+    echo "${HOME}/.zshrc"
+  else
+    error "Shell ${shell_name} is not supported."
+    return 1
   fi
 }
 
@@ -85,8 +86,8 @@ util.append-to-init-files() {
   is_installed=
 
   declare -a shell_files=($(util.shell-init-files))
-  for init_file in ${shell_files[@]}; do
-    file=${HOME}/${init_file}
+  for init_file in "${shell_files[@]}"; do
+    file="${init_file}"
     [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && {
       is_installed=${file}
       break
@@ -94,8 +95,8 @@ util.append-to-init-files() {
   done
 
   if [[ -z "${is_installed}" ]]; then
-    for init_file in ${shell_files[@]}; do
-      file=${HOME}/${init_file}
+    for init_file in "${shell_files[@]}"; do
+      file="${init_file}"
       [[ -f ${file} ]] && {
         echo "${string}" >>${file}
         is_installed="${file}"
@@ -126,9 +127,9 @@ util.remove-from-init-files() {
 
   declare -a shell_files=($(util.shell-init-files))
   local temp_holder=$(mktemp)
-  for init_file in ${shell_files[@]}; do
+  for init_file in "${shell_files[@]}"; do
     run.config.detail-is-enabled && inf "verifying file ${init_file}..."
-    file=${HOME}/${init_file}
+    file="${init_file}"
     if [[ -f ${file} && -n $(grep "${search}" ${file}) ]]; then
       run.config.detail-is-enabled && ui.closer.ok:
       local matches=$(grep -c "${search}" ${file})

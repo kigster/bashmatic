@@ -274,26 +274,22 @@ export DevSetup__Callbacks
 
 .dev-setup.install-rbenv-hook() {
   local login_shell=$(user.login-shell)
-  local rcfile
+  local rcfile=$(user.login-shell-init-file)
   local rbenv_init
 
   if [[ ${login_shell} == "bash" ]]; then
-    rcfile="${HOME}/.bash_profile"
     rbenv_init='eval "$(rbenv init -)"'
-  else
-    rcfile="${HOME}/.zshrc"
+  elif [[ ${login_shell} == "zsh" ]]; then
     rbenv_init='eval "$(rbenv init - zsh)"'
   fi
 
+  [[ -z ${rbenv_init} ]] && return 1
+
   grep -q 'rbenv init' "${rcfile}" || \
     echo "${rbenv_init}" >>"${rcfile}"
+    
   grep -q -E 'PATH.*\.rbenv/bin' "${rcfile}" || \
     echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"' >>"${rcfile}"
-  grep -q -E 'BASHMATIC_HOME' "${rcfile}" || \
-    {
-      echo '[[ -d ~/.bashmatic ]] && export BASHMATIC_HOME=${HOME}/.bashmatic'
-      echo 'export PATH="${PATH}:${BASHMATIC_HOME}/bin"'
-    } >>"${rcfile}"
 }
 
 .dev-setup.callbacks.ruby() {
@@ -661,7 +657,7 @@ dev-setup.install() {
   local block_size
 
   "${BASHMATIC_HOME}/bin/bashmatic-install" --skip-install
-
+  bashmatic.load-at-login
   brew.install
   brew.cache-reset
 
