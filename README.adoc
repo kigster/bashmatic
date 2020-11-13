@@ -34,10 +34,10 @@ IMPORTANT:
 
 * BASH version 4+
 * BASH version 3 (partial compatibility, some functions are disabled)
+* ZSH —— as of recent update, Bashmatic is almost 100% compatible with ZSH.   
 
-**Partially Supported**
+**Not Really Supported**
 
-* ZSH (with caveat – you can't `source ~/.bashmatic/init.sh` but you can run its executables)
 * FISH (although you could use Bashmatic via `bin/bashmatic` script helper, or its executables)
 
 ====
