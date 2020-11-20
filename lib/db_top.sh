@@ -83,10 +83,9 @@ function .db.primary-or-replica() {
   .db.top.psql.replication "${dbname}" "${tof}" "$@"
 
   local query="${tof}.query"
-  # shellcheck disable=SC2116
-  #(eval "$(echo psql -X -P pager -f "${query}" "$@")") >"${tof}.out"
-  psql -X -P pager -f "${query}" $* >"${tof}.out"
+  eval "psql -X -P pager -f ${query} $* >${tof}.out"
   local code=$?
+  local fh=$(wc -l "${tof}.out" | awk '{print $1}')
 
   local sw=$(screen-width)
   local h=$((height + 4))
@@ -94,7 +93,10 @@ function .db.primary-or-replica() {
   .db.primary-or-replica "${dbname}" && h=$((h - 3))
   echo "${dbname}" | grep -E -q "primary|master" && h=$((h - 4))
 
-  local fh=$(wc -l "${tof}.out" | awk '{print $1}')
+  [[ ${fh} -lt 10 ]] && {
+    printf "           ${clr}${txtblk}${bakgrn}${clr}${bakgrn} No active queries were detected on ${bldwht}${dbname}  👀  ${bakblk}${bldgrn}${clr}\n" >>"${tof}"
+    return 0
+  }
 
   [[ ${fh} -gt $h ]] && {
     local alert_color_bg="${bakpur}"
@@ -182,7 +184,7 @@ db.top() {
   cp /dev/null "${tof}" >/dev/null
 
   for connection in "$@"; do
-    db.psql.args.config "${connection}" 1>/dev/null 2>&1 || return 1
+    db.psql.args.config "${connection}" 1>/dev/null  || return 1
 
     db.psql.args "${connection}" >"${tof}"
 

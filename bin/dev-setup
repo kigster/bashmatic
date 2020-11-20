@@ -2,7 +2,16 @@
 # vim: ft=bash
 
 # shellcheck disable=2046
-[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+
+[[ -z ${BASHNATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
+[[ -d ${BASHMATIC_HOME} ]] || {
+  echo "Can't find Bashmatic, even after attempting an installation."
+  echo "Please install Bashmatic with the following command line:"
+  echo 'bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"'
+  exit 1
+}
+
 source "${BASHMATIC_HOME}/init.sh"
 
 export DEFAULT_RUBY_VERSION="2.7.1"
@@ -181,7 +190,7 @@ export DevSetup__Callbacks
     readline
     rsync
     shellcheck
-    svn
+    subversion
     the_silver_searcher
     tree
     vim
