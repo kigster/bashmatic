@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+[[ ${USER} == "root" ]] || { echo "Please run me via sudo!"; exit 0; }
+
+function main() {
+  set -x 
+  set +e
+  apt update -yqq
+  apt-get install -yqq
+
+  declare -a packages
+
+  export packages=(
+    gcc
+    libjq-dev
+    vim
+    vim-syntastic
+    vim-scripts
+    git
+    bash
+    bash-completion
+    zplug
+    zsh
+    zplug
+    rbenv
+    ruby-build
+    curl
+    silversearcher-ag
+    postgresql-13
+    postgresql-client-13
+    screenfetch
+    inxi
+  )
+
+  apt install ${packages[@]} -yqq
+  apt autoremove -yqq
+  apt upgrade -yyq
+}
+
+main "$@"
