@@ -191,3 +191,23 @@ git.open() {
   info "Opening URL ${bldylw}${url}"
   open -a 'Google Chrome' ${url}
 }
+
+# Convert a local git remote URL from https:// ... to git@ format.
+function git.repo.remote-to-git@ () {
+  local f=".git/config"
+  if [[ -f "$f" ]]; then
+    grep -q "url = git@" "$f" && { 
+      info "The repo is already using git@ syntax for the remote."
+      return 0
+    } 
+    cat "${f}" | sed -E 's#url = https://github\.com/([^/]*)/#url = git@github\.com:\1/#g' > "${f}.ssh"
+    mv "${f}" "${f}.https"
+    cd .git; ln -nfs config.ssh config; cd ->/dev/null
+    hr
+    info "Created an ssh version of .git/config file, and symlinked it:"
+    ls -l .git/config*
+    info "Your new remote:"
+    info $(grep "git@" "${f}")
+    hr
+  fi
+}
