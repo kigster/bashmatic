@@ -153,6 +153,13 @@ export DevSetup__Callbacks
     gh
     gpg
     gnu-sed
+    findutils
+    gnu-indent
+    gnu-sed
+    gnutls
+    grep
+    gnu-tar
+    gawk
     htop
     libevent
     imagemagick
