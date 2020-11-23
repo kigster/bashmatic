@@ -1,21 +1,22 @@
+# vim: ft=bash
 user.gitconfig.email() {
   if [[ -s ${HOME}/.gitconfig ]]; then
-    grep email ${HOME}/.gitconfig | sedx 's/.*=\s?//g'
+    grep email "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
   fi
 }
 
 user.gitconfig.name() {
   if [[ -s ${HOME}/.gitconfig ]]; then
-    grep name ${HOME}/.gitconfig | sedx 's/.*=\s?//g'
+    grep name "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
   fi
 }
 
 user.finger.name() {
-  [[ -n $(which finge) ]] && finger ${USER} | head -1 | sedx 's/.*Name: //g'
+  [[ -n $(which finge) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
 }
 
 user.username() {
-  echo ${USER:-$(whoami)}
+  echo "${USER:-$(whoami)}"
 }
 
 user() {
@@ -26,6 +27,52 @@ user() {
   [[ -z "${user}" ]] && user="$(user.username)"
   echo "${user}"
 }
+
+#———————————————————————————————————————————————————————————————————————————————————————————————————
+# Get user's name and email from the "${bashmatic_git_pairs}" file.
+# https://github.com/pivotal-legacy/git_scripts
+#
+#———————————————————————————————————————————————————————————————————————————————————————————————————
+# 
+# Please NOTE: these functions only support names in the format "Firstname Lastname".
+# It does NOT support punctuation, middle names, etc.
+export bashmatic_git_pairs="${HOME}/.pairs"
+
+user.pairs.set-file() {
+  [[ -s "$1" ]] || { 
+    error "Please pass a valid path to the .pairs file, typically in your home. You passed: [$1]"
+    return 1
+  }
+
+  export bashmatic_git_pairs="$1"
+}
+
+user.pairs.firstname() {
+  [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+  grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $2}' | tr -d ';'
+}
+
+user.pairs.lastname() {
+  [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+  grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $3}' | tr -d ';'
+}
+
+user.pairs.username() {
+  [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+  grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $4}' | tr -d ';'
+}
+
+user.pairs.email() {
+  [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+  local username="$(user.pairs.username "$1")"
+  local domain="$(grep domain "${bashmatic_git_pairs}" | sed 's/.*domain://g' | tr -d ' ')"
+  [[ -n ${username} && -n "${domain}"  ]] || {
+    error "Couldn't determine username or domain from ${bashmatic_git_pairs} file for input ${bldwht}$*"
+    return 1
+  }
+  echo "${username}@${domain}"
+}
+#———————————————————————————————————————————————————————————————————————————————————————————————————
 
 user.first() {
   user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'
