@@ -269,7 +269,7 @@ sedx.cache-command() {
           error "Brew is needed to install GNU sed on OS-X"
           return 1
         }
-        brew install gnu-sed 1>/dev/null 2>&1
+        brewinstall gnu-sed 1>/dev/null 2>&1
         brew link gnu-sed --force 1>/dev/null 2>&1
         gsed_path="$(which gsed)"
       fi

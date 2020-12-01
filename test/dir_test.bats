@@ -3,6 +3,20 @@ load test_helper
 
 source lib/dir.sh
 
+set -e
+
+@test "dir.short-home ${HOME}/workspace/project" {
+  export HOME
+  local dir="$(dir.short-home "${HOME}/workspace/project")"
+  echo "${dir}" > /tmp/a
+  [[ "${dir}" == '~/workspace/project' ]]
+  [[ -z $(echo "${dir}" | grep "${HOME}") ]]
+}
+
+@test "dir.short-home /usr/local/bin" {
+  [[ $(dir.short-home /usr/local/bin) == "/usr/local/bin" ]]
+}
+
 @test "dir.count-slashes() on a folder with 6 slashes" {
   dir="/Users/alex/workspace/ruby/kigster/sym"
   [[ $(dir.count-slashes "${dir}") -eq 6 ]]
@@ -39,4 +53,3 @@ source lib/dir.sh
 @test "dir.expand-dir on tmp dir" {
   [[ "$(dir.expand-dir tmp)" == "$(pwd)/tmp" ]]
 }
-

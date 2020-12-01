@@ -26,5 +26,13 @@ dir.expand-dir() {
     dir="${HOME}/${dir:1:1000}"
   fi
 
-  printf "${dir}"
+  printf -- "%s" "${dir}"
+}
+
+# @description Replaces the first part of the directory that matches ${HOME} with '~/'
+dir.short-home() {
+  local dir="$1"
+  # This does not work for some reason
+  # printf -- "%s" "${dir/${HOME}/~}"
+  printf -- "%s" "${dir}" | sed -E "s#${HOME}#~#g"
 }

@@ -89,11 +89,11 @@ function brew.relink() {
 }
 
 function brew.package.list() {
-  cache-or-command ${LibBrew__PackageCacheList} 10 "--formula -1"
+  cache-or-command ${LibBrew__PackageCacheList} 10 --formula -1
 }
 
 function brew.cask.list() {
-  cache-or-command ${LibBrew__CaskCacheList} 10 "--cask -1"
+  cache-or-command ${LibBrew__CaskCacheList} 10 --cask -1
 }
 
 function brew.cask.tap() {
@@ -105,8 +105,6 @@ function cache-or-command() {
   shift
   local stale_minutes="$1"
   shift
-  local brew_list_flags="$1"
-  shift
 
   if file.exists-and-newer-than "${file}" "${stale_minutes}"; then
     if [[ -s "${file}" ]]; then
@@ -115,8 +113,8 @@ function cache-or-command() {
     fi
   fi
 
-  is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${brew_list_flags} >${file}"
-  brew list ${brew_list_flags} >"${file}"
+  is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${*} >${file}"
+  brew list "$@" >"${file}"
   cat "${file}"
 }
 
@@ -293,7 +291,7 @@ function brew.uninstall.packages() {
   local force=
   [[ -n "${opts_force}" ]] && force="--force"
 
-  for package in $@; do
+  for package in "$@"; do
     brew.uninstall.package "${package}"
   done
 }

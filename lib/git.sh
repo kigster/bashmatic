@@ -79,7 +79,7 @@ git.sync-remote() {
     run "git remote update && git fetch"
   fi
 
-  local status=$(git.local-vs-remote)
+  local status="$(git.local-vs-remote)"
 
   if [[ ${status} == "behind" ]]; then
     git.quiet || run "git pull --rebase"
