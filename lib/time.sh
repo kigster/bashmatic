@@ -43,6 +43,13 @@ function time.now.with-ms() {
   ${date_runnable} '+%T.%3N'
 }
 
+# milliseconds
+function date.now.with-time() {
+  date '+%F.%T'
+}
+
+
+
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on Linux vs OSX.
 time.date-from-epoch() {
@@ -55,7 +62,7 @@ time.date-from-epoch() {
 }
 
 time.now.db() {
-  date '+%F.%T' | tr -d '[-.:]'  
+  date '+%F.%T.%S   ' | tr -d '[\:\-\.]'  
 }
 
 time.now.file-extension() {
