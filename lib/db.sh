@@ -146,6 +146,39 @@ db.psql.connect.just-data() {
   db.psql.connect "${dbname}" $(db.psql.args-data-only) "$@"
 }
 
+db.psql.run() {
+  local dbname="$1"; shift
+  db.psql.connect "${dbname}" -X --pset border=3 -c "$@" -c "\q"
+}
+
+db.psql.connect.table-settings-show() {
+  local dbname="$1"; shift
+  local table="$1"; shift
+  db.psql.connect "${dbname}" $(db.psql.args-data-only) \
+    -c "SELECT relname, reloptions FROM pg_class WHERE relname='${table}';"
+}
+
+# @description 
+#   Set per-table settings, such as autovacuum, eg:
+# @example
+#   db.psql.connect.table-settings-set prod users autovacuum_analyze_threshold 1000000
+#   db.psql.connect.table-settings-set prod users autovacuum_analyze_scale_factor 0
+db.psql.connect.table-settings-set() {
+  local dbname="$1"; shift
+  local table="$1"; shift
+  local setting="$1"; shift
+  local value="$1"; shift
+
+  [[ -z ${setting} || -z ${value} ]] && {
+    error "Either setting or value are not defined.">&2
+    return 1
+  }
+
+  info "Setting ${setting} = ${value} on table ${table}...."
+  db.psql.connect "${dbname}" $(db.psql.args-data-only) \
+    -c "ALTER TABLE \"${table}\" SET (${setting} = ${value});"
+}
+
 # @description Print out PostgreSQL settings for a connection specified by args
 #
 # @example
@@ -160,9 +193,9 @@ db.psql.db-settings() {
 # @description Print out PostgreSQL settings for a named connection
 # @arg1 dbname database entry name in ~/.db/database.yml
 # @example
-#    db.psql.connect.settings-table primary
+#    db.psql.connect.db-settings-pretty primary
 #
-db.psql.connect.settings-table() {
+db.psql.connect.db-settings-pretty() {
   db.psql.connect "$@" -A -X -q -c 'show all' | \
     grep -v 'rows)' | \
     sort | \
@@ -177,9 +210,9 @@ db.psql.connect.settings-table() {
 #
 # @arg1 dbname database entry name in ~/.db/database.yml
 # @example
-#    db.psql.connect.settings-ini primary > primary.ini
+#    db.psql.connect.db-settings-toml primary > primary.ini
 #
-db.psql.connect.settings-ini() {
+db.psql.connect.db-settings-toml() {
   db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
 }
 
@@ -246,14 +279,26 @@ db.actions.connect() {
   db.psql.connect "$@"
 }
 
+db.actions.run() {
+  db.psql.run "$@"
+}
+
+db.actions.table-settings-show() {
+  db.psql.connect.table-settings-show "$@"
+}
+
+db.actions.table-settings-set() {
+  db.psql.connect.table-settings-set "$@"
+}
+
 db.actions.connections() {
   db.config.connections
 }
 
-db.actions.settings-table() {
-  db.psql.connect.settings-table "$@"
+db.actions.db-settings-pretty() {
+  db.psql.connect.db-settings-pretty "$@"
 }
 
-db.actions.settings-ini() {
-  db.psql.connect.settings-ini "$@"
+db.actions.db-settings-toml() {
+  db.psql.connect.db-settings-toml "$@"
 }
