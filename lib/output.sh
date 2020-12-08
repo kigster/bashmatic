@@ -391,8 +391,8 @@ ascii-clean() {
   local v_bg="bak${color}"
   local v_fg="txt${color}"
 
-  local bg="${!v_bg}"
-  local fg="${!v_fg}"
+  local bg="$(.subst ${v_bg})"
+  local fg="$(.subst ${v_fg})"
 
   local normal="${txtblk}${bg}"
   local inverse="${fg}"

@@ -343,8 +343,22 @@ pause.medium() { sleep "${1:-0.3}"; }
 pause.short() { sleep "${1:-0.1}"; }
 pause.long() { sleep "${1:-10}"; }
 
-
 util.is-numeric() {
   is.numeric "$1"
 }
 
+.subst() {
+  local var="$1"
+  local shell="$(user.current-shell)"
+
+  case $shell in
+      bash)
+        printf "${!var}"
+        ;;
+      zsh)
+        printf "${(P)var}"
+        ;;
+      *)
+        return 1
+  esac
+}
