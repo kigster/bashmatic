@@ -11,7 +11,7 @@ func="db.actions.${action}"
 
 is.a-function "${func}" || {
   info   "USAGE: "
-  printf "          ${bldgrn}db <action> [ arguments ]${clr}\n\n"
+  printf "          ${bldgrn}db action database [ arguments ]${clr}\n\n"
   info   "WHERE: "
   printf "          An action can be one of:\n"
   printf "${bldylw}"
