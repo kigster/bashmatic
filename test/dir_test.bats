@@ -3,6 +3,8 @@ load test_helper
 
 source lib/dir.sh
 
+export HOME_DIR=${HOME/\/$(whoami)/}
+
 set -e
 
 @test "dir.short-home ${HOME}/workspace/project" {
@@ -18,7 +20,7 @@ set -e
 }
 
 @test "dir.count-slashes() on a folder with 6 slashes" {
-  dir="/Users/alex/workspace/ruby/kigster/sym"
+  dir="${HOME_DIR}/alex/workspace/ruby/kigster/sym"
   [[ $(dir.count-slashes "${dir}") -eq 6 ]]
 }
 
@@ -43,7 +45,7 @@ set -e
 }
 
 @test "dir.expand-dir on ~/tmp dir" {
-  [[ "$(dir.expand-dir ~/tmp)" =~ "/Users" ]]
+  [[ "$(dir.expand-dir ~/tmp)" =~ "${HOME_DIR}" ]]
   [[ "$(dir.expand-dir ~/tmp)" == "${HOME}/tmp" ]]
 }
 @test "dir.expand-dir on /tmp/mahaha dir" {
