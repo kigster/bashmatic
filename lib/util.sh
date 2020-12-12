@@ -46,7 +46,7 @@ util.generate-password() {
   local len=${1:-32}
   local val=$(($(date '+%s') - 100000 * $RANDOM))
   [[ ${val:0:1} == "-" ]] && val=${val/-//}
-  printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c ${len})"
+  printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c "${len}")"
 }
 
 util.ver-to-i() {
@@ -98,7 +98,7 @@ util.append-to-init-files() {
     for init_file in "${shell_files[@]}"; do
       file="${init_file}"
       [[ -f ${file} ]] && {
-        echo "${string}" >>${file}
+        echo "${string}" >>"${file}"
         is_installed="${file}"
         break
       }
@@ -130,9 +130,9 @@ util.remove-from-init-files() {
   for init_file in "${shell_files[@]}"; do
     run.config.detail-is-enabled && inf "verifying file ${init_file}..."
     file="${init_file}"
-    if [[ -f ${file} && -n $(grep "${search}" ${file}) ]]; then
+    if [[ -f ${file} && -n $(grep "${search}" "${file}") ]]; then
       run.config.detail-is-enabled && ui.closer.ok:
-      local matches=$(grep -c "${search}" ${file})
+      local matches=$(grep -c "${search}" "${file}")
       run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"
 
       run "grep -v \"${search}\" ${file} > ${temp_holder}"
@@ -147,7 +147,7 @@ util.remove-from-init-files() {
       run.config.detail-is-enabled && ui.closer.not-ok:
     fi
   done
-  return ${LibRun__LastExitCode}
+  return "${LibRun__LastExitCode}"
 }
 
 util.whats-installed() {
@@ -190,7 +190,7 @@ util.call-if-function() {
 
 util.lines-in-folder() {
   local folder=${1:-'.'}
-  find ${folder} -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
+  find "${folder}" -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
 }
 
 util.functions-starting-with() {
@@ -218,7 +218,7 @@ util.functions-matching() {
 
 util.functions-matching.diff() {
   for e in $(util.functions-matching "${1}"); do
-    echo ${e/${1}/}
+    echo "${e/${1}/}"
   done
 }
 
@@ -244,61 +244,67 @@ util.install-direnv() {
   eval "$(direnv hook bash)"
 }
 
-export BASHMATIC_UTIL_SED_COMMAND=
+util.ensure-gnu-sed() {
+  local sed_path
+  local gsed_path
+  local os
+
+  sed_path="$(command -v sed 2>/dev/null)"
+  os="$(uname -s)"
+
+  case ${os} in
+  Darwin)
+    gsed_path="$(command -v gsed 2>/dev/null)"
+
+    if [[ -z "${gsed_path}" ]]; then
+      echo
+      output.constrain-screen-width 100
+      h3 "Please wait while we install gnu-sed using Brew..." \
+         "It's a required dependency for many key features." 1>&2
+
+      ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed ) 1>&2 >/dev/null
+
+      hash -r 2>/dev/null
+      gsed_path="$(command -v gsed 2>/dev/null)"
+
+      [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
+    fi
+
+    [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || {
+      error "Can't find GNU sed even after installation." >&2
+      return 2
+    }
+
+    sed_path="${gsed_path}"
+    ;;
+  Linux)
+    sed_path="$(which sed)"
+    ;;
+  *)
+    echo "Operating system \"${os}\" is not supported." 1>&2
+    return 2
+    ;;
+  esac
+  output.unconstrain-screen-width
+  echo -n "${sed_path}"
+}
+
+export bashmatic__sed_command
 
 # This function ensures we have GNU sed installed, and if not,
 # uses Brew on a Mac to install it.
 #
 # It is used by sedx() function
 #———————————————————————————————————————————————————————
-sedx.cache-command() {
-  if [[ -z "${BASHMATIC_UTIL_SED_COMMAND}" ]]; then
-    local sed_path
-    local sed_command
-    local os
-
-    sed_path="$(which sed)"
-    os="$(uname -s)"
-
-    if [[ "${os}" == "Darwin" ]]; then
-      local gsed_path
-      gsed_path="$(which gsed)"
-
-      if [[ -z "${gsed_path}" ]]; then
-        [[ -n $(which brew) ]] || {
-          error "Brew is needed to install GNU sed on OS-X"
-          return 1
-        }
-        brewinstall gnu-sed 1>/dev/null 2>&1
-        brew link gnu-sed --force 1>/dev/null 2>&1
-        gsed_path="$(which gsed)"
-      fi
-
-      [[ -z "${gsed_path}" ]] && {
-        error "Can't find GNU sed even after installation."
-        return 2
-      }
-
-      sed_path="${gsed_path}"
-    fi
-
-    sed_command="${sed_path}"
-  else
-    sed_command="${BASHMATIC_UTIL_SED_COMMAND}"
-  fi
-
-  sed_command="${sed_command} -r -e "
-  printf "%s" "${sed_command}"
-
-  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] &&
-    export BASHMATIC_UTIL_SED_COMMAND="${sed_command}"
+function sedx.cache-command() {
+  local sed_path="$(util.ensure-gnu-sed)"
+  local sed_command="${sed_path} -r -e "
+  export bashmatic__sed_command="${sed_command}"
 }
 
 sedx() {
-  [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] &&
-    export BASHMATIC_UTIL_SED_COMMAND="$(sedx.cache-command)"
-
-  ${BASHMATIC_UTIL_SED_COMMAND} "$*"
+  [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
+  ${bashmatic__sed_command} "$@"
 }
 
 export LibUtil__WatchRefreshSeconds="0.5"
@@ -352,13 +358,15 @@ util.is-numeric() {
   local shell="$(user.current-shell)"
 
   case $shell in
-      bash)
-        printf "${!var}"
-        ;;
-      zsh)
-        printf "${(P)var}"
-        ;;
-      *)
-        return 1
+    bash)
+      printf "${!var}"
+      ;;
+    zsh)
+      printf "${(P)var}"
+      ;;
+    *)
+      return 1
   esac
 }
+
+

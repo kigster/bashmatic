@@ -5,4 +5,6 @@
    "cSpell.words": [
       "Bashmatic"
    ],
+   "compile-hero.disable-compile-files-on-did-save-code": true,
+   "shellcheck.enableQuickFix": true,
 }

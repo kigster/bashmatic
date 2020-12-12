@@ -17,6 +17,8 @@ export LibBrew__CaskCacheList
 
 function brew.package.available-versions() {
   local package="$1"
+  [[ -z "$1" ]] && return 1
+  
   brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
 }
 
@@ -89,11 +91,11 @@ function brew.relink() {
 }
 
 function brew.package.list() {
-  cache-or-command ${LibBrew__PackageCacheList} 10 --formula -1
+  cache-or-command "${LibBrew__PackageCacheList}" 10 --formula -1
 }
 
 function brew.cask.list() {
-  cache-or-command ${LibBrew__CaskCacheList} 10 --cask -1
+  cache-or-command "${LibBrew__CaskCacheList}" 10 --cask -1
 }
 
 function brew.cask.tap() {

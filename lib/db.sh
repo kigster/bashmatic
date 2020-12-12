@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-#===============================================================================
 # Private Functions
 #===============================================================================
 
@@ -51,9 +49,9 @@ db.config.connections-list() {
   require 'yaml'
   require 'colored2'
   h = YAML.load(File.read(ENV['__yaml_source']))
-  h.each_pair do |name, params| 
-    printf "%50s → %s@%s/%s\n", 
-      name.bold.yellow, 
+  h.each_pair do |name, params|
+    printf "%50s → %s@%s/%s\n",
+      name.bold.yellow,
       params['username'].blue,
       params['host'].green,
       params['database'].cyan
@@ -102,12 +100,25 @@ db.psql.args.config() {
   printf -- "-U ${dbuser} -h ${dbhost} -d ${dbname}"
 }
 
-# @description Connect to one of the databases named in the YAML file, and 
+db.psql.report-error() {
+  local -a argv=("$@")
+
+  [[ -z "${__psql_stderr}" ]] && return 0
+  [[ -s "${__psql_stderr}" ]] || return 0
+
+  error "Error running command: " "${bldylw}psql ${argv[*]}"
+  printf -- "${txtred}$(cat "${__psql_stderr}" | sed -E 's/^/   /g')${clr}\n"
+  hr
+  rm -f "${__psql_stderr}"
+  unset __psql_stderr
+}
+
+# @description Connect to one of the databases named in the YAML file, and
 #              optionally pass additional arguments to psql.
 #              Informational messages are sent to STDERR.
 #
 # @example
-#    db.psql.connect production 
+#    db.psql.connect production
 #    db.psql.connect production -c 'show all'
 #
 db.psql.connect() {
@@ -116,8 +127,11 @@ db.psql.connect() {
   if [[ -z ${dbname} ]]; then
     h1 "USAGE: db.connect connection-name" \
       "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file." >&2
-    return 0
+    return 0``
   fi
+
+  export __psql_stderr="$(file.temp)"
+  cp /dev/null "${__psql_stderr}"
 
   local tempfile=$(mktemp)
   db.psql.args.config "${dbname}" >"${tempfile}"
@@ -126,13 +140,18 @@ db.psql.connect() {
 
   rm -f "${tempfile}" >/dev/null
 
-  (
-    printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
-    printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
-    hr
-  ) >&2
-  
-  psql "${args[@]}" "$@"
+  [[ ${flag_quiet} -eq 0 ]] && {
+    printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n" >&2
+    printf "${txtylw}$(which psql) ${args[*]}${clr}\n" >&2
+    hr >&2
+  }
+
+  set +e
+  psql --echo-errors "${args[@]}" "$@" 2>"${__psql_stderr}"
+  local code=$?
+  [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
+  set -e
+  return ${code}
 }
 
 # @description Similar to the db.psql.connect, but outputs
@@ -158,7 +177,7 @@ db.psql.connect.table-settings-show() {
     -c "SELECT relname, reloptions FROM pg_class WHERE relname='${table}';"
 }
 
-# @description 
+# @description
 #   Set per-table settings, such as autovacuum, eg:
 # @example
 #   db.psql.connect.table-settings-set prod users autovacuum_analyze_threshold 1000000
@@ -272,7 +291,7 @@ db.datetime() {
 }
 
 db.actions.top() {
-  db.top "$@" 
+  db.top "$@"
 }
 
 db.actions.connect() {
@@ -281,6 +300,10 @@ db.actions.connect() {
 
 db.actions.run() {
   db.psql.run "$@"
+}
+
+db.actions.data-dir() {
+  db.psql.connect "$@" $(db.psql.args-data-only) -c 'show data_directory' | $(which grep) -E -v 'data_directory|row'
 }
 
 db.actions.table-settings-show() {
@@ -293,6 +316,7 @@ db.actions.table-settings-set() {
 
 db.actions.connections() {
   db.config.connections
+  echo
 }
 
 db.actions.db-settings-pretty() {

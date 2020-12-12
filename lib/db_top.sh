@@ -18,7 +18,7 @@ function .db.primary-or-replica() {
 
   local toc="$1"
   shift
-  
+
   local code
   local stderr="$(mktemp /tmp/repl.err.$$.${RANDOM})"
 
@@ -26,7 +26,7 @@ function .db.primary-or-replica() {
     printf "${bldgrn} Replication Status on the Primary.${clr}${txtcyn}\n" >>"${toc}"
 
     # shellcheck disable=SC2116
-    ( eval "psql $* -X -P pager -c \"select client_addr, state, write_lag + flush_lag + replay_lag as REPLICATION_CUMULATIVE_LAG from pg_stat_replication\"" | grep -v 'rows)') 2>"${stderr}" 1>>"${toc}" 
+    ( eval "psql $* -X -P pager -c \"select client_addr, state, write_lag + flush_lag + replay_lag as REPLICATION_CUMULATIVE_LAG from pg_stat_replication\"" | grep -v 'rows)') 2>"${stderr}" 1>>"${toc}"
     code=$?
   elif echo "${dbname}" | grep -E -q "slave|replica"; then
     printf "${bldcyn} Replication Status on the Replica.${clr}${txtgrn}\n" >>"${toc}"
@@ -58,7 +58,7 @@ function .db.primary-or-replica() {
   shift
   local query_width
   local sw=$(screen-width)
-  query_width=$((sw - 72))
+  query_width=$((sw - 82))
   sed -e "/^--.*$/d; s/QUERY_WIDTH/${query_width}/g;s/LIMIT/${height}/g" "${BASHMATIC_HOME}/.db.active.sql" | tr '\n' ' ' >"${tof}.query"
 }
 
@@ -83,7 +83,7 @@ function .db.primary-or-replica() {
   .db.top.psql.replication "${dbname}" "${tof}" "$@"
 
   local query="${tof}.query"
-  eval "psql -X -P pager -f ${query} $* >${tof}.out"
+  eval "psql -X -P pager --pset linestyle=unicode --pset border=3 -f ${query} $* >${tof}.out"
   local code=$?
   local fh=$(wc -l "${tof}.out" | awk '{print $1}')
 
@@ -93,7 +93,7 @@ function .db.primary-or-replica() {
   .db.primary-or-replica "${dbname}" && h=$((h - 3))
   echo "${dbname}" | grep -E -q "primary|master" && h=$((h - 4))
 
-  [[ ${fh} -lt 10 ]] && {
+  [[ ${fh} -lt 1 ]] && {
     printf "           ${clr}${txtblk}${bakgrn}${clr}${bakgrn} No active queries were detected on ${bldwht}${dbname}  👀  ${bakblk}${bldgrn}${clr}\n" >>"${tof}"
     return 0
   }
@@ -105,17 +105,16 @@ function .db.primary-or-replica() {
       alert_color_bg="${bakred}"
       alert_color_fg="${bldred}"
     fi
-    printf "${bldwht}${bakblu} Truncated ${txtblu}${alert_color_bg}${bldwht}${alert_color_bg}${bldylw}$(printf " %2d Rows" $((fh - h)))  ${alert_color_fg}${bakylw}${clr}${alert_color_fg}${bakylw} Total: $((fh - 4)) Active Queries ${txtylw}${bakblk}${clr}\n" >>"${tof}"
   }
 
+  printf "${bldwht}${bakblu} Truncated ${txtblu}${alert_color_bg}${bldwht}${alert_color_bg}${bldylw}$(printf " %2d Rows" $((fh - h)))  ${alert_color_fg}${bakylw}${clr}${alert_color_fg}${bakylw} Total: $((fh - 4)) Active Queries ${txtylw}${bakblk}${clr}\n" >>"${tof}"
+
   # shellcheck disable=2002
-  cat "${tof}.out" |
-    grep -E -v -- ' select pid, client_addr ' |
-    GREP_COLOR=34 grep -E -C 1000 -i --color=always -e ' (((auto)?(analyze|vacuum))|delete|update|insert|create (table|index|materialized view)?|drop (table|index|materialized view)?|alter (table|index)?|\[a-z\])' |
-    GREP_COLOR=32 grep -E -C 1000 -i --color=always -e ' (active|idle)' |
-    sed -E '/^--$/d' |
-    head -"${h}" |
-    cut -c -"${sw}" |
+  cat "${tof}.out" | \
+    grep -E -v -- ' select pid, client_addr ' | \
+    sed -E '/^--$/d' | \
+    head -"${h}" | \
+    cut -c -"${sw}" | \
     cat >>"${tof}"
 
   [[ ${code} -ne 0 ]] && {
