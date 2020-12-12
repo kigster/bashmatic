@@ -2,6 +2,8 @@
 # Private functions
 # shellcheck disable=SC2155
 
+source "${BASHMATIC_HOME}/lib/util.sh"
+
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 

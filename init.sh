@@ -64,6 +64,7 @@ main() {
     source "${BASHMATIC_LIBDIR}/util.sh"
     source "${BASHMATIC_LIBDIR}/is.sh"
     source "${BASHMATIC_LIBDIR}/output.sh"
+    output.unconstrain-screen-width
     source "${setup_script}"
     bashmatic.setup
   else

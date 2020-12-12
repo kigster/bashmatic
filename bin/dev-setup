@@ -3,7 +3,7 @@
 
 # shellcheck disable=2046
 
-[[ -z ${BASHNATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
 [[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
 [[ -d ${BASHMATIC_HOME} ]] || {
   echo "Can't find Bashmatic, even after attempting an installation."
@@ -14,22 +14,14 @@
 
 source "${BASHMATIC_HOME}/init.sh"
 
+output.constrain-screen-width 100
+
 export DEFAULT_RUBY_VERSION="2.7.1"
-export DEFAULT_POSTGRESQL_VERSION="11"
+export DEFAULT_POSTGRESQL_VERSION="latest"
 export DEFAULT_MYSQL_VERSION="11"
 
-run.set-all continue-on-error
-output.set-max-width 100
-
 # This flag is from lib/brew.sh
 export opt_terse=
-
-run.set-all continue-on-error
-output.set-max-width 100
-
-# This flag is from lib/brew.sh
-export opt_terse=
-
 export ruby_version=
 declare -a pg_versions
 declare -a mysql_versions
@@ -37,10 +29,23 @@ export DevSetup__Version="0.4.0"
 
 .dev-setup.detect.pg-version() {
   export pg_versions=($(brew.package.available-versions postgresql))
-  export latest_postgres_version=${pg_versions[0]}
-  export postgres_version=${postgres_version:-${latest_postgres_version}}
-  export postgres_version=${postgres_version:-${DEFAULT_POSTGRESQL_VERSION}}
-  info "Using PostgreSQL version ${bldylw}${postgres_version}" >&2
+  export pre_latest_postgres_version=${pg_versions[0]}
+  export postgres_version=${postgres_version:-${DEFAULT_POSTGRESQL_VERSION:-${pre_latest_postgres_version}}}
+  info "Using PostgreSQL Version: ${bldylw}${postgres_version}" >&2
+}
+
+.dev-setup.brew.postgres-package() {
+  local package
+  if [[ ${postgres_version} == "latest" ]]; then
+    package="postgresql"
+  elif is.numeric "${postgres_version}"; then
+    package="postgresql@${postgres_version}"
+  else
+    error "Invalid postgresql version: ${postgres_version}">&2
+    return 2
+  fi
+
+  printf -- "%s" "${package}"
 }
 
 .dev-setup.detect.mysql-version() {
@@ -197,6 +202,7 @@ export DevSetup__Callbacks
     readline
     rsync
     shellcheck
+    shfmt
     subversion
     the_silver_searcher
     tree
@@ -374,18 +380,16 @@ export DevSetup__Callbacks
 }
 
 .dev-setup.brew.postgres() {
-  export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
-    "postgresql@${postgres_version}"
-  )
-  export DevSetup__BrewServices=("${DevSetup__BrewServices[@]}"
-    "postgresql@${postgres_version}"
-  )
+  local package="$(.dev-setup.brew.postgres-package)"
 
+  export DevSetup__BrewPackages+=("${package}")
+  export DevSetup__BrewServices+=("${package}")
   export DevSetup__Callbacks+=(.dev-setup.callbacks.postgres)
 }
 
 .dev-setup.callbacks.postgres() {
-  local package="postgresql@${postgres_version}"
+  local package="$(.dev-setup.brew.postgres-package)"
+  brew.package.is-installed "${package}"
 
   set +e
   brew unlink "${package}" 1>/dev/null 2>&1 
@@ -427,6 +431,7 @@ __dev-setup.brew.grc() {
 declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
 declare -a components_to_install=()
 export flag_verbose=0
+export flag_force=0
 export flag_show_header=1
 export flag_run_callbacks=1
 export flag_callbacks_only=0
@@ -503,6 +508,10 @@ dev-setup.parse-opts() {
       ;;
     -n | --dry-run)
       run.set-all dry-run-on
+      shift
+      ;;
+    -f | --force)
+      export flag_force=1
       shift
       ;;
     -N)

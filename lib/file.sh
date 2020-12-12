@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+file.temp() {
+  local n="${1:-${RANDOM}}"
+  local file="$(mktemp /tmp/.bashmatic.${USER}.$$.${n})"
+  touch "${file}"
+  printf -- "%s" "${file}"
+}
+  
 # Makes a file executable but only if it already contains
 # a "bang" line at the top.
 #

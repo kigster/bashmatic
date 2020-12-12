@@ -42,6 +42,10 @@ section.gray-yellow() {
   section.gray "${bldylw}${bakblk}$*"
 }
 
+section.salmon() {
+  .output.left-powerline wht 65 "${white_on_salmon}  $@  "
+}
+
 notice() {
   .output.left-powerline ylw 65 "${itablk}${bakylw}$@"
 }
@@ -288,6 +292,18 @@ h4() {
 
 h5() {
   section.purple "$@"
+}
+
+h6() {
+  section.yellow "$@"
+}
+
+h7() {
+  section.salmon "$@"
+}
+
+h8() {
+  section.cyan "$@"
 }
 
 hdr() {

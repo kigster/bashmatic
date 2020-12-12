@@ -1,11 +1,9 @@
 -- vim: ft=sql
 select pid,
-       substring(application_name for 10) as app_name,
-       substring(backend_type for 16) as bcknd_type,
-       substring(state for 10) as state,
-       wait_event_type || '/' || wait_event as wait,
-       now() - query_start as duration,
-       regexp_replace(substring(query, 0, QUERY_WIDTH), E'[\\n\\r +]+', ' ', 'g') as Query
+       rpad(coalesce(application_name, 'app'), 7) as app,
+       rpad(coalesce(backend_type, 'bcknd'), 15) as backand_type,
+       to_char((now() + interval '0.0001 sec' - query_start)::interval, 'HH24:MM:SS.ms') as duration,
+       rpad(regexp_replace(query, E'[\\n\\r +]+', ' ', 'g'), QUERY_WIDTH) as Query
 from pg_stat_activity
 where state != 'idle'
-order by Duration desc
+order by duration desc
