@@ -124,7 +124,7 @@ function pdf.main() {
     output_file="${outfile}"
   else
     output_file="${input_file}"
-    output_file="${output_file/-reduced/}"
+    output_file="${outp ut_file/-reduced/}"
     output_file="${output_file/.pdf.pdf/.pdf}"
     output_file="${output_file/.pdf/-reduced}.$(time.now.db 2>&1|tr -d ' ').pdf"
   fi

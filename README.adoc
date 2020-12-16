@@ -133,7 +133,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 [source,bash]
 ----
 $ bashmatic.version
-1.5.0
+1.7.0
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.
@@ -163,6 +163,20 @@ cd ->/dev/null
 === Reloading Bashmatic
 
 You can always reload _Bashmatic®_ with `bashmatic.reload` function.
+
+== Using the `Makefile`
+
+The top-level `Makefile` is mostly provided as a convenience around scripts that auto-generate documentation.
+
+You can run `make help` and read the available targets:
+
+image::doc/img/makefile.png[Makefile in Action,size=90%]
+
+You might want to use the Makefile for two reasons:
+
+ * To update function index, or re-generate latest PDFs of README, USAGE or the CHANGELOG files
+ * To run tests `make test -B ` does the trick
+ * To run a local computer setup with `make setup` :) 
 
 == Bashmatic in Action — Practical Examples
 
