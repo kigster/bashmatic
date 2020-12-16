@@ -611,10 +611,8 @@ okay() {
 }
 
 success() {
-  echo
-  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
-  echo
-  echo
+  printf -- "\n${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  printf -- "\n\n" >&2
 }
 
 abort() {

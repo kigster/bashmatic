@@ -132,7 +132,8 @@ user.current-shell-init-file() {
   declare -a shell_files=($(util.shell-init-files user.current-shell))
   .user.pick-shell-init-file "${shell_files[@]}"
 }
-fl-init-file() {
+
+.user.pick-shell-init-file() {
   local init_file
   for file in "$@"; do
     if [[ -s ${file} ]]; then
