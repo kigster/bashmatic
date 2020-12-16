@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # @file Bashmatic Utilities and aliases for Git revision control system.
-# @brief Lots of useful utilities and helpers.
+# @description Lots of useful utilities and helpers.
 
 git.configure-auto-updates() {
   # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.

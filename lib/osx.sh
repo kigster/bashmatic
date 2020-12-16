@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # @file osx.sh
-# @brief OSX Specific Helpers and Utilities
+# @description OSX Specific Helpers and Utilities
 
 # @description
 #   Checks if a given parameter matches any of the installed applications

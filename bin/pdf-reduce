@@ -32,7 +32,15 @@ function pdf.do.shrink() {
     "Resolution:  → ${bldcyn}${resolution}"
 
   local finish=$(mktemp -t finish)
-  run "rm -f ${finish}"
+  cp /dev/null "${finish}"
+
+  local finished=0
+  local counter=0
+  local width=$(screen.width)
+  local code=0
+
+  width=$((width - 10))
+  inf "Starting conversion, please wait..."
 
   (
     /usr/local/bin/gs \
@@ -50,45 +58,21 @@ function pdf.do.shrink() {
       -dMonoImageDownsampleType=/Subsample \
       -dMonoImageResolution="${resolution}" \
       -sOutputFile="${outfile}" \
-      "${infile}" && touch "${finish}"
-  ) &
+      "${infile}"; code=$?; touch "${finish}"
+  )
 
-  echo
+  ((code)) && ui.closer.no_ok:
+  ((code)) || ui.closer.ok:
 
-  local finished=0
-  local counter=0
-  local width=$(screen.width)
-  width=$((width - 10))
-  inf '['
-
-  while true; do
-    counter=$((counter + 1))
-    if [[ -f "${finish}" && -s "${outfile}" ]]; then
-      printf "${txtblu}]"
-      ok:
-      echo
-      hr
-      run "rm -f \"${finish}\""
-      local size_old="$(file.size "${infile}")"
-      local size_new="$(file.size "${outfile}")"
-      local delta=$((100 - 100 * size_new / size_old))
-      echo "DELTA: ${delta}"
-      h1 "PDF file reduction completed with %${delta} reduction"
-      finished=1
-      break
-    else
-      sleep 0.2
-
-      if [[ ${counter} -gt ${width} ]]; then
-        counter=0
-        printf "${txtblu}]"
-        ok:
-        inf '['
-      else
-        printf "${bldgrn}◼︎"
-      fi
-    fi
-  done
+  rm -f "${finish}"
+  
+  if [[ "${code}" -eq 0 ]]; then
+    local size_old="$(file.size "${infile}")"
+    local size_new="$(file.size "${outfile}")"
+    local delta=$((100 - 100 * size_new / size_old))
+    h3 "PDF file reduction completed with the ${bldylw}${delta}%% reduction"
+    finished=1
+  fi
 
   ((finished)) && { success "OK. Reduction completed."; }
   ((finished)) || { error "Did not properly finish."; }
@@ -140,9 +124,9 @@ function pdf.main() {
     output_file="${outfile}"
   else
     output_file="${input_file}"
-    output_file="${output_file/-reduced/}"
+    output_file="${outp ut_file/-reduced/}"
     output_file="${output_file/.pdf.pdf/.pdf}"
-    output_file="${output_file/.pdf/-reduced.pdf}"
+    output_file="${output_file/.pdf/-reduced}.$(time.now.db 2>&1|tr -d ' ').pdf"
   fi
 
   # Output resolution defaults to 72 unless given:

@@ -19,13 +19,13 @@ WARNING:
 
 * You can also download the **xref:README.pdf[PDF version of this document]** which is better for print. 
 
-* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the xref:USAGE.adoc[USAGE.adoc] file, or it's xref:USAGE.pdf[PDF version].
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the xref:doc/USAGE.adoc[USAGE.adoc] file, or it's xref:doc/USAGE.pdf[PDF version].
 
-* There is also an auto-generated file listing the source of every function and module. You can find it xref:FUNCTIONS.adoc[FUNCTIONS.adoc].
+* There is also an auto-generated file listing the source of every function and module. You can find it xref:doc/FUNCTIONS.adoc[FUNCTIONS.adoc].
 
-* There is also the beginnings of `shdoc`-based documentation, available in the xref:./USAGE.adoc[USAGE.adoc] file and a corresponding xref:./USAGE.pdf[PDF].
+* There is also the beginnings of `shdoc`-based documentation, available in the xref:doc/./USAGE.adoc[USAGE.adoc] file and a corresponding xref:doc/./USAGE.pdf[PDF].
 
-* Additionally please checkout the xref:CHANGELOG.md[CHANGELOG] and the xref:LICENSE.adoc[LICENSE].
+* Additionally please checkout the xref:doc/CHANGELOG.md[CHANGELOG] and the xref:doc/LICENSE.adoc[LICENSE].
 ====
 
 IMPORTANT:
@@ -46,7 +46,7 @@ _Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying
 
 *_Bashmatic®_ is meant to be used primarily with Mac OS-X, although many useful functions will also work under Linux.* Note that our CI test suite runs on Ubuntu.
 
-Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:FUNCTIONS.adoc[functions index page].
+Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:doc/FUNCTIONS.adoc[functions index page].
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* 😂.
 
@@ -133,7 +133,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 [source,bash]
 ----
 $ bashmatic.version
-1.5.0
+1.7.0
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.
@@ -164,6 +164,20 @@ cd ->/dev/null
 
 You can always reload _Bashmatic®_ with `bashmatic.reload` function.
 
+== Using the `Makefile`
+
+The top-level `Makefile` is mostly provided as a convenience around scripts that auto-generate documentation.
+
+You can run `make help` and read the available targets:
+
+image::doc/img/makefile.png[Makefile in Action,size=90%]
+
+You might want to use the Makefile for two reasons:
+
+ * To update function index, or re-generate latest PDFs of README, USAGE or the CHANGELOG files
+ * To run tests `make test -B ` does the trick
+ * To run a local computer setup with `make setup` :) 
+
 == Bashmatic in Action — Practical Examples
 
 **Why do we need another BASH framework?**
@@ -189,7 +203,7 @@ gem.install "sym" && brew.install.package "curl" && \
 
 Results in this detailed and, let's be honest, _gorgeous_ ASCII output:
 
-image::.bashmatic-example.png[example,width=100%]
+image::doc/img/bashmatic-example.png[example,width=100%]
 
 Tell me you are not at all excited to start writing complex installation flows in BASH right away?
 
@@ -232,7 +246,7 @@ NOTE: the script relies on Homebrew behind the scenes, and therefore would not w
 
 It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
-image::.dev-setup.png[Developer Setup,width=100%]
+image::doc/img/dev-setup.png[Developer Setup,width=100%]
 
 In the example below we'll use `dev-setup` script to install the following:
  
@@ -286,7 +300,7 @@ Just like with the regular `top` you can see the "top" resource-consuming proces
 
 Here is the pixelated screenshot of `dbtop` running against two live databases:
 
-image::.dbtop.png[DBTop Example,width=90%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
+image::doc/img/dbtop.png[DBTop Example,width=90%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
 
 In order for this to work, you must first define database connection parameters in a YAML file located at the following PATH: `~/.db/database.yml`.
 
@@ -384,7 +398,7 @@ The naming convention we use is a derivative of Google's Bash StyleGuide, using 
 
 === Seeing All Functions
 
-After running the above, run `bashmatic.functions` function to see all available functions. You can also open the xref:FUNCTIONS.adoc[FUNCTIONS.adoc] file to see the alphabetized list of all 422 functions.
+After running the above, run `bashmatic.functions` function to see all available functions. You can also open the xref:doc/FUNCTIONS.adoc[FUNCTIONS.adoc] file to see the alphabetized list of all 422 functions.
 
 === Seeing Specific Functions
 
@@ -639,7 +653,7 @@ success "installed Sym version $(gem.version sym)"
 
 When you run the above script, you shyould seee the following output:
 
-image::.bashmatic-example.png[example]
+image::doc/img/bashmatic-example.png[example]
 
 ==== 4. Shortening URLs and Github Access
 
@@ -866,7 +880,7 @@ There are plenty more modules, that help with:
 
 And many more.
 
-See the full function index with the function implementation body in the xref:FUNCTIONS.adoc[FUNCTIONS.adoc] index.
+See the full function index with the function implementation body in the xref:doc/FUNCTIONS.adoc[FUNCTIONS.adoc] index.
 
 '''
 

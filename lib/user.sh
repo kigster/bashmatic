@@ -1,4 +1,7 @@
+#!/usr/bin/env bash
 # vim: ft=bash
+# © 2014-2020 Konstantin Gredeskoul
+# 
 user.gitconfig.email() {
   if [[ -s ${HOME}/.gitconfig ]]; then
     grep email "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'

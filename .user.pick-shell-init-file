@@ -1,3 +1,0 @@
-export BASHMATIC_HOME="/Users/kig/.bashmatic"
-[[ -f ${BASHMATIC_HOME}/init.sh ]] && source ${BASHMATIC_HOME}/init.sh
-export PATH="${PATH}:${BASHMATIC_HOME}/bin"

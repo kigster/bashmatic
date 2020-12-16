@@ -2,7 +2,7 @@
 # vim: ft=bash
 
 # @file Bashmatic Utilities for PDF file handling
-# @brief Install and uses GhostScript to manipulate PDFs.
+# @description Install and uses GhostScript to manipulate PDFs.
 
 # @description Combine multiple PDFs into a single one using ghostscript.
 #

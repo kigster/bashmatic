@@ -291,7 +291,7 @@ ascii-clean() {
   # back to beginning
   cursor.at.x 3
 
-  printf "${__color_fg}${text}${clr}\n"
+  printf -- "${__color_fg}${text}${clr}\n"
 }
 
 # Usage: .output.box border-color text-color "line 1" "line 2" ....
@@ -458,7 +458,15 @@ screen.width() {
   .output.screen-width
 }
 
+screen-width() {
+  .output.screen-width
+}
+
 screen.height() {
+  .output.screen-height
+}
+
+screen-height() {
   .output.screen-height
 }
 
@@ -484,10 +492,6 @@ output.has-stdin() {
 
 output.is-redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
-}
-
-screen-width() {
-  .output.screen-width
 }
 
 hr.colored() {
@@ -607,10 +611,8 @@ okay() {
 }
 
 success() {
-  echo
-  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
-  echo
-  echo
+  printf -- "\n${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  printf -- "\n\n" >&2
 }
 
 abort() {
@@ -708,6 +710,14 @@ columnize() {
     expand -8 |
     sed -E '/^ *$/d' |
     grep -v 'Page '
+}
+
+dbg-on() {
+  export DEBUG=$(time.now.db)
+}
+
+dbg-off() {
+  unset DEBUG
 }
 
 # @description Checks if we have debug mode enabled
