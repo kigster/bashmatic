@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
+[[ -d ${BASHMATIC_HOME} ]] || {
+  echo "Can't find Bashmatic, even after attempting an installation."
+  echo "Please install Bashmatic with the following command line:"
+  echo 'bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"'
+  exit 1
+}
+
+source "${BASHMATIC_HOME}/init.sh"
+
+# if we are being called, that means that the real shdoc is not installed.
+is.command gawk || gawk::install
+
+if [[ -x /usr/local/bin/shdoc && "$(head -1 /usr/local/bin/shdoc)" =~ gawk  ]] ; then
+  shdoc::install
+  [[ -x /usr/local/bin/shdoc ]] || { 
+    error "Unable to install shdoc into /usr/local/bin/shdoc — what's the dealio?"
+    exit 1
+  }
+fi
+
+function tools.process-file() {
+  local file="$1"
+  info "Extracting shell docs from ${file}..." >&2
+  printf "\n---\n\n"
+  printf "<!-- BEGIN ${file} -->\n"
+  /usr/local/bin/shdoc < "$1"
+  printf "<!-- END   ${file} -->\n\n"
+}
+
+function tools.extract-docs() {
+  local root="${1:-${PWD}}"
+  [[ -d ${root}/lib ]] && root="${root}/lib"
+
+  h3 "Processing files under ${bldylw}${root} for SHELL documentation..."
+
+  cp /dev/null "${BASHMATIC_HOME}/doc/USAGE.md"
+  find "${root}" -type f -name '*.sh' -or -name '*.bash' -exec tools.tools.process-file {} \; >> "${BASHMATIC_HOME}/doc/USAGE.md"
+}
+
+

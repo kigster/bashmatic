@@ -2,7 +2,7 @@
 # vim: ft=bash
 #
 # @file util.sh
-# @brief Miscellaneous utilities.
+# @description Miscellaneous utilities.
 
 # @description Convert STDIN using rot13
 #

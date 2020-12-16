@@ -39,6 +39,7 @@
 * xref:#module-output-repeat-char[output-repeat-char]
 * xref:#module-path[path]
 * xref:#module-pdf[pdf]
+* xref:#module-pg[pg]
 * xref:#module-pids[pids]
 * xref:#module-pipe[pipe]
 * xref:#module-progress-bar[progress-bar]
@@ -451,6 +452,17 @@ array.uniq ()
 
 
 === Module `audio`
+
+==== `æ.mp3`
+
+[source,bash]
+----
+æ.mp3 () 
+{ 
+    audio.make.mp3 "$@"
+}
+
+----
 
 ==== `audio.dir.mp3-to-wav`
 
@@ -1086,7 +1098,7 @@ brew.cask.is-installed ()
 ----
 brew.cask.list () 
 { 
-    cache-or-command ${LibBrew__CaskCacheList} 10 "--cask -1"
+    cache-or-command "${LibBrew__CaskCacheList}" 10 --cask -1
 }
 
 ----
@@ -1237,6 +1249,7 @@ brew.package.all-installed ()
 brew.package.available-versions () 
 { 
     local package="$1"
+    [[ -z "$1" ]] && return 1
     brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
 }
 
@@ -1277,7 +1290,7 @@ brew.package.link ()
 ----
 brew.package.list () 
 { 
-    cache-or-command ${LibBrew__PackageCacheList} 10 "--formula -1"
+    cache-or-command "${LibBrew__PackageCacheList}" 10 --formula -1
 }
 
 ----
@@ -1420,7 +1433,7 @@ brew.uninstall.packages ()
 { 
     local force=
     [[ -n "${opts_force}" ]] && force="--force"
-    for package in $@
+    for package in "$@"
     do
         brew.uninstall.package "${package}"
     done
@@ -1472,16 +1485,14 @@ cache-or-command ()
     shift
     local stale_minutes="$1"
     shift
-    local brew_list_flags="$1"
-    shift
     if file.exists-and-newer-than "${file}" "${stale_minutes}"; then
         if [[ -s "${file}" ]]; then
             cat "${file}"
             return 0
         fi
     fi
-    is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${brew_list_flags} >${file}"
-    brew list ${brew_list_flags} > "${file}"
+    is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${*} >${file}"
+    brew list "$@" > "${file}"
     cat "${file}"
 }
 
@@ -1782,28 +1793,73 @@ db.actions.connect ()
 db.actions.connections () 
 { 
     db.config.connections
+    echo
 }
 
 ----
 
-==== `db.actions.settings-ini`
+==== `db.actions.data-dir`
 
 [source,bash]
 ----
-db.actions.settings-ini () 
+db.actions.data-dir () 
 { 
-    db.psql.connect.settings-ini "$@"
+    db.psql.connect "$@" $(db.psql.args-data-only) -c 'show data_directory' | $(which grep) -E -v 'data_directory|row'
 }
 
 ----
 
-==== `db.actions.settings-table`
+==== `db.actions.db-settings-pretty`
 
 [source,bash]
 ----
-db.actions.settings-table () 
+db.actions.db-settings-pretty () 
 { 
-    db.psql.connect.settings-table "$@"
+    db.psql.connect.db-settings-pretty "$@"
+}
+
+----
+
+==== `db.actions.db-settings-toml`
+
+[source,bash]
+----
+db.actions.db-settings-toml () 
+{ 
+    db.psql.connect.db-settings-toml "$@"
+}
+
+----
+
+==== `db.actions.run`
+
+[source,bash]
+----
+db.actions.run () 
+{ 
+    db.psql.run "$@"
+}
+
+----
+
+==== `db.actions.table-settings-set`
+
+[source,bash]
+----
+db.actions.table-settings-set () 
+{ 
+    db.psql.connect.table-settings-set "$@"
+}
+
+----
+
+==== `db.actions.table-settings-show`
+
+[source,bash]
+----
+db.actions.table-settings-show () 
+{ 
+    db.psql.connect.table-settings-show "$@"
 }
 
 ----
@@ -1843,9 +1899,9 @@ db.config.connections-list ()
   require 'yaml'
   require 'colored2'
   h = YAML.load(File.read(ENV['__yaml_source']))
-  h.each_pair do |name, params| 
-    printf "%50s → %s@%s/%s\n", 
-      name.bold.yellow, 
+  h.each_pair do |name, params|
+    printf "%50s → %s@%s/%s\n",
+      name.bold.yellow,
       params['username'].blue,
       params['host'].green,
       params['database'].cyan
@@ -2030,16 +2086,47 @@ db.psql.connect ()
     shift
     if [[ -z ${dbname} ]]; then
         h1 "USAGE: db.connect connection-name" "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file." 1>&2
-        return 0
+        return 0``
     fi
+    export __psql_stderr="$(file.temp)"
+    cp /dev/null "${__psql_stderr}"
     local tempfile=$(mktemp)
     db.psql.args.config "${dbname}" > "${tempfile}"
     local -a args=($(cat "${tempfile}"))
     rm -f "${tempfile}" > /dev/null
-    ( printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n"
-    printf "${txtylw}$(which psql) ${args[*]}${clr}\n"
-    hr ) 1>&2
-    psql "${args[@]}" "$@"
+    [[ ${flag_quiet} -eq 0 ]] && { 
+        printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n" 1>&2
+        printf "${txtylw}$(which psql) ${args[*]}${clr}\n" 1>&2
+        hr 1>&2
+    }
+    set +e
+    psql --echo-errors "${args[@]}" "$@" 2> "${__psql_stderr}"
+    local code=$?
+    [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
+    set -e
+    return ${code}
+}
+
+----
+
+==== `db.psql.connect.db-settings-pretty`
+
+[source,bash]
+----
+db.psql.connect.db-settings-pretty () 
+{ 
+    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
+}
+
+----
+
+==== `db.psql.connect.db-settings-toml`
+
+[source,bash]
+----
+db.psql.connect.db-settings-toml () 
+{ 
+    db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
 }
 
 ----
@@ -2057,24 +2144,41 @@ db.psql.connect.just-data ()
 
 ----
 
-==== `db.psql.connect.settings-ini`
+==== `db.psql.connect.table-settings-set`
 
 [source,bash]
 ----
-db.psql.connect.settings-ini () 
+db.psql.connect.table-settings-set () 
 { 
-    db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
+    local dbname="$1"
+    shift
+    local table="$1"
+    shift
+    local setting="$1"
+    shift
+    local value="$1"
+    shift
+    [[ -z ${setting} || -z ${value} ]] && { 
+        error "Either setting or value are not defined." 1>&2
+        return 1
+    }
+    info "Setting ${setting} = ${value} on table ${table}...."
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c "ALTER TABLE \"${table}\" SET (${setting} = ${value});"
 }
 
 ----
 
-==== `db.psql.connect.settings-table`
+==== `db.psql.connect.table-settings-show`
 
 [source,bash]
 ----
-db.psql.connect.settings-table () 
+db.psql.connect.table-settings-show () 
 { 
-    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
+    local dbname="$1"
+    shift
+    local table="$1"
+    shift
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c "SELECT relname, reloptions FROM pg_class WHERE relname='${table}';"
 }
 
 ----
@@ -2086,6 +2190,37 @@ db.psql.connect.settings-table ()
 db.psql.db-settings () 
 { 
     psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+}
+
+----
+
+==== `db.psql.report-error`
+
+[source,bash]
+----
+db.psql.report-error () 
+{ 
+    local -a argv=("$@")
+    [[ -z "${__psql_stderr}" ]] && return 0
+    [[ -s "${__psql_stderr}" ]] || return 0
+    error "Error running command: " "${bldylw}psql ${argv[*]}"
+    printf -- "${txtred}$(cat "${__psql_stderr}" | sed -E 's/^/   /g')${clr}\n"
+    hr
+    rm -f "${__psql_stderr}"
+    unset __psql_stderr
+}
+
+----
+
+==== `db.psql.run`
+
+[source,bash]
+----
+db.psql.run () 
+{ 
+    local dbname="$1"
+    shift
+    db.psql.connect "${dbname}" -X --pset border=3 -c "$@" -c "\q"
 }
 
 ----
@@ -2192,7 +2327,7 @@ db.top ()
     cp /dev/null "${tof}" > /dev/null
     for connection in "$@"
     do
-        db.psql.args.config "${connection}" > /dev/null 2>&1 || return 1
+        db.psql.args.config "${connection}" > /dev/null || return 1
         db.psql.args "${connection}" > "${tof}"
         arguments="$(cat "${tof}" | tr -d '\n')"
         connections_arguments+=("${arguments}")
@@ -2352,7 +2487,7 @@ dir.expand-dir ()
             dir="${HOME}/${dir:1:1000}"
         fi
     fi
-    printf "${dir}"
+    printf -- "%s" "${dir}"
 }
 
 ----
@@ -2365,6 +2500,18 @@ dir.is-a-dir ()
 { 
     local dir="${1}"
     [[ -d "${dir}" ]]
+}
+
+----
+
+==== `dir.short-home`
+
+[source,bash]
+----
+dir.short-home () 
+{ 
+    local dir="$1"
+    printf -- "%s" "${dir}" | sed -E "s#${HOME}#~#g"
 }
 
 ----
@@ -2959,6 +3106,20 @@ file.strip.extension ()
 
 ----
 
+==== `file.temp`
+
+[source,bash]
+----
+file.temp () 
+{ 
+    local n="${1:-${RANDOM}}"
+    local file="$(mktemp /tmp/.bashmatic.${USER}.$$.${n}.${RANDOM})"
+    cp /dev/null "${file}"
+    echo "${file}"
+}
+
+----
+
 ==== `files.find`
 
 [source,bash]
@@ -3545,6 +3706,34 @@ git.repo-is-clean ()
 
 ----
 
+==== `git.repo.remote-to-git@`
+
+[source,bash]
+----
+git.repo.remote-to-git@ () 
+{ 
+    local f=".git/config"
+    if [[ -f "$f" ]]; then
+        grep -q "url = git@" "$f" && { 
+            info "The repo is already using git@ syntax for the remote."
+            return 0
+        }
+        cat "${f}" | sed -E 's#url = https://github\.com/([^/]*)/#url = git@github\.com:\1/#g' > "${f}.ssh"
+        mv "${f}" "${f}.https"
+        cd .git
+        ln -nfs config.ssh config
+        cd - > /dev/null
+        hr
+        info "Created an ssh version of .git/config file, and symlinked it:"
+        ls -l .git/config*
+        info "Your new remote:"
+        info $(grep "git@" "${f}")
+        hr
+    fi
+}
+
+----
+
 ==== `git.save-last-update-at`
 
 [source,bash]
@@ -3620,7 +3809,7 @@ git.sync-remote ()
     else
         run "git remote update && git fetch"
     fi
-    local status=$(git.local-vs-remote)
+    local status="$(git.local-vs-remote)"
     if [[ ${status} == "behind" ]]; then
         git.quiet || run "git pull --rebase"
         git.quiet && git pull --rebase 2>&1 > /dev/null
@@ -4976,6 +5165,28 @@ dbg ()
 
 ----
 
+==== `dbg-off`
+
+[source,bash]
+----
+dbg-off () 
+{ 
+    unset DEBUG
+}
+
+----
+
+==== `dbg-on`
+
+[source,bash]
+----
+dbg-on () 
+{ 
+    export DEBUG=$(time.now.db)
+}
+
+----
+
 ==== `dbgf`
 
 [source,bash]
@@ -5435,6 +5646,17 @@ reset-color ()
 reset-color: () 
 { 
     printf "${clr}"
+}
+
+----
+
+==== `screen-height`
+
+[source,bash]
+----
+screen-height () 
+{ 
+    .output.screen-height
 }
 
 ----
@@ -6193,6 +6415,39 @@ h5 ()
 
 ----
 
+==== `h6`
+
+[source,bash]
+----
+h6 () 
+{ 
+    section.yellow "$@"
+}
+
+----
+
+==== `h7`
+
+[source,bash]
+----
+h7 () 
+{ 
+    section.salmon "$@"
+}
+
+----
+
+==== `h8`
+
+[source,bash]
+----
+h8 () 
+{ 
+    section.cyan "$@"
+}
+
+----
+
 ==== `hdr`
 
 [source,bash]
@@ -6369,6 +6624,17 @@ section.red ()
 
 ----
 
+==== `section.salmon`
+
+[source,bash]
+----
+section.salmon () 
+{ 
+    .output.left-powerline wht 65 "${white_on_salmon}  $@  "
+}
+
+----
+
 ==== `section.white`
 
 [source,bash]
@@ -6533,6 +6799,54 @@ pdf.combine ()
     info "destination file: ${bldylw}${merged}"
     run "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${merged} ${files}"
     return ${LibRun__LastExitCode}
+}
+
+----
+
+
+=== Module `pg`
+
+==== `pg.is-running`
+
+[source,bash]
+----
+pg.is-running () 
+{ 
+    [[ $(/bin/ps -ef | grep -c '[p]ostgres:') -gt 4 ]]
+}
+
+----
+
+==== `pg.running.data-dirs`
+
+[source,bash]
+----
+pg.running.data-dirs () 
+{ 
+    ps -eo 'args' | $(which grep) '[p]ostgres.*-D' | awk 'BEGIN{FS="-D"}{print $2}' | awk '{print $1}' | sort
+}
+
+----
+
+==== `pg.running.server-binaries`
+
+[source,bash]
+----
+pg.running.server-binaries () 
+{ 
+    ps -eo 'args' | $(which grep) '[p]ostgres.*-D' | awk '{print $1}' | sort
+}
+
+----
+
+==== `pg.server-in-path.version`
+
+[source,bash]
+----
+pg.server-in-path.version () 
+{ 
+    is.command postgres || return 1
+    $(which postgres) -V | sed -E 's/[^0-9.]//g;s/\..*$//g'
 }
 
 ----
@@ -8365,6 +8679,63 @@ set-e-status ()
 
 === Module `shdoc`
 
+==== `gawk::install`
+
+[source,bash]
+----
+gawk::install () 
+{ 
+    local gawk_path="$(command -v gawk 2>/dev/null)"
+    [[ -n "${gawk_path}" && -x "${gawk_path}" ]] || brew.install.package gawk
+}
+
+----
+
+==== `shdoc::install`
+
+[source,bash]
+----
+shdoc::install () 
+{ 
+    hash -r
+    export install_shdoc_path="/usr/local/bin"
+    [[ -x ${install_shdoc_path}/shdoc ]] && return 0
+    is.command gawk || gawk.install
+    local temp="$(file.temp)"
+    run "rm -rf ${temp}"
+    run "mkdir -p ${temp}"
+    run "curl -fsSL https://raw.githubusercontent.com/reconquest/shdoc/master/shdoc -o ${temp}/shdoc"
+    sed -E -e 's~#\!/usr/bin/gawk~#\!/usr/bin/env gawk~g' "${temp}/shdoc" > "${install_shdoc_path}/shdoc"
+    run "chmod 755 ${install_shdoc_path}/shdoc"
+}
+
+----
+
+==== `shdoc::reinstall`
+
+[source,bash]
+----
+shdoc::reinstall () 
+{ 
+    hash -r
+    local i=0
+    while true; do
+        i=$(( i + 1 ))
+        [[ $i -gt 3 ]] && { 
+            error "After 3 attempts still can't find shdoc in /usr/local/bin?"
+            return 1
+        }
+        local shdoc_path="$(which shdoc)"
+        [[ ${shdoc_path} =~ ${BASHMATIC_HOME} ]] && continue
+        [[ -z "${shdoc_path}" ]] && break
+        [[ -f "${shdoc_path}" ]] && run "rm -f ${shdoc_path} || sudo rm -f ${shdoc_path}"
+        hash -r
+    done
+    shdoc::install
+}
+
+----
+
 
 === Module `shell-set`
 
@@ -8897,6 +9268,17 @@ text.ord ()
 
 === Module `time`
 
+==== `date.now.with-time`
+
+[source,bash]
+----
+date.now.with-time () 
+{ 
+    date '+%F.%T'
+}
+
+----
+
 ==== `epoch`
 
 [source,bash]
@@ -9023,7 +9405,7 @@ time.epoch.minutes-ago ()
 ----
 time.now.db () 
 { 
-    date '+%F.%T' | tr -d '[-.:]'
+    date '+%F.%T.%S   ' | tr -d '[\:\-\.]'
 }
 
 ----
@@ -9365,6 +9747,27 @@ usage.set-min-flag-len ()
 
 === Module `user`
 
+==== `fl-init-file`
+
+[source,bash]
+----
+fl-init-file () 
+{ 
+    local init_file
+    for file in "$@"
+    do
+        if [[ -s ${file} ]]; then
+            init_file="${file}"
+            break
+        fi
+    done
+    [[ -z ${init_file} ]] && init_file="$0"
+    touch "${init_file}"
+    echo "${init_file}"
+}
+
+----
+
 ==== `user`
 
 [source,bash]
@@ -9410,7 +9813,7 @@ user.current-shell-init-file ()
 ----
 user.finger.name () 
 { 
-    [[ -n $(which finge) ]] && finger ${USER} | head -1 | sedx 's/.*Name: //g'
+    [[ -n $(which finge) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
 }
 
 ----
@@ -9433,7 +9836,7 @@ user.first ()
 user.gitconfig.email () 
 { 
     if [[ -s ${HOME}/.gitconfig ]]; then
-        grep email ${HOME}/.gitconfig | sedx 's/.*=\s?//g'
+        grep email "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
     fi
 }
 
@@ -9446,7 +9849,7 @@ user.gitconfig.email ()
 user.gitconfig.name () 
 { 
     if [[ -s ${HOME}/.gitconfig ]]; then
-        grep name ${HOME}/.gitconfig | sedx 's/.*=\s?//g'
+        grep name "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
     fi
 }
 
@@ -9530,13 +9933,82 @@ user.my.reverse-ip ()
 
 ----
 
+==== `user.pairs.email`
+
+[source,bash]
+----
+user.pairs.email () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    local username="$(user.pairs.username "$1")"
+    local domain="$(grep domain "${bashmatic_git_pairs}" | sed 's/.*domain://g' | tr -d ' ')"
+    [[ -n ${username} && -n "${domain}" ]] || { 
+        error "Couldn't determine username or domain from ${bashmatic_git_pairs} file for input ${bldwht}$*"
+        return 1
+    }
+    echo "${username}@${domain}"
+}
+
+----
+
+==== `user.pairs.firstname`
+
+[source,bash]
+----
+user.pairs.firstname () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $2}' | tr -d ';'
+}
+
+----
+
+==== `user.pairs.lastname`
+
+[source,bash]
+----
+user.pairs.lastname () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $3}' | tr -d ';'
+}
+
+----
+
+==== `user.pairs.set-file`
+
+[source,bash]
+----
+user.pairs.set-file () 
+{ 
+    [[ -s "$1" ]] || { 
+        error "Please pass a valid path to the .pairs file, typically in your home. You passed: [$1]"
+        return 1
+    }
+    export bashmatic_git_pairs="$1"
+}
+
+----
+
+==== `user.pairs.username`
+
+[source,bash]
+----
+user.pairs.username () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $4}' | tr -d ';'
+}
+
+----
+
 ==== `user.username`
 
 [source,bash]
 ----
 user.username () 
 { 
-    echo ${USER:-$(whoami)}
+    echo "${USER:-$(whoami)}"
 }
 
 ----
@@ -9605,8 +10077,8 @@ pause.short ()
 ----
 sedx () 
 { 
-    [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && export BASHMATIC_UTIL_SED_COMMAND="$(sedx.cache-command)"
-    ${BASHMATIC_UTIL_SED_COMMAND} "$*"
+    [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
+    ${bashmatic__sed_command} "$@"
 }
 
 ----
@@ -9617,37 +10089,9 @@ sedx ()
 ----
 sedx.cache-command () 
 { 
-    if [[ -z "${BASHMATIC_UTIL_SED_COMMAND}" ]]; then
-        local sed_path
-        local sed_command
-        local os
-        sed_path="$(which sed)"
-        os="$(uname -s)"
-        if [[ "${os}" == "Darwin" ]]; then
-            local gsed_path
-            gsed_path="$(which gsed)"
-            if [[ -z "${gsed_path}" ]]; then
-                [[ -n $(which brew) ]] || { 
-                    error "Brew is needed to install GNU sed on OS-X"
-                    return 1
-                }
-                brew install gnu-sed > /dev/null 2>&1
-                brew link gnu-sed --force > /dev/null 2>&1
-                gsed_path="$(which gsed)"
-            fi
-            [[ -z "${gsed_path}" ]] && { 
-                error "Can't find GNU sed even after installation."
-                return 2
-            }
-            sed_path="${gsed_path}"
-        fi
-        sed_command="${sed_path}"
-    else
-        sed_command="${BASHMATIC_UTIL_SED_COMMAND}"
-    fi
-    sed_command="${sed_command} -r -e "
-    printf "%s" "${sed_command}"
-    [[ -z ${BASHMATIC_UTIL_SED_COMMAND} ]] && export BASHMATIC_UTIL_SED_COMMAND="${sed_command}"
+    local sed_path="$(util.ensure-gnu-sed)"
+    local sed_command="${sed_path} -r -e "
+    export bashmatic__sed_command="${sed_command}"
 }
 
 ----
@@ -9675,7 +10119,7 @@ util.append-to-init-files ()
         do
             file="${init_file}"
             [[ -f ${file} ]] && { 
-                echo "${string}" >> ${file}
+                echo "${string}" >> "${file}"
                 is_installed="${file}"
                 break
             }
@@ -9749,6 +10193,49 @@ util.dev-setup.update ()
 
 ----
 
+==== `util.ensure-gnu-sed`
+
+[source,bash]
+----
+util.ensure-gnu-sed () 
+{ 
+    local sed_path
+    local gsed_path
+    local os
+    sed_path="$(command -v sed 2>/dev/null)"
+    os="$(uname -s)"
+    case ${os} in 
+        Darwin)
+            gsed_path="$(command -v gsed 2>/dev/null)"
+            if [[ -z "${gsed_path}" ]]; then
+                echo
+                output.constrain-screen-width 100
+                h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
+                ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed ) 1>&2 > /dev/null
+                hash -r 2> /dev/null
+                gsed_path="$(command -v gsed 2>/dev/null)"
+                [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
+            fi
+            [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || { 
+                error "Can't find GNU sed even after installation." 1>&2
+                return 2
+            }
+            sed_path="${gsed_path}"
+        ;
+        Linux)
+            sed_path="$(which sed)"
+        ;
+        *)
+            echo "Operating system \"${os}\" is not supported." 1>&2
+            return 2
+        ;
+    esac
+    output.unconstrain-screen-width
+    echo -n "${sed_path}"
+}
+
+----
+
 ==== `util.functions-matching`
 
 [source,bash]
@@ -9770,7 +10257,7 @@ util.functions-matching.diff ()
 { 
     for e in $(util.functions-matching "${1}")
     do
-        echo ${e/${1}/}
+        echo "${e/${1}/}"
     done
 }
 
@@ -9823,7 +10310,7 @@ util.generate-password ()
     local len=${1:-32}
     local val=$(($(date '+%s') - 100000 * $RANDOM))
     [[ ${val:0:1} == "-" ]] && val=${val/-//}
-    printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c ${len})"
+    printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c "${len}")"
 }
 
 ----
@@ -9917,7 +10404,7 @@ util.is-variable-defined ()
 util.lines-in-folder () 
 { 
     local folder=${1:-'.'}
-    find ${folder} -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
+    find "${folder}" -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
 }
 
 ----
@@ -9950,9 +10437,9 @@ util.remove-from-init-files ()
     do
         run.config.detail-is-enabled && inf "verifying file ${init_file}..."
         file="${init_file}"
-        if [[ -f ${file} && -n $(grep "${search}" ${file}) ]]; then
+        if [[ -f ${file} && -n $(grep "${search}" "${file}") ]]; then
             run.config.detail-is-enabled && ui.closer.ok:
-            local matches=$(grep -c "${search}" ${file})
+            local matches=$(grep -c "${search}" "${file}")
             run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"
             run "grep -v \"${search}\" ${file} > ${temp_holder}"
             if [[ -n "${backup_extension}" ]]; then
@@ -9965,7 +10452,7 @@ util.remove-from-init-files ()
             run.config.detail-is-enabled && ui.closer.not-ok:
         fi
     done
-    return ${LibRun__LastExitCode}
+    return "${LibRun__LastExitCode}"
 }
 
 ----

@@ -2,16 +2,7 @@
 
 == https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
 
-https://github.com/kigster/bashmatic/compare/v1.6.0...HEAD[Full Changelog]
-
-*Merged pull requests:*
-
-* Many fixes and subtle improvements: https://github.com/kigster/bashmatic/pull/26[#26] (https://github.com/kigster[kigster])
-* Adding a few more db helpers + zsh expansion https://github.com/kigster/bashmatic/pull/25[#25] (https://github.com/kigster[kigster])
-
-== https://github.com/kigster/bashmatic/tree/v1.6.0[v1.6.0] (2020-11-13)
-
-https://github.com/kigster/bashmatic/compare/v1.5.0...v1.6.0[Full Changelog]
+https://github.com/kigster/bashmatic/compare/v1.5.0...HEAD[Full Changelog]
 
 *Merged pull requests:*
 

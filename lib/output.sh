@@ -458,7 +458,15 @@ screen.width() {
   .output.screen-width
 }
 
+screen-width() {
+  .output.screen-width
+}
+
 screen.height() {
+  .output.screen-height
+}
+
+screen-height() {
   .output.screen-height
 }
 
@@ -484,10 +492,6 @@ output.has-stdin() {
 
 output.is-redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
-}
-
-screen-width() {
-  .output.screen-width
 }
 
 hr.colored() {
@@ -708,6 +712,14 @@ columnize() {
     expand -8 |
     sed -E '/^ *$/d' |
     grep -v 'Page '
+}
+
+dbg-on() {
+  export DEBUG=$(time.now.db)
+}
+
+dbg-off() {
+  unset DEBUG
 }
 
 # @description Checks if we have debug mode enabled

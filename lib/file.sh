@@ -2,9 +2,9 @@
 
 file.temp() {
   local n="${1:-${RANDOM}}"
-  local file="$(mktemp /tmp/.bashmatic.${USER}.$$.${n})"
-  touch "${file}"
-  printf -- "%s" "${file}"
+  local file="$(mktemp /tmp/.bashmatic.${USER}.$$.${n}.${RANDOM})"
+  cp /dev/null "${file}"
+  echo "${file}"
 }
   
 # Makes a file executable but only if it already contains

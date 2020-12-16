@@ -13,15 +13,6 @@ function setup() {
   [[ -n $(command -V kramdoc) ]] || gem.install kramdoc
 }
 
-# NOT USED
-function replace-shdoc() {
-  run "rm -f bin/shdoc"
-  (cd bin &&
-    curl -fsSL https://raw.githubusercontent.com/reconquest/shdoc/master/shdoc -o - |
-    sed 's#/usr/bin/gawk#/usr/local/bin/gawk#g' >shdoc && cd -) >/dev/null
-  run "chmod 755 bin/shdoc"
-}
-
 function generate() {
   local out=USAGE.md
   local tmp="$(mktemp -t docs)"

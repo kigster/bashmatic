@@ -50,8 +50,7 @@ HEADER
   printf "\n\n== Copyright\n\n" >>${temp}
   printf "\n\n© 2020 Konstantin Gredeskoul, All rights reserved, MIT License." >>${temp}
 
-  run "mv ${temp} ${BASHMATIC_HOME}"
-  eval "code ${BASHMATIC_HOME}/FUNCTIONS.adoc"
+  run "mv -f ${temp} ${BASHMATIC_HOME}/doc"
 }
 
 .install.kramdoc() {
@@ -59,10 +58,10 @@ HEADER
 }
 
 generate-shdoc() {
-  bin/shdoc lib/*.sh >/tmp/USAGE.md
+  bin/shdocument lib/*.sh >/tmp/USAGE.md
   .install.kramdoc
   kramdoc /tmp/USAGE.md
-  mv /tmp/USAGE.adoc .
+  mv -v /tmp/USAGE.adoc "${BASHMATIC_HOME}/doc"
   rm -f /tmp/USAGE.md
 }
 
@@ -74,12 +73,10 @@ generate-changelog() {
     exit 1
   }
 
-  github_changelog_generator --project bashmatic --user kigster -t ${GITHUB_TOKEN}
+  github_changelog_generator --project bashmatic --user kigster -t "${GITHUB_TOKEN}"
   .install.kramdoc
   kramdoc CHANGELOG.md
+  mv -v CHANGEDOC.adoc "${BASHMATIC_HOME}/doc"
   rm -f CHANGELOG.md
 }
 
-generate-changelog &&
-  generate-functions-index &&
-  generate-shdoc

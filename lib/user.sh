@@ -1,4 +1,7 @@
+#!/usr/bin/env bash
 # vim: ft=bash
+# © 2014-2020 Konstantin Gredeskoul
+# 
 user.gitconfig.email() {
   if [[ -s ${HOME}/.gitconfig ]]; then
     grep email "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
@@ -129,8 +132,7 @@ user.current-shell-init-file() {
   declare -a shell_files=($(util.shell-init-files user.current-shell))
   .user.pick-shell-init-file "${shell_files[@]}"
 }
-
-.user.pick-shell-init-file() {
+fl-init-file() {
   local init_file
   for file in "$@"; do
     if [[ -s ${file} ]]; then
