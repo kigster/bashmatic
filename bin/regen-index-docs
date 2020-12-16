@@ -58,11 +58,8 @@ HEADER
 }
 
 generate-shdoc() {
-  bin/shdocument lib/*.sh >/tmp/USAGE.md
   .install.kramdoc
-  kramdoc /tmp/USAGE.md
-  mv -v /tmp/USAGE.adoc "${BASHMATIC_HOME}/doc"
-  rm -f /tmp/USAGE.md
+  bin/shdocument 
 }
 
 generate-changelog() {
@@ -73,7 +70,7 @@ generate-changelog() {
     exit 1
   }
 
-  github_changelog_generator --project bashmatic --user kigster -t "${GITHUB_TOKEN}"
+  github_changelog_generator --project bashmatic --user kigster -t "${GITHUB_TOKEN}" --no-verbose
   .install.kramdoc
   kramdoc CHANGELOG.md
   mv -v CHANGEDOC.adoc "${BASHMATIC_HOME}/doc"

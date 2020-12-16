@@ -291,7 +291,7 @@ ascii-clean() {
   # back to beginning
   cursor.at.x 3
 
-  printf "${__color_fg}${text}${clr}\n"
+  printf -- "${__color_fg}${text}${clr}\n"
 }
 
 # Usage: .output.box border-color text-color "line 1" "line 2" ....
