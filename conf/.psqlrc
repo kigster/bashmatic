@@ -1,5 +1,4 @@
 -- vim: set filetsype=sql
---
 -- don't output commands as we run them
 
 -- set how to output numbers (this turns on thousdand separators)
@@ -78,7 +77,7 @@
 \echo '——————————————————————————————————————————————————————————————————————————'
 
 \echo 'Type :unused     — to see unused indexes in this database'
-\set uindexes 'SELECT schemaname || ''.'' || relname AS table, indexrelname AS index, pg_size_pretty(pg_relation_size(i.indexrelid)) AS index_size, idx_scan as index_scans FROM pg_stat_user_indexes ui JOIN pg_index i ON ui.indexrelid = i.indexrelid WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192 ORDER BY pg_relation_size(i.indexrelid) / nullif(idx_scan, 0) DESC NULLS FIRST, pg_relation_size(i.indexrelid) DESC;'
+\set unused 'SELECT schemaname || ''.'' || relname AS table, indexrelname AS index, pg_size_pretty(pg_relation_size(i.indexrelid)) AS index_size, idx_scan as index_scans FROM pg_stat_user_indexes ui JOIN pg_index i ON ui.indexrelid = i.indexrelid WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192 ORDER BY pg_relation_size(i.indexrelid) / nullif(idx_scan, 0) DESC NULLS FIRST, pg_relation_size(i.indexrelid) DESC;'
 
 \echo 'Type :bigtables  — to see the biggest tables in this database'
 \set bigtables ' SELECT nspname || ''.'' || relname AS "relation", pg_size_pretty(pg_relation_size(C.oid)) AS "size" FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) WHERE nspname NOT IN (''pg_catalog'', ''information_schema'') and C.relkind in ( ''t'',  ''r'' )  and nspname not in (''pg_toast'') ORDER BY pg_relation_size(C.oid) DESC LIMIT 20;'
