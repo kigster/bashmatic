@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
-
 # @file Bashmatic Utilities and aliases for Git revision control system.
-# @description Lots of useful utilities and helpers.
+# @brief Functions in this file manage git repos, including this one.
 
-git.configure-auto-updates() {
+function git.configure-auto-updates() {
   # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
   export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | util.checksum.stdin)"
   mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
 }
 
-git.quiet() {
+function git.quiet() {
   [[ -n ${LibGit__QuietUpdate} ]]
 }
 
-git.sync() {
+function git.sync() {
   local dir="$(pwd)"
   cd "${BASHMATIC_HOME}" >/dev/null
   git.repo-is-clean || {
@@ -29,7 +28,7 @@ git.sync() {
   return 0
 }
 
-git.sync-dirs() {
+function git.sync-dirs() {
   local pattern="${1:-'*'}"
   set -e
   run.set-all abort-on-error
@@ -42,51 +41,57 @@ git.sync-dirs() {
 }
 
 
-git.last-update-at() {
+function git.last-update-at() {
   git.configure-auto-updates
 
   local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
   local last_update=0
-  [[ -f ${file} ]] && last_update="$(cat $file | tr -d '\n')"
+  if [[ ${LibGit__ForceUpdate} -eq 0 && -f ${file} ]]; then
+    last_update="$(cat $file | tr -d '\n')"
+  else
+    last_update=0
+  fi
   printf "%d" ${last_update}
 }
 
-git.seconds-since-last-pull() {
+function git.seconds-since-last-pull() {
   local last_update="$1"
   local now=$(epoch)
   printf $((now - last_update))
 }
 
-git.update-repo-if-needed() {
+function git.is-it-time-to-update() {
   local last_update_at=$(git.last-update-at)
   local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
   local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
-  if [[ ${second_since_update} -gt ${update_period_seconds} ]]; then
-    git.sync-remote
-  elif [[ -n ${DEBUG} ]]; then
-    git.quiet || info "${BASHMATIC_HOME} will update in $((update_period_seconds - second_since_update)) seconds..."
-  fi
+  [[ ${second_since_update} -gt ${update_period_seconds} ]]
 }
 
-git.save-last-update-at() {
+function git.update-repo-if-needed() {
+  git.is-it-time-to-update && git.sync-remote
+}
+
+function git.save-last-update-at() {
   echo $(epoch) >${LibGit__LastUpdateTimestampFile}
 }
 
-git.sync-remote() {
+function git.sync-remote() {
+  git.is-it-time-to-update || return 0
+
   if git.quiet; then
     (git remote update && git fetch) 2>&1 >/dev/null
   else
     run "git remote update && git fetch"
   fi
 
-  local status="$(git.local-vs-remote)"
+  local git_status="$(git.local-vs-remote)"
 
-  if [[ ${status} == "behind" ]]; then
+  if [[ ${git_status} == "behind" ]]; then
     git.quiet || run "git pull --rebase"
     git.quiet && git pull --rebase 2>&1 >/dev/null
-  elif [[ ${status} != "ahead" ]]; then
+  elif [[ ${git_status} != "ahead" ]]; then
     git.save-last-update-at
-  elif [[ ${status} != "ok" ]]; then
+  elif [[ ${git_status} != "ok" ]]; then
     error "Report $(pwd) is ${status} compared to the remote." \
       "Please fix manually to continue."
     return 1
@@ -95,7 +100,7 @@ git.sync-remote() {
   return 0
 }
 
-git.local-vs-remote() {
+function git.local-vs-remote() {
   local upstream=${1:-'@{u}'}
   local local_repo=$(git rev-parse @)
   local remote_repo=$(git rev-parse "$upstream")
@@ -128,7 +133,7 @@ git.local-vs-remote() {
   return 1
 }
 
-git.repo-is-clean() {
+function git.repo-is-clean() {
   local repo="${1:-${BASHMATIC_HOME}}"
   cd "${repo}" >/dev/null
   if [[ -z $(git status -s) ]]; then
@@ -140,11 +145,11 @@ git.repo-is-clean() {
   fi
 }
 
-git.remotes() {
+function git.remotes() {
   git remote -v | awk '{print $2}' | uniq
 }
 
-bashmatic.auto-update() {
+function bashmatic.auto-update() {
   [[ ${Bashmatic__Test} -eq 1 ]] && return 0
 
   git.configure-auto-updates
@@ -161,15 +166,15 @@ bashmatic.auto-update() {
   git.sync
 }
 
-git.commits.last.sha() {
+function git.commits.last.sha() {
   git log --pretty=format:"%H" -1
 }
 
-git.commits.last.message() {
+function git.commits.last.message() {
   git log --pretty=format:"%s" -1
 }
 
-git.branch.current() {
+function git.branch.current() {
   git rev-parse --abbrev-ref HEAD
 }
 
@@ -185,7 +190,7 @@ git.branch.current() {
 #
 # @arg $1 optional name of the remote to open, defaults to "orogin"
 #
-git.open() {
+function git.open() {
   local remote="${1:-"origin"}"
   local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
   info "Opening URL ${bldylw}${url}"

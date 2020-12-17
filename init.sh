@@ -37,7 +37,10 @@ export GrepCommand="$(which grep) -E -e "
 export True=1
 export False=0
 export LoadedShown=${LoadedShown:-1}
-export LibGit__QuietUpdate=1
+
+# Future CLI flags, but for now just vars
+export LibGit__QuietUpdate=${LibGit__QuietUpdate:-1}
+export LibGit__ForceUpdate=${LibGit__ForceUpdate:-0}
 
 osx-dependencies() {
   [[ $(uname -s) == "Darwin" ]] || return

@@ -17,6 +17,7 @@ git config --global user.name "Konstantin Gredeskoul"
   git init . && git add . && git commit -m 'initial commit'
   echo '### Modified' >> README
   clean=0
+  export LibGit__ForceUpdate=1
   export Bashmatic__Test=1
   set +e
   git.repo-is-clean "${dir}" || clean=1
@@ -34,6 +35,7 @@ git config --global user.name "Konstantin Gredeskoul"
   echo '## README' >> README
   git init . && git add . && git commit -m 'initial commit'
   export Bashmatic__Test=1
+  export LibGit__ForceUpdate=1
   clean=1
   set +e
   git.repo-is-clean "${dir}" && clean=0
