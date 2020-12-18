@@ -147,9 +147,14 @@ db.psql.connect() {
   }
 
   set +e
-  psql --echo-errors "${args[@]}" "$@" 2>"${__psql_stderr}"
-  local code=$?
-  [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
+  if [[ ${action} == "run" ]]; then
+    psql --echo-errors "${args[@]}" "$@" 2>"${__psql_stderr}"
+    local code=$?
+    [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
+  else
+    psql --echo-errors "${args[@]}" "$@"
+    local code=$?
+  fi
   set -e
   return ${code}
 }
