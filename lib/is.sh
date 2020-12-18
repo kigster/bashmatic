@@ -156,7 +156,17 @@ function is.an-existing-file() {
 }
 
 function is.a-function() {
-  type "$1" 2>/dev/null | head -1 | grep -q 'is a function'
+  local shell="$(user.current-shell)"
+  case $shell in
+    bash)
+      declare -f "$1" > /dev/null
+      ;;
+    zsh)
+      type "$1" | grep -q function
+      ;;
+    *)
+      return 1
+  esac
 }
 
 function is.a-variable() {

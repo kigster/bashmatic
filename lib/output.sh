@@ -117,14 +117,10 @@ output.color.off() {
   reset-color: >&1
 }
 
-.output.current-screen-width() {
-  local strategy="${LibOutput__WidthDetectionStrategy}"
-  local func=".output.current-screen-width.${strategy}"
-  util.is-a-function "${func}" || {
-    echo "invalid strategy: ${strategy}" >&2
-    return 1
-  }
-  ${func}
+
+.output.stty.field() {
+  local field="$1"
+  stty -a | grep ${field} | tr -d ';' | tr ' ' '\n' | grep -B 1 ${field} | head -1
 }
 
 .output.current-screen-width.unconstrained() {
@@ -132,7 +128,7 @@ output.color.off() {
   local os=$(uname -s)
 
   if [[ $os == 'Darwin' ]]; then
-    w=$(stty -a 2>/dev/null | grep columns | awk '{print $6}')
+    w=$(.output.stty.field columns)
   elif [[ $os == 'Linux' ]]; then
     w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')
   fi
@@ -151,6 +147,16 @@ output.color.off() {
   [[ -n ${max_w} && ${w} -gt ${max_w} ]] && w="${max_w}"
 
   printf -- "%d" "$w"
+}
+
+.output.current-screen-width() {
+  local strategy="${LibOutput__WidthDetectionStrategy}"
+  local func=".output.current-screen-width.${strategy}"
+  is.a-function "${func}" || {
+    echo "invalid strategy: ${strategy}" >&2
+    return 1
+  }
+  ${func}
 }
 
 .output.screen-width() {
@@ -176,7 +182,7 @@ output.color.off() {
 
 .output.screen-height() {
   if [[ ${AppCurrentOS:-$(uname -s)} == 'Darwin' ]]; then
-    h=$(stty -a 2>/dev/null | grep rows | awk '{print $4}')
+    h=$(.output.stty.field rows)
   elif [[ ${AppCurrentOS} == 'Linux' ]]; then
     h=$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')
   fi
