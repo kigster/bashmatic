@@ -254,6 +254,16 @@ db.psql.args() {
   fi
 }
 
+db.psql.version() {
+  command -v psql >/dev/null || return 1
+  psql --version | sed -E 's/[^0-9.]//g'
+}
+
+db.postgres.version() {
+  command -v postgres >/dev/null || return 1
+  postgres --version | sed -E 's/[^0-9.]//g'
+}
+
 db.psql.args.localhost() {
   printf -- "-U postgres -h localhost $*"
 }
