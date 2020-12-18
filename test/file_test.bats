@@ -18,10 +18,17 @@ load test_helper
 # files.map.shell-scripts
 
 source lib/file.sh
+source lib/time.sh
 source lib/util.sh
 source lib/bashmatic.sh
 
 set -e
+
+@test "file.temp()" {
+  set -e
+  local f="$(file.temp)"
+  [[ $(dirname $f) == "/tmp" && $f =~ ".bashmatic" ]]
+}
 
 @test "file.source-if-exists()" {
   set -e

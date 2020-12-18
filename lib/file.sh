@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
-file.temp() {
-  local n="${1:-${RANDOM}}"
-  local file="$(mktemp /tmp/.bashmatic.${USER}.$$.${n}.${RANDOM})"
-  cp /dev/null "${file}"
+export bashmatic__temp_file_pattern=".bashmatic.$(hostname).${USER}."
+
+function file.temp() {
+  local n="$(epoch)"
+  local t=$(( n % 99991 ))
+  local file="/tmp/${bashmatic__temp_file_pattern}${n}$$${t}${RANDOM}${RANDOM}"
+  find /tmp -maxdepth 1 -type f -name "${bashmatic__temp_file_pattern}*" -mtime +5 -delete >/dev/null 2>&1 
   echo "${file}"
 }
-  
+
 # Makes a file executable but only if it already contains
 # a "bang" line at the top.
 #
