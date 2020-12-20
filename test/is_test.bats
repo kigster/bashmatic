@@ -2,6 +2,7 @@
 load test_helper
 
 source lib/is.sh
+source lib/user.sh
 source lib/output.sh
 
 set -e
