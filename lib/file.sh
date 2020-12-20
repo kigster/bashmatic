@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-export bashmatic__temp_file_pattern=".bashmatic.$(hostname).${USER}."
+export bashmatic__hostname="${HOSTNAME:-${HOST:-$(/usr/bin/env hostname)}}"
+export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
 
 function file.temp() {
   local n="$(epoch)"
