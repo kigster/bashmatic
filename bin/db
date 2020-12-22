@@ -13,6 +13,7 @@ db.usage() {
 
   usage-box "db action [ script-flags ] [ -- [ psql flags] ] © Performs one of many supported actions against PostgreSQL" \
     "-q / --quiet" "Suppress the colorful header messages" \
+    "-v / --verbose" "Show additional output" \
     "-n / --dry-run" "Only print commands, but do not run them" \
     "-e / --examples" "Show script usage examples" \
     "-h / --help" "Show this help screen" \
@@ -56,6 +57,16 @@ function db.examples() {
 }
 
 export flag_quiet=0
+export flag_verbose=0
+
+function is-verbose() {
+  ((flag_verbose))
+}
+
+function is-quiet() {
+  ((flag_quiet))
+}
+
 export action=
 
 function db.main() {
@@ -80,6 +91,15 @@ function db.main() {
     -q | --quiet)
       shift
       export flag_quiet=1
+      ;;
+    -v | --verbose)
+      shift
+      export flag_verbose=1
+      ;;
+    -a | --actions | actions)
+      shift
+      h3 "Valid actions are:" "${db_actions[@]}"
+      exit 0
       ;;
     [a-z]*)
       [[ -n ${action} ]] && break

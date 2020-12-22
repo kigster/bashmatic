@@ -113,6 +113,11 @@ db.psql.report-error() {
   unset __psql_stderr
 }
 
+print-cli() {
+  is-verbose || return  
+  h1 "Running command line:" "${bldylw}$*"
+}
+
 # @description Connect to one of the databases named in the YAML file, and
 #              optionally pass additional arguments to psql.
 #              Informational messages are sent to STDERR.
@@ -147,12 +152,15 @@ db.psql.connect() {
   }
 
   set +e
+  is-verbose && echo
   if [[ ${action} == "run" ]]; then
-    psql --echo-errors "${args[@]}" "$@" 2>"${__psql_stderr}"
+    print-cli psql --echo-errors "${args[@]}" "$@"
+    psql "${args[@]}" --echo-errors "$@" 2>"${__psql_stderr}"
     local code=$?
     [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
   else
-    psql --echo-errors "${args[@]}" "$@"
+    print-cli "psql ${args[*]} --echo-errors $*"
+    eval "psql ${args[*]} --echo-errors $*"
     local code=$?
   fi
   set -e
@@ -172,7 +180,7 @@ db.psql.connect.just-data() {
 
 db.psql.run() {
   local dbname="$1"; shift
-  db.psql.connect "${dbname}" -X --pset border=3 -c "$@" -c "\q"
+  db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c "\q"
 }
 
 db.psql.connect.table-settings-show() {
@@ -320,6 +328,28 @@ db.actions.run() {
 db.actions.csv() {
   export flag_quiet=1
   db.psql.run "$@" --csv -A -P pager=off -P footer=off
+}
+
+db.actions.explain() {
+  local dbname="$1"; shift
+  local query="$1"; shift
+  local flags
+  local explain_sql="EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON)"
+  local explain_json
+  
+  if [[ -f "${query}" ]]; then
+    local explain="${query}.explain"
+    local explain_json="${query}.explain.json"
+    echo "${explain_sql}" > "${explain}"
+    cat "${query}" >> "${explain}"
+    flags="-f ${explain} -o ${explain_json}"
+  else
+    query="${query//\"/\\\"}"
+    explain_json="$(echo "${query}" | shasum | cut -d' ' -f 1).json"
+    flags="-c \"${explain_sql} ${query}\" -o ${explain_json}"
+  fi
+
+  db.psql.connect "${dbname}" "-AXt -P pager=off ${flags}"
 }
 
 db.actions.data-dir() {
