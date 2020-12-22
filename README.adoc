@@ -1,4 +1,5 @@
 = Bashmatic™ — BASH primitives for humans, and for fun.
+
 :safe: unsafe
 :allow-uri-read:
 :doctype: book
