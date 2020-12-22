@@ -350,9 +350,12 @@ Reinstall shdoc completely
 
 == Bashmatic Utilities and aliases for Git revision control system.
 
+Functions in this file manage git repos, including this one.
+
 === Overview
 
-Lots of useful utilities and helpers.
+Reads the remote of a repo by name provided as
+an argument (or defaults to "origin") and opens it in the browser.
 
 === Index
 

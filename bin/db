@@ -12,10 +12,10 @@ db.usage() {
   output.constrain-screen-width 110
 
   usage-box "db action [ script-flags ] [ -- [ psql flags] ] © Performs one of many supported actions against PostgreSQL" \
+    "-q / --quiet" "Suppress the colorful header messages" \
+    "-n / --dry-run" "Only print commands, but do not run them" \
     "-e / --examples" "Show script usage examples" \
     "-h / --help" "Show this help screen" \
-    "-q / --quiet" "Supress header and other info messages" \
-    "-n / --dry-run" "Only print commands, but do not run them" \
     " " " " \
     "├ACTIONS:" " " \
     " " "${bldylw}$(array.to.csv "${db_actions[@]:0:5}")" \
@@ -32,20 +32,17 @@ function db.examples() {
   "${txtblu}${italic}# List available connection names" \
   "${bldylw}db connections" \
   " " \
-  "${txtblu}${italic}# Connect to the database named 'staging' and get psql prompt" \
-  "${bldylw}db connect staging" \
+  "${txtblu}${italic}# Connect to the database named 'staging.core' and get psql prompt" \
+  "${bldylw}db connect staging.core" \
   " " \
   "${txtblu}${italic}# Show 'db top' for thrree databases at once:" \
-  "${bldylw}db top prod.core prod-replica1 prod-replica2" \
-  " " \
-  "${txtblu}${italic}# Print the data directory of the DB connection (and skip printing the header)" \
-  "${bldylw}db data-dir -q prod.core" \
+  "${bldylw}db top prod.core prod.replica1 prod.replica2" \
   " " \
   "${txtblu}${italic}# Show all settings currently active on production DB in TOML/ini format:" \
-  "${bldylw}db db-settings-toml prod.core -q" \
+  "${bldylw}db db-settings-toml -q prod.core" \
   " " \
   "${txtblu}${italic}# Run a query with the default output" \
-  "${bldylw}db run prod.core 'select relname,n_live_tup from pg_stat_user_tables order by n_live_tup desc'" \
+  "${bldylw}db run -q prod.core 'select relname,n_live_tup from pg_stat_user_tables order by n_live_tup desc'" \
   " " \
   "${txtblu}${italic}# Run the same query, but this time output in a CSV format" \
   "${txtblu}${italic}# NOTE: majority of the flags are passed to the ${bldgrn}psql${clr}${txtblu}${italic} to format the output," \

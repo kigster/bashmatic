@@ -1798,6 +1798,18 @@ db.actions.connections ()
 
 ----
 
+==== `db.actions.csv`
+
+[source,bash]
+----
+db.actions.csv () 
+{ 
+    export flag_quiet=1
+    db.psql.run "$@" --csv -A -P pager=off -P footer=off
+}
+
+----
+
 ==== `db.actions.data-dir`
 
 [source,bash]
@@ -1989,6 +2001,18 @@ db.pg.local.num-procs ()
 
 ----
 
+==== `db.postgres.version`
+
+[source,bash]
+----
+db.postgres.version () 
+{ 
+    command -v postgres > /dev/null || return 1
+    postgres --version | sed -E 's/[^0-9.]//g'
+}
+
+----
+
 ==== `db.psql.args`
 
 [source,bash]
@@ -2100,9 +2124,14 @@ db.psql.connect ()
         hr 1>&2
     }
     set +e
-    psql --echo-errors "${args[@]}" "$@" 2> "${__psql_stderr}"
-    local code=$?
-    [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
+    if [[ ${action} == "run" ]]; then
+        psql --echo-errors "${args[@]}" "$@" 2> "${__psql_stderr}"
+        local code=$?
+        [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
+    else
+        psql --echo-errors "${args[@]}" "$@"
+        local code=$?
+    fi
     set -e
     return ${code}
 }
@@ -2221,6 +2250,18 @@ db.psql.run ()
     local dbname="$1"
     shift
     db.psql.connect "${dbname}" -X --pset border=3 -c "$@" -c "\q"
+}
+
+----
+
+==== `db.psql.version`
+
+[source,bash]
+----
+db.psql.version () 
+{ 
+    command -v psql > /dev/null || return 1
+    psql --version | sed -E 's/[^0-9.]//g'
 }
 
 ----
@@ -3112,9 +3153,13 @@ file.strip.extension ()
 ----
 file.temp () 
 { 
-    local n="${1:-${RANDOM}}"
-    local file="$(mktemp /tmp/.bashmatic.${USER}.$$.${n}.${RANDOM})"
-    cp /dev/null "${file}"
+    local host="${HOST:-${HOSTNAME:-$(hostname)}}"
+    local user="${USER:-"$(whoami)"}"
+    local temp_file_pattern=".bashmatic.${host}.${user}."
+    local n="$(epoch)"
+    local t=$(( n % 99991 ))
+    local file="/tmp/${temp_file_pattern}${n}$$${t}${RANDOM}${RANDOM}"
+    find "$(dirname "${file}")" -maxdepth 1 -type f -name "${temp_file_pattern}*" -mtime +1 -delete > /dev/null 2>&1
     echo "${file}"
 }
 
@@ -3595,6 +3640,20 @@ git.configure-auto-updates ()
 
 ----
 
+==== `git.is-it-time-to-update`
+
+[source,bash]
+----
+git.is-it-time-to-update () 
+{ 
+    local last_update_at=$(git.last-update-at)
+    local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
+    local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
+    [[ ${second_since_update} -gt ${update_period_seconds} ]]
+}
+
+----
+
 ==== `git.last-update-at`
 
 [source,bash]
@@ -3604,7 +3663,11 @@ git.last-update-at ()
     git.configure-auto-updates
     local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
     local last_update=0
-    [[ -f ${file} ]] && last_update="$(cat $file | tr -d '\n')"
+    if [[ ${LibGit__ForceUpdate} -eq 0 && -f ${file} ]]; then
+        last_update="$(cat $file | tr -d '\n')"
+    else
+        last_update=0
+    fi
     printf "%d" ${last_update}
 }
 
@@ -3804,20 +3867,21 @@ git.sync-dirs ()
 ----
 git.sync-remote () 
 { 
+    git.is-it-time-to-update || return 0
     if git.quiet; then
         ( git remote update && git fetch ) 2>&1 > /dev/null
     else
         run "git remote update && git fetch"
     fi
-    local status="$(git.local-vs-remote)"
-    if [[ ${status} == "behind" ]]; then
+    local git_status="$(git.local-vs-remote)"
+    if [[ ${git_status} == "behind" ]]; then
         git.quiet || run "git pull --rebase"
         git.quiet && git pull --rebase 2>&1 > /dev/null
     else
-        if [[ ${status} != "ahead" ]]; then
+        if [[ ${git_status} != "ahead" ]]; then
             git.save-last-update-at
         else
-            if [[ ${status} != "ok" ]]; then
+            if [[ ${git_status} != "ok" ]]; then
                 error "Report $(pwd) is ${status} compared to the remote." "Please fix manually to continue."
                 return 1
             fi
@@ -3835,16 +3899,7 @@ git.sync-remote ()
 ----
 git.update-repo-if-needed () 
 { 
-    local last_update_at=$(git.last-update-at)
-    local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
-    local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
-    if [[ ${second_since_update} -gt ${update_period_seconds} ]]; then
-        git.sync-remote
-    else
-        if [[ -n ${DEBUG} ]]; then
-            git.quiet || info "${BASHMATIC_HOME} will update in $((update_period_seconds - second_since_update)) seconds..."
-        fi
-    fi
+    git.is-it-time-to-update && git.sync-remote
 }
 
 ----
@@ -3950,7 +4005,18 @@ is.a-directory ()
 ----
 is.a-function () 
 { 
-    type "$1" 2> /dev/null | head -1 | grep -q 'is a function'
+    local shell="$(user.current-shell)"
+    case $shell in 
+        bash)
+            declare -f "$1" > /dev/null
+        ;
+        zsh)
+            type "$1" | grep -q function
+        ;
+        *)
+            return 1
+        ;
+    esac
 }
 
 ----
@@ -5756,10 +5822,8 @@ stdout ()
 ----
 success () 
 { 
-    echo
-    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
-    echo
-    echo
+    printf -- "\n${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
+    printf -- "\n\n" 1>&2
 }
 
 ----
@@ -9746,27 +9810,6 @@ usage.set-min-flag-len ()
 
 
 === Module `user`
-
-==== `fl-init-file`
-
-[source,bash]
-----
-fl-init-file () 
-{ 
-    local init_file
-    for file in "$@"
-    do
-        if [[ -s ${file} ]]; then
-            init_file="${file}"
-            break
-        fi
-    done
-    [[ -z ${init_file} ]] && init_file="$0"
-    touch "${init_file}"
-    echo "${init_file}"
-}
-
-----
 
 ==== `user`
 
