@@ -1,11 +1,12 @@
 = Changelog
 
-== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+== https://github.com/kigster/bashmatic/tree/v1.7.0[v1.7.0] (2020-12-16)
 
-https://github.com/kigster/bashmatic/compare/v1.6.0...HEAD[Full Changelog]
+https://github.com/kigster/bashmatic/compare/v1.6.0...v1.7.0[Full Changelog]
 
 *Merged pull requests:*
 
+* Introducing Makefile at the top for various tasks https://github.com/kigster/bashmatic/pull/27[#27] (https://github.com/kigster[kigster])
 * Many fixes and subtle improvements: https://github.com/kigster/bashmatic/pull/26[#26] (https://github.com/kigster[kigster])
 * Adding a few more db helpers + zsh expansion https://github.com/kigster/bashmatic/pull/25[#25] (https://github.com/kigster[kigster])
 
@@ -60,7 +61,6 @@ https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0[Full Changelog]
 * Fixing dbtop https://github.com/kigster/bashmatic/pull/11[#11] (https://github.com/kigster[kigster])
 * Add license scan report and status https://github.com/kigster/bashmatic/pull/10[#10] (https://github.com/fossabot[fossabot])
 * Adding bin/pdf-reduce and other tweaks https://github.com/kigster/bashmatic/pull/9[#9] (https://github.com/kigster[kigster])
-* Kig/cherry pick bashmatic setup https://github.com/kigster/bashmatic/pull/6[#6] (https://github.com/kigster[kigster])
 
 == https://github.com/kigster/bashmatic/tree/v1.2.1[v1.2.1] (2020-06-26)
 
@@ -85,6 +85,10 @@ https://github.com/kigster/bashmatic/compare/v1.0.0...v1.0.1[Full Changelog]
 == https://github.com/kigster/bashmatic/tree/v1.0.0[v1.0.0] (2020-03-11)
 
 https://github.com/kigster/bashmatic/compare/v0.2.0...v1.0.0[Full Changelog]
+
+*Merged pull requests:*
+
+* Kig/cherry pick bashmatic setup https://github.com/kigster/bashmatic/pull/6[#6] (https://github.com/kigster[kigster])
 
 == https://github.com/kigster/bashmatic/tree/v0.2.0[v0.2.0] (2019-12-24)
 

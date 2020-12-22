@@ -317,6 +317,11 @@ db.actions.run() {
   db.psql.run "$@"
 }
 
+db.actions.csv() {
+  export flag_quiet=1
+  db.psql.run "$@" --csv -A -P pager=off -P footer=off
+}
+
 db.actions.data-dir() {
   db.psql.connect "$@" $(db.psql.args-data-only) -c 'show data_directory' | $(which grep) -E -v 'data_directory|row'
 }
