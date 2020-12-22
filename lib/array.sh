@@ -197,10 +197,12 @@ array.to.piped-list() {
   array.join ' | ' false "$@"
 }
 
-array.from.stdin() {
+array.from.command() {
   local array_name=$1; shift
-  local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)"
-  eval "${script}"
+  local command="$*"
+  local OFS="$IFS"
+  eval "IFS=\$'\\n' read -ra ${array_name} -d '' <<< \"\$(${command})\""
+  export IFS="$OFS"
 }
 
 # usage: array.eval.in-groups-of <number> <bash function> <array of arguments to bash function>

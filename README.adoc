@@ -150,6 +150,9 @@ $ bashmatic.functions 3
 === Manual Installation
 
 To install Bashmatic manually, follow these steps (feel free to change `BASHMATIC_HOME` if you like):
+  
+
+==== 1. Using Git
 
 [source,bash]
 ----
@@ -159,6 +162,18 @@ test -d "${BASHMATIC_HOME}" || \
   "${BASHMATIC_HOME}"
 cd "${BASHMATIC_HOME}" && ./bin/bashmatic-install -v
 cd ->/dev/null
+----
+
+==== 2. Using Curl
+
+Sometimes you may not be able to use git (I've seen local certificate issues, and others), but maybe able to downlload with curl. In that case, you can lookup the latest release version number, and then issue this command:
+
+[source,bash]
+----
+cd ${HOME}
+curl --insecure -fSsl https://codeload.github.com/kigster/bashmatic/tar.gz/v1.6.0 -o bashmatic.tar.gz
+rm -rf .bashmatic && tar xvzf bashmatic.tar.gz && mv bashmatic-* .bashmatic
+source ~/.bashmatic/init.sh
 ----
 
 === Reloading Bashmatic

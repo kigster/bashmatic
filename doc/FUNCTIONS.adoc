@@ -205,16 +205,18 @@ array.eval.in-groups-of ()
 
 ----
 
-==== `array.from.stdin`
+==== `array.from.command`
 
 [source,bash]
 ----
-array.from.stdin () 
+array.from.command () 
 { 
     local array_name=$1
     shift
-    local script="while IFS='' read -r line; do ${array_name}+=(\"\$line\"); done < <($*)"
-    eval "${script}"
+    local command="$*"
+    local OFS="$IFS"
+    eval "IFS=\$'\\n' read -ra ${array_name} -d '' <<< \"\$(${command})\""
+    export IFS="$OFS"
 }
 
 ----
@@ -452,17 +454,6 @@ array.uniq ()
 
 
 === Module `audio`
-
-==== `æ.mp3`
-
-[source,bash]
-----
-æ.mp3 () 
-{ 
-    audio.make.mp3 "$@"
-}
-
-----
 
 ==== `audio.dir.mp3-to-wav`
 
