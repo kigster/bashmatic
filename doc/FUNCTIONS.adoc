@@ -138,7 +138,7 @@
     shift
     7z.install
     local archive="${folder}"
-    [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sedx 's/\./-/g').tar.7z"
+    [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sed -E 's/\./-/g').tar.7z"
     [[ -f ${archive} ]] && { 
         run.set-next on-decline-return
         run.ui.ask "File ${archive} already exists. Press Y to remove it and continue." || return 1
@@ -454,6 +454,17 @@ array.uniq ()
 
 
 === Module `audio`
+
+==== `æ.mp3`
+
+[source,bash]
+----
+æ.mp3 () 
+{ 
+    audio.make.mp3 "$@"
+}
+
+----
 
 ==== `audio.dir.mp3-to-wav`
 
@@ -1834,6 +1845,35 @@ db.actions.db-settings-toml ()
 
 ----
 
+==== `db.actions.explain`
+
+[source,bash]
+----
+db.actions.explain () 
+{ 
+    local dbname="$1"
+    shift
+    local query="$1"
+    shift
+    local flags
+    local explain_sql="EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON)"
+    local explain_json
+    if [[ -f "${query}" ]]; then
+        local explain="${query}.explain"
+        local explain_json="${query}.explain.json"
+        echo "${explain_sql}" > "${explain}"
+        cat "${query}" >> "${explain}"
+        flags="-f ${explain} -o ${explain_json}"
+    else
+        query="${query//\"/\\\"}"
+        explain_json="$(echo "${query}" | shasum | cut -d' ' -f 1).json"
+        flags="-c \"${explain_sql} ${query}\" -o ${explain_json}"
+    fi
+    db.psql.connect "${dbname}" "-AXt -P pager=off ${flags}"
+}
+
+----
+
 ==== `db.actions.run`
 
 [source,bash]
@@ -2115,12 +2155,15 @@ db.psql.connect ()
         hr 1>&2
     }
     set +e
+    is-verbose && echo
     if [[ ${action} == "run" ]]; then
-        psql --echo-errors "${args[@]}" "$@" 2> "${__psql_stderr}"
+        print-cli psql --echo-errors "${args[@]}" "$@"
+        psql "${args[@]}" --echo-errors "$@" 2> "${__psql_stderr}"
         local code=$?
         [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
     else
-        psql --echo-errors "${args[@]}" "$@"
+        print-cli "psql ${args[*]} --echo-errors $*"
+        eval "psql ${args[*]} --echo-errors $*"
         local code=$?
     fi
     set -e
@@ -2240,7 +2283,7 @@ db.psql.run ()
 { 
     local dbname="$1"
     shift
-    db.psql.connect "${dbname}" -X --pset border=3 -c "$@" -c "\q"
+    db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c "\q"
 }
 
 ----
@@ -2275,6 +2318,18 @@ db.wait-until-db-online ()
     done
     ui.closer.ok:
     return 0
+}
+
+----
+
+==== `print-cli`
+
+[source,bash]
+----
+print-cli () 
+{ 
+    is-verbose || return
+    h1 "Running command line:" "${bldylw}$*"
 }
 
 ----
