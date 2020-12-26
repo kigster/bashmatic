@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# @file Bashmatic Utilities and aliases for Git revision control system.
 # @brief Functions in this file manage git repos, including this one.
 
 function git.configure-auto-updates() {
@@ -7,6 +6,21 @@ function git.configure-auto-updates() {
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
   export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | util.checksum.stdin)"
   mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
+}
+
+function gcfg() {
+  git config --global user."$1" "$2"
+  rm -f ~/.gitconfig.lock
+  sleep 0.1
+}
+
+# used in tests
+function git.config.kigster() {
+  [[ $(gcfg name)  == "Konstantin Gredeskoul" && 
+     $(gcfg email) == "kigster@gmail.com" ]] && return 0
+
+  gcfg name  "Konstantin Gredeskoul"
+  gcfg email "kigster@gmail.com"
 }
 
 function git.quiet() {
@@ -216,3 +230,6 @@ function git.repo.remote-to-git@ () {
     hr
   fi
 }
+
+[[ ${USER} == kig ]] && git.config.kigster >/dev/null
+
