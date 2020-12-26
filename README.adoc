@@ -133,7 +133,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 [source,bash]
 ----
 $ bashmatic.version
-1.7.1
+1.7.2
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.
