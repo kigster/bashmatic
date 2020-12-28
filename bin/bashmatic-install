@@ -135,7 +135,7 @@ bash-compile() {
   local temp=/tmp/bash-sources
   rm -rf ${temp}
   mkdir -p ${temp}
-  trap "rm -rf ${temp}" EXIT
+  trap "rm -rf '${temp}'" EXIT
   # shellcheck disable=SC2064
   trap "cd ${PWD} || true" EXIT
   cd "${temp}" || return 1
@@ -213,7 +213,7 @@ linux-requirements() {
 #——————————————————————————————————————————————————————————————————————————————————————
 osx-permissions() {
   sudo-ask && sudo-enable
-  for dir in ${CHOWN_DIRS[@]}; do
+  for dir in "${CHOWN_DIRS[@]}"; do
     is-verbose && puts "Checking (and possibly changing) permissions of ${bldylw}${dir}..."
     [[ $(stat -f %u "${dir}") -eq $(id -u) ]] && continue
     sudo chown -R "${USER}" "${dir}"
@@ -235,7 +235,7 @@ brew-deps() {
   set +e
   is-verbose && puts "Installing required brew packages..."
   local brew_cache=/tmp/brew_cache.$$
-  trap "rm -f ${brew_cache}" EXIT
+  trap "rm -f '${brew_cache}'" EXIT
   brew list --formulae -1 >"${brew_cache}"
   for package in "${BREW_PACKAGES[@]}"; do
     is-verbose && puts "Checking/installing brew package ${bldylw}${package}..."

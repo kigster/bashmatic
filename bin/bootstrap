@@ -70,7 +70,7 @@ sleep 2
 if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
   bashmatic.git.sync
 else
-  git clone ${BASHMATIC_URL} ${BASHMATIC_HOME} >/dev/null
+  git clone "${BASHMATIC_URL}" "${BASHMATIC_HOME}" >/dev/null
 fi
 
 if [[ -s "${BASHMATIC_INIT}" ]]; then

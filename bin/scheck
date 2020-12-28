@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+source ${BASHMATIC_HOME}/init.sh
+
+set -e
+export check_output="/tmp/.bashmatic.${USER}.shcheck"
+rm -f ${check_output} &&  touch ${check_output}
+set +e
+
+failures=0
+run.set-all continue-on-error
+h3 "Running shellcheck on all git-committed files that look like shell scripts..."
+
+command -v shellcheck >/dev/null || brew.install.package shellcheck
+
+for file in $(git ls-files); do
+    [[ -s "${file}" && ! -d "${file}" ]] || continue
+    head -1 ${file} | grep -E -q '#\!(/usr/bin/env bash|/bin/bash|/usr/bin/bash|/usr/bin/env zsh|/bin/zsh)' || continue
+    printf "\n—————————————————————————————————————————————————————————————————————\nFILE: ${file}\n\n" >>${check_output}
+    run "shellcheck '${file}' >>${check_output}"
+    code=${LibRun__LastExitCode}
+    [[ ${code} -ne 0 ]] && failures=$(( failures + 1 ))
+    [[ ${code} -eq 0 ]] && echo "STATUS: SUCCESS">>${check_output}
+done
+
+if [[ ${failures} -eq 0 ]] ; then
+    success "All files passed shellcheck, congratulations!"
+    info "NOTE: the following shellcheck instructions are being ignored:"
+    info "$(cat .shellcheckrc | tr -d '\n')"
+else
+    warning  "${failures} files had issues."
+    info "NOTE: you can find the detailed output of shellcheck in the"
+    info "following file: ${bldred}${check_output}"
+    exit 1
+fi

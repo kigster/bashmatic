@@ -3,12 +3,13 @@
 
 load test_helper
 
+source lib/user.sh
+source lib/output.sh
+source lib/is.sh
 source lib/git.sh
 
-git config --global user.email "kigster@gmail.com"
-git config --global user.name "Konstantin Gredeskoul"
-
 @test "git.repo-is-clean() when dirty" {
+  git.config.kigster 2>/dev/null
   pwd=$(pwd)
   dir="/tmp/clean/repo"
   mkdir -p $dir && cd $dir
@@ -28,6 +29,7 @@ git config --global user.name "Konstantin Gredeskoul"
 }
 
 @test "git.repo-is-clean() when clean" {
+  git.config.kigster 2>/dev/null
   pwd=$(pwd)
   dir="/tmp/clean/repo"
   mkdir -p $dir && cd $dir

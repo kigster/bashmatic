@@ -1,12 +1,11 @@
 = Bashmatic™ — BASH primitives for humans, and for fun.
-
 :safe: unsafe
 :allow-uri-read:
 :doctype: book
 :toc:
 :toclevels: 3
 :sectnums: 
-:icons:
+:icons: font
 
 image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
 image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield]
@@ -134,7 +133,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 [source,bash]
 ----
 $ bashmatic.version
-1.7.0
+1.7.2
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.
@@ -158,22 +157,27 @@ To install Bashmatic manually, follow these steps (feel free to change `BASHMATI
 ----
 export BASHMATIC_HOME="${HOME}/.bashmatic"
 test -d "${BASHMATIC_HOME}" || \
-  git clone https://github.com/kigster/bashmatic.git \
-  "${BASHMATIC_HOME}"
+  git clone https://github.com/kigster/bashmatic.git "${BASHMATIC_HOME}"
 cd "${BASHMATIC_HOME}" && ./bin/bashmatic-install -v
 cd ->/dev/null
 ----
 
 ==== 2. Using Curl
 
-Sometimes you may not be able to use git (I've seen local certificate issues, and others), but maybe able to downlload with curl. In that case, you can lookup the latest release version number, and then issue this command:
+Sometimes you may not be able to use `git` (I have seen issues ranging from local certificate mismatch to old versions of git, and more), but maybe able to download with `curl`. In that case, you can lookup the https://github.com/kigster/bashmatic/tags[latest tag] (substitute "v1.6.0" below with that tag), and then issue this command:
 
 [source,bash]
 ----
+export BASHMATIC_TAG="v1.7.1"
+set -e
 cd ${HOME}
-curl --insecure -fSsl https://codeload.github.com/kigster/bashmatic/tar.gz/v1.6.0 -o bashmatic.tar.gz
-rm -rf .bashmatic && tar xvzf bashmatic.tar.gz && mv bashmatic-* .bashmatic
+curl --insecure -fSsl \
+  https://codeload.github.com/kigster/bashmatic/tar.gz/${BASHMATIC_TAG} \
+  -o bashmatic.tar.gz
+rm -rf .bashmatic && tar xvzf bashmatic.tar.gz && mv bashmatic-${BASHMATIC_TAG} .bashmatic
 source ~/.bashmatic/init.sh
+cd ${HOME}/.bashmatic && ./bin/bashmatic-install -v
+cd ~ >/dev/null
 ----
 
 === Reloading Bashmatic
@@ -188,11 +192,31 @@ You can run `make help` and read the available targets:
 
 image::doc/img/makefile.png[Makefile in Action,size=90%]
 
-You might want to use the Makefile for two reasons:
+=== What can the Makefile do?
 
- * To update function index, or re-generate latest PDFs of README, USAGE or the CHANGELOG files
- * To run tests `make test -B ` does the trick
- * To run a local computer setup with `make setup` :) 
+Makefile is provided as a convenience for running most common tasks and to simplify running some more complex tasks that require remembering many arguments, such as `make setup`, for example.
+
+You might want to use the Makefile for several reasons:
+
+* To run your local computer setup for software development:
++
+`make setup`
++
+This runs `bin/dev-setup` script with the following actions: `dev, cpp, fonts, gnu, go, java, js, load-balancing, postgres, ruby`
+* To install Bashmatic with
++
+`make install`
+
+Or, if you plan on contributing to the framework:
+ 
+* You can run the test suite with:
++
+`make test -B`
+* To update function index, re-generate the latest PDFs of README, USAGE or the CHANGELOG files:
++
+`make update`
+
+IMPORTANT: Runnign `make update` is is required for submitting any pull request.
 
 == Bashmatic in Action — Practical Examples
 
@@ -237,7 +261,7 @@ We provided an example script in link:examples/k8s-installer.sh[`examples/k8s-in
 
 Here is the output of running this script:
 
-image::.k8installer.png[.k8installer.png,width=100%]
+image::doc/img/k8installer.png[K8 Minicube Installer,width=100%]
 
 Why do we think this type of installer is pretty awesome, compared to a silent but deadly shell script that "Jim-in-the-corner" wrote and now nobody understands?
 

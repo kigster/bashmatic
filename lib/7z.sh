@@ -28,7 +28,7 @@
   7z.install
 
   local archive="${folder}"
-  [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sedx 's/\./-/g').tar.7z"
+  [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sed -E 's/\./-/g').tar.7z"
 
   [[ -f ${archive} ]] && { 
     run.set-next on-decline-return
