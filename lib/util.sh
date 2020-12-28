@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vim: ft=bash
+# vim: ft=sh
 #
 # @file util.sh
 # @description Miscellaneous utilities.

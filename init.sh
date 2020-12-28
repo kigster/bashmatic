@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # vim: ft=sh
 
+set +e
+
 # DEFINE CORE VARIABLES
 export BASHMATIC_URL="https://github.com/kigster/bashmatic"
 # shellcheck disable=2046
@@ -42,22 +44,31 @@ export LoadedShown=${LoadedShown:-1}
 export LibGit__QuietUpdate=${LibGit__QuietUpdate:-1}
 export LibGit__ForceUpdate=${LibGit__ForceUpdate:-0}
 
-osx-dependencies() {
-  [[ $(uname -s) == "Darwin" ]] || return
+function bashmatic.init.darwin() {
+  declare -a required_binaries=(brew gdate gsed)
+  local some_missing=0
+  for binary in ${required_binares[@]}; do
+    command -v ${binary}>/dev/null && continue
+    some_missing=$((some_mising + 1))
+  done
 
-  if command -v brew >/dev/null && command -v gdate >/dev/null ; then
-    return
-  else
-    source "${BASHMATIC_HOME}/bin/bashmatic-install"
+  if [[ ${some_missing} -gt 0 ]]; then
     set +e
+    source "${BASHMATIC_HOME}/bin/bashmatic-install"
     darwin-requirements
-
   fi
 }
 
-main() {
+function bashmatic.init.linux() {
+  return 0
+}
+
+function bashmatic.init() {
   set +e
-  osx-dependencies || true
+  local os="$(/usr/bin/env uname -s | tr '[:upper:]' '[:lower:]')"
+
+  local init_func="bashmatic.init.${os}"
+  [[ -n $(type ${init_func} 2>/dev/null) ]] && ${init_func}
 
   local setup_script="${BASHMATIC_LIBDIR}/bashmatic.sh"
 
@@ -79,6 +90,15 @@ main() {
     end=$(millis)
     attention "Bashmatic Library took $((end - start)) milliseconds to load."
   fi
+  return 0
 }
 
-main "$@"
+if [[ -n ${BASHMATIC_NO_INIT} ]] ; then
+  echo "NOTICE: variable \$BASHMATIC_NO_INIT is set, skipping init."
+  echo "Run funtion bashmatic.init to execute it."
+else 
+  bashmatic.init "$@"
+fi
+
+
+

@@ -10,8 +10,10 @@
 source "${BASHMATIC_HOME}/init.sh"
 
 export BASHMATIC_TEST_DIR="${BASHMATIC_TEST_DIR:-"test"}"
+declare -a test_files
+export test_files=()
 
-test-group() {
+function test-group() {
   #box.black-on-blue "$@"
   section.purple "$@"
   echo
@@ -34,11 +36,10 @@ function specs.init() {
   export BatsSource="${ProjectRoot}/.bats-sources"
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
-  export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:${ProjectRoot}/test/bin:/usr/bin:/usr/local/bin:/bin:/sbin"
+  export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:/usr/bin:/usr/local/bin:/bin:/sbin:/opt/bin:/opt/local/bin:/opt/sbin"
 
   dbg "BatsPrefix is ${BatsPrefix}"
 
-  declare -a TestFiles=()
 
   export True=1
   export False=0
@@ -173,7 +174,7 @@ function specs.run-one-file() {
 function specs.run() {
   local result=0
 
-  for file in "${TestFiles[@]}"; do
+  for file in "${test_files[@]}"; do
     specs.run-one-file "${file}"
     local code=$?
 
@@ -199,11 +200,11 @@ function specs.run() {
 # Auxillary
 function specs.select-files() {
   export os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-  if [[ -z ${TestFiles[*]} ]]; then
-    TestFiles=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
-    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && TestFiles+=($(find "${BASHMATIC_TEST_DIR}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
+  if [[ -z ${test_files[*]} ]]; then
+    test_files=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
+    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && test_files=(${test_files[@]} $(find "${BASHMATIC_TEST_DIR}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
   fi
-  export TestFiles
+  export test_files
 }
 
 # @description Based on a shortname attempt to determine the actual test file names
@@ -275,7 +276,7 @@ function specs.parse-opts() {
         error "Can't determine proper test path for argument $1, got file ${file}"
         exit 2
       }
-      export TestFiles+=("${file}")
+      export test_files=("${test_files[@]}" "${file}")
       shift
       ;;
     esac
@@ -307,8 +308,10 @@ function specs.main() {
   dbgf specs.parse-opts "$@"
   dbgf specs.install sources
   dbgf spec.validate-bats
-  dbgf specs.select-files # Populates TestFiles[@] if not already populated
+  dbgf specs.select-files # Populates test_files[@] if not already populated
   dbgf specs.run "$@"
 }
 
 is.sourced-in || specs.main "$@"
+
+
