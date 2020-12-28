@@ -8,19 +8,23 @@ function git.configure-auto-updates() {
   mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
 }
 
-function gcfg() {
-  git config --global user."$1" "$2"
-  rm -f ~/.gitconfig.lock
-  sleep 0.1
+function git.cfgu() {
+  [[ -z $1 ]] && return 1
+  if [[ -n $2 ]] ; then
+    rm -f ~/.gitconfig.lock
+    git config --global --replace-all user.$1 $2
+  else
+    git config --global user.$1
+  fi
 }
 
 # used in tests
 function git.config.kigster() {
-  [[ $(gcfg name)  == "Konstantin Gredeskoul" && 
-     $(gcfg email) == "kigster@gmail.com" ]] && return 0
+  [[ $(git.cfgu name)  == "Konstantin Gredeskoul" && 
+     $(git.cfgu email) == "kigster@gmail.com" ]] && return 0
 
-  gcfg name  "Konstantin Gredeskoul"
-  gcfg email "kigster@gmail.com"
+  git.cfgu name  "Konstantin Gredeskoul"
+  git.cfgu email "kigster@gmail.com"
 }
 
 function git.quiet() {
@@ -231,5 +235,5 @@ function git.repo.remote-to-git@ () {
   fi
 }
 
-[[ ${USER} == kig ]] && git.config.kigster >/dev/null
+if [[ "${USER}" == kig ]] ; then git.config.kigster>/dev/null; fi
 
