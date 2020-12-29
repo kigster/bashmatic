@@ -80,14 +80,15 @@ function brew.package.link() {
   local package="${1}"
   shift
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-  run "brew link ${verbose} ${package} $*"
+  run "brew link --force --overwrite ${verbose} ${package} $*"
 }
 
 function brew.relink() {
   local package"${1}"
   local verbose=
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-  run "brew link ${verbose} ${package} --overwrite"
+  run "brew unlink --quiet ${package}"
+  run "brew link --force --overwrite ${verbose} ${package}"
 }
 
 function brew.package.list() {
@@ -159,8 +160,8 @@ function brew.reinstall.package() {
   [[ -n "${opts_force}" ]] && force="--force"
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
 
-  run "brew unlink    ${package} ${force} ${verbose}"
-  run "brew uninstall ${package} ${force} ${verbose}"
+  run "brew unlink --quiet ${package}"
+  run "brew uninstall ${force} ${verbose} ${package}"
 
   # brew.cache-reset.delayed
 
@@ -184,22 +185,24 @@ function brew.install.package() {
   else
     if [[ -z "${opt_terse}" ]]; then
       ui.closer.kind-of-ok:
-      run "brew install ${package} ${force} ${verbose}"
+      run "brew install ${force} ${verbose} ${package}"
       code="${LibRun__LastExitCode}"
     else
-      brew install "${package}" ${force} ${verbose} 1>/dev/null 2>&1
+      brew install ${force} ${verbose} ${package} 1>/dev/null 2>&1
       code=$?
-      brew.cache-reset package
     fi
+
+    brew.cache-reset package
+    brew.package.all-installed "${package}" && code=0
 
     [[ -n ${force} ]] && {
       run.set-next continue-on-error
-      run "brew link ${package} --overwrite ${force} ${verbose}"
+      run "brew link --force --overwrite ${verbose} ${package}"
     }
 
     hash -r >/dev/null
 
-    [[ "${code}" -eq 0 ]] || {
+    ((code)) && {
       warning "Reinstalling ${package} as I couldn't find it after instal..."
       brew.reinstall.package "${package}"
     }

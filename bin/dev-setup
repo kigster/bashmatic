@@ -79,6 +79,10 @@ declare -a DevSetup__BrewPackages=()
 declare -a DevSetup__BrewCasks=()
 declare -a DevSetup__BrewServices=()
 declare -a DevSetup__BrewFonts=()
+# TODO: replace this array with the callback auto-detection
+#       based on the function namaing convention. For instance,
+#       for a group gpg, if a function .dev-setup.callback.gpg exists
+#       then run it.
 declare -a DevSetup__Callbacks=()
 
 export DevSetup__BrewPackages
@@ -215,7 +219,6 @@ export DevSetup__Callbacks
   export DevSetup__BrewCasks=("${DevSetup__BrewCasks[@]}"
     chromedriver
     rowanj-gitx
-    gpg-suite
   )
 }
 
@@ -227,6 +230,17 @@ export DevSetup__Callbacks
     gnu-tar
     gnu-time
     gnu-which
+  )
+}
+
+.dev-setup.callbacks.gpg() {
+  opts_force=1 brew.install.package gnupg
+}
+
+.dev-setup.brew.gpg() {
+  export DevSetup__Callbacks+=(.dev-setup.callbacks.gpg)
+  export DevSetup__BrewCasks=("${DevSetup__BrewCasks[@]}"
+    gpg-suite
   )
 }
 
@@ -311,6 +325,14 @@ export DevSetup__Callbacks
     
   grep -q -E 'PATH.*\.rbenv/bin' "${rcfile}" || \
     echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"' >>"${rcfile}"
+}
+
+.dev-setup.callbacks.packages() {
+  run "rbenv global ${ruby_version}"
+  export LIBRARY_PATH=$LIBRARY_PATH:$(brew --prefix openssl)/lib
+  .dev-setup.install-rbenv-hook
+  ruby.init
+  ruby.bundle-install
 }
 
 .dev-setup.callbacks.ruby() {
