@@ -68,8 +68,8 @@ function bashmatic.init.linux() {
 
 function bashmatic.init() {
   set +e
+  bashmatic.core
   local os="$(/usr/bin/env uname -s | tr '[:upper:]' '[:lower:]')"
-
   local init_func="bashmatic.init.${os}"
   [[ -n $(type ${init_func} 2>/dev/null) ]] && ${init_func}
 
