@@ -2,7 +2,7 @@
 # Private functions
 # shellcheck disable=SC2155
 
-source "${BASHMATIC_HOME}/lib/util.sh"
+#source "${BASHMATIC_HOME}/lib/util.sh"
 
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
@@ -15,20 +15,20 @@ export LibOutput__WidthDetectionStrategy="unconstrained"
 export LibOutput__CachedScreenWidthMs=10000 # how long to cache screen-width for.
 export bashmatic_spacer_width="${bashmatic_spacer_width:-4}"
 
-output.reset-min-max-width() {
+function output.reset-min-max-width() {
   export LibOutput__MinWidth=${LibOutput__MinWidth:-${LibOutput__MinWidth__Default}}
   export LibOutput__MaxWidth=${LibOutput__MaxWidth:-${LibOutput__MaxWidth__Default}}
 }
 
 output.reset-min-max-width
 
-output.constrain-screen-width() {
+function output.constrain-screen-width() {
   export LibOutput__WidthDetectionStrategy="constrained"
   [[ $1 -gt 0 ]] && output.set-max-width "$1"
   [[ $2 -gt 0 ]] && output.set-min-width "$2"
 }
 
-output.unconstrain-screen-width() {
+function output.unconstrain-screen-width() {
   export LibOutput__WidthDetectionStrategy="unconstrained"
 }
 
@@ -603,160 +603,4 @@ ui.closer.kind-of-ok() {
 ui.closer.kind-of-ok:() {
   ui.closer.kind-of-ok $@
   echo
-}
-
-#—————————————————————————————————————————————————————————————————
-
-puts() {
-  printf "  ⇨ ${txtwht}$*${clr}"
-}
-
-okay() {
-  printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" >&2
-  echo
-}
-
-success() {
-  printf -- "\n${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
-  printf -- "\n\n" >&2
-}
-
-abort() {
-  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
-  echo
-}
-
-err() {
-  printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
-}
-
-ask() {
-  printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}"
-  printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
-}
-
-inf() {
-  printf -- "${LibOutput__LeftPrefix}${clr}${txtcyn}$*${clr}"
-}
-
-debug() {
-  [[ -z ${DEBUG} ]] && return
-  printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
-}
-
-warn() {
-  printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
-}
-
-warning() {
-  header=$(printf -- "${clr}${txtylw}  « WARNING » ")
-  local first="$1"
-  shift
-  box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" >&2
-}
-
-br() {
-  echo
-}
-
-info() {
-  inf $@
-  echo
-}
-
-error() {
-  header=$(printf -- "${clr}${txtred}  « ERROR » ")
-  box.white-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" >&2
-}
-
-fatal() {
-  header=$(printf -- "${clr}${bldwht}  « ABORT » ")
-  box.black-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" >&2
-  exit 1
-}
-
-info:() {
-  inf "$*"
-  ui.closer.ok:
-}
-
-error:() {
-  err "$*"
-  ui.closer.not-ok:
-}
-
-warning:() {
-  warn "$*"
-  ui.closer.kind-of-ok:
-}
-
-shutdown() {
-  local message=${1:-"Shutting down..."}
-  echo
-  box.red-in-red "${message}"
-  echo
-  exit 1
-}
-
-reset-color() {
-  printf "${clr}\n"
-}
-
-reset-color:() {
-  printf "${clr}"
-}
-
-columnize() {
-  local columns="${1:-2}"
-
-  local sw=${SCREEN_WIDTH:-120}
-  [[ -z ${sw} ]] && sw=$(screen-width)
-
-  pr -l 10000 -${columns} -e4 -w ${sw} |
-    expand -8 |
-    sed -E '/^ *$/d' |
-    grep -v 'Page '
-}
-
-dbg-on() {
-  export DEBUG=$(time.now.db)
-}
-
-dbg-off() {
-  unset DEBUG
-}
-
-# @description Checks if we have debug mode enabled
-is-dbg() {
-  [[ -n $DEBUG ]]
-}
-
-# @description Local debugging helper, activate it with DEBUG=1
-dbg() {
-  is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" >&2
-  return 0
-}
-
-dbgf() {
-  local func="$1"
-  shift
-  is.a-function "${func}" || {
-    error "${func} is not a function"
-    return 1
-  }
-
-  dbg "${func}(" "$@" ")"
-  ${func} "$@"
-  local code=$?
-
-  is-dbg || return "${code}"
-
-  cursor.up 1
-  cursor.at.x 0
-  if [[ ${code} -eq 0 ]]; then
-    ok:
-  else
-    not-ok:
-  fi
-  return ${code}
 }

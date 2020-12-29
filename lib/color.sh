@@ -7,12 +7,12 @@
 
 export BashMatic__ColorLoaded=${BashMatic__ColorLoaded:-"0"}
 
-reset-color() {
+function reset-color() {
   echo -en "${clr}"
 }
 
-color.enable() {
-  if ((BashMatic__ColorLoaded)); then
+function color.enable() {
+  if [[ ${BashMatic__ColorLoaded} -eq 1 ]]; then
     [[ -n ${DEBUG} ]] && echo "colors are already loaded."
   else
     export txtblk='\e[0;30m' # Black - Regular
@@ -76,19 +76,19 @@ color.enable() {
   fi
 }
 
-txt-info() { printf "${clr}${txtblu}"; }
-txt-err() { printf "${clr}${bldylw}${bakred}"; }
-txt-warn() { printf "${clr}${bldylw}"; }
+function txt-info() { printf "${clr}${txtblu}"; }
+function txt-err() { printf "${clr}${bldylw}${bakred}"; }
+function txt-warn() { printf "${clr}${bldylw}"; }
 
-error-text() { printf "${txtred}"; }
-bold() { ansi 1 "$@"; }
-italic() { ansi 3 "$@"; }
-underline() { ansi 4 "$@"; }
-strikethrough() { ansi 9 "$@"; }
-red() { ansi 31 "$@"; }
-ansi() { echo -e "\e[${1}m${*:2}\e[0m"; }
+function error-text() { printf "${txtred}"; }
+function bold() { .ansi 1 "$@"; }
+function italic() { .ansi 3 "$@"; }
+function underline() { .ansi 4 "$@"; }
+function strikethrough() { .ansi 9 "$@"; }
+function red() { .ansi 31 "$@"; }
+function .ansi() { echo -e "\e[${1}m${*:2}\e[0m"; }
 
-color.disable() {
+function color.disable() {
   export clr='\e[0m' # Text Reset
 
   unset txtblk
@@ -141,4 +141,4 @@ color.disable() {
   #trap reset-color EXIT
 }
 
-((BashMatic__ColorLoaded)) || color.enable
+[[ ${BashMatic__ColorLoaded} -eq 1 ]] || color.enable

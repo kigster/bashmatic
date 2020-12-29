@@ -11,7 +11,7 @@ source "${BASHMATIC_HOME}/init.sh"
 
 export BASHMATIC_TEST_DIR="${BASHMATIC_TEST_DIR:-"test"}"
 
-test-group() {
+function test-group() {
   #box.black-on-blue "$@"
   section.purple "$@"
   echo
@@ -20,6 +20,7 @@ test-group() {
 # @description Initialize specs
 function specs.init() {
   dbg "Script Source: ${BASH_SOURCE[0]}"
+
 
   export TERM=${TERM:-xterm-256color}
   export MIN_WIDTH=${MIN_WIDTH:-"100"}
@@ -34,11 +35,9 @@ function specs.init() {
   export BatsSource="${ProjectRoot}/.bats-sources"
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
-  export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${ProjectRoot}/bin:${ProjectRoot}/test/bin:/usr/bin:/usr/local/bin:/bin:/sbin"
+  export PATH="${ProjectRoot}/bin:/usr/bin:/usr/local/bin:/bin:/sbin:/opt/bin:/opt/local/bin:/opt/sbin"
 
   dbg "BatsPrefix is ${BatsPrefix}"
-
-  declare -a TestFiles=()
 
   export True=1
   export False=0
@@ -132,12 +131,12 @@ function specs.install() {
   ${func}
 }
 
-function spec.find-bats() {
+function specs.find-bats() {
   command -v bats || which bats || find . -name bats -perm "-u=x" | ${GrepCommand} -v 'fixtures|libexec'
 }
 
-function spec.validate-bats() {
-  local bats=$(spec.find-bats)
+function specs.validate-bats() {
+  local bats=$(specs.find-bats)
   [[ -z ${bats} ]] && {
     error "Can't find bats executable 😩  even after attemping to install it."
     info
@@ -157,7 +156,7 @@ function specs.run-one-file() {
   is.a-non-empty-file "${file}" || return 1
 
   test-group " 🚀  ${file}"
-  local bats=$(spec.find-bats)
+  local bats=$(specs.find-bats)
   export Specs__FileCount=$((Specs__FileCount + 1))
   [[ ${Specs__BatsFlags} == "-t" ]] && printf "${txtgrn}"
 
@@ -173,7 +172,7 @@ function specs.run-one-file() {
 function specs.run() {
   local result=0
 
-  for file in "${TestFiles[@]}"; do
+  for file in "${test_files[@]}"; do
     specs.run-one-file "${file}"
     local code=$?
 
@@ -197,13 +196,12 @@ function specs.run() {
 
 #------------------------------------------------------------------
 # Auxillary
-function specs.select-files() {
+function specs.add-all-files() {
   export os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-  if [[ -z ${TestFiles[*]} ]]; then
-    TestFiles=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
-    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && TestFiles+=($(find "${BASHMATIC_TEST_DIR}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
+  if [[ -z ${all_test_files[*]} ]]; then
+    all_test_files=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
+    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && all_test_files=(${all_test_files[@]} $(find "${BASHMATIC_TEST_DIR}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
   fi
-  export TestFiles
 }
 
 # @description Based on a shortname attempt to determine the actual test file names
@@ -275,7 +273,7 @@ function specs.parse-opts() {
         error "Can't determine proper test path for argument $1, got file ${file}"
         exit 2
       }
-      export TestFiles+=("${file}")
+      test_files+=("${file}")
       shift
       ;;
     esac
@@ -303,12 +301,25 @@ function specs.usage() {
 }
 
 function specs.main() {
+  declare -a test_files
+  declare -a all_test_files
+
+  export test_files=()
+  export all_test_files=()
+
   dbgf specs.init "$@"
   dbgf specs.parse-opts "$@"
+  
+  [[ ${#test_files} -gt 0 ]] && h1 "Testing the following files:" "${test_files[@]}"
+
   dbgf specs.install sources
-  dbgf spec.validate-bats
-  dbgf specs.select-files # Populates TestFiles[@] if not already populated
-  dbgf specs.run "$@"
+  dbgf specs.validate-bats
+  dbgf specs.add-all-files # Populates all_test_files[@] if not already populated
+  
+  [[ -z ${test_files[*]} ]] && test_files=(${all_test_files[@]})
+  dbgf specs.run "${test_files[@]}"
 }
 
 is.sourced-in || specs.main "$@"
+
+
