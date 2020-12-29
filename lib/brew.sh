@@ -240,7 +240,7 @@ function brew.install.cask() {
     return 0
   else
     ui.closer.kind-of-ok:
-    run "brew cask install ${cask} ${force} ${verbose}"
+    run "brew install --cask ${cask} ${force} ${verbose}"
     brew.cache-reset cask
   fi
 }
