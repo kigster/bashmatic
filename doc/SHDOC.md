@@ -8,7 +8,7 @@ This is the wrapper around the [`shdoc`](https://github.com/reconquest/shdoc) to
 
 ## Using `shdocument`
 
-This is a short example showing various options you can use with `shdocument`:
+This is wwa short example showing various options you can use with `shdocument`:
 
 ```bash
 shdocument ~/.bashmatic/lib/shdoc.sh > /tmp/shdoc.md

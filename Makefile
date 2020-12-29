@@ -2,7 +2,7 @@
 # vim: shiftwidth=8
 # vim: noexpandtab
 
-.PHONY:	 help install update_changelog update_function udpate_shdoc 
+.PHONY:	 help install update_changelog update_function update_shdoc 
 
 red             		:= \033[0;31m
 yellow          		:= \033[0;33m
@@ -35,7 +35,8 @@ update_functions: 		## Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/p
 
 update_usage: 			## Auto-generate doc/USAGE documentation from lib shell files, to doc/USAGE.adoc/pdf
 				@printf " 👉  $(green)Extracting shdoc documentation from library shell files ....$(clear)\n"
-				@bash -c "source ${BASHMATIC_HOME}/bin/regen-index-docs; generate-shdoc"
+				@bash -c "source ${BASHMATIC_HOME}/init.sh && shdoc.install"
+				@bash -c "source ${BASHMATIC_HOME}/bin/regen-index-docs; gem.install asciidoctor; generate-shdoc"
 
 				@printf " 👉  $(green)Converting USAGE.md into the ASCIIDOC...$(clear)\n"
 				@[[ -s doc/USAGE.md ]] && kramdoc doc/USAGE.md

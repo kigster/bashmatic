@@ -1,8 +1,18 @@
 = Changelog
 
-== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+== https://github.com/kigster/bashmatic/tree/v1.8.0[v1.8.0] (2020-12-29)
 
-https://github.com/kigster/bashmatic/compare/v1.7.1...HEAD[Full Changelog]
+https://github.com/kigster/bashmatic/compare/v1.7.2...v1.8.0[Full Changelog]
+
+*Merged pull requests:*
+
+* Adding ZSH installation + refactor init.sh https://github.com/kigster/bashmatic/pull/32[#32] (https://github.com/kigster[kigster])
+* Synology https://github.com/kigster/bashmatic/pull/31[#31] (https://github.com/kigster[kigster])
+* Fixing k8s-example; bin/scheck and a few more https://github.com/kigster/bashmatic/pull/30[#30] (https://github.com/kigster[kigster])
+
+== https://github.com/kigster/bashmatic/tree/v1.7.2[v1.7.2] (2020-12-26)
+
+https://github.com/kigster/bashmatic/compare/v1.7.1...v1.7.2[Full Changelog]
 
 *Merged pull requests:*
 
@@ -47,7 +57,6 @@ https://github.com/kigster/bashmatic/compare/v1.4.0...v1.5.0[Full Changelog]
 * This PR fixes auto-detection of BASHMATIC_HOME https://github.com/kigster/bashmatic/pull/23[#23] (https://github.com/kigster[kigster])
 * Better bootstrap process https://github.com/kigster/bashmatic/pull/22[#22] (https://github.com/kigster[kigster])
 * Add a Gitter chat badge to README.adoc https://github.com/kigster/bashmatic/pull/21[#21] (https://github.com/gitter-badger[gitter-badger])
-* Fixed Typo in init.sh for dependencies line#55 https://github.com/kigster/bashmatic/pull/19[#19] (https://github.com/inderpreet[inderpreet])
 * An attempt to remove constructs that were breaking when invoked from ZSH https://github.com/kigster/bashmatic/pull/18[#18] (https://github.com/kigster[kigster])
 
 == https://github.com/kigster/bashmatic/tree/v1.4.0[v1.4.0] (2020-10-06)
@@ -56,6 +65,7 @@ https://github.com/kigster/bashmatic/compare/v1.3.1...v1.4.0[Full Changelog]
 
 *Merged pull requests:*
 
+* Fixed Typo in init.sh for dependencies line#55 https://github.com/kigster/bashmatic/pull/19[#19] (https://github.com/inderpreet[inderpreet])
 * Many fixes to the test suite running + is lib https://github.com/kigster/bashmatic/pull/16[#16] (https://github.com/kigster[kigster])
 * Adding a color test + fixing coloring issue https://github.com/kigster/bashmatic/pull/15[#15] (https://github.com/kigster[kigster])
 

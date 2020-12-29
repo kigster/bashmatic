@@ -7,16 +7,14 @@
 # vim: ft=bash
 # NOTE: shdoc in bashmatic's bin folder uses functions here to install gawk and shdoc.
 
-export bashmatic_shdoc_path="${BASHMATIC_HOME}/bin"
-
 # @description Installs gawk into /usr/local/bin/gawk
-function gawk::install() {
+function gawk.install() {
   local gawk_path="$(command -v gawk 2>/dev/null)"
   [[ -n "${gawk_path}" && -x "${gawk_path}" ]] || brew.install.package gawk
 }
 
 # @description Installs shdoc unless already exists
-function shdoc::install() {
+function shdoc.install() {
   hash -r
 
   export install_shdoc_path="/usr/local/bin"
@@ -28,12 +26,13 @@ function shdoc::install() {
   run "rm -rf ${temp}"
   run "mkdir -p ${temp}"
   run "curl -fsSL https://raw.githubusercontent.com/reconquest/shdoc/master/shdoc -o ${temp}/shdoc"
-  sed -E -e 's~#\!/usr/bin/gawk~#\!/usr/bin/env gawk~g' "${temp}/shdoc" > "${install_shdoc_path}/shdoc"
+  sed -E -e 's~#\!/usr/bin/gawk~#\!/usr/bin/env gawk~g' "${temp}/shdoc" > "${temp}/shdoc-executable"
+  run "sudo mv ${temp}/shdoc-executable ${install_shdoc_path}/shdoc"
   run "chmod 755 ${install_shdoc_path}/shdoc"
 }
 
 # @description Reinstall shdoc completely
-function shdoc::reinstall() {
+function shdoc.reinstall() {
   hash -r
   local i=0
   
@@ -50,7 +49,8 @@ function shdoc::reinstall() {
     hash -r
   done
 
-  shdoc::install 
+  shdoc.install 
 }
 
 
+    

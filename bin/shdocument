@@ -12,10 +12,10 @@
 source "${BASHMATIC_HOME}/init.sh"
 
 # if we are being called, that means that the real shdoc is not installed.
-is.command gawk || gawk::install
+is.command gawk || gawk.install
 
 if [[ -x /usr/local/bin/shdoc && "$(head -1 /usr/local/bin/shdoc)" =~ gawk  ]] ; then
-  shdoc::install
+  shdoc.install
   [[ -x /usr/local/bin/shdoc ]] || { 
     error "Unable to install shdoc into /usr/local/bin/shdoc — what's the dealio?"
     exit 1
@@ -35,9 +35,19 @@ function tools.extract-docs() {
   /usr/bin/env find "${root}" -type f \( -name '*.sh' -or -name '*.bash' \) -exec "${BASHMATIC_HOME}/bin/shdoc-file" {} \; >>"${output}"
   
   cp /dev/null "${usage}"
-  printf "\n# BashMatic® Auto-Generated Function Index\n\n" >"${usage}"
+
+  info "Generating file ${usage}"
+  printf "# BashMatic® Auto-Generated Usage Documentation
+:allow-uri-read:
+:doctype: book
+:sectnums:
+:showtitle:
+:toc:
+:toclevels: 5
+:icons: font\n\n" >"${usage}"
+  
   /usr/bin/env sed -E 's/^#/##/g' "${output}" >>"${usage}"
-  rm -f "${output}"
+  run "rm -f \"${output}\""
 }
 
 tools.extract-docs "$@"
