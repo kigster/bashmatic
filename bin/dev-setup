@@ -156,7 +156,6 @@ export DevSetup__Callbacks
     git
     geoip
     gh
-    gpg
     gnu-sed
     findutils
     gnu-indent
@@ -216,13 +215,13 @@ export DevSetup__Callbacks
   export DevSetup__BrewCasks=("${DevSetup__BrewCasks[@]}"
     chromedriver
     rowanj-gitx
+    gpg-suite
   )
 }
 
 .dev-setup.brew.gnu() {
   # List of Brew Formulas to install and l`ink
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
-    gnupg
     gnutls
     gnu-sed
     gnu-tar
