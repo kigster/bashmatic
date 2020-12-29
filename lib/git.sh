@@ -8,13 +8,30 @@ function git.configure-auto-updates() {
   mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
 }
 
+# @description Sets or gets user values from global gitconfig.
+# @example Print current user's email
+#     git.cfgu email
+#
+# @example Set currrent email
+#     git.cfgu email kigster@gmail.com
+#
+# @example Print all global values
+#     git.cfgu
+#
 function git.cfgu() {
-  [[ -z $1 ]] && return 1
+  [[ -z $1 ]] && {
+    git config --global -l
+    return
+  }
   if [[ -n $2 ]] ; then
     rm -f ~/.gitconfig.lock
     git config --global --replace-all user.$1 $2
   else
-    git config --global user.$1
+    if [[ $1 =~ - ]]; then
+      git config --global $1
+    else
+      git config --global user.$1
+    fi
   fi
 }
 
@@ -235,5 +252,26 @@ function git.repo.remote-to-git@ () {
   fi
 }
 
-if [[ "${USER}" == kig ]] ; then git.config.kigster>/dev/null; fi
+function git.squash() {
+  local number="${1}"
+  is.numeric ${number} || {
+    info "USAGE: git.squash <number> # of commits to go back"
+    return
+  }
+  run "git reset --soft HEAD~${number}"
+
+  info "We've squashed down ${number} commits locally."
+  info "Now, you must commit this squash, and likely force push." 
+}
+
+function git.current-branch() {
+  git branch --no-color | grep -F "*" | cut -f 2 -d " "
+}
+
+function git.upstream() {
+  local this_branch=$(git.current-branch)
+  this_branch=${this_branch:-master}
+  run.set-next show-output-on
+  run "git branch --set-upstream-to=origin/${this_branch} ${this_branch}"
+}
 
