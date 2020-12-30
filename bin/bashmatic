@@ -2,7 +2,7 @@
 # vim: ft=sh
 #
 # Bashmatic Framework® 
-# Copyright © 2017-2020 Konstantin Gredeskoul, All rights reserved, MIT License.
+# Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved, MIT License.
 #
 # This is a simple helper that serves three functions:
 #   1. If BASHMATIC_HOME is not set, it tries very hard to figure it out

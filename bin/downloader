@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-# Author: Konstantin Gredeskoul
-# Copyright: © 2020 KG, MIT License
+#
+# © 2017-2021 Konstantin Gredeskoul, MIT License
 #
 # This script can extract image URLs from a remote HTML document(s) and
 # downloads them all to a local folder.

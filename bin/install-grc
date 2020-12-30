@@ -5,7 +5,7 @@
 #
 #    bash -c "$(curl -fsSL https://bit.ly/colorize-mysql)"
 #
-# © 2020 Konstantin Gredeskoul, distributed as part of Bashmatic Framework.
+# © 2017-2021 Konstantin Gredeskoul, distributed as part of Bashmatic Framework.
 #
 
 # shellcheck disable=2046
@@ -75,7 +75,11 @@ function grc.install.core() {
 
   grc.install.extras "${shellrc}"
 
-  source "${shellrc}"
+  if [[ ${SHELL_NAME} == "bash" ]]; then
+    source "${shellrc}"
+  else
+    info "Please source ${shellrc} file to activate GRC colors."
+  fi
 }
 
 grc.clone.repo && grc.install.core

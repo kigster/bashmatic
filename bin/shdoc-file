@@ -15,7 +15,7 @@ file="$1"
 
 stderr="$(file.temp shdoc)"
 inf "Extracting shell docs from ${file}..." >&2
-/usr/local/bin/shdoc < "$1" 2>"${stderr}"
+bin/shdoc < "$1" 2>"${stderr}"
 code=$?
 
 if [[ ${code} -eq 0 ]]; then

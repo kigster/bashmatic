@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 #
-# © 2020 Konstantin Gredeskoul
+# © 2017-2021 Konstantin Gredeskoul
 # MIT License
 #
 # Collection of PostgreSQL helper functions for locally running instances.

@@ -11,17 +11,6 @@
 
 source "${BASHMATIC_HOME}/init.sh"
 
-# if we are being called, that means that the real shdoc is not installed.
-is.command gawk || gawk::install
-
-if [[ -x /usr/local/bin/shdoc && "$(head -1 /usr/local/bin/shdoc)" =~ gawk  ]] ; then
-  shdoc::install
-  [[ -x /usr/local/bin/shdoc ]] || { 
-    error "Unable to install shdoc into /usr/local/bin/shdoc — what's the dealio?"
-    exit 1
-  }
-fi
-
 function tools.extract-docs() {
   local root="${1:-${PWD}}"
   local output="${BASHMATIC_HOME}/doc/USAGE.md.temp"

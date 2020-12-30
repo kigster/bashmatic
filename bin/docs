@@ -1,79 +1,122 @@
 #!/usr/bin/env bash
 # vim: ft=sh
 # Bashmatic Utilities
-# © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
+# © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
 # shellcheck disable=2046
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 source "${BASHMATIC_HOME}/init.sh"
 
-function setup() {
-  [[ -n $(command -V gawk) ]] || brew.install.package gawk
+export usage_md="doc/USAGE.md"
+export usage_adoc="doc/USAGE.adoc"
+export usage_pdf="doc/USAGE.pdf"
+
+export usage_temp=$(file.temp usage)
+
+trap "rm -f ${usage_temp}" EXIT
+
+function docs.setup() {
+  #shdoc.install
   [[ -n $(command -V kramdoc) ]] || gem.install kramdoc
 }
 
-function generate() {
-  local out=USAGE.md
-  local tmp="$(mktemp -t docs)"
-
+function docs.generate() {
   # shellcheck disable=2207
-  local -a files=($(ls -1 lib/*.sh))
+  local -a lib_files=($(find lib -name '*.sh' -type f ))
+  local -a bin_files=($(find bin -type f -name '[a-z]*'))
+  local -a files
+  local module
+
+  run "rm -f ${usage_md} ${usage_adoc}"
+  
+  files=("${lib_files[@]}" "${bin_files[@]}")
+
+  h3 "Processing ${#files[@]} files for shdoc comments..."
+
   for file in "${files[@]}"; do
-    lib=$(echo "${file}" | sed 's/lib\///g;s/\.sh$//g')
-    local docs=$(bin/shdoc "${file}" | sed '/^\s*$/d')
-    [[ -z ${docs} ]] && {
-      printf "${txtred}%s" "⊗"
+    grep -E -q '@(description|brief|example)' "${file}" || {
       continue
     }
 
-    printf "\n%s\n" "## Module **${lib}**" >>${out}
-    bin/shdoc <"${file}" | sed 's/##/###/g' >"${tmp}"
-    if [[ -n $(cat "${tmp}") ]]; then
-      cat "${tmp}" >>${out}
-      printf "${txtgrn}%s" "✔"
+    module="${file}"
+    rm -f "${usage_temp}"
+    inf "processing ${bldylw}${file}... "
+    bin/shdoc "${file}" 2>/dev/null > "${usage_temp}"
+
+    local stripped="$(sed -E '/^\s*$/d' "${usage_temp}")"
+
+    if [[ -n ${stripped} ]]; then
+      ok:
+      printf "\n%s\n" "## File \`${module}\`" >>"${usage_md}"
+
+      sed -E -i '' 's/# @/ @/g'         "${usage_temp}"
+      sed -E -i '' 's/^## /### /g; s/^# /## /g'        "${usage_temp}"
+      sed -E -i '' 's/^#* Index$//g'   "${usage_temp}"
+      sed -E -i '' 's/^### ([a-zA-Z_.\-]*\(\))( ?{)?/### `\1`/g'   "${usage_temp}"
+      cat "${usage_temp}" >>"${usage_md}"
+      printf "\n\n----\n\n" >>"${usage_md}"
+    else
+      not-ok:
     fi
   done
   echo
+}
 
-  printf \
-    "\n\n" \
-    '"""' \
-    "\n\n" \
+function docs.markdown.append-copyright() {
+  printf "%s%s%s%s" "\n\n----\n\n" \
     "## Copyright & License\n\n" \
-    " * Copyright © 2017-2020 Konstantin Gredeskoul, All rights reserved.\n" \
-    " * Distributed under MIT License.\n\n" >>$out
-
-  sed -i'' 's/```/```bash/g' "${out}"
-  adoc="${out/md/adoc}"
-  run "rm -f ${adoc}"
-  run "kramdoc ${out}"
-  [[ -f ${adoc} ]] && run "rm -f ${out}"
-  append.adoc.metadata "${adoc}"
+    " * Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved.\n" \
+    " * Distributed under the MIT License.\n\n" >>"${usage_md}"
 }
 
-function append.adoc.metadata() {
-  local adoc="${1}"
-  local temp=$(mktemp -t adoc)
+function docs.markdown.fix-examples() {
+  sed -i'' 's/```/```bash/g' "${usage_md}"
+}
+
+function docs.markdown.to-adoc() {
+  run "kramdoc ${usage_md}"
+  [[ -s ${usage_adoc} ]] || {
+    error "Can't find regenerated ADOC file ${usage_adoc}"
+    exit 1
+  }
+}
+
+function docs.adoc.fix-headers() {
+  run "sed -E -i '' s/\[discrete\]//g' ${usage_adoc}"
+}
+
+
+function docs.adoc.add-preamble() {
   (
-    printf "= Bashmatic© Version $(cat .version)\n"
-    printf ":doctype: article\n:allow-uri-read:\n:toc:\n:toclevels: 5\n:sectnums:\n:showtitle:\n\n"
-    printf "NOTE: https://github.com/reconquest/shdoc[shdoc] documentation "
-    printf "extracted from the Bashmatic Sources.\n"
+    printf "= Bashmatic Usage Docs (v$(cat .version))\n"
+    printf ":doctype: article\n:allow-uri-read:\n:toc:\n:toclevels: 5\n:sectnums:\n:showtitle:\n:icons:font\n\n"
+    printf "NOTICE: https://github.com/reconquest/shdoc[shdoc] documentation is auto-extracted from the Bashmatic Sources.\n"
     printf "\n'''\n"
-  ) >${temp}
-  tail +3 "${adoc}" | sed -E 's/^= (.*)$/==== \
-\1 \
-==== \
-/g' | cat >>${temp}
-  run "mv ${temp} ${adoc}"
-  run "asciidoctor-pdf ${adoc}"
+  ) >"${usage_temp}"
+  tail +3 "${usage_adoc}" >>"${usage_temp}"
+  run "mv ${usage_temp} ${usage_adoc}"
 }
 
-main() {
-  setup
-  generate
-  open USAGE.pdf
+function docs.adoc.generate-pdf() {
+
+  run "asciidoctor-pdf ${usage_adoc}"
+  info "Opening the PDF..."
+  open -F -n "${usage_pdf}"
+
 }
 
-main "$@"
+function docs.main() {
+  docs.setup
+  docs.generate
+  
+  docs.markdown.append-copyright
+  docs.markdown.fix-examples
+  docs.markdown.to-adoc
+  
+  docs.adoc.fix-headers  
+  docs.adoc.add-preamble
+  docs.adoc.generate-pdf
+}
+
+docs.main "$@"

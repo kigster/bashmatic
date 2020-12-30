@@ -24,7 +24,7 @@
 
 \echo 'Welcome to the Interactive PostgreSQL CLI'
 \echo 'Colorized and Customized by Konstantin Gredeskoul'
-\echo '© 2015-2020 All Rights Reserved, MIT License'
+\echo '© 2015-2021 All Rights Reserved, MIT License'
 \echo
 
 \echo 'Type :version to see the PostgreSQL version.'
