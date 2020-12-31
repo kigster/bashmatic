@@ -117,6 +117,6 @@ function bashmatic.init() {
   bashmatic.set-is-loaded
 }
 
-[[ "$1" =~ reload|force|refresh ]] && bashmatic.reset-is-loaded
+echo "$1" | grep -E -q 'reload|force|refresh' && bashmatic.reset-is-loaded
 
 bashmatic.is-loaded || bashmatic.init "$@"
