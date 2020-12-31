@@ -4,6 +4,13 @@
 export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
 
+function source-if-exists() {
+  local file
+  for file in "$@"; do
+    [[ -f "${file}" ]] && source "${file}"
+  done
+}
+
 # Set initial state to 0
 # This can not be exported, because then subshells don't initialize correctly
 __bashmatic_load_state=${__bashmatic_load_state:-0}
