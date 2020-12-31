@@ -754,7 +754,7 @@ bashmatic.bash.version-four-or-later ()
 bashmatic.cache.add-file () 
 { 
     ((CacheEnabled)) || return
-    [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
+    [[ -n "${1}" ]] && item_cache_map[${1}]=true
 }
 
 ----
@@ -768,7 +768,7 @@ bashmatic.cache.has-file ()
     ((CacheEnabled)) || return 1
     local file="$1"
     test -z "$file" && return 1
-    if [[ -n "$1" && -n "${BashMatic__LoadCache["${file}"]}" ]]; then
+    if [[ -n "$1" && -n "${item_cache_map["${file}"]}" ]]; then
         return 0
     else
         return 1
@@ -785,8 +785,8 @@ bashmatic.cache.init ()
 { 
     return
     if bashmatic.bash.version-four-or-later; then
-        declare -A BashMatic__LoadCache 2> /dev/null
-        export BashMatic__LoadCache
+        declare -A item_cache_map 2> /dev/null
+        export item_cache_map
     else
         CacheEnabled=0
     fi
@@ -801,7 +801,7 @@ bashmatic.cache.init ()
 bashmatic.cache.list () 
 { 
     ((CacheEnabled)) || return
-    for f in "${!BashMatic__LoadCache[@]}"
+    for f in "${!item_cache_map[@]}"
     do
         echo $f
     done

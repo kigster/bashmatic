@@ -53,7 +53,7 @@ function br() {
 }
 
 function info() {
-  inf $@
+  inf "$@"
   echo
 }
 
