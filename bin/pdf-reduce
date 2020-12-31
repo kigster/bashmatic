@@ -1,26 +1,58 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 # Author: Konstantin Gredeskoul
-# Copyright: © 2020 KG, MIT License
+# Bashmatic and the wrapper is Copyright © 2017-2021 Konstantin Gredeskoul
+# Part of this code is Copyright © 2014-2019, Alfred Klomp
 #
 # This script can extract image URLs from a remote HTML document(s) and
 # downloads them all to a local folder.
 
 # shellcheck disable=2046
-[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+[[ -z ${BASHMATIC_HOME} ]] && \
+  export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+
 source "${BASHMATIC_HOME}/init.sh"
 
 # This project is derived from the +shrinkpdf+ open source project:
-#
 # http://www.alfredklomp.com/programming/shrinkpdf
+#
 # Licensed under the 3-clause BSD license:
 #
-# Copyright © 2014-2019, Alfred Klomp, All rights reserved.
-# Copyright © [unknown], Vivek Gitem, Mysterious modifications that he needed?
+# Copyright (c) 2014-2019, Alfred Klomp
+# All rights reserved.
 #
-# Copyright © 2020 Konstantin Gredeskoul, as part of BashMatic.
-# FUNCTION pdf.do.shrink
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. Neither the name of the copyright holder nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
 
+function pdf.ensure-gs() {
+  [[ -x /usr/local/bin/gs ]] && return
+
+  brew.install.package ghostscript
+}
+
+
+# @description shrinkgs PDF
 function pdf.do.shrink() {
   local infile="$1"
   local outfile="$2"
@@ -124,7 +156,7 @@ function pdf.main() {
     output_file="${outfile}"
   else
     output_file="${input_file}"
-    output_file="${outp ut_file/-reduced/}"
+    output_file="${output_file/-reduced/}"
     output_file="${output_file/.pdf.pdf/.pdf}"
     output_file="${output_file/.pdf/-reduced}.$(time.now.db 2>&1|tr -d ' ').pdf"
   fi

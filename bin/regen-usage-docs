@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# vim: ft=sh
+# Bashmatic Utilities
+# © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
+# Distributed under the MIT LICENSE.
+#
+# @file regen-usage-docs
+# @description Regenerates USAGE.adoc && USAGE.pdf
+
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
+
+export usage_md="doc/USAGE.md"
+export usage_adoc="${usage_md/.md/.adoc}"
+export usage_pdf="${usage_md/.md/.pdf}"
+
+export usage_temp=$(file.temp usage)
+
+trap "rm -f ${usage_temp}" EXIT
+trap "rm -f ${usage_md}" EXIT
+
+function docs.setup() {
+  #shdoc.install
+  [[ -n $(command -V kramdoc) ]] || gem.install kramdoc
+}
+
+function docs.generate() {
+  # shellcheck disable=2207
+  local -a lib_files=($(find lib -name '*.sh' -type f ))
+  local -a bin_files=($(find bin -type f -name '[a-z]*'))
+  local -a files
+  local module
+
+  run "rm -f ${usage_md} ${usage_adoc} && touch ${usage_md}"
+  
+  files=("${lib_files[@]}" "${bin_files[@]}")
+
+  h3 "Processing ${#files[@]} files for shdoc comments..."
+
+  for file in "${files[@]}"; do
+    grep -E -q '@(description|brief|example)' "${file}" || {
+      continue
+    }
+
+    module="${file}"
+    rm -f "${usage_temp}"
+    inf "processing ${bldylw}${file}... "
+    bin/shdoc "${file}" 2>/dev/null > "${usage_temp}"
+
+    local stripped="$(sed -E -e '/^\s*$/d' "${usage_temp}")"
+
+    if [[ -n ${stripped} ]]; then
+      ok:
+      printf "\n%s\n" "## File \`${module}\`" >>"${usage_md}"
+      sed -E -i'' -e 's/# @/ @/g'         "${usage_temp}"
+      sed -E -i'' -e 's/^#* Index$//g'    "${usage_temp}"
+
+      cat "${usage_temp}" >>"${usage_md}"
+      printf "\n\n----\n\n" >>"${usage_md}"
+    else
+      not-ok:
+    fi
+  done
+  echo
+}
+
+function docs.markdown.append-copyright() {
+  cat>>"${usage_md}" <<EOF
+## Copyright & License
+
+ * Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved.
+ * Distributed under the MIT License.
+EOF
+
+}
+
+function docs.markdown.to-adoc() {
+  run "kramdoc ${usage_md} -o ${usage_adoc}"
+  [[ -s ${usage_adoc} ]] || {
+    error "Can't find regenerated ADOC file ${usage_adoc}"
+    exit 1
+  }
+}
+
+function docs.adoc.fix-headers() {
+  [[ -f doc/USAGE.adoc-e ]] && error "adoc-e found"
+
+  # sed -E -i'' -e 's/\[discrete\]//g' "${usage_adoc}"
+  [[ -f doc/USAGE.adoc-e ]] && error "adoc-e found"
+}
+
+
+function docs.adoc.add-preamble() {
+  local ver=$(cat .version)
+  cat  > "${usage_temp}" <<EOF
+= Bashmatic Usage Docs (v${ver})
+:doctype: article
+:allow-uri-read:
+:toc:
+:toclevels: 5
+:sectnums:
+:showtitle:
+:icons:font
+
+NOTICE: https://github.com/reconquest/shdoc[shdoc] documentation is auto-extracted from the Bashmatic Sources.
+
+EOF
+  tail +3 "${usage_adoc}" 1>"${usage_temp}" 2>&1 
+  run "mv ${usage_temp} ${usage_adoc}"
+}
+
+function docs.adoc.generate-pdf() {
+  run "asciidoctor-pdf ${usage_adoc}"
+  is-dbg && {
+    info "Opening the PDF..."
+    open -F -n "${usage_pdf}"
+  }
+}
+
+function docs.main() {
+  docs.setup
+
+  # Markdown creation. NOTE: the trap in the beginning
+  # ensures the tha markdown file is removed when the script exists
+  docs.generate
+  docs.markdown.append-copyright
+  
+  # convert to AsciiDoc 
+  docs.markdown.to-adoc
+  docs.adoc.fix-headers  
+  docs.adoc.add-preamble
+
+  # convert adoc to PDF
+  docs.adoc.generate-pdf
+
+  h3 "Files Generated:" $(ls -1 doc/USAGE.*)
+
+  success "USAGE files have been auto-generated."
+}
+
+docs.main "$@"

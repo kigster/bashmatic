@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-# © 2014-2020 Konstantin Gredeskoul
+# © 2014-2021 Konstantin Gredeskoul
 # 
 user.gitconfig.email() {
   if [[ -s ${HOME}/.gitconfig ]]; then

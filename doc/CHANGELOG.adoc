@@ -1,14 +1,24 @@
 = Changelog
 
-== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+== https://github.com/kigster/bashmatic/tree/v1.8.0[v1.8.0] (2020-12-29)
 
-https://github.com/kigster/bashmatic/compare/v1.7.1...HEAD[Full Changelog]
+https://github.com/kigster/bashmatic/compare/v1.7.2...v1.8.0[Full Changelog]
+
+*Merged pull requests:*
+
+* Adding ZSH installation + refactor init.sh https://github.com/kigster/bashmatic/pull/32[#32] (https://github.com/kigster[kigster])
+* Synology https://github.com/kigster/bashmatic/pull/31[#31] (https://github.com/kigster[kigster])
+* Fixing k8s-example; bin/scheck and a few more https://github.com/kigster/bashmatic/pull/30[#30] (https://github.com/kigster[kigster])
+
+== https://github.com/kigster/bashmatic/tree/v1.7.2[v1.7.2] (2020-12-26)
+
+https://github.com/kigster/bashmatic/compare/v1.7.1...v1.7.2[Full Changelog]
 
 *Merged pull requests:*
 
 * Adding `db explain` and --verbose flag. https://github.com/kigster/bashmatic/pull/29[#29] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.7.1[v1.7.1] (2020-12-22)
+== https://github.com/kigster/bashmatic/tree/v1.7.1[v1.7.1] (2021-12-22)
 
 https://github.com/kigster/bashmatic/compare/v1.7.0...v1.7.1[Full Changelog]
 
@@ -16,7 +26,7 @@ https://github.com/kigster/bashmatic/compare/v1.7.0...v1.7.1[Full Changelog]
 
 * Fixing temp file + absolute paths in makefile https://github.com/kigster/bashmatic/pull/28[#28] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.7.0[v1.7.0] (2020-12-16)
+== https://github.com/kigster/bashmatic/tree/v1.7.0[v1.7.0] (2021-12-16)
 
 https://github.com/kigster/bashmatic/compare/v1.6.0...v1.7.0[Full Changelog]
 
@@ -26,7 +36,7 @@ https://github.com/kigster/bashmatic/compare/v1.6.0...v1.7.0[Full Changelog]
 * Many fixes and subtle improvements: https://github.com/kigster/bashmatic/pull/26[#26] (https://github.com/kigster[kigster])
 * Adding a few more db helpers + zsh expansion https://github.com/kigster/bashmatic/pull/25[#25] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.6.0[v1.6.0] (2020-11-13)
+== https://github.com/kigster/bashmatic/tree/v1.6.0[v1.6.0] (2021-11-13)
 
 https://github.com/kigster/bashmatic/compare/v1.5.0...v1.6.0[Full Changelog]
 
@@ -34,7 +44,7 @@ https://github.com/kigster/bashmatic/compare/v1.5.0...v1.6.0[Full Changelog]
 
 * Enhanced dev-setup; consolidated load-at-login https://github.com/kigster/bashmatic/pull/24[#24] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.5.0[v1.5.0] (2020-11-12)
+== https://github.com/kigster/bashmatic/tree/v1.5.0[v1.5.0] (2021-11-12)
 
 https://github.com/kigster/bashmatic/compare/v1.4.0...v1.5.0[Full Changelog]
 
@@ -47,19 +57,19 @@ https://github.com/kigster/bashmatic/compare/v1.4.0...v1.5.0[Full Changelog]
 * This PR fixes auto-detection of BASHMATIC_HOME https://github.com/kigster/bashmatic/pull/23[#23] (https://github.com/kigster[kigster])
 * Better bootstrap process https://github.com/kigster/bashmatic/pull/22[#22] (https://github.com/kigster[kigster])
 * Add a Gitter chat badge to README.adoc https://github.com/kigster/bashmatic/pull/21[#21] (https://github.com/gitter-badger[gitter-badger])
-* Fixed Typo in init.sh for dependencies line#55 https://github.com/kigster/bashmatic/pull/19[#19] (https://github.com/inderpreet[inderpreet])
 * An attempt to remove constructs that were breaking when invoked from ZSH https://github.com/kigster/bashmatic/pull/18[#18] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.4.0[v1.4.0] (2020-10-06)
+== https://github.com/kigster/bashmatic/tree/v1.4.0[v1.4.0] (2021-10-06)
 
 https://github.com/kigster/bashmatic/compare/v1.3.1...v1.4.0[Full Changelog]
 
 *Merged pull requests:*
 
+* Fixed Typo in init.sh for dependencies line#55 https://github.com/kigster/bashmatic/pull/19[#19] (https://github.com/inderpreet[inderpreet])
 * Many fixes to the test suite running + is lib https://github.com/kigster/bashmatic/pull/16[#16] (https://github.com/kigster[kigster])
 * Adding a color test + fixing coloring issue https://github.com/kigster/bashmatic/pull/15[#15] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.3.1[v1.3.1] (2020-10-04)
+== https://github.com/kigster/bashmatic/tree/v1.3.1[v1.3.1] (2021-10-04)
 
 https://github.com/kigster/bashmatic/compare/v1.3.0...v1.3.1[Full Changelog]
 
@@ -67,7 +77,7 @@ https://github.com/kigster/bashmatic/compare/v1.3.0...v1.3.1[Full Changelog]
 
 * Adding array.sort, array.uniq and array.sort-numeric https://github.com/kigster/bashmatic/pull/14[#14] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.3.0[v1.3.0] (2020-09-22)
+== https://github.com/kigster/bashmatic/tree/v1.3.0[v1.3.0] (2021-09-22)
 
 https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0[Full Changelog]
 
@@ -78,7 +88,7 @@ https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0[Full Changelog]
 * Add license scan report and status https://github.com/kigster/bashmatic/pull/10[#10] (https://github.com/fossabot[fossabot])
 * Adding bin/pdf-reduce and other tweaks https://github.com/kigster/bashmatic/pull/9[#9] (https://github.com/kigster[kigster])
 
-== https://github.com/kigster/bashmatic/tree/v1.2.1[v1.2.1] (2020-06-26)
+== https://github.com/kigster/bashmatic/tree/v1.2.1[v1.2.1] (2021-06-26)
 
 https://github.com/kigster/bashmatic/compare/v1.2.0...v1.2.1[Full Changelog]
 
@@ -86,19 +96,19 @@ https://github.com/kigster/bashmatic/compare/v1.2.0...v1.2.1[Full Changelog]
 
 * fix installer url https://github.com/kigster/bashmatic/pull/7[#7] (https://github.com/fudanglp[fudanglp])
 
-== https://github.com/kigster/bashmatic/tree/v1.2.0[v1.2.0] (2020-05-22)
+== https://github.com/kigster/bashmatic/tree/v1.2.0[v1.2.0] (2021-05-22)
 
 https://github.com/kigster/bashmatic/compare/v1.1.0...v1.2.0[Full Changelog]
 
-== https://github.com/kigster/bashmatic/tree/v1.1.0[v1.1.0] (2020-04-06)
+== https://github.com/kigster/bashmatic/tree/v1.1.0[v1.1.0] (2021-04-06)
 
 https://github.com/kigster/bashmatic/compare/v1.0.1...v1.1.0[Full Changelog]
 
-== https://github.com/kigster/bashmatic/tree/v1.0.1[v1.0.1] (2020-03-14)
+== https://github.com/kigster/bashmatic/tree/v1.0.1[v1.0.1] (2021-03-14)
 
 https://github.com/kigster/bashmatic/compare/v1.0.0...v1.0.1[Full Changelog]
 
-== https://github.com/kigster/bashmatic/tree/v1.0.0[v1.0.0] (2020-03-11)
+== https://github.com/kigster/bashmatic/tree/v1.0.0[v1.0.0] (2021-03-11)
 
 https://github.com/kigster/bashmatic/compare/v0.2.0...v1.0.0[Full Changelog]
 

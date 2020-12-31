@@ -2,7 +2,7 @@
 # vim: shiftwidth=8
 # vim: noexpandtab
 
-.PHONY:	 help install update_changelog update_function udpate_shdoc 
+.PHONY:	 help install update_changelog update_function update_shdoc 
 
 red             		:= \033[0;31m
 yellow          		:= \033[0;33m
@@ -34,18 +34,11 @@ update_functions: 		## Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/p
 				@bash -c "source ${BASHMATIC_HOME}/bin/regen-index-docs; generate-functions-index"
 
 update_usage: 			## Auto-generate doc/USAGE documentation from lib shell files, to doc/USAGE.adoc/pdf
-				@printf " 👉  $(green)Extracting shdoc documentation from library shell files ....$(clear)\n"
-				@bash -c "source ${BASHMATIC_HOME}/bin/regen-index-docs; generate-shdoc"
-
-				@printf " 👉  $(green)Converting USAGE.md into the ASCIIDOC...$(clear)\n"
-				@[[ -s doc/USAGE.md ]] && kramdoc doc/USAGE.md
-
-				@printf " 👉  $(green)Converting USAGE.adoc into the PDF...$(clear)\n"
-				@[[ -s doc/USAGE.adoc ]] && ${BASHMATIC_HOME}/bin/adoc2pdf doc/USAGE.adoc
-
+				@printf " 👉  $(green)Running bin/regen-usage-docs command...$(clear)\n"
+				@bin/regen-usage-docs
 				@printf " 👉  $(green)Reducing the PDF Size.... $(clear)\n"
 				@$(BASHMATIC_HOME)/bin/pdf-reduce doc/USAGE.pdf USAGE.pdf.reduced
-			    	@[[ -s USAGE.pdf.reduced ]] && mv -v USAGE.pdf.reduced doc/USAGE.pdf
+					@[[ -s USAGE.pdf.reduced ]] && mv -v USAGE.pdf.reduced doc/USAGE.pdf
 
 update_readme:			## Re-generate the PDF version of the README
 				@printf " 👉  $(green)Converting README.adoc into the PDF...$(clear)\n"

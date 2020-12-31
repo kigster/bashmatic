@@ -298,13 +298,13 @@ export bashmatic__sed_command
 #———————————————————————————————————————————————————————
 function sedx.cache-command() {
   local sed_path="$(util.ensure-gnu-sed)"
-  local sed_command="${sed_path} -r -e "
+  local sed_command="${sed_path} -E -e "
   export bashmatic__sed_command="${sed_command}"
 }
 
 sedx() {
   [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
-  ${bashmatic__sed_command} "$@"
+  eval "${bashmatic__sed_command} \"$@\""
 }
 
 export LibUtil__WatchRefreshSeconds="0.5"
