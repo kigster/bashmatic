@@ -5,6 +5,7 @@
 :showtitle:
 :toc:
 :toclevels: 5
+:icons: font
 
 == Bashmatic Modules
 
@@ -457,6 +458,17 @@ array.uniq ()
 
 === Module `audio`
 
+==== `æ.mp3`
+
+[source,bash]
+----
+æ.mp3 () 
+{ 
+    audio.make.mp3 "$@"
+}
+
+----
+
 ==== `audio.dir.mp3-to-wav`
 
 [source,bash]
@@ -747,68 +759,6 @@ bashmatic.bash.version-four-or-later ()
 
 ----
 
-==== `bashmatic.cache.add-file`
-
-[source,bash]
-----
-bashmatic.cache.add-file () 
-{ 
-    ((CacheEnabled)) || return
-    [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
-}
-
-----
-
-==== `bashmatic.cache.has-file`
-
-[source,bash]
-----
-bashmatic.cache.has-file () 
-{ 
-    ((CacheEnabled)) || return 1
-    local file="$1"
-    test -z "$file" && return 1
-    if [[ -n "$1" && -n "${BashMatic__LoadCache["${file}"]}" ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-----
-
-==== `bashmatic.cache.init`
-
-[source,bash]
-----
-bashmatic.cache.init () 
-{ 
-    return
-    if bashmatic.bash.version-four-or-later; then
-        declare -A BashMatic__LoadCache 2> /dev/null
-        export BashMatic__LoadCache
-    else
-        CacheEnabled=0
-    fi
-}
-
-----
-
-==== `bashmatic.cache.list`
-
-[source,bash]
-----
-bashmatic.cache.list () 
-{ 
-    ((CacheEnabled)) || return
-    for f in "${!BashMatic__LoadCache[@]}"
-    do
-        echo $f
-    done
-}
-
-----
-
 ==== `bashmatic.functions`
 
 [source,bash]
@@ -899,6 +849,7 @@ bashmatic.load-at-login ()
 ----
 bashmatic.reload () 
 { 
+    bashmatic.reset-is-loaded
     source "${BASHMATIC_INIT}"
 }
 
@@ -910,17 +861,19 @@ bashmatic.reload ()
 ----
 bashmatic.setup () 
 { 
-    bashmatic.cache.init
-    bashmatic.shell-check || return 1
     [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
     [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
     if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
-        printf "\e[1;31mUnable to establish BashMatic's library source folder.\e[0m\n"
+        .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
         return 1
     fi
-    bashmatic.source is.sh output.sh util.sh git.sh file.sh color.sh brew.sh
+    bashmatic.source user.sh output.sh is.sh
+    bashmatic.shell-check || return 1
+    bashmatic.source util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
+    output.unconstrain-screen-width
     [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+    return 0
 }
 
 ----
@@ -949,26 +902,16 @@ bashmatic.shell-check ()
 bashmatic.source () 
 { 
     local path="${BASHMATIC_LIBDIR}"
+    local file
     for file in "${@}"
     do
         [[ "${file}" =~ "/" ]] || file="${path}/${file}"
         [[ -s "${file}" ]] || { 
-            echo "Can't source file ${file} — fils is invalid."
+            .err "Can't source file ${file} — fils is invalid."
             return 1
         }
-        if [[ ${CacheEnabled} -eq 0 ]]; then
-            [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
-            source "${file}"
-        else
-            if bashmatic.cache.has-file "${file}"; then
-                [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" 1>&2
-            else
-                [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" 1>&2
-                set +e
-                source "${file}"
-                bashmatic.cache.add-file "${file}"
-            fi
-        fi
+        [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
+        source "${file}"
     done
     return 0
 }
@@ -1147,7 +1090,7 @@ brew.install.cask ()
         return 0
     else
         ui.closer.kind-of-ok:
-        run "brew cask install ${cask} ${force} ${verbose}"
+        run "brew install --cask ${cask} ${force} ${verbose}"
         brew.cache-reset cask
     fi
 }
@@ -1174,19 +1117,20 @@ brew.install.package ()
     else
         if [[ -z "${opt_terse}" ]]; then
             ui.closer.kind-of-ok:
-            run "brew install ${package} ${force} ${verbose}"
+            run "brew install ${force} ${verbose} ${package}"
             code="${LibRun__LastExitCode}"
         else
-            brew install "${package}" ${force} ${verbose} > /dev/null 2>&1
+            brew install ${force} ${verbose} ${package} > /dev/null 2>&1
             code=$?
-            brew.cache-reset package
         fi
+        brew.cache-reset package
+        brew.package.all-installed "${package}" && code=0
         [[ -n ${force} ]] && { 
             run.set-next continue-on-error
-            run "brew link ${package} --overwrite ${force} ${verbose}"
+            run "brew link --force --overwrite ${verbose} ${package}"
         }
         hash -r > /dev/null
-        [[ "${code}" -eq 0 ]] || { 
+        ((code)) && { 
             warning "Reinstalling ${package} as I couldn't find it after instal..."
             brew.reinstall.package "${package}"
         }
@@ -1272,7 +1216,7 @@ brew.package.link ()
     local package="${1}"
     shift
     [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-    run "brew link ${verbose} ${package} $*"
+    run "brew link --force --overwrite ${verbose} ${package} $*"
 }
 
 ----
@@ -1299,8 +1243,8 @@ brew.reinstall.package ()
     local verbose=
     [[ -n "${opts_force}" ]] && force="--force"
     [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-    run "brew unlink    ${package} ${force} ${verbose}"
-    run "brew uninstall ${package} ${force} ${verbose}"
+    run "brew unlink --quiet ${package}"
+    run "brew uninstall ${force} ${verbose} ${package}"
     brew.install.package "${package}"
 }
 
@@ -1335,7 +1279,8 @@ brew.relink ()
     local package"${1}"
     local verbose=
     [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-    run "brew link ${verbose} ${package} --overwrite"
+    run "brew unlink --quiet ${package}"
+    run "brew link --force --overwrite ${verbose} ${package}"
 }
 
 ----
@@ -3611,7 +3556,13 @@ bashmatic.auto-update ()
     git.configure-auto-updates
     git.repo-is-clean || { 
         output.is-ssh || { 
-            output.is-terminal && bashmatic.is-developer && attention "Bashmatic folder has local changes, can't auto-update." 1>&2
+            output.is-terminal && bashmatic.is-developer && { 
+                if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
+                    cat ${__bashmatic_auto_update_help_file}
+                else
+                    box.black-on-yellow "Bashmatic — I detected locally modified changes..." "Auto-update is therefore disabled until its git state is clean." | tee -a ${__bashmatic_auto_update_help_file} 1>&2
+                fi
+            }
         }
         return 1
     }
@@ -6683,7 +6634,7 @@ inf ()
 ----
 info () 
 { 
-    inf $@
+    inf "$@"
     echo
 }
 
@@ -8864,51 +8815,6 @@ gawk.install ()
 
 ----
 
-==== `shdoc.install`
-
-[source,bash]
-----
-shdoc.install () 
-{ 
-    hash -r
-    export install_shdoc_path="/usr/local/bin"
-    [[ -x ${install_shdoc_path}/shdoc ]] && return 0
-    is.command gawk || gawk.install
-    local temp="$(file.temp)"
-    run "rm -rf ${temp}"
-    run "mkdir -p ${temp}"
-    run "curl -fsSL https://raw.githubusercontent.com/reconquest/shdoc/master/shdoc -o ${temp}/shdoc"
-    sed -E -e 's~#\!/usr/bin/gawk~#\!/usr/bin/env gawk~g' "${temp}/shdoc" > "${install_shdoc_path}/shdoc"
-    run "chmod 755 ${install_shdoc_path}/shdoc"
-}
-
-----
-
-==== `shdoc.reinstall`
-
-[source,bash]
-----
-shdoc.reinstall () 
-{ 
-    hash -r
-    local i=0
-    while true; do
-        i=$(( i + 1 ))
-        [[ $i -gt 3 ]] && { 
-            error "After 3 attempts still can't find shdoc in /usr/local/bin?"
-            return 1
-        }
-        local shdoc_path="$(which shdoc)"
-        [[ ${shdoc_path} =~ ${BASHMATIC_HOME} ]] && continue
-        [[ -z "${shdoc_path}" ]] && break
-        [[ -f "${shdoc_path}" ]] && run "rm -f ${shdoc_path} || sudo rm -f ${shdoc_path}"
-        hash -r
-    done
-    shdoc.install
-}
-
-----
-
 
 === Module `shell-set`
 
@@ -10230,7 +10136,7 @@ pause.short ()
 sedx () 
 { 
     [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
-    ${bashmatic__sed_command} "$@"
+    eval "${bashmatic__sed_command} \"$@\""
 }
 
 ----
@@ -10242,7 +10148,7 @@ sedx ()
 sedx.cache-command () 
 { 
     local sed_path="$(util.ensure-gnu-sed)"
-    local sed_command="${sed_path} -r -e "
+    local sed_command="${sed_path} -E -e "
     export bashmatic__sed_command="${sed_command}"
 }
 

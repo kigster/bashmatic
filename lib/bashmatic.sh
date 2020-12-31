@@ -6,11 +6,14 @@
 # True if .envrc.local file is present. We take it as a sign 
 # you may be developing bashmatic.
 
+# @descripion True if .envrc.local file is present. We take it as a sign 
+#             you may be developing bashmatic.
 bashmatic.is-developer() {
   [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
 }
 
 bashmatic.reload() {
+  bashmatic.reset-is-loaded
   source "${BASHMATIC_INIT}"
 }
 
@@ -90,64 +93,18 @@ bashmatic.bash.exit-unless-version-four-or-later() {
   }
 }
 
-CacheEnabled=0
-
-#——————————————————————————————————————————————————————
-# CACHING
-#——————————————————————————————————————————————————————
-function bashmatic.cache.init() {
-  return
-  if bashmatic.bash.version-four-or-later ; then
-    declare -A BashMatic__LoadCache 2>/dev/null
-    export BashMatic__LoadCache
-  else 
-    CacheEnabled=0
-  fi
-
-}
-
-bashmatic.cache.has-file() {
-  ((CacheEnabled)) || return 1
-  local file="$1"
-  test -z "$file" && return 1
-  if [[ -n "$1" && -n "${BashMatic__LoadCache["${file}"]}" ]]; then
-    return 0
-  else
-    return 1
-  fi
-}
-
-bashmatic.cache.add-file() {
-  ((CacheEnabled)) || return
-  [[ -n "${1}" ]] && BashMatic__LoadCache[${1}]=true
-}
-
-bashmatic.cache.list() {
-  ((CacheEnabled)) || return
-  for f in "${!BashMatic__LoadCache[@]}"; do echo $f; done
-}
 
 bashmatic.source() {
   local path="${BASHMATIC_LIBDIR}"
+  local file
   for file in "${@}"; do
     [[ "${file}" =~ "/" ]] || file="${path}/${file}"
     [[ -s "${file}" ]] || {
-      echo "Can't source file ${file} — fils is invalid."
+      .err "Can't source file ${file} — fils is invalid."
       return 1
     }
-    # avoid sourcing the same file twice
-    if [[ ${CacheEnabled} -eq 0 ]]; then
-      [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
-      source "${file}"
-    elif bashmatic.cache.has-file "${file}"; then
-      [[ -n ${DEBUG} ]] && printf "${txtgrn}[cached] ${bldblu}${file}${clr} \n" >&2
-    else
-      [[ -n ${DEBUG} ]] && printf "${txtcyn}[source] ${bldylw}${file}${clr}...\n" >&2
-      set +e
-      # shellcheck disable=SC1090
-      source "${file}"
-      bashmatic.cache.add-file "${file}"
-    fi
+    [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
+    source "${file}"
   done
   return 0
 }
@@ -155,7 +112,7 @@ bashmatic.source() {
 #——————————————————————————————————————————————————————
 
 .err() {
-  printf "${bldred}  ERROR:\n${txtred}  $*%s\n" ""
+  printf "${bldred}  ERROR:\n${txtred}  $*%s\n" "" >&2
 }
 
 bashmatic.source-dir() {
@@ -202,9 +159,6 @@ function bashmatic.shell-check() {
 }
 
 bashmatic.setup() {
-  bashmatic.cache.init
-  bashmatic.shell-check || return 1
-
   [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] &&
     export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
 
@@ -212,13 +166,20 @@ bashmatic.setup() {
     export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
 
   if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
-    printf "\e[1;31mUnable to establish BashMatic's library source folder.\e[0m\n"
+    .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
     return 1
   fi
 
-  bashmatic.source is.sh output.sh util.sh git.sh file.sh color.sh brew.sh
+  bashmatic.source user.sh output.sh is.sh
+  bashmatic.shell-check || return 1
+  bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
+
+  output.unconstrain-screen-width 
+
   [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+
+  return 0
 }
 
 

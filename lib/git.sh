@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # @brief Functions in this file manage git repos, including this one.
 
+export __bashmatic_auto_update_help_file="${BASHMATIC_HOME}/.auto-update-disabled"
+
 function git.configure-auto-updates() {
   # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
@@ -192,8 +194,16 @@ function bashmatic.auto-update() {
   git.repo-is-clean || {
     output.is-ssh || {
       output.is-terminal && \
-      bashmatic.is-developer && \
-      attention "Bashmatic folder has local changes, can't auto-update." >&2
+      bashmatic.is-developer && {
+        if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
+          cat ${__bashmatic_auto_update_help_file}
+        else
+          box.black-on-yellow \
+            "Bashmatic — I detected locally modified changes..." \
+            "Auto-update is therefore disabled until its git state is clean." | \
+            tee -a ${__bashmatic_auto_update_help_file} >&2
+        fi
+      }
     }
     return 1
   }
