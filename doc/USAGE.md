@@ -2,19 +2,19 @@
 ## File `lib/array.sh`
 
 
-* [array.includes() {](#arrayincludes-)
-* [array.join() {](#arrayjoin-)
-* [array.sort() {](#arraysort-)
-* [array.min() {](#arraymin-)
-* [array.max() {](#arraymax-)
-* [array.uniq() {](#arrayuniq-)
+* [array.includes()](#arrayincludes)
+* [array.join()](#arrayjoin)
+* [array.sort()](#arraysort)
+* [array.min()](#arraymin)
+* [array.max()](#arraymax)
+* [array.uniq()](#arrayuniq)
 
-### `array.includes()`
+### array.includes()
 
 Similar to array.has-elements, but does not print anything, just
 returns 0 if includes, 1 if not.
 
-### `array.join()`
+### array.join()
 
 Joins a given array with a custom character
 
@@ -26,7 +26,7 @@ $ array.join "," "${array[@]}"
 one,two,three
 ```
 
-### `array.sort()`
+### array.sort()
 
 Sorts the array alphanumerically and prints it to STDOUT
 
@@ -37,7 +37,7 @@ declare -a unsorted=(hello begin again again)
 local sorted="$(array.sort "${unsorted[@]}")"
 ```
 
-### `array.min()`
+### array.min()
 
 Returns a minimum integer from an array.
 Non-numeric elements are ignored and skipped over.
@@ -51,7 +51,7 @@ $ array.min "," "${array[@]}"
 -5
 ```
 
-### `array.max()`
+### array.max()
 
 Returns a maximum integer from an array.
 Non-numeric elements are ignored and skipped over.
@@ -65,7 +65,7 @@ $ array.min "," "${array[@]}"
 30
 ```
 
-### `array.uniq()`
+### array.uniq()
 
 Sorts and uniqs the array and prints it to STDOUT
 
@@ -86,7 +86,7 @@ local uniqued="$(array.sort-numeric "${unsorted[@]}")"
 
 * [dbg()](#dbg)
 
-### `dbg()`
+### dbg()
 
 Local debugging helper, activate it with DEBUG=1
 
@@ -100,7 +100,7 @@ Local debugging helper, activate it with DEBUG=1
 
 * [section()](#section)
 
-### `section()`
+### section()
 
 Prints a "arrow-like" line using powerline characters
 
@@ -117,21 +117,21 @@ Prints a "arrow-like" line using powerline characters
 ## File `lib/path.sh`
 
 
-* [function path.add() {](#function-pathadd-)
-* [function path.append() {](#function-pathappend-)
+* [path.add()](#pathadd)
+* [path.append()](#pathappend)
 * [PATH_add()](#pathadd)
 
-### function path.add() {
+### path.add()
 
 Adds valid directories to those in the PATH and prints
 to the output. DOES NOT MODIFY $PATH
 
-### function path.append() {
+### path.append()
 
 Appends valid directories to those in the PATH, and 
 exports the new value of the PATH
 
-### `PATH_add()`
+### PATH_add()
 
 This function exists within direnv, but since we
 are sourcing in .envrc we need to have this defined
@@ -143,9 +143,9 @@ to avoid errors.
 
 
 ## File `lib/osx.sh`
-## osx.sh
+# osx.sh
 
-### Overview
+## Overview
 
 OSX Specific Helpers and Utilities
 
@@ -159,10 +159,10 @@ OSX Specific Helpers and Utilities
 ## File `lib/db.sh`
 
 
-* [db.config.parse() {](#dbconfigparse-)
-* [db.psql.connect() {](#dbpsqlconnect-)
+* [db.config.parse()](#dbconfigparse)
+* [db.psql.connect()](#dbpsqlconnect)
 
-### `db.config.parse()`
+### db.config.parse()
 
 Returns a space-separated values of db host, db name, username and password
 
@@ -176,7 +176,7 @@ declare -a params=($(db.config.parse development))
 echo ${params[0]} # host
 ```
 
-### `db.psql.connect()`
+### db.psql.connect()
 
 Connect to one of the databases named in the YAML file, and
 optionally pass additional arguments to psql.
@@ -195,32 +195,22 @@ db.psql.connect production -c 'show all'
 
 
 ## File `lib/shdoc.sh`
-## lib/shdoc.sh
+# lib/shdoc.sh
 
 Helpers to install gawk and shdoc properly.0
 
-### Overview
+## Overview
 
 see `${BASHMATIC_HOME}/lib/shdoc.md` for an example of how to use SHDOC.
 and also [project's github page](https://github.com/reconquest/shdoc).
 
 
 
-* [function gawk.install() {](#function-gawkinstall-)
-* [function shdoc.reinstall() {](#function-shdocreinstall-)
-* [function shdoc.install() {](#function-shdocinstall-)
+* [gawk.install()](#gawkinstall)
 
-### function gawk.install() {
+### gawk.install()
 
 Installs gawk into /usr/local/bin/gawk
-
-### function shdoc.reinstall() {
-
-Reinstall shdoc completely
-
-### function shdoc.install() {
-
-Installs shdoc unless already exists
 
 
 
@@ -230,10 +220,10 @@ Installs shdoc unless already exists
 ## File `lib/git.sh`
 
 
-* [function git.cfgu() {](#function-gitcfgu-)
-* [function git.open() {](#function-gitopen-)
+* [git.cfgu()](#gitcfgu)
+* [git.open()](#gitopen)
 
-### function git.cfgu() {
+### git.cfgu()
 
 Sets or gets user values from global gitconfig.
 
@@ -245,7 +235,7 @@ git.cfgu email kigster@gmail.com
 git.cfgu
 ```
 
-### function git.open() {
+### git.open()
 
 Reads the remote of a repo by name provided as
 an argument (or defaults to "origin") and opens it in the browser.
@@ -270,19 +260,19 @@ git.open origin # same thing
 
 
 ## File `lib/is.sh`
-## is.sh
+# is.sh
 
-### Overview
+## Overview
 
 Various validations and asserts that can be chained
 and be explicit in a DSL-like way.
 
 
 
-* [function __is.validation.error() {](#function-isvalidationerror-)
+* [__is.validation.error()](#isvalidationerror)
 * [whenever()](#whenever)
 
-### function __is.validation.error() {
+### __is.validation.error()
 
 Invoke a validation on the value, and process
 the invalid case using a customizable error handler.
@@ -297,7 +287,7 @@ the invalid case using a customizable error handler.
 
 * **0**: if validation passes
 
-### `whenever()`
+### whenever()
 
 a convenient DSL for validating things
 
@@ -315,9 +305,9 @@ whenever /var/log/postgresql.log is.an-empty-file && {
 
 
 ## File `lib/util.sh`
-## util.sh
+# util.sh
 
-### Overview
+## Overview
 
 Miscellaneous utilities.
 
@@ -329,17 +319,17 @@ Miscellaneous utilities.
 
 
 ## File `lib/pdf.sh`
-## Bashmatic Utilities for PDF file handling
+# Bashmatic Utilities for PDF file handling
 
-### Overview
+## Overview
 
 Install and uses GhostScript to manipulate PDFs.
 
 
 
-* [function pdf.combine() {](#function-pdfcombine-)
+* [pdf.combine()](#pdfcombine)
 
-### function pdf.combine() {
+### pdf.combine()
 
 Combine multiple PDFs into a single one using ghostscript.
 
@@ -362,9 +352,9 @@ pdf.combine ~/merged.pdf 'my-book-chapter*'
 ## File `bin/specs`
 
 
-* [function specs.init() {](#function-specsinit-)
+* [specs.init()](#specsinit)
 
-### function specs.init() {
+### specs.init()
 
 Initialize specs
 
@@ -376,9 +366,9 @@ Initialize specs
 ## File `bin/pdf-reduce`
 
 
-* [function pdf.do.shrink() {](#function-pdfdoshrink-)
+* [pdf.do.shrink()](#pdfdoshrink)
 
-### function pdf.do.shrink() {
+### pdf.do.shrink()
 
 shrinkgs PDF
 

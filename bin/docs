@@ -51,9 +51,9 @@ function docs.generate() {
       printf "\n%s\n" "## File \`${module}\`" >>"${usage_md}"
 
       sed -E -i '' 's/# @/ @/g'         "${usage_temp}"
-      sed -E -i '' 's/^## /### /g; s/^# /## /g'        "${usage_temp}"
+      #sed -E -i '' 's/^## /### /g; s/^# /## /g'        "${usage_temp}"
       sed -E -i '' 's/^#* Index$//g'   "${usage_temp}"
-      sed -E -i '' 's/^### ([a-zA-Z_.\-]*\(\))( ?{)?/### `\1`/g'   "${usage_temp}"
+      #sed -E -i '' 's/^### ([a-zA-Z_.\-]*\(\))( ?{)?/### `\1`/g'   "${usage_temp}"
       cat "${usage_temp}" >>"${usage_md}"
       printf "\n\n----\n\n" >>"${usage_md}"
     else
@@ -70,10 +70,6 @@ function docs.markdown.append-copyright() {
     " * Distributed under the MIT License.\n\n" >>"${usage_md}"
 }
 
-function docs.markdown.fix-examples() {
-  sed -i'' 's/```/```bash/g' "${usage_md}"
-}
-
 function docs.markdown.to-adoc() {
   run "kramdoc ${usage_md}"
   [[ -s ${usage_adoc} ]] || {
@@ -83,7 +79,7 @@ function docs.markdown.to-adoc() {
 }
 
 function docs.adoc.fix-headers() {
-  run "sed -E -i '' s/\[discrete\]//g' ${usage_adoc}"
+  sed -E -i'' -e 's/\[discrete\]//g' ${usage_adoc}
 }
 
 
@@ -111,7 +107,6 @@ function docs.main() {
   docs.generate
   
   docs.markdown.append-copyright
-  docs.markdown.fix-examples
   docs.markdown.to-adoc
   
   docs.adoc.fix-headers  
