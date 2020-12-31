@@ -11,7 +11,7 @@ list.modules() {
 
 generate-functions-index() {
   h1 "Generating FUNCTIONS.md..."
-  local temp=/tmp/FUNCTIONS.adoc
+  local temp="/tmp/FUNCTIONS.adoc"
   run "rm -f ${temp} && touch ${temp}"
 
   printf "= Bashmatic Functions Index\n" >>"${temp}"
@@ -61,6 +61,7 @@ HEADER
 generate-shdoc() {
   .install.kramdoc
   bin/shdocument 
+  run "kramdoc doc/USAGE.md"
 }
 
 generate-changelog() {

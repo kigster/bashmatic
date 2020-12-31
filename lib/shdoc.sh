@@ -7,11 +7,8 @@
 # vim: ft=bash
 # NOTE: shdoc in bashmatic's bin folder uses functions here to install gawk and shdoc.
 
-export bashmatic_shdoc_path="${BASHMATIC_HOME}/bin"
-
 # @description Installs gawk into /usr/local/bin/gawk
 function gawk.install() {
   local gawk_path="$(command -v gawk 2>/dev/null)"
   [[ -n "${gawk_path}" && -x "${gawk_path}" ]] || brew.install.package gawk
 }
-
