@@ -155,7 +155,7 @@ bash-compile() {
       echo "${bash_path}" | sudo tee -a /private/etc/shells >/dev/null
     }
   fi
-  puts " ✅  BASH version ${version} is ${bldgrn}installed in ${bldylw}${prefix}."
+  is-quiet || puts " ✅  BASH version ${version} is ${bldgrn}installed in ${bldylw}${prefix}."
   return 0
 }
 
@@ -179,11 +179,12 @@ git-sync() {
   [[ -d ".git" ]] || return
 
   if [[ -n $(git status -s) ]]; then
-    err "Looks like your .bashmatic folder exists, and has some locally modified files." \
-      "Please commit, stash or remove those files, and re-run this setup." \
-      "Folder: ${bldpur}${BASHMATIC_HOME}, ${bldylw}git status:"
     echo
-    git status --long -M -u || true
+    err "Previous installation folder has locally modified files." \
+      "Commit, stash or remove those files, and try again."
+
+    echo
+    git status -s || true
     echo
     return 1
   else
@@ -322,8 +323,13 @@ export bootstrap__sudoers_dir="/private/etc/sudoers.d"
 is-debug() {
   ((bootstrap__debug))
 }
+
 is-verbose() {
   ((bootstrap__verbose))
+}
+
+is-quiet() {
+  ((bootstrap__quiet))
 }
 
 usage() {
@@ -421,8 +427,7 @@ bashmatic-download-and-install() {
   local code=0
 
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
-    git-sync
-    code=$?
+    git-sync || return 1
   else
     git clone -q ${BASHMATIC_URL} "${BASHMATIC_HOME}"
     code=$? 
@@ -441,7 +446,7 @@ bashmatic-download-and-install() {
     # shellcheck disable=SC1090
     source "${BASHMATIC_INIT}"
     bashmatic.load-at-login
-    success "Your BashMatic has been successfully installed."
+    is-quiet || success "Your BashMatic has been successfully installed."
     return 0
   fi
 }
