@@ -73,5 +73,10 @@ setup: 				## Run the comprehensive development setup on this machine
 test: 				## Run the fully auto-g mated test suite
 				@$(BASHMATIC_HOME)/bin/specs
 
+test-install-quiet:		
+				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -q"
+	
+test-install-verbose:		
+				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v"
 
 
