@@ -458,17 +458,6 @@ array.uniq ()
 
 === Module `audio`
 
-==== `æ.mp3`
-
-[source,bash]
-----
-æ.mp3 () 
-{ 
-    audio.make.mp3 "$@"
-}
-
-----
-
 ==== `audio.dir.mp3-to-wav`
 
 [source,bash]

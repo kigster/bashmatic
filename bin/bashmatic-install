@@ -341,14 +341,14 @@ ${bldylw}DESCRIPTION:
   ${bldblu}Install Bashmatic, and on OSX also installs build tools, brew and latest bash
   into /usr/local/bin/bash.
 
-${bldylw}FLAGS:${bldpur}
+${bldylw}FLAGS:${clr}
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
   -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
-  -g, --skip-git                Do not abort if existing bashmatic home has local changes
-  -i, --skip-install            Do not download/install bashmatic
+  -g, --skip-git                Do not abort if the destination has local changes
+  -i, --skip-install            Only install/verify prerequisites, skip install.
   -v, --verbose                 See additional output as bootstrap is running.
-  -q, --quiet                   See less outputs.
+  -q, --quiet                   See only error output.
   -d, --debug                   Turn on 'set -x' to see all commands running.
   -h, --help                    Show this help message.
 ${clr}\n\n"
