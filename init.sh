@@ -57,7 +57,7 @@ function .bashmatic.core() {
   
   # shellcheck disable=SC2155
   export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | head -1)"
-  export PATH="${PATH}:${BASHMATIC_HOME}/bin"
+  [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH="${PATH}:${BASHMATIC_HOME}/bin"
   export GrepCommand="$(which grep) -E -e "
   export True=1
   export False=0
@@ -90,7 +90,6 @@ function .bashmatic.init.linux() {
 
 function .bashmatic.initialize() {
   set -e
-  .bashmatic.core
 
   local os="${BASHMATIC_OS}"
   local init_func=".bashmatic.init.${os}"
@@ -126,4 +125,5 @@ function bashmatic.init() {
 
 echo "$1" | grep -E -q 'reload|force|refresh' && bashmatic.reset-is-loaded
 
+.bashmatic.core
 bashmatic.is-loaded || bashmatic.init "$@"

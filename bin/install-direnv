@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+#
+# @file install-direnv
+# @desription Installs direnv on OS-X or Linux, and
+#     wires it up to BASH, ZSH or FISH.
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q" >/dev/null
+
+[[ -f ${BASHMATIC_HOME}/init.sh ]] || {
+  echo "ERROR: unable to find/install dependency Bashmatic."
+  exit 127
+}
+
+source ${BASHMATIC_HOME}/init.sh >/dev/null
+
+function direnv.install() {
+  inf "Checking if direnv is already installed..."
+  command -v direnv>/dev/null && {
+    printf " — YES."
+    ok:
+    return 0
+  }
+  printf " — NO."
+  not-ok:
+
+  local os=$(uname -s)
+
+  if [[ ${os} == Darwin ]]; then
+    command -v brew>/dev/null || brew.install
+    brew.install.package direnv
+  elif [[ ${os} == Linux ]]; then
+    info "Please enter your SUDO password if asked:"
+    sudo echo
+    run "sudo apt-get install -yqq direnv"
+  else 
+    error "Operating system ${os} is not supported."
+    return 1
+  fi
+
+  hash -r 
+  command -v direnv>/dev/null || {
+    error "Unable to find direnv after installation?"
+    return 2
+  }
+
+  return 0
+}
+
+# @description Add direnv hook to shell RC files
+function direnv.register() {
+  info "Ensuring direnv hook is registered..."
+ 
+  local C
+  local shell="${ZSH_NAME:-$(basename ${SHELL})}"
+
+  if [[ ${shell} == bash || ${shell} == zsh ]] ; then
+    C="${HOME}/.${shell}rc"
+    grep -i -q direnv $C || {
+      inf "Appending direnv hooks to ${bldylw}${C}..."
+      echo "eval \"\$(direnv hook ${shell})\"">>"$C"
+      echo 'export DIRENV_WARN_TIMEOUT="100s"'>>"$C"
+      ok:
+    }
+
+  elif [[ -n ${FISH_VERSION} ]]; then 
+    C="$HOME/.config/fish/config.fish"
+    grep -i -q direnv "$C" || {
+      inf "Appending direnv hooks to ${bldylw}${C}..."
+      echo 'eval (direnv hook fish)'>>"$C"
+      echo 'set DIRENV_WARN_TIMEOUT 100s'>>"$C"
+      ok:
+    }
+  fi
+
+  h3 "For verification, printing direnv-related config from ${bldylw}${C}:" \
+     "$(grep -i direnv "${C}" | tr '\n' ';' )"
+
+  source "${C}" 1>/dev/null 2>&1
+
+  info "${bldylw}IMPORTANT: you must run ${bldgrn}source ${C} to activate it."
+}
+
+function direnv.main() {
+  h2 "Installing/verifying that direnv is enabled."
+  direnv.install && direnv.register || return 1
+  [[ -f .envrc ]] && {
+    info "Found a local .envrc file — loading it."
+    direnv allow .
+  }
+}
+
+direnv.main || {
+  error "Issue installing or registering direnv hook."
+  exit 1
+}

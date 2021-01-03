@@ -11,7 +11,7 @@
 [[ -z ${BASHMATIC_HOME} ]] && \
   export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 
-source "${BASHMATIC_HOME}/init.sh"
+source "${BASHMATIC_HOME}/init.sh" >/dev/null
 
 # This project is derived from the +shrinkpdf+ open source project:
 # http://www.alfredklomp.com/programming/shrinkpdf
@@ -47,10 +47,8 @@ source "${BASHMATIC_HOME}/init.sh"
 
 function pdf.ensure-gs() {
   [[ -x /usr/local/bin/gs ]] && return
-
   brew.install.package ghostscript
 }
-
 
 # @description shrinkgs PDF
 function pdf.do.shrink() {
@@ -102,12 +100,13 @@ function pdf.do.shrink() {
     local size_old="$(file.size "${infile}")"
     local size_new="$(file.size "${outfile}")"
     local delta=$((100 - 100 * size_new / size_old))
-    h3 "PDF file reduction completed with the ${bldylw}${delta}%% reduction"
     finished=1
   fi
 
-  ((finished)) && { success "OK. Reduction completed."; }
-  ((finished)) || { error "Did not properly finish."; }
+  ((finished)) && \
+    success "File ${infile} has been reduced in size, and is now $(file.size.mb ${outfile}) — a ${delta}%% reduction."
+
+  ((finished)) || { error "Did not properly finish."; return 1; } 
 }
 
 # FUNCTION +pdf.do.check_smaller+
@@ -168,7 +167,7 @@ function pdf.main() {
     res="90"
   fi
 
-  h.salmon "[${input_file}] ➞ [${output_file}] (resolution: ${res})"
+  h6 "[${input_file}] ➞ [${output_file}] (resolution: ${res})"
   pdf.do.shrink "${input_file}" "${output_file}" "${res}" || exit $?
   pdf.do.check_smaller "${input_file}" "${output_file}"
 }

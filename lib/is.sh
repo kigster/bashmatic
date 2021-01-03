@@ -155,6 +155,11 @@ function is.an-existing-file() {
   [[ -f "${1}" ]]
 }
 
+function is.a-function.invoke() {
+  local func="$1"; shift
+  is.a-function "${func}" && eval "${func} $*"
+}
+
 function is.a-function() {
   local shell="$(user.current-shell)"
   case $shell in
