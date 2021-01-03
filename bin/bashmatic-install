@@ -59,8 +59,6 @@ puts() {
 }
 
 err() {
-  printf "${bldred}_______  ${clr}\n"
-  printf "${bldred}       ⤵${clr}\n"
   for str in "$@"; do
     printf "${bldred} ERROR ${txtpur}〈$(ts)〉 ${bldred}${str}\n"
   done
@@ -157,7 +155,7 @@ bash-compile() {
       echo "${bash_path}" | sudo tee -a /private/etc/shells >/dev/null
     }
   fi
-  puts " ✅  BASH version ${version} is ${bldgrn}installed in ${bldylw}${prefix}."
+  is-quiet || puts " ✅  BASH version ${version} is ${bldgrn}installed in ${bldylw}${prefix}."
   return 0
 }
 
@@ -181,16 +179,17 @@ git-sync() {
   [[ -d ".git" ]] || return
 
   if [[ -n $(git status -s) ]]; then
-    err "Looks like your .bashmatic folder exists, and has some locally modified files." \
-      "Please commit, stash or remove those files, and re-run this setup." \
-      "Folder: ${bldpur}${BASHMATIC_HOME}, ${bldylw}git status:"
     echo
-    git status -s -u
-    echo
-    exit 1
-  fi
+    err "Previous installation folder has locally modified files." \
+      "Commit, stash or remove those files, and try again."
 
-  (git checkout master && git pull --rebase) >/dev/null
+    echo
+    git status -s || true
+    echo
+    return 1
+  else
+    git checkout -q master && git pull -q --rebase
+  fi
 
   cd - >/dev/null
 }
@@ -315,6 +314,7 @@ export bootstrap__debug=0
 export bootstrap__skip_git_check=0
 export bootstrap__skip_install=0
 export bootstrap__verbose=0
+export bootstrap__quiet=0
 export bootstrap__bashmatic_home=${HOME}/.bashmatic
 export bootstrap__bash_version="5.1-rc2"
 export bootstrap__bash_prefix="/usr/local"
@@ -323,8 +323,13 @@ export bootstrap__sudoers_dir="/private/etc/sudoers.d"
 is-debug() {
   ((bootstrap__debug))
 }
+
 is-verbose() {
   ((bootstrap__verbose))
+}
+
+is-quiet() {
+  ((bootstrap__quiet))
 }
 
 usage() {
@@ -336,13 +341,14 @@ ${bldylw}DESCRIPTION:
   ${bldblu}Install Bashmatic, and on OSX also installs build tools, brew and latest bash
   into /usr/local/bin/bash.
 
-${bldylw}FLAGS:${bldpur}
+${bldylw}FLAGS:${clr}
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
   -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
-  -g, --skip-git                Do not abort if existing bashmatic home has local changes
-  -i, --skip-install            Do not download/install bashmatic
+  -g, --skip-git                Do not abort if the destination has local changes
+  -i, --skip-install            Only install/verify prerequisites, skip install.
   -v, --verbose                 See additional output as bootstrap is running.
+  -q, --quiet                   See only error output.
   -d, --debug                   Turn on 'set -x' to see all commands running.
   -h, --help                    Show this help message.
 ${clr}\n\n"
@@ -379,6 +385,12 @@ parse-opts() {
     -v | --verbose)
       shift
       export bootstrap__verbose=1
+      export bootstrap__quiet=0
+      ;;
+    -q | --quiet)
+      shift
+      export bootstrap__verbose=0
+      export bootstrap__quiet=1
       ;;
     -g | --skip-git)
       shift
@@ -412,25 +424,30 @@ parse-opts() {
 
 bashmatic-download-and-install() {
   export BASHMATIC_HOME="${bootstrap__bashmatic_home}"
+  local code=0
 
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
-    git-sync
+    git-sync || return 1
   else
-    git clone ${BASHMATIC_URL} "${BASHMATIC_HOME}" >/dev/null
+    git clone -q ${BASHMATIC_URL} "${BASHMATIC_HOME}"
+    code=$? 
   fi
 
-  export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
-
-  if [[ -s "${BASHMATIC_INIT}" ]]; then
+  if [[ ${code} -ne 0 ]]; then 
+    err "Bashmatic could not install or update correctly."
+    err "Please run this manualy:\n\n\t${bldgrn}cd \$(dirname ${BASHMATIC_HOME} && git clone ${BASHMATIC_URL} ${BASHMATIC_HOME})\n\n"
+    return 1
+  else 
+    export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
+     [[ -s "${BASHMATIC_INIT}" ]] || {
+       err "Unexpected error: ${BASHMATIC_INIT} was not found."
+       return 1
+     }
     # shellcheck disable=SC1090
     source "${BASHMATIC_INIT}"
     bashmatic.load-at-login
-    success "Your BashMatic has been successfully installed."
+    is-quiet || success "Your BashMatic has been successfully installed."
     return 0
-  else
-    err "Bashmatic did not install correctly, please run the following command by hand:"
-    err "${bldgrn}git clone ${BASHMATIC_URL} ${BASHMATIC_HOME}"
-    return 1
   fi
 }
 

@@ -78,24 +78,28 @@ NOTE: The shortcut link resolves to the HEAD version of the https://raw.githubus
 
 [source,bash]
 ----
-bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
+bash -c "$(curl -fsSL https://bashmatic.re1.re); \
+             bashmatic-install"
 ----
 
- * If you prefer to see detailed output about what the installer is doing, add the `-v` (or `--verbose`) flag.
- * If you prefer to install Bashmatic in a non-standard location (the default is `~/.bashmatic`),  you can use the `-H PATH` flag.
+You can pass additional flags to the `bashmatic-install` function, including:
+* `-v` or `--verbose` for displaying additional output, or the opposite: 
+* `-q` or `--quiet` for no output
+* If you prefer to install Bashmatic in a non-standard location (the default is `~/.bashmatic`),  you can use the `-H PATH` flag
 
-For instance:
+For instance, here is a verbose installation with a custom destination:
 
 [source,bash]
 ----
-bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v -H ~/workspace/bashmatic"
+bash -c "$(curl -fsSL https://bashmatic.re1.re); \
+              bashmatic-install -v -H ~/workspace/bashmatic"
 ----
 
 Here is the complete list of options accepted by the installer:
 
 [source,bash]
 ----
-$ bin/bashmatic-install -h
+$ bashmatic-install --help
 
 USAGE:
   bin/bashmatic-install [ flags ]
@@ -105,13 +109,16 @@ DESCRIPTION:
   into /usr/local/bin/bash.
 
 FLAGS:
-  -H, --bashmatic-home PATH   (default: /Users/kig/.bashmatic)
-  -V, --bash-version VERSION  BASH VERSION (default: 5.1-rc2)
-  -P, --bash-prefix PATH      BASH into PATH (default: /usr/local)
-  -g, --skip-git              Do not abort if bashmatic home has local changes
-  -v, --verbose               See additional output.
-  -d, --debug                 Turn on 'set -x' to see all commands running.
-  -h, --help                  Show this help message.
+  -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ~/.bashmatic)
+  -V, --bash-version VERSION    Install BASH VERSION (default: 5.1-rc2)
+  -P, --bash-prefix PATH        Install BASH into PATH (default: /usr/local)
+  -g, --skip-git                Do not abort if the destination has local changes
+  -i, --skip-install            Only install/verify prerequisites, skip install.
+  -v, --verbose                 See additional output as bootstrap is running.
+  -q, --quiet                   See only error output.
+  -d, --debug                   Turn on 'set -x' to see all commands running.
+  -h, --help                    Show this help message.
+
 ----
 
 === What Installer Does

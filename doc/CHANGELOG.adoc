@@ -6,6 +6,7 @@ https://github.com/kigster/bashmatic/compare/v1.8.0...HEAD[Full Changelog]
 
 *Merged pull requests:*
 
+* Faster loading, experimental cache features https://github.com/kigster/bashmatic/pull/36[#36] (https://github.com/kigster[kigster])
 * Fixes to Makefile, documentation auto-generation, and more https://github.com/kigster/bashmatic/pull/35[#35] (https://github.com/kigster[kigster])
 
 == https://github.com/kigster/bashmatic/tree/v1.8.0[v1.8.0] (2020-12-29)
