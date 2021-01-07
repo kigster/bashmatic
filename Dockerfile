@@ -1,6 +1,9 @@
+# Thi Dockerfile is provided so that we can eventually build 
+# Linux support for the bin/setup script.
+#
 # vim: ft=Dockerfile
 # 
-# © 2020-2021 Konstantin Gredeskoul
+# © 2021 Konstantin Gredeskoul, All rights reserved, MIT License.
 # 
 # docker build . -t bashmatic:latest
 # docker run -it bashmatic:latest
@@ -29,10 +32,10 @@ RUN apt-get install -yqq \
     vim \
     htop \
     direnv \
+    zsh \
+    fish \
+    rbenv \
     sudo
-
-RUN apt-get install -yqq locales
-RUN locale-gen en_US.UTF-8
 
 ENV TERM=xterm-256color \
     BASHMATIC_HOME=/app/bashmatic \
@@ -42,6 +45,9 @@ ENV TERM=xterm-256color \
     USER=root \
     HOME=/root \
     CI=true
+
+RUN apt-get install -yqq locales
+RUN locale-gen en_US.UTF-8
 
 ENV SHELL_INIT="${HOME}/.bashrc"
 
@@ -66,5 +72,8 @@ RUN cd ${BASHMATIC_HOME} && \
     direnv allow . && \
     pwd -P && \
     ls -al
+
+RUN rm -f ~/.zshrc && /bin/sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+RUN gsed -i '' -E -e 's/robbyrussel/agnoster/g' ~/.zshrc
 
 ENTRYPOINT /bin/bash -l

@@ -263,7 +263,11 @@ NOTE: Running `make update` is is required for submitting any pull request.
 
 === Docker Support
 
+Bashmatic comes with a Dockerfile that can be used to run tests, validate functionality under Linux, or to experiment.
 
+Run `make docker-build` to create an docker image `bashmatic:latest`.
+
+Run `make docker-run-bash` (or `...-zsh` or `...-fish`) to start a container with your favorite shell.
 
 == Bashmatic in Action - Practical Examples
 
