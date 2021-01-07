@@ -59,7 +59,7 @@ update-usage: 			## Auto-generate doc/USAGE documentation from lib shell files, 
 				@$(BASHMATIC_HOME)/bin/pdf-reduce doc/USAGE.pdf USAGE.pdf.reduced
 				@[[ -s USAGE.pdf.reduced ]] && mv -v USAGE.pdf.reduced doc/USAGE.pdf
 
-update-readme:			fonts-setup regenerate-readme reduce-size-readme fonts-clean open-readme ## Re-generate the PDF version of the README
+update-readme:			fonts-setup regenerate-readme fonts-clean open-readme ## Re-generate the PDF version of the README
 
 regenerate-readme:		fonts-setup
 				@printf " 👉  $(green)Converting README.adoc into the PDF...$(clear)\n"

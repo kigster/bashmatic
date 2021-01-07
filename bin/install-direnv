@@ -13,7 +13,7 @@
   exit 127
 }
 
-source ${BASHMATIC_HOME}/init.sh >/dev/null
+source "${BASHMATIC_HOME}/init.sh" >/dev/null
 
 function direnv.install() {
   inf "Checking if direnv is already installed..."
@@ -57,7 +57,7 @@ function direnv.register() {
 
   if [[ ${shell} == bash || ${shell} == zsh ]] ; then
     C="${HOME}/.${shell}rc"
-    grep -i -q direnv $C || {
+    grep -i -q direnv "$C" || {
       inf "Appending direnv hooks to ${bldylw}${C}..."
       echo "eval \"\$(direnv hook ${shell})\"">>"$C"
       echo 'export DIRENV_WARN_TIMEOUT="100s"'>>"$C"
@@ -74,16 +74,20 @@ function direnv.register() {
     }
   fi
 
-  h3 "For verification, printing direnv-related config from ${bldylw}${C}:" \
-     "$(grep -i direnv "${C}" | tr '\n' ';' )"
+  h3 "For verification, printing direnv-related config from ${bldylw}${C}:"
+  grep -i direnv "${C}" | sed 's/^/\t/g'
+  hr
+  echo
 
-  source "${C}" 1>/dev/null 2>&1
+  set +e
+  source "${C}"
 
   info "${bldylw}IMPORTANT: you must run ${bldgrn}source ${C} to activate it."
 }
 
 function direnv.main() {
-  h2 "Installing/verifying that direnv is enabled."
+  output.constrain-screen-width 90
+  h1 "Installing/verifying that direnv is enabled."
   direnv.install && direnv.register || return 1
   [[ -f .envrc ]] && {
     info "Found a local .envrc file — loading it."
@@ -95,3 +99,5 @@ direnv.main || {
   error "Issue installing or registering direnv hook."
   exit 1
 }
+
+echo; success "direnv installation successful."; echo
