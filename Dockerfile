@@ -26,6 +26,23 @@ RUN apt-get update -y && \
     ruby \
     python3-pip
 
+
+ENV TERM=xterm-256color \
+    BASHMATIC_HOME=/app/bashmatic \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    USER=root \
+    HOME=/root \
+    DEBIAN_FRONTEND=noninteractive \
+    DEBCONF_NONINTERACTIVE_SEEN=true \
+    TZ=Pacific/Los_Angeles
+  
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get install -yqq locales
+RUN locale-gen en_US.UTF-8
+
 RUN apt-get install -yqq \
     silversearcher-ag \
     curl \
@@ -36,18 +53,6 @@ RUN apt-get install -yqq \
     fish \
     rbenv \
     sudo
-
-ENV TERM=xterm-256color \
-    BASHMATIC_HOME=/app/bashmatic \
-    LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
-    USER=root \
-    HOME=/root \
-    CI=true
-
-RUN apt-get install -yqq locales
-RUN locale-gen en_US.UTF-8
 
 ENV SHELL_INIT="${HOME}/.bashrc"
 
@@ -73,7 +78,10 @@ RUN cd ${BASHMATIC_HOME} && \
     pwd -P && \
     ls -al
 
-RUN rm -f ~/.zshrc && /bin/sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-RUN gsed -i '' -E -e 's/robbyrussel/agnoster/g' ~/.zshrc
+RUN rm -f ~/.zshrc && \
+    /bin/sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
+    touch ${HOME}/.zshrc
+
+RUN sed -i'' -E 's/robbyrussell/agnoster/g' ${HOME}/.zshrc
 
 ENTRYPOINT /bin/bash -l

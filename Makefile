@@ -25,14 +25,16 @@ help:	   			## Prints help message auto-generated from the comments.
 docker-build:			## Builds the Docker image with the tooling inside
 				@docker build -t bashmatic:latest .
 
+docker-run: 			docker-run-bash ## Drops you into a BASH session
+
 docker-run-bash:     		docker-build ## Drops you into a BASH session with Bashmatic Loaded
-                		@docker run -it bashmatic:latest --entrypoint="/bin/bash -l"
+				@docker run -it --entrypoint=/bin/bash bashmatic:latest -l
  
 docker-run-zsh:     		docker-build ## Drops you into a ZSH session with Bashmatic Loaded
-                		@docker	run -it bashmatic:latest --entrypoint="/bin/zsh	-l"
+				@docker run -it --entrypoint=/bin/zsh bashmatic:latest -l
 
 docker-run-fish:    		docker-build ## Drops you into a FISH session with Bashmatic Loaded
-                		@docker run -it bashmatic:latest --entrypoint="/bin/fish -l"
+				docker run -it --entrypoint=/bin/fish bashmatic:latest -l
 
 install:			## install BashMatic Locally in ~/.bashmatic
 				@printf " 👉  $(green)Running bin/bashmatic-installer script..$(clear)\n"
