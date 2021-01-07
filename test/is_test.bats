@@ -9,6 +9,16 @@ set -e
 export not_blank_var="blah"
 export blank_var=
 
+function moo() {
+  echo moo moo
+}
+
+@test "is.a-function.invoke()" {
+  set -e
+  local output="$(is.a-function.invoke moo)"
+  [[ ${output} == "moo moo" ]]
+}
+
 @test "is.a-variable(valid var)" {
   BLERGH=1
   var_name="BLERGH"
@@ -88,6 +98,7 @@ export blank_var=
   ! is.numeric "0x0234"
   ! is.numeric "1234aaa"
 }
+
 
 # @test "is.non-empty-file" {
   

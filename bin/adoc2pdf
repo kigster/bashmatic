@@ -3,32 +3,50 @@
 
 # shellcheck disable=2046
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
-source "${BASHMATIC_HOME}/init.sh"
+source "${BASHMATIC_HOME}/init.sh" >/dev/null
+
+install.imagemagick6() {
+  local package=GraphicsMagick
+
+  brew.cache-reset
+  brew.install.package ${package}
+  local dir=$(brew --prefix ${package})
+  brew.package.link ${package}
+
+  gem.is-installed prawn         || gem.install prawn
+  gem.is-installed prawn-gmagick || run "gem install prawn-gmagick -- --with-opt-include=${dir}/include/GraphicsMagick"
+}
 
 
 main() {
-  local file="${1:-"README.adoc"}"
+  local file="${1:-"README.adoc"}"; shift
+  output.constrain-screen-width 120
+  
   [[ -f ${file} ]] || file="${file}.adoc"
   [[ -f ${file} ]] || {
     error "Cant' find file $1 or ${file}..."
     return 1
   }
 
-  gem.install asciidoctor asciidoc asciidoctor-pdf
-  brew.install.package imagemagick@6
+  h6 "Ensuring PDF conversion dependencies are installed..."
 
-  export INCLUDE_DIR="$(brew --prefix imagemagick@6)/include/ImageMagick-6"
+  eval install.imagemagick6 
+
+  gem.install asciidoctor 
+  gem.install asciidoc 
+  gem.install asciidoctor-pdf 
+  gem.install rouge
 
   local target=${file/adoc/pdf}
 
-  run "gem install prawn-gmagick -- --with-opt-include=${INCLUDE_DIR}"
   run "rm -f ${target}"
-  run "asciidoctor-pdf -v -a allow-uri-read ${file}"
-  run "open ${target}"
+  h6 "Starting ADOC -> PDF Conversion..."
 
-  if [[ -s ${target} ]]; then
-    success "File ${target} has been re-generated."
-  fi
+  run.set-next show-output-on
+  run "asciidoctor-pdf -v -a allow-uri-read ${file} -a pdf-theme=${PWD}/.asciidoc-pdf-theme.yml -a pdf-fontsdir=\"${PWD}/.fonts;GEM_FONTS_DIR\" $*"
+
+  [[ -s ${target} ]] && \
+    success "File ${target} has been re-generated, and is of size $(file.size.mb ${target})"
 }
 
 main "$@"

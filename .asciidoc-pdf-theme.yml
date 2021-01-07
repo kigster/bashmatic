@@ -1,0 +1,44 @@
+font:
+  catalog:
+    merge: true # set value to true to merge catalog with theme you're extending
+    Barlow:
+      bold: barlowcondensed-semibold.ttf
+      bold_italic: barlowcondensed-semibolditalic.ttf
+      italic: barlowcondensed-italic.ttf
+      normal: barlowcondensed-regular.ttf
+      semibold: barlowcondensed-semibold.ttf
+      semibold_italic: barlowcondensed-semibolditalic.ttf
+    Cairo:  
+      bold: cairo-bold.ttf
+      bold_italic: cairo-extralight.ttf
+      italic: cairo-light.ttf
+      normal: cairo-regular.ttf
+      black: cairo-black.ttf
+      semibold: cairo-semibold.ttf
+    AdventPro: 
+      normal: adventpro-semibold.ttf
+      bold: adventpro-bold.ttf
+      italic:  adventpro-light.ttf
+      bold_italic: adventpro-thin.ttf
+    Arvo:
+      bold: arvo-bold.ttf
+      bold_italic: arvo-bolditalic.ttf
+      italic: arvo-italic.ttf
+      normal: arvo-regular.ttf
+    Cascadia:
+      normal: cascadiamono-regular.ttf
+      bold: cascadiamono-bold.ttf
+      bold_italic: cascadiamono-semibold.ttf
+      italic: cascadiamono-semilight.ttf
+extends: default
+base:
+  font:
+    size: 12
+    line-height: 14
+    color: "#010101"
+    family: Barlow
+code:
+  font:
+    size: 10
+    family: Cascadia
+

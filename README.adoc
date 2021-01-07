@@ -1,11 +1,16 @@
-= Bashmatic™ — BASH primitives for humans, and for fun.
+= Bashmatic™ - BASH primitives for humans, and for fun.
+:pdf-fontsdir: ./fonts;GEM_FONTS_DIR
+:pdf-theme: .asciidoc-pdf-theme-titilium.yml
+:source-highlighter: rouge
+:rouge-style: base16.solarized.dark
 :safe: unsafe
 :allow-uri-read:
-:doctype: book
+:doctype: article
 :toc:
 :toclevels: 3
-:sectnums: 
 :icons: font
+
+
 
 image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
 image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield]
@@ -13,42 +18,72 @@ image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kig
 
 image::https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large]
 
-WARNING: 
-====
-* _Bashmatic®_ is a collection of BASH convenience functions that make BASH programming fun (again? forever? always?).
+icon:terminal[5x, link="https://github.com/kigster/bashmatic", window="_blank"] 
 
-* You can also download the **xref:README.pdf[PDF version of this document]** which is better for print. 
 
-* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the xref:doc/USAGE.adoc[USAGE.adoc] file, or it's xref:doc/USAGE.pdf[PDF version].
+## Introduction 
 
-* There is also an auto-generated file listing the source of every function and module. You can find it xref:doc/FUNCTIONS.adoc[FUNCTIONS.adoc].
 
-* There is also the beginnings of `shdoc`-based documentation, available in the xref:doc/./USAGE.adoc[USAGE.adoc] file and a corresponding xref:doc/./USAGE.pdf[PDF].
+_Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (500+ of them) that, we hope, make BASH programming easier, more enjoyable, and more importantly, usable due to the focus on providing constant feedback to the user about what is happening, as a script that uses Bashmatic is running.
 
-* Additionally please checkout the xref:doc/CHANGELOG.md[CHANGELOG] and the xref:doc/LICENSE.adoc[LICENSE].
-====
+_Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the xref:lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
 
-IMPORTANT:
-====
-**Fully Supported**
+icon:arrow-down[3x, color="green"]
 
-* BASH version 4+
-* BASH version 3 (partial compatibility, some functions are disabled)
-* ZSH —— as of recent update, Bashmatic is almost 100% compatible with ZSH.   
+[source,bash]
+----
+function bashmatic.auto-update() {
+  local dir
+  dir=${1:-${BASHMATIC_HOME}}
+  is.a-directory "${dir}" && {
+    file.exists-and-newer-than ${dir}/.last-update 30 && return 0
 
-**Not Really Supported**
+    ( cd ${BASHMATIC_HOME} && \
+      git.is-it-time-to-update && \
+      git.sync-remote )
+  }
+}
 
-* FISH (although you could use Bashmatic via `bin/bashmatic` script helper, or its executables)
+# check if the function is defined and call it 
+is.a-function.invoke bashmatic.auto-update "$@"
+----
 
-====
+To use it in your own scripts, you'll want to first study the Examples provided below, and take advantage of ach module available under `lib`.
 
-_Bashmatic®_ is an ever-growing framework of Bash Script runners, auto-retrying, repeatable, DSL-controlled functions for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, and more.
+Final note, - once Bashmatic is installed and loaded by your shell init files, you can type `is.<tab><tab>` to see what functions are available to you that start with `is`. Each module under `lib` typically defines public functions starting with the name of the file. Such as, functions in `array.sh` typically start with `array.<something>.<action>`
 
-*_Bashmatic®_ is meant to be used primarily with Mac OS-X, although many useful functions will also work under Linux.* Note that our CI test suite runs on Ubuntu.
+_Bashmatic®_ offers a huge range of ever-growing helper functions for running commands, auto-retrying, repeatable, runtime-measuring execution framework with the key function `run`. There are helpers for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, installing packages, and much more.
+
+WARNING: Some portion of helperse within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under Linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specifc functions to OS-neutral helpers such as `package.install` that would work equally well on Linux.
 
 Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:doc/FUNCTIONS.adoc[functions index page].
 
-And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* 😂.
+And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* :) 
+
+
+
+
+[WARNING]
+====
+You can also download the **xref:README.pdf[PDF version of this document]** which is better for print. 
+
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the xref:doc/USAGE.adoc[USAGE.adoc] file, or it's PDF render xref:doc/USAGE.pdf[USAGE.pdf].
+
+* There is also an auto-generated file listing the source of every function and module. You can find it xref:doc/FUNCTIONS.adoc[FUNCTIONS.adoc].
+
+* Additionally please checkout the xref:doc/CHANGELOG.adoc[CHANGELOG] and the xref:doc/LICENSE.adoc[LICENSE].
+====
+
+
+### Compatibility
+
+* BASH version 4+
+* BASH version 3 (partial compatibility, some functions are disabled)
+* ZSH – as of recent update, Bashmatic is almost 100% compatible with ZSH.   
+
+**Not  Supported**
+
+* FISH (although you could use Bashmatic via `bin/bashmatic` script helper, or its executables)
 
 == Project Motivation
 
@@ -76,6 +111,7 @@ First, make sure that you have Curl installed, run `which curl` to see. Then cop
 
 NOTE: The shortcut link resolves to the HEAD version of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in Bashmatic Repo.
 
+icon:arrow-down[3x, color="green"]
 [source,bash]
 ----
 bash -c "$(curl -fsSL https://bashmatic.re1.re); \
@@ -128,11 +164,11 @@ When you run `bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install
 * `curl` downloads the `bin/bashmatic-install` script and passes it to the built-in BASH for evaluation.
 * Once evaluated, function `bashmatic-install` is invoked, which actually performs the installation.
 ** This is the function that accepts the above listed arguments.
-* The script may ask for your password to enable sudo access — this may be required on OS-X to install XCode Developer tools (which include `git`)
+* The script may ask for your password to enable sudo access - this may be required on OS-X to install XCode Developer tools (which include `git`)
 * If your version of BASH is 3 or older, the script will download and build from sources version 5+ of BASH,  and install it into `/usr/local/bin/bash`. SUDO may be required for this step.
 * On OS-X the script will install Homebrew on OS-X, if not already there.
 ** Once Brew is installed, brew packages `coreutils` and `gnu-sed` are installed, as both are required and are relied upon by Bashmatic.
-* The script will then attempt to `git clone` the bashmatic repo into the Bashmatic home folder, or — if it already exists — it will `git pull` latest changes.
+* The script will then attempt to `git clone` the bashmatic repo into the Bashmatic home folder, or - if it already exists - it will `git pull` latest changes.
 * Finally, the script will check your bash dot files, and will add the hook to load Bashmatic from either `~/.bashrc` or `~/.bash_profile`.
 
 Restart your shell, and make sure that when you type `bashmatic.version` in the command line (and press Enter) you see the version number printed like so:
@@ -223,9 +259,13 @@ Or, if you plan on contributing to the framework:
 +
 `make update`
 
-IMPORTANT: Runnign `make update` is is required for submitting any pull request.
+NOTE: Running `make update` is is required for submitting any pull request.
 
-== Bashmatic in Action — Practical Examples
+=== Docker Support
+
+
+
+== Bashmatic in Action - Practical Examples
 
 **Why do we need another BASH framework?**
 
@@ -254,7 +294,7 @@ image::doc/img/bashmatic-example.png[example,width=100%]
 
 Tell me you are not at all excited to start writing complex installation flows in BASH right away?
 
-Not only you get pretty output, but you can each executed command, it's exit status, whether it's been successful (green/red), as well each command's bloody duration in milliseconds. What's not to like?!? 😂
+Not only you get pretty output, but you can each executed command, it's exit status, whether it's been successful (green/red), as well each command's bloody duration in milliseconds. What's not to like?!?
 
 Still not convinced?
 
@@ -287,7 +327,7 @@ Let's get back to the Earth, and talk about how to install Bashmatic, and how to
 
 === Example ++(C)++: Developer Environment Bootstrap Script
 
-This final and most feature-rich example is not just an example -- **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
+This final and most feature-rich example is not just an example – **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
 
 NOTE: the script relies on Homebrew behind the scenes, and therefore would not work on Linux or Windows (unless Brew gets ported there).
 
@@ -317,7 +357,7 @@ ${BASHMATIC_HOME}/bin/dev-setup \
   -m 5.6   # use MySQL version 5.6
 ----
 
-This compact command line installs a ton of things, but don't take our word for it — run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
+This compact command line installs a ton of things, but don't take our word for it - run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
 
 
 === Example (D): Installing GRC Colourify Tool
@@ -403,7 +443,7 @@ You can configure the following settings for `db top`:
 
 == Usage
 
-Welcome to *Bashmatic* -- an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
+Welcome to *Bashmatic* – an ever growing collection of scripts and mini-bash frameworks for doing all sorts of things quickly and efficiently.
 
 We have adopted the https://google.github.io/styleguide/shell.xml[Google Bash Style Guide], and it's recommended that anyone committing to this repo reads the guides to understand the conventions, gotchas and anti-patterns.
 
@@ -427,7 +467,7 @@ For instance:
 ----
 $ gem.install
 ┌─────────────────────────────────────────────────────────┐
-│  « ERROR »  Error — gem name is required as an argument │
+│  « ERROR »  Error - gem name is required as an argument │
 └─────────────────────────────────────────────────────────┘
 ----
 
@@ -527,13 +567,13 @@ Using these functions you can write powerful shell scripts that display each com
 One of the core tenets of this library is it's "runtime" framework, which offers a way to run and display commands as they run, while having a fine-grained control over the following:
 
 * What happens when one of the commands fails? Options include:
- ** Ignore and continue (default) -- _continue-on-error_
- ** Ask the user if she wants to proceed -- _ask-on-error_
- ** Abort the entire run -- _abort-on-error_.
+ ** Ignore and continue (default):  `continue-on-error`
+ ** Ask the user if she wants to proceed: `ask-on-error`
+ ** Abort the entire run: `abort-on-error`
 * How is command output displayed?
- ** Is it swallowed for compactness, and only shown if there is an error? (default) -- _show-output-off_
- ** Or is it shown regardless? -- _show-output-on_
-* Should commands actually run (_dry-run-off_), or simply be printed? (_dry-run-on_).
+ ** Is it swallowed for compactness, and only shown if there is an error? (default): `show-output-off`
+ ** Or is it shown regardless? `show-output-on`
+* Should commands actually run (`dry-run-off`), or simply be printed? (`dry-run-on`).
 
 ===== Examples of Runtime Framework
 
@@ -607,7 +647,7 @@ err                            info:
 error                          left
 ----
 
-Note that some function names end with `:` -- this indicates that the function outputs a new-line in the end. These functions typically exist together with their non-`:`-terminated counter-parts.  If you use one, eg, `inf`, you are then supposed to finish the line by providing an additional output call, most commonly it will be one of `ok:`, `ui.closer.not-ok:` and `ui.closer.kind-of-ok:`.
+Note that some function names end with `:` – this indicates that the function outputs a new-line in the end. These functions typically exist together with their non-`:`-terminated counter-parts.  If you use one, eg, `inf`, you are then supposed to finish the line by providing an additional output call, most commonly it will be one of `ok:`, `ui.closer.not-ok:` and `ui.closer.kind-of-ok:`.
 
 Here is an example:
 
@@ -690,7 +730,7 @@ You can reliably install ruby gems or brew packages with the following syntax:
 source ${BASHMATIC_HOME}/init.sh
 
 h2 "Installing ruby gem sym and brew package curl..." \
-   "Please standby..."
+   
 
 gem.install sym
 brew.install.package curl
@@ -855,7 +895,7 @@ ruby.install                                  ruby.validate-version
 ruby.install-ruby
 ----
 
-From the obvious `ruby.install-ruby <version>` to incredibly useful `ruby.top-versions <platform>` -- which, using rbenv and ruby_build plugin, returns the most recent minor version of each major version upgrade, as well as the YAML version that allows you to pipe the output into your `.travis.yml` to test against each major version of Ruby, locked to the very latest update in each.
+From the obvious `ruby.install-ruby <version>` to incredibly useful `ruby.top-versions <platform>` – which, using rbenv and ruby_build plugin, returns the most recent minor version of each major version upgrade, as well as the YAML version that allows you to pipe the output into your `.travis.yml` to test against each major version of Ruby, locked to the very latest update in each.
 
 [source,bash]
 ----
@@ -921,9 +961,9 @@ $ gem.version awesome_print
 There are plenty more modules, that help with:
 
 * link:lib/ruby.sh[Ruby Version Helpers] and (Ruby Gem Helpers)[lib/gem.sh], that can extract curren gem version from either `Gemfile.lock` or globally installed gem list..
-* link:lib/aws.sh[AWS helpers] -- requires `awscli` and credentials setup, and offers some helpers to simplify AWS management.
-* link:lib/docker.sh[Docker Helpers] -- assist with docker image building and pushing/pulling
-* link:lib/sym.sh[Sym] -- encryption with the gem called https://github.com/kigster/sym[`sym`]
+* link:lib/aws.sh[AWS helpers] – requires `awscli` and credentials setup, and offers some helpers to simplify AWS management.
+* link:lib/docker.sh[Docker Helpers] – assist with docker image building and pushing/pulling
+* link:lib/sym.sh[Sym] – encryption with the gem called https://github.com/kigster/sym[`sym`]
 
 And many more.
 
@@ -964,7 +1004,7 @@ aws.credentials.install-if-missing() {
 
 Now, *how would you use it in a script?* Let's say you need a script to upload
 something to AWS S3. But before you begin, wouldn't it be nice to verify
-that the credentials exist, and if not -- help the user install it? Yes it would.
+that the credentials exist, and if not – help the user install it? Yes it would.
 
 And that is exactly what the code above does, but it looks like a DSL. because
 it _is_ a DSL.
@@ -981,7 +1021,7 @@ aws.credentials.validate-or-exit
 
 ### How can I test if the function was ran as part of a script, or "sourced-in"?
 
-Some bash files exists as libraries to be "sourced in", and others exist as scripts to be run. But users won't always know what is what, and may try to source in a script that should be run, or vice versa — run a script that should be sourced in.
+Some bash files exists as libraries to be "sourced in", and others exist as scripts to be run. But users won't always know what is what, and may try to source in a script that should be run, or vice versa - run a script that should be sourced in.
 
 What do you, programmer, do to educate the user about correct usage of your script/library?
 
