@@ -93,26 +93,30 @@ function docs.adoc.fix-headers() {
 
 function docs.adoc.add-preamble() {
   local ver=$(cat .version)
-  cat  > "${usage_temp}" <<EOF
+  cat > "${usage_temp}" <<EOF
 = Bashmatic Usage Docs (v${ver})
-:doctype: article
+:doctype: book
 :allow-uri-read:
 :toc:
 :toclevels: 5
 :sectnums:
 :showtitle:
-:icons:font
+:pdf-fontsdir: ./fonts;GEM_FONTS_DIR
+:pdf-theme: .asciidoc-pdf-theme-titilium.yml
+:source-highlighter: rouge
+:rouge-style: base16.monokai
+:icons: font
 
 NOTICE: https://github.com/reconquest/shdoc[shdoc] documentation is auto-extracted from the Bashmatic Sources.
 
 EOF
-  tail +3 "${usage_adoc}" 1>"${usage_temp}" 2>&1 
+  tail +3 "${usage_adoc}" 1>>"${usage_temp}" 2>&1 
   run "mv ${usage_temp} ${usage_adoc}"
 }
 
 function docs.adoc.generate-pdf() {
-  run "asciidoctor-pdf ${usage_adoc}"
-  is-dbg && {
+  ${BASHMATIC_HOME}/bin/adoc2pdf "${usage_adoc}"
+  is-dbg && test -s "${usage_pdf}" && {
     info "Opening the PDF..."
     open -F -n "${usage_pdf}"
   }

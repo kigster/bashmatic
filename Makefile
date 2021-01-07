@@ -52,12 +52,9 @@ update-functions: 		## Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/p
 				@printf " 👉  $(green)Regenerating doc/FUNCTIONS.adoc — functions INDEX...$(clear)\n"
 				@bash -c "source ${BASHMATIC_HOME}/bin/regen-index-docs; generate-functions-index"
 
-update-usage: 			## Auto-generate doc/USAGE documentation from lib shell files, to doc/USAGE.adoc/pdf
+update-usage: 			fonts-setup ## Auto-generate doc/USAGE documentation from lib shell files, to doc/USAGE.adoc/pdf
 				@printf " 👉  $(green)Running bin/regen-usage-docs command...$(clear)\n"
 				@bin/regen-usage-docs
-				@printf " 👉  $(green)Reducing the PDF Size.... $(clear)\n"
-				@$(BASHMATIC_HOME)/bin/pdf-reduce doc/USAGE.pdf USAGE.pdf.reduced
-				@[[ -s USAGE.pdf.reduced ]] && mv -v USAGE.pdf.reduced doc/USAGE.pdf
 
 update-readme:			fonts-setup regenerate-readme fonts-clean open-readme ## Re-generate the PDF version of the README
 

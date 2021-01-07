@@ -1,16 +1,18 @@
-= Bashmatic™ - BASH primitives for humans, and for fun.
+
+:title: Bashmatic™ - BASH primitives for humans and for fun.
 :pdf-fontsdir: ./fonts;GEM_FONTS_DIR
 :pdf-theme: .asciidoc-pdf-theme-titilium.yml
 :source-highlighter: rouge
-:rouge-style: base16.solarized.dark
+:rouge-style: base16.monokai
 :safe: unsafe
 :allow-uri-read:
-:doctype: article
+:doctype: book
 :toc:
-:toclevels: 3
+:toclevels: 4
+:sectnums:
 :icons: font
 
-
+= Bashmatic™ - BASH primitives for humans and for fun.
 
 image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
 image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield]
@@ -20,13 +22,11 @@ image::https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic
 
 icon:terminal[5x, link="https://github.com/kigster/bashmatic", window="_blank"] 
 
-
 ## Introduction 
-
 
 _Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (500+ of them) that, we hope, make BASH programming easier, more enjoyable, and more importantly, usable due to the focus on providing constant feedback to the user about what is happening, as a script that uses Bashmatic is running.
 
-_Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the xref:lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
+_Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the https://github.com/kigster/bashmatic/blob/master/lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
 
 icon:arrow-down[3x, color="green"]
 
@@ -56,7 +56,7 @@ _Bashmatic®_ offers a huge range of ever-growing helper functions for running c
 
 WARNING: Some portion of helperse within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under Linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specifc functions to OS-neutral helpers such as `package.install` that would work equally well on Linux.
 
-Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the xref:doc/FUNCTIONS.adoc[functions index page].
+Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[functions index page].
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* :) 
 
@@ -65,13 +65,13 @@ And, finally, don't worry, *_Bashmatic®_* is totally open source and free to us
 
 [WARNING]
 ====
-You can also download the **xref:README.pdf[PDF version of this document]** which is better for print. 
+You can also download the **https://github.com/kigster/bashmatic/blob/master/README.pdf[PDF version of this document]** which is better for print. 
 
-* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the xref:doc/USAGE.adoc[USAGE.adoc] file, or it's PDF render xref:doc/USAGE.pdf[USAGE.pdf].
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/master/doc/USAGE.adoc[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/master/doc/USAGE.pdf[PDF] version.
 
-* There is also an auto-generated file listing the source of every function and module. You can find it xref:doc/FUNCTIONS.adoc[FUNCTIONS.adoc].
+* There is also an auto-generated file listing the source of every function and module. You can find it https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[FUNCTIONS].
 
-* Additionally please checkout the xref:doc/CHANGELOG.adoc[CHANGELOG] and the xref:doc/LICENSE.adoc[LICENSE].
+* Additionally please checkout the https://github.com/kigster/bashmatic/blob/master/doc/CHANGELOG.adoc[CHANGELOG] and the https://github.com/kigster/bashmatic/blob/master/doc/LICENSE.adoc[LICENSE].
 ====
 
 
@@ -176,7 +176,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 [source,bash]
 ----
 $ bashmatic.version
-1.7.2
+1.9.1
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.

@@ -6,7 +6,7 @@
 source "${BASHMATIC_HOME}/init.sh" >/dev/null
 
 install.imagemagick6() {
-  local package=GraphicsMagick
+  local package="graphicsmagick"
 
   brew.cache-reset
   brew.install.package ${package}

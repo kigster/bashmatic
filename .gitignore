@@ -14,3 +14,4 @@ shellcheck.log
 **/.DS_Store
 .envrc.local
 .fonts/
+*.pdf.reduced

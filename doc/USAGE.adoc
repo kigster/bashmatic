@@ -1,3 +1,18 @@
+= Bashmatic Usage Docs (v1.9.1)
+:doctype: book
+:allow-uri-read:
+:toc:
+:toclevels: 5
+:sectnums:
+:showtitle:
+:pdf-fontsdir: ./fonts;GEM_FONTS_DIR
+:pdf-theme: .asciidoc-pdf-theme-titilium.yml
+:source-highlighter: rouge
+:rouge-style: base16.monokai
+:icons: font
+
+NOTICE: https://github.com/reconquest/shdoc[shdoc] documentation is auto-extracted from the Bashmatic Sources.
+
 == File `lib/array.sh`
 
 * <<arrayincludes,array.includes()>>
@@ -78,6 +93,16 @@ Sorts and uniqs the array and prints it to STDOUT
 declare -a unsorted=(hello hello hello goodbye)
 local uniqued="$(array.sort-numeric "${unsorted[@]}")"
 ----
+
+'''
+
+== File `lib/asciidoc.sh`
+
+= asciidoc
+
+== Overview
+
+Provides helper functions for dealing with asciidoc format.
 
 '''
 
@@ -312,6 +337,22 @@ pdf.combine ~/merged.pdf 'my-book-chapter*'
 
 * *$1* (pathname): to the merged file
 * *...* (the): rest of the PDF files to combine
+
+'''
+
+== File `bin/install-direnv`
+
+= install-direnv
+
+== Overview
+
+Add direnv hook to shell RC files
+
+* <<direnvregister,direnv.register()>>
+
+=== direnv.register()
+
+Add direnv hook to shell RC files
 
 '''
 

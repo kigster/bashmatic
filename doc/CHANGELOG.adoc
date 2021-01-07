@@ -1,11 +1,13 @@
 = Changelog
 
-== https://github.com/kigster/bashmatic/tree/HEAD[Unreleased]
+== https://github.com/kigster/bashmatic/tree/v1.9.1[v1.9.1] (2021-01-07)
 
-https://github.com/kigster/bashmatic/compare/v1.8.0...HEAD[Full Changelog]
+https://github.com/kigster/bashmatic/compare/v1.8.0...v1.9.1[Full Changelog]
 
 *Merged pull requests:*
 
+* Custom theme for README.pdf with color highlighting https://github.com/kigster/bashmatic/pull/38[#38] (https://github.com/kigster[kigster])
+* Installer feedback + a quiet mode https://github.com/kigster/bashmatic/pull/37[#37] (https://github.com/kigster[kigster])
 * Faster loading, experimental cache features https://github.com/kigster/bashmatic/pull/36[#36] (https://github.com/kigster[kigster])
 * Fixes to Makefile, documentation auto-generation, and more https://github.com/kigster/bashmatic/pull/35[#35] (https://github.com/kigster[kigster])
 
@@ -82,20 +84,18 @@ https://github.com/kigster/bashmatic/compare/v1.3.1...v1.4.0[Full Changelog]
 
 https://github.com/kigster/bashmatic/compare/v1.3.0...v1.3.1[Full Changelog]
 
-*Merged pull requests:*
-
-* Adding array.sort, array.uniq and array.sort-numeric https://github.com/kigster/bashmatic/pull/14[#14] (https://github.com/kigster[kigster])
-
 == https://github.com/kigster/bashmatic/tree/v1.3.0[v1.3.0] (2020-09-22)
 
 https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0[Full Changelog]
 
 *Merged pull requests:*
 
+* Adding array.sort, array.uniq and array.sort-numeric https://github.com/kigster/bashmatic/pull/14[#14] (https://github.com/kigster[kigster])
 * Adding documentation for dbtop + PDF generator https://github.com/kigster/bashmatic/pull/13[#13] (https://github.com/kigster[kigster])
 * Fixing dbtop https://github.com/kigster/bashmatic/pull/11[#11] (https://github.com/kigster[kigster])
 * Add license scan report and status https://github.com/kigster/bashmatic/pull/10[#10] (https://github.com/fossabot[fossabot])
 * Adding bin/pdf-reduce and other tweaks https://github.com/kigster/bashmatic/pull/9[#9] (https://github.com/kigster[kigster])
+* Minor revision to the runtime UI https://github.com/kigster/bashmatic/pull/4[#4] (https://github.com/kigster[kigster])
 
 == https://github.com/kigster/bashmatic/tree/v1.2.1[v1.2.1] (2020-06-26)
 
@@ -131,7 +131,6 @@ https://github.com/kigster/bashmatic/compare/875b23408925e8908fc1f23f5f0c1470fe4
 
 *Merged pull requests:*
 
-* Minor revision to the runtime UI https://github.com/kigster/bashmatic/pull/4[#4] (https://github.com/kigster[kigster])
 * [feature] Introducing new runtime option show-command-on/off https://github.com/kigster/bashmatic/pull/3[#3] (https://github.com/kigster[kigster])
 * Kig/gem related fixes and installer https://github.com/kigster/bashmatic/pull/2[#2] (https://github.com/kigster[kigster])
 

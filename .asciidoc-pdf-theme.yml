@@ -10,15 +10,15 @@ font:
       semibold_italic: barlowcondensed-semibolditalic.ttf
     Cairo:  
       bold: cairo-bold.ttf
-      bold_italic: cairo-extralight.ttf
-      italic: cairo-light.ttf
+      bold_italic: cairo-black.ttf
+      italic: cairo-black.ttf
       normal: cairo-regular.ttf
       black: cairo-black.ttf
       semibold: cairo-semibold.ttf
     AdventPro: 
-      normal: adventpro-semibold.ttf
+      normal: adventpro-light.ttf
       bold: adventpro-bold.ttf
-      italic:  adventpro-light.ttf
+      italic: adventpro-semibold.ttf
       bold_italic: adventpro-thin.ttf
     Arvo:
       bold: arvo-bold.ttf
@@ -31,14 +31,25 @@ font:
       bold_italic: cascadiamono-semibold.ttf
       italic: cascadiamono-semilight.ttf
 extends: default
+page:
+  layout: portrait
+  margin: [0.75in, 1in, 0.75in, 1in]
+  size: Letter
 base:
   font:
-    size: 12
-    line-height: 14
-    color: "#010101"
+    size: 10
+    line-height-length: 12
+    line-height: $base-line-height-length / $base-font-size
     family: Barlow
 code:
   font:
-    size: 10
+    size: 8
+    line-height-length: 10
     family: Cascadia
-
+    line-height: $base-line-height-length / $base-font-size
+heading:
+  font:
+    family: AdventPro
+    style: bold
+image:
+  border-radius: 15

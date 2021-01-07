@@ -11,6 +11,7 @@
 
 * xref:#module-7z[7z]
 * xref:#module-array[array]
+* xref:#module-asciidoc[asciidoc]
 * xref:#module-audio[audio]
 * xref:#module-aws[aws]
 * xref:#module-bashmatic[bashmatic]
@@ -451,6 +452,27 @@ array.uniq ()
     IFS=''
     printf "%s\n" "$@" | sort -u | tr '\n' ' ' | sed 's/ $//g'
     IFS="${IFS_previous}"
+}
+
+----
+
+
+=== Module `asciidoc`
+
+==== `asciidoc.rouge-themes`
+
+[source,bash]
+----
+asciidoc.rouge-themes () 
+{ 
+    gem.install rouge
+    info "Available themes:"
+    local -a themes=($(ruby -e 'require :rouge.to_s; puts Rouge::Theme.registry.keys.sort.join ?\n'))
+    array.to.bullet-list "${themes[@]}"
+    echo
+    info "To specify a theme in your *.adoc file, put this at the top:"
+    info "${bldlyw}:source-highlighter: ${bldgrn}rouge"
+    info "${bldlyw}:rouge-style: ${bldgrn}monokai"
 }
 
 ----
@@ -4063,6 +4085,19 @@ is.a-function ()
             return 1
         ;
     esac
+}
+
+----
+
+==== `is.a-function.invoke`
+
+[source,bash]
+----
+is.a-function.invoke () 
+{ 
+    local func="$1"
+    shift
+    is.a-function "${func}" && eval "${func} $*"
 }
 
 ----
