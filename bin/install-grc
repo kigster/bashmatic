@@ -9,7 +9,9 @@
 #
 
 # shellcheck disable=2046
-[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+[[ -z ${BASHMATIC_HOME} ]] && \
+    export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+
 source "${BASHMATIC_HOME}/init.sh"
 
 run.set-all abort-on-error
@@ -41,7 +43,7 @@ function grc.install.extras() {
 
   run.set-all show-output-on
   run "cp -rpnv ${BASHMATIC_HOME}/conf/grc/conf.* /usr/local/share/grc | sed 's/^/       ❯ /g' || true"
-  run "cp -rpnv ${BASHMATIC_HOME}/conf/grc/.[a-z]* ${HOME}             | sed 's/^/       ❯ /g' || true"
+  run "cp -rpv ${BASHMATIC_HOME}/conf/grc/.[a-z]* ${HOME}             | sed 's/^/       ❯ /g' || true"
 
   for file in "$(find ${BASHMATIC_HOME}/conf/grc -type f -maxdepth 1 -name 'conf.*' -print)"; do
     command=$(basename "${file}" | sed 's/conf\.//')
