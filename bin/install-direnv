@@ -15,6 +15,9 @@
 
 source "${BASHMATIC_HOME}/init.sh" >/dev/null
 
+version="0.1.0"
+changed=0
+
 function direnv.install() {
   inf "Checking if direnv is already installed..."
   command -v direnv>/dev/null && {
@@ -33,6 +36,7 @@ function direnv.install() {
   elif [[ ${os} == Linux ]]; then
     info "Please enter your SUDO password if asked:"
     sudo echo
+
     run "sudo apt-get install -yqq direnv"
   else 
     error "Operating system ${os} is not supported."
@@ -50,29 +54,37 @@ function direnv.install() {
 
 # @description Add direnv hook to shell RC files
 function direnv.register() {
-  info "Ensuring direnv hook is registered..."
+  inf "Ensuring direnv hook is registered..."
  
   local C
   local shell="${ZSH_NAME:-$(basename ${SHELL})}"
 
   if [[ ${shell} == bash || ${shell} == zsh ]] ; then
     C="${HOME}/.${shell}rc"
-    grep -i -q direnv "$C" || {
+    grep -i -q direnv "$C" && {
+      printf " — YES"; ok: ;
+    } || {
       inf "Appending direnv hooks to ${bldylw}${C}..."
       echo "eval \"\$(direnv hook ${shell})\"">>"$C"
       echo 'export DIRENV_WARN_TIMEOUT="100s"'>>"$C"
       ok:
+      changed=1
     }
 
   elif [[ -n ${FISH_VERSION} ]]; then 
     C="$HOME/.config/fish/config.fish"
-    grep -i -q direnv "$C" || {
+    grep -i -q direnv "$C" && {
+      printf " — YES"; ok: ;
+    } || {
       inf "Appending direnv hooks to ${bldylw}${C}..."
       echo 'eval (direnv hook fish)'>>"$C"
       echo 'set DIRENV_WARN_TIMEOUT 100s'>>"$C"
       ok:
+      changed=1
     }
   fi
+
+  ((changed)) || return 0
 
   h3 "For verification, printing direnv-related config from ${bldylw}${C}:"
   grep -i direnv "${C}" | sed 's/^/\t/g'
@@ -80,18 +92,26 @@ function direnv.register() {
   echo
 
   set +e
-  source "${C}"
+  if [[ ${C} =~ bash ]]; then
+    source "${C}"
+  fi
 
-  info "${bldylw}IMPORTANT: you must run ${bldgrn}source ${C} to activate it."
+  warning "${bldylw}IMPORTANT: you must run the following command to active direnv:"  \
+    "${bldwht}source ${C}"
 }
 
 function direnv.main() {
   output.constrain-screen-width 90
-  h1 "Installing/verifying that direnv is enabled."
+  h1 "direnv installation script ${bldylw}${version}"
+
   direnv.install && direnv.register || return 1
+
   [[ -f .envrc ]] && {
-    info "Found a local .envrc file — loading it."
-    direnv allow .
+    inf "Found a local .envrc file — running ${bldylw}direnv allow ."
+    direnv allow . >/dev/null
+    printf -- " —— DONE"
+    ok:
+    echo
   }
 }
 
@@ -100,4 +120,5 @@ direnv.main || {
   exit 1
 }
 
-echo; success "direnv installation successful."; echo
+((changed)) && { echo; success "direnv installation successful."; echo; }
+

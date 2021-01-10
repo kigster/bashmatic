@@ -4,8 +4,12 @@
 -- set how to output numbers (this turns on thousdand separators)
 
 \set QUIET 1
-\set PROMPT1 '%[%033[0;42;30m%] %`date +%H:%M:%S%Z` %033[0;43;32m%]%033[0;43;30m%] %n @ %033[1;41;5m%] %M %033[1;44;30m%] db:%033[5;44;3m%] %/%x %033[0;34m%%[%033[0;0;0m%]\n❯ '
-\set PROMPT2 '↳  [%[%033[1;32m%]%/%[%033[0m%]]%R%#%x '
+-- \set PROMPT1 '%[%033[0;42;30m%] %`date +%H:%M:%S%Z` %033[0;43;32m%]%033[0;43;30m%] %n @ %033[1;41;5m%] %M %033[1;44;30m%] db:%033[5;44;3m%] %/%x %033[0;34m%%[%033[0;0;0m%]\n❯ '
+-- \set PROMPT2 '↳  [%[%033[1;32m%]%/%[%033[0m%]]%R%#%x '
+
+\set PROMPT1 '%033[0;47;30m%] %n@%M/%/%x %033[0;37m%%[%033[0;0;0m%] \n%[%033[1;43;30m%] ⏱   %`date +%H:%M:%S%Z`   %033[0;40;33m%]%033[0;43;37m%]%[%033[0;0;0m%] '
+\set PROMPT2 '%[%033[1;43;30m%] ⏱   %`date +%H:%M:%S%Z` %033[0;40;33m%]%033[0;43;37m%]%[%033[0;0;0m%] ↪'
+
 -- Autocomplete keywords (like SELECT) in upper-case, even if you started
 -- typing them in lower case.
 \set COMP_KEYWORD_CASE upper
