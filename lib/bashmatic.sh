@@ -95,10 +95,10 @@ bashmatic.bash.exit-unless-version-four-or-later() {
 
 
 bashmatic.source() {
-  local path="${BASHMATIC_LIBDIR}"
+  local __path="${BASHMATIC_LIBDIR}"
   local file
   for file in "${@}"; do
-    [[ "${file}" =~ "/" ]] || file="${path}/${file}"
+    [[ "${file}" =~ "/" ]] || file="${__path}/${file}"
     [[ -s "${file}" ]] || {
       .err "Can't source file ${file} — fils is invalid."
       return 1
@@ -170,8 +170,8 @@ bashmatic.setup() {
     return 1
   fi
 
-  bashmatic.source user.sh output.sh is.sh
-  bashmatic.shell-check |w| return 1
+  bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
+  bashmatic.shell-check || return 1
   bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
 

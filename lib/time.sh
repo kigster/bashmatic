@@ -7,7 +7,7 @@
 # Any modifications, © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
-export AppCurrentOS=${AppCurrentOS:-$(uname -s)}
+export AppCurrentOS=${AppCurrentOS:-$(/usr/bin/env uname -s)}
 
 # Install necessary dependencies on OSX
 .time.osx.coreutils() {

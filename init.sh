@@ -103,7 +103,7 @@ function .bashmatic.initialize() {
     source "${setup_script}"
     bashmatic.setup
     local code=$?
-    ((code)) && warning "bashmatic.setup returned exit code [${code}]"
+    ((code)) && echo "bashmatic.setup returned exit code [${code}]"
   else
     echo "  ⛔️ ERROR:"
     echo "  🙁 Bashmatic appears to be broken, file not found: ${setup_script}"

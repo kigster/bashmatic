@@ -2,7 +2,7 @@
 # @description SHASUM related function
 # @file shasum.sh
 
-export __bashmatic__sha_command="shasum -a 1"
+export __default_bashmatic__sha_command="/usr/bin/env shasum"
 
 # @description Override the default SHA command and alogirthm
 #              Default is shasum -a 256
@@ -15,11 +15,14 @@ shasum.set-command() {
 #     shasum.set-algo 256
 #
 shasum.set-algo() {
-  export __bashmatic__sha_command="shasum -a $1"
+  local algo="${1:-1}"
+  export __bashmatic__sha_command="${__default_bashmatic__sha_command} -a ${algo}"
 }
 
+shasum.set-algo 1
+
 .sha() {
-  ${__bashmatic__sha_command} "$@"
+  eval "${__bashmatic__sha_command} $*"
 }
 
 .sha-only() {
@@ -41,7 +44,7 @@ shasum.sha-only() {
 
 # @description Print SHA ONLY removing the file components
 shasum.sha-only-stdin() {
-  echo "$*:" | .sha-only 
+  echo "$*" | eval "${__bashmatic__sha_command}"  | cut -d' ' -f 1
 }
 
 if bashmatic.bash.version-four-or-later; then
