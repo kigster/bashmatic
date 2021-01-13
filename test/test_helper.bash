@@ -3,7 +3,7 @@
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
-os="$(uname -s | tr [:upper:] [:lower:])"
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 set +e
 
 export Bashmatic__Test=1
@@ -11,13 +11,60 @@ export Bashmatic__Test=1
 load.deps() {
   ( git submodule update && git submodule sync ) 1>/dev/null 2>&1
   declare -a deps=(support file assert)
-  for dep in ${deps[@]}; do
+  for dep in "${deps[@]}"; do
     local file="${TEST_BREW_PREFIX}/lib/bats-${dep}/load.bash"
     if [[ -f ${file} ]]; then
-      load ${file}
+      load "${file}"
     else
       echo "Can't load plugin ${dep}" >&2
     fi
   done
 }
-#[[ -n ${CI} ]] && color.disable
+
+# https://github.com/bats-core/bats-core/blob/master/test/test_helper.bash
+emulate_bats_env() {
+  export BATS_CWD="$PWD"
+  export BATS_TEST_PATTERN="^[[:blank:]]*@test[[:blank:]]+(.*[^[:blank:]])[[:blank:]]+\{(.*)\$"
+  export BATS_TEST_FILTER=
+  export BATS_ROOT_PID=$$
+  export BATS_EMULATED_RUN_TMPDIR="$BATS_TMPDIR/bats-run-$BATS_ROOT_PID"
+  export BATS_RUN_TMPDIR="$BATS_EMULATED_RUN_TMPDIR"
+  mkdir -p "$BATS_RUN_TMPDIR"
+}
+
+fixtures() {
+  FIXTURE_ROOT="$BATS_TEST_DIRNAME/fixtures/$1"
+  RELATIVE_FIXTURE_ROOT="${FIXTURE_ROOT#$BATS_CWD/}"
+}
+
+make_bats_test_suite_tmpdir() {
+  export BATS_TEST_SUITE_TMPDIR="$BATS_RUN_TMPDIR/bats-test-tmp/$1"
+  mkdir -p "$BATS_TEST_SUITE_TMPDIR"
+}
+
+filter_control_sequences() {
+  "$@" | sed $'s,\x1b\\[[0-9;]*[a-zA-Z],,g'
+}
+
+if ! command -v tput >/dev/null; then
+  tput() {
+    printf '1000\n'
+  }
+  export -f tput
+fi
+
+emit_debug_output() {
+  printf '%s\n' 'output:' "$output" >&2
+}
+
+test_helper::cleanup_tmpdir() {
+  if [[ -n "$1" && -z "$BATS_TEST_SUITE_TMPDIR" ]]; then
+    BATS_TEST_SUITE_TMPDIR="$BATS_RUN_TMPDIR/bats-test-tmp/$1"
+  fi
+  if [[ -n "$BATS_TEST_SUITE_TMPDIR" ]]; then
+    rm -rf "$BATS_TEST_SUITE_TMPDIR"
+  fi
+  if [[ -n "$BATS_EMULATED_RUN_TMPDIR" ]]; then
+    rm -rf "$BATS_EMULATED_RUN_TMPDIR"
+  fi
+}

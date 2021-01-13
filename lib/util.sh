@@ -222,26 +222,8 @@ util.functions-matching.diff() {
   done
 }
 
-util.checksum.files() {
-  cat $* | shasum | awk '{print $1}'
-}
-
-util.checksum.stdin() {
-  shasum | awk '{print $1}'
-}
-
 util.install-direnv() {
-  [[ -n $(which direnv) ]] || brew.install.package direnv
-
-  local init_file=
-  local init_file=$(util.append-to-init-files 'eval "$(direnv hook bash)"; export DIRENV_LOG_FORMAT=' 'direnv hook')
-  if [[ -f ${init_file} ]]; then
-    info: "direnv init has been appended to ${bldylw}${init_file}..."
-  else
-    error: "direnv init could not be appended"
-  fi
-
-  eval "$(direnv hook bash)"
+  "${BASHMATIC_HOME}/bin/install-direnv"
 }
 
 util.ensure-gnu-sed() {
@@ -351,6 +333,10 @@ pause.long() { sleep "${1:-10}"; }
 
 util.is-numeric() {
   is.numeric "$1"
+}
+
+function var.expand() {
+ .subst "$@"
 }
 
 .subst() {

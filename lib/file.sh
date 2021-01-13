@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 
 export bashmatic__hostname="${HOSTNAME:-${HOST:-$(/usr/bin/env hostname)}}"
 export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
@@ -8,14 +7,14 @@ function file.temp() {
   local user="${USER:-"$(whoami)"}"
   local temp_file_pattern=".bashmatic.${host}.${user}."
   local n="$(epoch)"
-  local t=$(( n % 99991 ))
+  local t=$((n % 99991))
   local file="/tmp/${temp_file_pattern}${n}$$${t}${RANDOM}${RANDOM}"
   # Delete similar looking files that are more than 1 day old
   find "$(dirname "${file}")" -maxdepth 1 \
     -type f \
     -name "${temp_file_pattern}*" \
     -mtime +1 \
-    -delete >/dev/null 2>&1 
+    -delete >/dev/null 2>&1
   echo "${file}"
 }
 

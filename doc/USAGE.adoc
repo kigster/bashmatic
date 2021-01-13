@@ -1,4 +1,4 @@
-= Bashmatic Usage Docs (v1.9.1)
+= Bashmatic Usage Docs (v1.9.2)
 :doctype: book
 :allow-uri-read:
 :toc:
@@ -257,6 +257,24 @@ git.open origin # same thing
 ==== Arguments
 
 * *$1* (optional): name of the remote to open, defaults to "orogin"
+
+'''
+
+== File `lib/shasum.sh`
+
+= shasum.sh
+
+== Overview
+
+SHASUM related function
+
+* <<shasumsha,shasum.sha()>>
+
+=== shasum.sha()
+
+Compute SHA for all given files, ignore STDERR
+NOTE: first few arguments will be passed to the
+shasum command, or whatever you set via shasum.set-command.
 
 '''
 

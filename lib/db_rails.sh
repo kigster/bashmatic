@@ -30,6 +30,6 @@ db.rails.schema.checksum() {
   else
     local schema=$(db.rails.schema.file)
     [[ -s ${schema} ]] || error "can not find Rails schema in either ${RAILS_SCHEMA_RB} or ${RAILS_SCHEMA_SQL}"
-    [[ -s ${schema} ]] && util.checksum.files "${schema}"
+    [[ -s ${schema} ]] && shasum.sha-only "${schema}"
   fi
 }

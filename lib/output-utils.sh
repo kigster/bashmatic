@@ -20,7 +20,7 @@ function abort() {
 }
 
 function err() {
-  printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" >&2
+  printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldwht}$*${clr}" >&2
 }
 
 function ask() {
@@ -59,7 +59,7 @@ function info() {
 
 function error() {
   header=$(printf -- "${clr}${txtred}  « ERROR » ")
-  box.white-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" >&2
+  box.white-on-red "${header} ${clr}${bldwht}${bakred} — $1" "${@:2}" >&2
 }
 
 function fatal() {
