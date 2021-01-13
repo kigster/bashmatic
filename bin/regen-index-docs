@@ -73,10 +73,7 @@ generate-changelog() {
   }
 
   run "github_changelog_generator --project bashmatic --user kigster -t ${GITHUB_TOKEN} --no-verbose"
-  .install.kramdoc
-  run "kramdoc CHANGELOG.md"
-  run "mv -v CHANGELOG.adoc ${BASHMATIC_HOME}/doc"
-  run "rm -f CHANGELOG.md"
-  [[ -s "${BASHMATIC_HOME}/doc/CHANGELOG.adoc" ]] && success "Changelog is ready."
+  run "mv -v CHANGELOG.md ${BASHMATIC_HOME}/doc"
+  [[ -s "${BASHMATIC_HOME}/doc/CHANGELOG.md" ]] && success "Changelog is ready."
 }
 

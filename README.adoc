@@ -67,11 +67,11 @@ And, finally, don't worry, *_Bashmatic®_* is totally open source and free to us
 ====
 You can also download the **https://github.com/kigster/bashmatic/blob/master/README.pdf[PDF version of this document]** which is better for print. 
 
-* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/master/doc/USAGE.adoc[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/master/doc/USAGE.pdf[PDF] version.
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/master/doc/USAGE.md[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/master/doc/USAGE.pdf[PDF] version.
 
 * There is also an auto-generated file listing the source of every function and module. You can find it https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[FUNCTIONS].
 
-* Additionally please checkout the https://github.com/kigster/bashmatic/blob/master/doc/CHANGELOG.adoc[CHANGELOG] and the https://github.com/kigster/bashmatic/blob/master/doc/LICENSE.adoc[LICENSE].
+* Additionally please checkout the https://github.com/kigster/bashmatic/blob/master/doc/CHANGELOG.md[CHANGELOG] and the https://github.com/kigster/bashmatic/blob/master/doc/LICENSE.adoc[LICENSE].
 ====
 
 

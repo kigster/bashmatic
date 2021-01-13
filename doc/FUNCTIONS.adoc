@@ -481,17 +481,6 @@ asciidoc.rouge-themes ()
 
 === Module `audio`
 
-==== `æ.mp3`
-
-[source,bash]
-----
-æ.mp3 () 
-{ 
-    audio.make.mp3 "$@"
-}
-
-----
-
 ==== `audio.dir.mp3-to-wav`
 
 [source,bash]
@@ -6856,29 +6845,7 @@ warning: ()
 ----
 PATH_add () 
 { 
-    path.add "$@"
-}
-
-----
-
-==== `path.add`
-
-[source,bash]
-----
-path.add () 
-{ 
-    local new_path="${PATH}"
-    for path in "$@"
-    do
-        is.a-directory "${path}" || { 
-            error "Argument ${path} is not a valid directory, abort."
-            return 1
-        }
-        [[ ":${PATH}:" =~ :${path}: ]] && continue
-        export new_path="${new_path}:${path}"
-        export new_path="${new_path/::/:}"
-    done
-    echo "${new_path}"
+    path.mutate.append "$@"
 }
 
 ----
@@ -6889,7 +6856,17 @@ path.add ()
 ----
 path.append () 
 { 
-    export PATH="$(path.add "$@")"
+    local new_path="${PATH}"
+    for __path in "$@"
+    do
+        is.a-directory "${__path}" || { 
+            error "Argument ${__path} is not a valid directory, abort." 1>&2
+            return 1
+        }
+        path.dirs.uniq | grep -q -E "^${__path}$" && continue
+        new_path="${new_path}:${__path}"
+    done
+    echo "${new_path}"
 }
 
 ----
@@ -6902,18 +6879,87 @@ path.dirs ()
 { 
     local path="${1:-${PATH}}"
     echo "${path//:/'
-'}" | /usr/bin/tr -d "'" | sedx '/^$/d'
+'}" | /usr/bin/tr -d "'" | sedx '/^$/d; s/://g'
 }
 
 ----
 
-==== `path.size`
+==== `path.dirs.size`
 
 [source,bash]
 ----
-path.size () 
+path.dirs.size () 
 { 
     path.dirs "$@" | /usr/bin/wc -l | /usr/bin/tr -d ' '
+}
+
+----
+
+==== `path.dirs.uniq`
+
+[source,bash]
+----
+path.dirs.uniq () 
+{ 
+    local -a paths=($(path.dirs "$@"))
+    for path in $(array.uniq "${paths[@]}")
+    do
+        echo "${path}"
+    done
+}
+
+----
+
+==== `path.mutate.append`
+
+[source,bash]
+----
+path.mutate.append () 
+{ 
+    export PATH="$(path.append "$@")"
+}
+
+----
+
+==== `path.mutate.prepend`
+
+[source,bash]
+----
+path.mutate.prepend () 
+{ 
+    export PATH="$(path.prepend "$@")"
+}
+
+----
+
+==== `path.mutate.uniq`
+
+[source,bash]
+----
+path.mutate.uniq () 
+{ 
+    export PATH="$(path.uniq "$@")"
+}
+
+----
+
+==== `path.prepend`
+
+[source,bash]
+----
+path.prepend () 
+{ 
+    local new_path="${PATH}"
+    for __path in "$@"
+    do
+        is.a-directory "${__path}" || { 
+            error "Argument ${__path} is not a valid directory, abort." 1>&2
+            return 1
+        }
+        local p="$(path.dirs.uniq | grep -v -E "^${__path}$" | tr '\n' ':')"
+        new_path="${__path}:${p}"
+    done
+    echo "${new_path}"
 }
 
 ----
@@ -6924,34 +6970,7 @@ path.size ()
 ----
 path.uniq () 
 { 
-    local -a paths
-    for dir in $(path.dirs "$@")
-    do
-        array.includes "${dir}" "${paths[@]}" || paths+=("${dir}")
-    done
-    echo "${paths[@]}" | /usr/bin/tr ' ' '\n'
-}
-
-----
-
-==== `path.uniqify`
-
-[source,bash]
-----
-path.uniqify () 
-{ 
-    path.uniq "$@" | /usr/bin/tr '\n' ':' | sedx 's/[$%]//g'
-}
-
-----
-
-==== `path.uniqify-and-export`
-
-[source,bash]
-----
-path.uniqify-and-export () 
-{ 
-    export PATH=$(path.uniqify "$@")
+    array.join ':' $(path.dirs.uniq "$@")
 }
 
 ----
@@ -8945,6 +8964,36 @@ shasum.sha-only ()
 shasum.sha-only-stdin () 
 { 
     echo "$*" | eval "${__bashmatic__sha_command}" | cut -d' ' -f 1
+}
+
+----
+
+==== `shasum.to-hash`
+
+[source,bash]
+----
+shasum.to-hash () 
+{ 
+    local hash_name="$1"
+    shift
+    local index=0
+    local last_sha
+    for file in $(shasum.sha "$@")
+    do
+        index=$((index + 1))
+        if [[ $((index % 2)) == 0 ]]; then
+            is-dbg && info "${last_sha} <- ${bldpur}${file}"
+            eval "${hash_name}['${file}']=${last_sha}"
+        else
+            last_sha="${file}"
+        fi
+    done
+    is-dbg && { 
+        local count=$((index / 2))
+        eval "local size=\${#${hash_name}[@]}"
+        h.yellow "Total ${count} files, ${size} hash entries in a Hash Variable '${hash_name}'"
+    }
+    return
 }
 
 ----
