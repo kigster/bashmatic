@@ -2,6 +2,7 @@ GRC="$(which grc)"
 if [ "$TERM" != dumb ] && [ -n "$GRC" ]; then
     alias colourify="$GRC -es --colour=auto"
     alias blkid='colourify blkid'
+    alias nmap='colourify nmap'
     alias configure='colourify ./configure'
     alias df='colourify df'
     alias diff='colourify diff'
@@ -12,9 +13,7 @@ if [ "$TERM" != dumb ] && [ -n "$GRC" ]; then
     alias free='colourify free'
     alias fdisk='colourify fdisk'
     alias findmnt='colourify findmnt'
-    # disable make becaue colourify meddles with STDIN and a Docker container
-    # started via make does no show terminal output until new line is complete
-    #alias make='colourify gmake'
+    #alias make='colourify make'
     alias gcc='colourify gcc'
     alias g++='colourify g++'
     alias id='colourify id'
