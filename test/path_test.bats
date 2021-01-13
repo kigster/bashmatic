@@ -4,44 +4,47 @@ load test_helper
 
 source lib/util.sh
 source lib/array.sh
+source lib/output.sh
 source lib/path.sh
 source lib/is.sh
 set -e
 
-@test "path.size" {
+@test "path.dirs.size" {
   local LONG="/bin:/bin:/usr/local/bin:/usr/bin:/bin"
-  [ "$(path.size "${LONG}")" -eq 5 ]
+  [ "$(path.dirs.size "${LONG}")" -eq 5 ]
 }
 
-@test "path.uniqify" {
+@test "path.dirs.uniq" {
   local LONG="/bin:/bin:/usr/local/bin:/usr/bin:/bin:"
-  [ "$(path.uniqify "${LONG}")" == "/bin:/usr/local/bin:/usr/bin:" ]
+  [ "$(path.dirs.uniq "${LONG}" | wc -l | tr -d ' ')" -eq 3 ]
 }
 
-@test "path.add" {
-  OLD_PATH="${PATH}"
+@test "path.mutate.uniq" {
+  export OLD_PATH="${PATH}"
   export PATH="/bin:/bin:/usr/local/bin:/usr/bin:/bin:"
-  result=$(path.add /sbin)
-  export PATH="${OLD_PATH}"
-  [ "${result}" == "/bin:/bin:/usr/local/bin:/usr/bin:/bin:/sbin" ]
-  #[ "${PATH}" == "/bin:/usr/local/bin:/usr/bin:/sbin:" ]
+  [[ $(path.dirs.size "${PATH}") -eq 5 ]] 
+  path.mutate.uniq
+  [[ $(path.dirs.size "${PATH}") -eq 3 ]] && {
+    export PATH="${OLD_PATH}" || true
+  }
 }
 
-@test "path.append" {
-  local dir="/tmp/executables.$$"
-  local bin="${dir}/binary"
-  mkdir -p "${dir}"   
-  echo "#!/bin/bash\necho it works" >"${bin}"
-  chmod 755 ${bin}
-
-  local program=$(basename "${bin}")
-
-  [[ -z $(command -v "${program}" 2>/dev/null) ]]
-
-  path.append "${dir}"
-
-  [[ -n $(command -v "${program}" 2>/dev/null) ]]
-
-  run -f "${dir}"
+@test "path.mutate.append" {
+  export OLD_PATH="${PATH}"
+  export PATH="/bin:/bin:/usr/local/bin:/usr/bin:/bin:"
+  export TEST_PATH="${PATH}"
+  path.mutate.append /sbin
+  [ "${PATH}" == "${TEST_PATH}:/sbin" ] && {
+    export PATH="${OLD_PATH}" || true
+  }
 }
 
+@test "path.mutate.prepend" {
+  export OLD_PATH="${PATH}"
+  export PATH="/bin:/bin:/usr/local/bin:/usr/bin:/bin:"
+  export TEST_PATH="${PATH}"
+  path.mutate.prepend /sbin
+  [[ "${PATH}" =~ ^/sbin ]] && {
+    export PATH="${OLD_PATH}" || true
+  }
+}

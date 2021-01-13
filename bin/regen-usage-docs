@@ -18,7 +18,8 @@ export usage_pdf="${usage_md/.md/.pdf}"
 export usage_temp=$(file.temp usage)
 
 trap "rm -f ${usage_temp}" EXIT
-trap "rm -f ${usage_md}" EXIT
+rm -f ${usage_md}
+trap "rm -f ${usage_md}-e ${usage_adoc}" EXIT
 
 function docs.setup() {
   #shdoc.install
@@ -52,12 +53,21 @@ function docs.generate() {
 
     if [[ -n ${stripped} ]]; then
       ok:
-      printf "\n%s\n" "## File \`${module}\`" >>"${usage_md}"
-      sed -E -i'' -e 's/# @/ @/g'         "${usage_temp}"
-      sed -E -i'' -e 's/^#* Index$//g'    "${usage_temp}"
+      local n=$(basename "${file}")
+      n="${n/\.sh/}"
+      
+      sed -E -i'' -e 's/^\* # @/* @/g'                "${usage_temp}"
+      sed -E -i'' -e 's/^#.* Index$//g'               "${usage_temp}"
+      sed -E -i'' -e "/^# ${n}.*\$/d"                 "${usage_temp}" 
+      sed -E -i'' -e "/^## Overview$/d"               "${usage_temp}" 
+      sed -E -i'' -e 's/^### (.*)\(\)$/### `\1()`/g'  "${usage_temp}" 
+
+      { 
+        printf -- "\n\n%s\n\n" '---'; 
+        printf "\n%s\n\n" "## File \`${module}\`"
+       } >>"${usage_md}"
 
       cat "${usage_temp}" >>"${usage_md}"
-      printf "\n\n----\n\n" >>"${usage_md}"
     else
       not-ok:
     fi
@@ -95,11 +105,10 @@ function docs.adoc.add-preamble() {
   local ver=$(cat .version)
   cat > "${usage_temp}" <<EOF
 = Bashmatic Usage Docs (v${ver})
-:doctype: book
+:doctype: article
 :allow-uri-read:
 :toc:
 :toclevels: 5
-:sectnums:
 :showtitle:
 :pdf-fontsdir: ./fonts;GEM_FONTS_DIR
 :pdf-theme: .asciidoc-pdf-theme-titilium.yml
@@ -115,7 +124,7 @@ EOF
 }
 
 function docs.adoc.generate-pdf() {
-  ${BASHMATIC_HOME}/bin/adoc2pdf "${usage_adoc}"
+  "${BASHMATIC_HOME}/bin/adoc2pdf" "${usage_adoc}"
   is-dbg && test -s "${usage_pdf}" && {
     info "Opening the PDF..."
     open -F -n "${usage_pdf}"
