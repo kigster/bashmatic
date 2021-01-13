@@ -9,7 +9,16 @@ source lib/path.sh
 source lib/is.sh
 set -e
 
-@test "path.dirs.size" {
+@test "path.strip-slash" {
+  local p1="/Users/kig/"
+  local p2="/Users/kig"
+  local p3="/Users/kig///"
+  for p in $p1 $p2 $p3; do
+    [ "$(path.strip-slash $p)" == "/Users/kig" ]
+  done
+}
+
+@test "path.size" {
   local LONG="/bin:/bin:/usr/local/bin:/usr/bin:/bin"
   [ "$(path.dirs.size "${LONG}")" -eq 5 ]
 }

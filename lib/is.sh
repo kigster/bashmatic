@@ -239,6 +239,10 @@ function is.command() {
   command -v "$1" >/dev/null
 }
 
+function is.a-command() {
+  is.command "$@"
+}
+
 function is.missing() {
   ! is.command "$@"
 }
