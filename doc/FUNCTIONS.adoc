@@ -890,8 +890,8 @@ bashmatic.setup ()
         .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
         return 1
     fi
-    bashmatic.source user.sh output.sh is.sh
-    bashmatic.shell-check | w | return 1
+    bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
+    bashmatic.shell-check || return 1
     bashmatic.source util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
     output.unconstrain-screen-width
@@ -924,11 +924,11 @@ bashmatic.shell-check ()
 ----
 bashmatic.source () 
 { 
-    local path="${BASHMATIC_LIBDIR}"
+    local __path="${BASHMATIC_LIBDIR}"
     local file
     for file in "${@}"
     do
-        [[ "${file}" =~ "/" ]] || file="${path}/${file}"
+        [[ "${file}" =~ "/" ]] || file="${__path}/${file}"
         [[ -s "${file}" ]] || { 
             .err "Can't source file ${file} — fils is invalid."
             return 1
@@ -8899,7 +8899,8 @@ shasum.all-files-in-dir ()
 ----
 shasum.set-algo () 
 { 
-    export __bashmatic__sha_command="shasum -a $1"
+    local algo="${1:-1}"
+    export __bashmatic__sha_command="${__default_bashmatic__sha_command} -a ${algo}"
 }
 
 ----
@@ -8943,7 +8944,7 @@ shasum.sha-only ()
 ----
 shasum.sha-only-stdin () 
 { 
-    echo "$*:" | .sha-only
+    echo "$*" | eval "${__bashmatic__sha_command}" | cut -d' ' -f 1
 }
 
 ----

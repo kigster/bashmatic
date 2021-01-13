@@ -6,6 +6,7 @@ https://github.com/kigster/bashmatic/compare/v1.9.2...HEAD[Full Changelog]
 
 *Merged pull requests:*
 
+* Adding SHASUM routines + tests https://github.com/kigster/bashmatic/pull/40[#40] (https://github.com/kigster[kigster])
 * Adding Dockerfile and docker make targets https://github.com/kigster/bashmatic/pull/39[#39] (https://github.com/kigster[kigster])
 
 == https://github.com/kigster/bashmatic/tree/v1.9.2[v1.9.2] (2021-01-07)
