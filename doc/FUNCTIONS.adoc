@@ -53,6 +53,7 @@
 * xref:#module-runtime-config[runtime-config]
 * xref:#module-set[set]
 * xref:#module-settings[settings]
+* xref:#module-shasum[shasum]
 * xref:#module-shdoc[shdoc]
 * xref:#module-shell-set[shell-set]
 * xref:#module-ssh[ssh]
@@ -480,6 +481,17 @@ asciidoc.rouge-themes ()
 
 === Module `audio`
 
+==== `æ.mp3`
+
+[source,bash]
+----
+æ.mp3 () 
+{ 
+    audio.make.mp3 "$@"
+}
+
+----
+
 ==== `audio.dir.mp3-to-wav`
 
 [source,bash]
@@ -879,7 +891,7 @@ bashmatic.setup ()
         return 1
     fi
     bashmatic.source user.sh output.sh is.sh
-    bashmatic.shell-check || return 1
+    bashmatic.shell-check | w | return 1
     bashmatic.source util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
     output.unconstrain-screen-width
@@ -2284,7 +2296,7 @@ db.rails.schema.checksum ()
     else
         local schema=$(db.rails.schema.file)
         [[ -s ${schema} ]] || error "can not find Rails schema in either ${RAILS_SCHEMA_RB} or ${RAILS_SCHEMA_SQL}"
-        [[ -s ${schema} ]] && util.checksum.files "${schema}"
+        [[ -s ${schema} ]] && shasum.sha-only "${schema}"
     fi
 }
 
@@ -3139,7 +3151,7 @@ file.temp ()
     local user="${USER:-"$(whoami)"}"
     local temp_file_pattern=".bashmatic.${host}.${user}."
     local n="$(epoch)"
-    local t=$(( n % 99991 ))
+    local t=$((n % 99991))
     local file="/tmp/${temp_file_pattern}${n}$$${t}${RANDOM}${RANDOM}"
     find "$(dirname "${file}")" -maxdepth 1 -type f -name "${temp_file_pattern}*" -mtime +1 -delete > /dev/null 2>&1
     echo "${file}"
@@ -3659,7 +3671,7 @@ git.config.kigster ()
 git.configure-auto-updates () 
 { 
     export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | util.checksum.stdin)"
+    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
     mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
 }
 
@@ -4073,18 +4085,11 @@ is.a-directory ()
 ----
 is.a-function () 
 { 
-    local shell="$(user.current-shell)"
-    case $shell in 
-        bash)
-            declare -f "$1" > /dev/null
-        ;
-        zsh)
-            type "$1" | grep -q function
-        ;
-        *)
-            return 1
-        ;
-    esac
+    if typeset -f "$1" > /dev/null; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 ----
@@ -4147,7 +4152,18 @@ is.a-script ()
 is.a-variable () 
 { 
     local var_name="$1"
-    [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && -n ${!var_name+x} ]]
+    local shell="$(user.current-shell)"
+    case $shell in 
+        bash)
+            [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && -n ${!var_name+x} ]] && return 0
+        ;
+        zsh)
+            eval "[[ -v ${var_name} ]]" && return 0
+        ;
+        *)
+            return 1
+        ;
+    esac
 }
 
 ----
@@ -4181,6 +4197,29 @@ is.an-empty-file ()
 is.an-existing-file () 
 { 
     [[ -f "${1}" ]]
+}
+
+----
+
+==== `is.avariable`
+
+[source,bash]
+----
+is.avariable () 
+{ 
+    local var_name="$1"
+    local shell="$(user.current-shell)"
+    case $shell in 
+        bash)
+            [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && -n ${!var_name+x} ]] && return 0
+        ;
+        zsh)
+            eval "[[ -v ${var_name} ]]" && return 0
+        ;
+        *)
+            return 1
+        ;
+    esac
 }
 
 ----
@@ -6599,7 +6638,7 @@ dbgf ()
 ----
 err () 
 { 
-    printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldred}$*${clr}" 1>&2
+    printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldwht}$*${clr}" 1>&2
 }
 
 ----
@@ -6611,7 +6650,7 @@ err ()
 error () 
 { 
     header=$(printf -- "${clr}${txtred}  « ERROR » ")
-    box.white-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" 1>&2
+    box.white-on-red "${header} ${clr}${bldwht}${bakred} — $1" "${@:2}" 1>&2
 }
 
 ----
@@ -8825,6 +8864,91 @@ set-e-status ()
 === Module `settings`
 
 
+=== Module `shasum`
+
+==== `shasum.all-files`
+
+[source,bash]
+----
+shasum.all-files () 
+{ 
+    shasum.sha "$@" | awk '{print $2 " " $1}' | sort | .sha-only
+}
+
+----
+
+==== `shasum.all-files-in-dir`
+
+[source,bash]
+----
+shasum.all-files-in-dir () 
+{ 
+    local dir="$1"
+    shift
+    local name_pattern="$1"
+    shift
+    [[ -n ${name_pattern} ]] && name_pattern=" -name \"${name_pattern}\""
+    shasum.sha $(eval "find \"${dir}\" -type f ${name_pattern}" ) | awk '{print $2 " " $1}' | sort | .sha-only
+}
+
+----
+
+==== `shasum.set-algo`
+
+[source,bash]
+----
+shasum.set-algo () 
+{ 
+    export __bashmatic__sha_command="shasum -a $1"
+}
+
+----
+
+==== `shasum.set-command`
+
+[source,bash]
+----
+shasum.set-command () 
+{ 
+    export __bashmatic__sha_command="$*"
+}
+
+----
+
+==== `shasum.sha`
+
+[source,bash]
+----
+shasum.sha () 
+{ 
+    .sha "$@" 2> /dev/null
+}
+
+----
+
+==== `shasum.sha-only`
+
+[source,bash]
+----
+shasum.sha-only () 
+{ 
+    .sha-only "$@" 2> /dev/null
+}
+
+----
+
+==== `shasum.sha-only-stdin`
+
+[source,bash]
+----
+shasum.sha-only-stdin () 
+{ 
+    echo "$*:" | .sha-only
+}
+
+----
+
+
 === Module `shdoc`
 
 ==== `gawk.install`
@@ -10238,28 +10362,6 @@ util.call-if-function ()
 
 ----
 
-==== `util.checksum.files`
-
-[source,bash]
-----
-util.checksum.files () 
-{ 
-    cat $* | shasum | awk '{print $1}'
-}
-
-----
-
-==== `util.checksum.stdin`
-
-[source,bash]
-----
-util.checksum.stdin () 
-{ 
-    shasum | awk '{print $1}'
-}
-
-----
-
 ==== `util.dev-setup.update`
 
 [source,bash]
@@ -10415,15 +10517,7 @@ util.i-to-ver ()
 ----
 util.install-direnv () 
 { 
-    [[ -n $(which direnv) ]] || brew.install.package direnv
-    local init_file=
-    local init_file=$(util.append-to-init-files 'eval "$(direnv hook bash)"; export DIRENV_LOG_FORMAT=' 'direnv hook')
-    if [[ -f ${init_file} ]]; then
-        info: "direnv init has been appended to ${bldylw}${init_file}..."
-    else
-        error: "direnv init could not be appended"
-    fi
-    eval "$(direnv hook bash)"
+    "${BASHMATIC_HOME}/bin/install-direnv"
 }
 
 ----
@@ -10616,6 +10710,17 @@ util.whats-installed ()
     h2 "Installed DB Functions:"
     info "hb.db  [ ms | r1 | r2 | c ]"
     info "hb.ssh <server-name-substring>, eg hb.ssh web"
+}
+
+----
+
+==== `var.expand`
+
+[source,bash]
+----
+var.expand () 
+{ 
+    .subst "$@"
 }
 
 ----

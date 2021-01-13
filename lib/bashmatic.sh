@@ -171,7 +171,7 @@ bashmatic.setup() {
   fi
 
   bashmatic.source user.sh output.sh is.sh
-  bashmatic.shell-check || return 1
+  bashmatic.shell-check |w| return 1
   bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
 

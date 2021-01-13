@@ -6,7 +6,7 @@ export __bashmatic_auto_update_help_file="${BASHMATIC_HOME}/.auto-update-disable
 function git.configure-auto-updates() {
   # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-  export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | util.checksum.stdin)"
+  export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
   mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
 }
 

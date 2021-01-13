@@ -153,7 +153,7 @@ output.color.off() {
   local strategy="${LibOutput__WidthDetectionStrategy}"
   local func=".output.current-screen-width.${strategy}"
   is.a-function "${func}" || {
-    echo "invalid strategy: ${strategy}" >&2
+    error "invalid strategy: ${strategy}" >&2
     return 1
   }
   ${func}

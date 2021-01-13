@@ -22,8 +22,6 @@ source lib/time.sh
 source lib/util.sh
 source lib/bashmatic.sh
 
-set -e
-
 @test "file.temp()" {
   set -e
   local f="$(file.temp)"

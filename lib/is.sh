@@ -156,27 +156,49 @@ function is.an-existing-file() {
 }
 
 function is.a-function.invoke() {
-  local func="$1"; shift
+  local func="$1"
+  shift
   is.a-function "${func}" && eval "${func} $*"
 }
 
 function is.a-function() {
-  local shell="$(user.current-shell)"
-  case $shell in
-    bash)
-      declare -f "$1" > /dev/null
-      ;;
-    zsh)
-      type "$1" | grep -q function
-      ;;
-    *)
-      return 1
-  esac
+  if typeset -f "$1" >/dev/null; then
+    return 0
+  else
+    return 1
+  fi
 }
+
 
 function is.a-variable() {
   local var_name="$1"
-  [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${!var_name+x} ]]
+  local shell="$(user.current-shell)"
+  case $shell in
+  bash)
+    [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${!var_name+x} ]] && return 0
+    ;;
+  zsh)
+    eval "[[ -v ${var_name} ]]" && return 0
+    ;; 
+  *)
+    return 1
+    ;;
+  esac
+}
+function is.avariable() {
+  local var_name="$1"
+  local shell="$(user.current-shell)"
+  case $shell in
+  bash)
+    [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${!var_name+x} ]] && return 0
+    ;;
+  zsh)
+    eval "[[ -v ${var_name} ]]" && return 0
+    ;; 
+  *)
+    return 1
+    ;;
+  esac
 }
 
 function is.a-non-empty-array() {
@@ -204,12 +226,12 @@ function is.integer() {
 
 function is.numeric() {
   case $1 in
-    ''|*[!\-0-9.]*) 
-      return 1
-      ;;
-    *) 
-      return 0
-      ;;
+  '' | *[!\-0-9.]*)
+    return 1
+    ;;
+  *)
+    return 0
+    ;;
   esac
 }
 
