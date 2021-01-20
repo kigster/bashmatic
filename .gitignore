@@ -15,6 +15,10 @@ shellcheck.log
 .envrc.local
 .fonts/
 *.pdf.reduced
+<<<<<<< HEAD
 .bundle/
 doc/USAGE.adoc
 .developer-warned
+=======
+.ruby-version
+>>>>>>> 3f14443 (WIP: dd-local)

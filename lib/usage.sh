@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Private
+# vim: ft=bash
+
+export EXPIRE_USAGE_CACHE=${EXPIRE_USAGE_CACHE:-"0"}
 
 function .usage.setup() {
   export __color_fg=${1:-${txtylw}}
@@ -8,6 +10,9 @@ function .usage.setup() {
   export __color_flag=${4:-${txtpur}}
   export __color_headers=${5:-${bldred}}
   export __color_sub_headers=${5:-${bldcyn}}
+
+  export LibUsage__MinFlagLen=14
+  export LibUsage__NoFlagsIndent=15
 }
 
 function .usage.begin() {
@@ -15,14 +20,14 @@ function .usage.begin() {
   .output.box-top "${__color_bdr}"
 }
 
-.usage.title() {
+function .usage.title() {
   for line in "$@"; do
     .output.boxed-text "${__color_bdr}" "${__color_fg}" "${__color_headers}$(.usage.hdr description) ${__color_fg}${line}"
   done
   .output.box-separator "${__color_bdr}"
 }
 
-.usage.command() {
+function .usage.command() {
   .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr usage) ${__color_cmd}$1"
   shift
 
@@ -32,16 +37,13 @@ function .usage.begin() {
   .output.box-separator "${__color_bdr}"
 }
 
-.usage.hdr() {
+function .usage.hdr() {
   printf "%-15s " "$*:" | tr 'a-z' 'A-Z'
 }
 
 
-export LibUsage__MinFlagLen=14
-export LibUsage__NoFlagsIndent=15
-
-usage.set-min-flag-len() {
-export LibUsage__MinFlagLen="${1}"
+function usage.set-min-flag-len() {
+  export LibUsage__MinFlagLen="${1}"
 }
 
 function .usage.flags() {
@@ -126,17 +128,16 @@ function .usage.box() {
   [[ -n "$*" ]] && .usage.flags "$@"
 }
 
-# Prints usage information for a command.
-#
-# usage-box "command © title" "flag1" "flag1 description" "flag2" "flag2 description"...
-#
+# @description Prints out the USAGE information for a command.
+# @example
+#     usage-box "command © title" "flag1" "flag1 description" "flag2" "flag2 description" \
+#     "flag" "description" \
+#     "flag" "description" \
+#           ....
 # eg:
-#    usage-box "/bin/ls © Command that lists all files in the current directory" \
+#      usage-box "/bin/ls © Command that lists all files in the current directory" \
 #              "-1" "Force output to be one entry per line." \
 #              "-A" "List all entries except for . and ...  " \
-
-export EXPIRE_USAGE_CACHE=${EXPIRE_USAGE_CACHE:-"0"}
-
 function usage-box() {
   local backup="$(.usage-cache-file)"
   if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
@@ -181,3 +182,4 @@ function help-comment() {
 function help-details() {
   printf "    ${txtblu}$*\n"
 }
+

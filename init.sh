@@ -70,27 +70,44 @@ function bashmatic.set-is-not-loaded() {
   __bashmatic_load_state=0
 }
 
+function .bashmatic.os-version() {
+  local version
+  case ${BASHMATIC_OS} in
+    linux)
+      version="$(lsb_release -a 2>/dev/null | grep Description | sed -E 's/.*:\s *//g;'lsb_release -a 2>/dev/null | grep Description | sed -E 's/.*:\s *//g;')"
+      ;;
+    darwin)
+      version="$(sw_vers -productVersion)"
+      ;;
+    else)
+      error "Don't know how to detect OS version on this system"
+      exit 1
+  esac
+  echo "${version}"
+}
+
 function bashmatic.init-core() {
   # DEFINE CORE VARIABLES
   export BASHMATIC_URL="https://github.com/kigster/bashmatic"
-  export BASHMATIC_OS="${BASHMATIC_OS}"
+  export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export BASHMATIC_OS_VERSION=$(.bashmatic.os-version)
 
   # shellcheck disable=2046
   export BASHMATIC_TEMP="/tmp/${USER}/.bashmatic"
   [[ -d ${BASHMATIC_TEMP} ]] || mkdir -p "${BASHMATIC_TEMP}"
-  
+
   if [[ -f ${BASHMATIC_HOME}/init.sh ]] ; then
     export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
   else
     printf "${bldred}ERROR: —> Can't determine BASHMATIC_HOME, giving up sorry!${clr}\n"
     return 1
   fi
-  
+
   [[ -n $DEBUG ]] && {
     [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source "${BASHMATIC_HOME}/lib/time.sh"
     export __bashmatic_start_time=$(millis)
   }
-  
+
   # If defined BASHMATIC_AUTOLOAD_FILES, we source these files together with BASHMATIC
   for _init in ${BASHMATIC_AUTOLOAD_FILES}; do
     [[ -s "${PWD}/${_init}" ]] && {
@@ -98,7 +115,7 @@ function bashmatic.init-core() {
       source "${PWD}/${_init}"
     }
   done
-  
+
   # shellcheck disable=SC2155
   export BASHMATIC_VERSION="$(head -1 "${BASHMATIC_HOME}/.version")"
   [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH="${PATH}:${BASHMATIC_HOME}/bin"
@@ -107,7 +124,7 @@ function bashmatic.init-core() {
   export True=1
   export False=0
   export LoadedShown=${LoadedShown:-1}
-  
+
   # Future CLI flags, but for now just vars
   export LibGit__QuietUpdate=${LibGit__QuietUpdate:-1}
   export LibGit__ForceUpdate=${LibGit__ForceUpdate:-0}
@@ -135,11 +152,11 @@ function .bashmatic.init.linux() {
 
 function bashmatic.init() {
   local init_func=".bashmatic.init.${BASHMATIC_OS}"
-  
+
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
 
   local setup_script="${BASHMATIC_LIBDIR}/bashmatic.sh"
-  
+
   if [[ -s "${setup_script}" ]]; then
     source "${setup_script}"
     bashmatic.setup
@@ -164,6 +181,6 @@ function bashmatic.init() {
 
 echo "$*" | grep -E -q 'reload|force|refresh' && bashmatic.set-is-not-loaded
 
-bashmatic.init-core 
+bashmatic.init-core
 bashmatic.is-loaded || bashmatic.init "$@"
 
