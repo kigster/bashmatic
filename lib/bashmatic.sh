@@ -130,6 +130,9 @@ bashmatic.source-dir() {
   fi
 
   for file in "${files[@]}"; do
+    local n="$(basename ${file})"
+    [[ ${n:0:1} == . ]] && continue
+
     bashmatic.source "${file}" && loaded=true
   done
 
