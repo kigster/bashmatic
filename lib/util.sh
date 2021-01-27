@@ -60,6 +60,11 @@ util.i-to-ver() {
   /usr/bin/env ruby -e "ver='${version}'; printf %Q{%d.%d.%d}, ver[1..2].to_i, ver[3..5].to_i, ver[6..8].to_i"
 }
 
+util.os() {
+  echo -n "${AppCurrentOS:=$(/usr/bin/env uname -s | tr 'A-Z' 'a-z')}"
+}
+
+
 util.arch() {
   echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'
 }
@@ -234,10 +239,10 @@ util.ensure-gnu-sed() {
   command -v gsed && return 0
 
   sed_path="$(command -v sed 2>/dev/null)"
-  os="$(/usr/bin/uname -s)"
+  os="$(util.os)"
 
   case "${os}" in
-  Darwin)
+  darwin)
     gsed_path="$(command -v gsed 2>/dev/null)"
 
     if [[ -z "${gsed_path}" ]]; then
@@ -260,7 +265,7 @@ util.ensure-gnu-sed() {
 
     sed_path="${gsed_path}"
     ;;
-  Linux)
+  linux)
     sed_path="$(which sed)"
     ;;
   *)
