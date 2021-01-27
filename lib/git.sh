@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 # @brief Functions in this file manage git repos, including this one.
 
-export __bashmatic_auto_update_help_file="${BASHMATIC_HOME}/.auto-update-disabled"
-
 function git.configure-auto-updates() {
-  # You can set this variable in the outer scope to override how frequently would bashmatic self-upgrade.
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
   export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
   mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
@@ -25,7 +22,7 @@ function git.cfgu() {
     git config --global -l
     return
   }
-  if [[ -n $2 ]] ; then
+  if [[ -n $2 ]]; then
     rm -f ~/.gitconfig.lock
     git config --global --replace-all user.$1 $2
   else
@@ -39,10 +36,10 @@ function git.cfgu() {
 
 # used in tests
 function git.config.kigster() {
-  [[ $(git.cfgu name)  == "Konstantin Gredeskoul" && 
-     $(git.cfgu email) == "kigster@gmail.com" ]] && return 0
+  [[ $(git.cfgu name) == "Konstantin Gredeskoul" && \
+  $(git.cfgu email) == "kigster@gmail.com" ]] && return 0
 
-  git.cfgu name  "Konstantin Gredeskoul"
+  git.cfgu name "Konstantin Gredeskoul"
   git.cfgu email "kigster@gmail.com"
 }
 
@@ -51,11 +48,11 @@ function git.quiet() {
 }
 
 function git.sync() {
-  local dir="$(pwd)"
+  local dir="$(pwd -P)"
   cd "${BASHMATIC_HOME}" >/dev/null
   git.repo-is-clean || {
     output.is-ssh || warning "${BASHMATIC_HOME} has locally modified files." \
-                             "Please commit or stash them to allow auto-upgrade to function as designed." >&2
+      "Please commit or stash them to allow auto-upgrade to function as designed." >&2
     cd "${dir}" >/dev/null
     return 1
   }
@@ -71,12 +68,11 @@ function git.sync-dirs() {
   run.set-all abort-on-error
   for dir in $(find . -type d -maxdepth 1 -name "${pattern}*"); do
     hl.yellow-on-gray "syncing [$dir]..."
-    cd $dir>/dev/null
+    cd $dir >/dev/null
     run "git pull --rebase"
-    cd ->/dev/null
+    cd - >/dev/null
   done
 }
-
 
 function git.last-update-at() {
   git.configure-auto-updates
@@ -137,6 +133,7 @@ function git.sync-remote() {
   return 0
 }
 
+# shellcheck disable=2120
 function git.local-vs-remote() {
   local upstream=${1:-'@{u}'}
   local local_repo=$(git rev-parse @)
@@ -170,8 +167,9 @@ function git.local-vs-remote() {
   return 1
 }
 
+# shellcheck disable=2120
 function git.repo-is-clean() {
-  local repo="${1:-${BASHMATIC_HOME}}"
+  local repo="${1:-${BASHMATIC_HOME:="${HOME}/.bashmatic"}}"
   cd "${repo}" >/dev/null
   if [[ -z $(git status -s) ]]; then
     cd - >/dev/null
@@ -185,32 +183,6 @@ function git.repo-is-clean() {
 function git.remotes() {
   git remote -v | awk '{print $2}' | uniq
 }
-
-function bashmatic.auto-update() {
-  [[ ${Bashmatic__Test} -eq 1 ]] && return 0
-
-  git.configure-auto-updates
-
-  git.repo-is-clean || {
-    output.is-ssh || {
-      output.is-terminal && \
-      bashmatic.is-developer && {
-        if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
-          cat ${__bashmatic_auto_update_help_file}
-        else
-          box.black-on-yellow \
-            "Bashmatic — I detected locally modified changes..." \
-            "Auto-update is therefore disabled until its git state is clean." | \
-            tee -a ${__bashmatic_auto_update_help_file} >&2
-        fi
-      }
-    }
-    return 1
-  }
-
-  git.sync
-}
-
 function git.commits.last.sha() {
   git log --pretty=format:"%H" -1
 }
@@ -243,16 +215,18 @@ function git.open() {
 }
 
 # Convert a local git remote URL from https:// ... to git@ format.
-function git.repo.remote-to-git@ () {
+function git.repo.remote-to-git@() {
   local f=".git/config"
   if [[ -f "$f" ]]; then
-    grep -q "url = git@" "$f" && { 
+    grep -q "url = git@" "$f" && {
       info "The repo is already using git@ syntax for the remote."
       return 0
-    } 
-    cat "${f}" | sed -E 's#url = https://github\.com/([^/]*)/#url = git@github\.com:\1/#g' > "${f}.ssh"
+    }
+    cat "${f}" | sed -E 's#url = https://github\.com/([^/]*)/#url = git@github\.com:\1/#g' >"${f}.ssh"
     mv "${f}" "${f}.https"
-    cd .git; ln -nfs config.ssh config; cd ->/dev/null
+    cd .git
+    ln -nfs config.ssh config
+    cd - >/dev/null
     hr
     info "Created an ssh version of .git/config file, and symlinked it:"
     ls -l .git/config*
@@ -271,7 +245,7 @@ function git.squash() {
   run "git reset --soft HEAD~${number}"
 
   info "We've squashed down ${number} commits locally."
-  info "Now, you must commit this squash, and likely force push." 
+  info "Now, you must commit this squash, and likely force push."
 }
 
 function git.current-branch() {
@@ -284,4 +258,3 @@ function git.upstream() {
   run.set-next show-output-on
   run "git branch --set-upstream-to=origin/${this_branch} ${this_branch}"
 }
-

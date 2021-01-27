@@ -231,16 +231,17 @@ util.ensure-gnu-sed() {
   local gsed_path
   local os
 
-  sed_path="$(command -v sed 2>/dev/null)"
-  os="$(uname -s)"
+  command -v gsed && return 0
 
-  case ${os} in
+  sed_path="$(command -v sed 2>/dev/null)"
+  os="$(/usr/bin/uname -s)"
+
+  case "${os}" in
   Darwin)
     gsed_path="$(command -v gsed 2>/dev/null)"
 
     if [[ -z "${gsed_path}" ]]; then
       echo
-      output.constrain-screen-width 100
       h3 "Please wait while we install gnu-sed using Brew..." \
          "It's a required dependency for many key features." 1>&2
 
@@ -267,7 +268,7 @@ util.ensure-gnu-sed() {
     return 2
     ;;
   esac
-  output.unconstrain-screen-width
+
   echo -n "${sed_path}"
 }
 
