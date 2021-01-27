@@ -234,31 +234,25 @@ util.ensure-gnu-sed() {
   local sed_path
   local gsed_path
 
-  command -v gsed && return 0
-
-  sed_path="$(command -v sed 2>/dev/null)"
-  os="${AppCurrentOS:=$(util.os)}"
+  export AppCurrentOS="${AppCurrentOS:-$(util.os)}"
 
   case "${AppCurrentOS}" in
   darwin)
     gsed_path="$(command -v gsed 2>/dev/null)"
-
     if [[ -z "${gsed_path}" ]]; then
       echo
       h3 "Please wait while we install gnu-sed using Brew..." \
          "It's a required dependency for many key features." 1>&2
 
-      ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed --force --quiet && brew link gnu-sed --overwrite) 1>&2 >/dev/null
+      ( brew install gnu-sed --force --quiet && brew unlink gnu-sed ; brew link gnu-sed --overwrite) 1>&2 >/dev/null
 
       hash -r 2>/dev/null
       gsed_path="$(command -v gsed 2>/dev/null)"
-
       [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
     fi
 
     [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || {
       error "Can't find GNU sed even after installation." >&2
-      return 2
     }
 
     sed_path="${gsed_path}"

@@ -22,8 +22,11 @@
 # milliseconds
 .run.millis() {
   local date_runnable
+  date_runnable='date'
   if [[ "${AppCurrentOS}" == "darwin" ]]; then
     command -v gdate >/dev/null || .time.osx.coreutils
+    [[ -z $(command -v gdate) ]] && .time.osx.coreutils
+    [[ -n $(command -v gdate) ]] && date_runnable='gdate'
   fi
   date_runnable=$(command -v gdate || command -v date)
   eval "${date_runnable} '+%s%3N'"
@@ -32,6 +35,7 @@
 # milliseconds
 function time.now.with-ms() {
   local date_runnable
+  .time.init
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "darwin" ]]; then
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
