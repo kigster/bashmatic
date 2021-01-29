@@ -40,10 +40,10 @@ ENV TERM=xterm-256color \
   
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get install -yqq locales
+RUN apt-get update -y && apt-get install -yqq locales
 RUN locale-gen en_US.UTF-8
 
-RUN apt-get install -yqq \
+RUN apt-get update -y && apt-get install -yqq \
     silversearcher-ag \
     curl \
     vim \
@@ -83,5 +83,6 @@ RUN rm -f ~/.zshrc && \
     touch ${HOME}/.zshrc
 
 RUN sed -i'' -E 's/robbyrussell/agnoster/g' ${HOME}/.zshrc
+RUN echo system > .ruby-version
 
 ENTRYPOINT /bin/bash -l
