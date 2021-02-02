@@ -9,6 +9,13 @@
 
 # 1. Functional methods, no mutations of global variables:
 #
+
+# @description Removes a trailing slash from an argument path
+function path.strip-slash() {
+    local path="$(echo "$1" | sed -E 's#\/+$##g')"
+    printf -- "%s" "${path}"
+}
+
 # @description Prints a new-line separated list of paths in PATH
 # @arg1 A path to split, defaults to $PATH
 function path.dirs() {

@@ -280,6 +280,12 @@ file.extension.replace() {
   done
 }
 
+file.sync() {
+  local from="$1"
+  local to="$2"
+
+}
+
 file.find() {
   find . -name "*$1*" -type f -print
 }

@@ -121,6 +121,12 @@ function cache-or-command() {
   cat "${file}"
 }
 
+# @description For each passed argument checks if it's installed.
+# @return 0 when all packages in the list are instealled, 1 otherwise
+function package.is-installed() {
+  [[ "$(brew.package.is-installed "$@")" == "true" ]]
+}
+
 function brew.package.is-installed() {
   if brew.package.all-installed "$@"; then
     echo "true"
@@ -166,6 +172,15 @@ function brew.reinstall.package() {
   # brew.cache-reset.delayed
 
   brew.install.package "${package}"
+}
+
+function package.uninstall() {
+  brew.uninstall.packages "$@"    
+}
+
+function package.install() {
+  brew.install.packages "$@"    
+  hash -r 2>/dev/null
 }
 
 function brew.install.package() {
