@@ -286,7 +286,7 @@ export bashmatic__sed_command
 #———————————————————————————————————————————————————————
 function sedx.cache-command() {
   local sed_path="$(util.ensure-gnu-sed)"
-  local sed_command="${sed_path} -E -e "
+  local sed_command="${sed_path} -E "
   export bashmatic__sed_command="${sed_command}"
 }
 
