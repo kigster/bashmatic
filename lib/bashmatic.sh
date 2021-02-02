@@ -185,5 +185,39 @@ bashmatic.setup() {
   return 0
 }
 
+export __bashmatic_auto_update_help_file="${BASHMATIC_HOME}/.auto-update-disabled"
+
+function bashmatic.auto-update() {
+  # Run in a subshell
+  (
+    unset -f _direnv_hook >/dev/null 2>&1
+    [[ ${Bashmatic__Test} -eq 1 ]] && return 0
+    local pwd="$(pwd -P)"
+    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}"
+    git.configure-auto-updates
+    git.repo-is-clean || {
+      output.is-ssh || {
+        output.is-terminal && bashmatic.auto-update-error
+        cd "${pwd}" >/dev/null
+        return 1
+      }
+    }
+
+    git.update-repo-if-needed
+    cd "${pwd}" >/dev/null
+  )
+}
+
+function bashmatic.auto-update-error() {
+  bashmatic.is-developer || return
+  if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
+    cat "${__bashmatic_auto_update_help_file}"
+  else
+    box.black-on-yellow \
+      "Bashmatic — I detected locally modified changes..." \
+      "Auto-update is therefore disabled until its git state is clean." |
+      tee -a "${__bashmatic_auto_update_help_file}" >&2      
+  fi
+}
 
 

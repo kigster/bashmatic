@@ -7,7 +7,9 @@
 # Any modifications, © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
-export AppCurrentOS=${AppCurrentOS:-$(/usr/bin/env uname -s)}
+.time.init() {
+  export AppCurrentOS="${AppCurrentOS:="$(/usr/bin/env uname -s)"}"
+}
 
 # Install necessary dependencies on OSX
 .time.osx.coreutils() {
@@ -24,6 +26,7 @@ export AppCurrentOS=${AppCurrentOS:-$(/usr/bin/env uname -s)}
 # milliseconds
 .run.millis() {
   local date_runnable
+  .time.init
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "Darwin" ]]; then
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
@@ -35,6 +38,7 @@ export AppCurrentOS=${AppCurrentOS:-$(/usr/bin/env uname -s)}
 # milliseconds
 function time.now.with-ms() {
   local date_runnable
+  .time.init
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "Darwin" ]]; then
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
@@ -54,6 +58,7 @@ function date.now.with-time() {
 # epoch number. Appears to be different on Linux vs OSX.
 time.date-from-epoch() {
   local epoch_ts="$1"
+  .time.init
   if [[ "${AppCurrentOS}" == "Darwin" ]]; then
     printf "date -r ${epoch_ts}"
   else

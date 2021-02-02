@@ -290,10 +290,6 @@ file.find() {
   find . -name "*$1*" -type f -print
 }
 
-ff() {
-  file.find "$@"
-}
-
 dir.find() {
   find . -name "*$1*" -type d -print
 }

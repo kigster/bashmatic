@@ -60,6 +60,11 @@ util.i-to-ver() {
   /usr/bin/env ruby -e "ver='${version}'; printf %Q{%d.%d.%d}, ver[1..2].to_i, ver[3..5].to_i, ver[6..8].to_i"
 }
 
+util.os() {
+  echo -n "${AppCurrentOS:=$(/usr/bin/env uname -s | tr 'A-Z' 'a-z')}"
+}
+
+
 util.arch() {
   echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'
 }
@@ -231,16 +236,17 @@ util.ensure-gnu-sed() {
   local gsed_path
   local os
 
-  sed_path="$(command -v sed 2>/dev/null)"
-  os="$(uname -s)"
+  command -v gsed && return 0
 
-  case ${os} in
-  Darwin)
+  sed_path="$(command -v sed 2>/dev/null)"
+  os="$(util.os)"
+
+  case "${os}" in
+  darwin)
     gsed_path="$(command -v gsed 2>/dev/null)"
 
     if [[ -z "${gsed_path}" ]]; then
       echo
-      output.constrain-screen-width 100
       h3 "Please wait while we install gnu-sed using Brew..." \
          "It's a required dependency for many key features." 1>&2
 
@@ -259,7 +265,7 @@ util.ensure-gnu-sed() {
 
     sed_path="${gsed_path}"
     ;;
-  Linux)
+  linux)
     sed_path="$(which sed)"
     ;;
   *)
@@ -267,7 +273,7 @@ util.ensure-gnu-sed() {
     return 2
     ;;
   esac
-  output.unconstrain-screen-width
+
   echo -n "${sed_path}"
 }
 
