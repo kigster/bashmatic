@@ -80,7 +80,7 @@ function db.main() {
     case $1 in
     -h | --help)
       shift
-      db.usage
+      datadog.usage
       return
       ;;
     -e | --examples)

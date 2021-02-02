@@ -1,0 +1,412 @@
+#!/usr/bin/env bash 
+# vim: ft=bash
+#
+# Author: Konstantin Gredeskoul, https://github.com/kigster
+#                              
+# Copyright © 2021, MIT License
+#
+# This file should be used by applications wanting to stream APM information 
+# about the runtime behavior of the app to their Datadog APM account.
+#
+# You need to set some environment variables to make this work:
+#
+# REQUIRED:
+#   1. DATADOG_API_KEY 		    
+#       — create a new key here — https://app.datadoghq.com/access/application-keys
+# OPTIONAL:
+#   2. DATADOG_LANG		        
+#       - for interpreted languages, set this to the binary executed for instance:
+#         ruby, node, python3, lua, etc.  It should respond to --version flag.
+#   3. DATADOG_LANG_VERSION   
+#       - defaults to $(DATADOG_LANG --version) command, but can be overwritten
+#   4. DATADOG_HOST    		    
+#       — is the host that runs Datadog APM Agent (defaults to localhost).
+#   5. DATADOG_HOST_PING	    
+#       - if set to 1, the script will ensure the $DATADOG_HOST is pingable, or exit
+#   6. DATADOG_ENV            
+#       — defaults to "dev" but can be set to anything else
+#   7. DATADOG_APP
+#       — the name of the app, added as the "app" tag to the Datadog traces
+#
+# Note, that you can run the Agent locally, and install it on the majority of 
+# supported OSes, such as the Mac or Ubuntu:
+#
+#   Mac OS-X -> https://app.datadoghq.com/account/settings#agent/mac
+#   Ubuntu   -> https://app.datadoghq.com/account/settings#agent/ubuntu
+#
+# If you run the agent elsewhere, you will need to make sure to enable the 
+# configuration setting on the remote agent host in its /etc/datadog-agent/datadog.yml 
+# file to accept APM traffic on behalf of others:
+#
+# # file: /etc/datadog-agent/datadog.yml
+#   apm_non_local_traffic: true
+#
+# Once you have the above information, create a top level git-ignored file in your 
+# project, called `.envrc.local`
+# 
+#——————————————————————————————————————————————————————————————————————————————————————
+#
+# # file: .envrc.local
+# # REQUIRED:
+# export DATADOG_API_KEY=•••••••••••••••••
+# # OPTIONAL:
+# export DATADOG_ENV=dev
+# export DATADOG_HOST=localhost
+# export DATADOG_HOST_PING=1
+# export DATADOD_ENABLED=1
+# export DATADOD_APP=my-awesome-app
+# export DATADOG_LANG=ruby
+#
+
+# shellcheck disable=2046
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
+[[ -d ${BASHMATIC_HOME} ]] || {
+  echo "Can't find Bashmatic, even after attempting an installation."
+  echo "Please install Bashmatic with the following command line:"
+  echo 'bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"'
+  exit 1
+}
+
+source "${BASHMATIC_HOME}/init.sh"
+
+output.constrain-screen-width 110
+
+# hopefully the API kye is in there 
+[[ -f .envrc.local ]] && source ".envrc.local"
+
+# project folder where we are being called from 
+export ppwd=$(pwd -P)
+
+export opts_verbose=0
+export opts_command=
+
+export opts_dd_tags_name=
+export opts_dd_tags_developer=
+export opts_dd_tags_branch=
+export opts_dd_tags_username=
+export opts_dd_tags_stack_language=
+export opts_dd_tags_stack_version=
+export opts_dd_tags_os_name="${BASHMATIC_OS}"
+export opts_dd_tags_os_version="${BASHMATIC_OS_VERSION}"
+
+# set some defaults
+export opts_dd_tags_username="${USER}"
+export opts_dd_enabled=1
+export opts_dd_env=${DD_ENV:-${RAILS_ENV:-"dev"}}
+export opts_dd_api_key="${DD_API_KEY:-${DATADOG_API_KEY}}"
+export opts_dd_service=$(basename "${ppwd}")
+export opts_dd_host="${HOSTNAME:=$(hostname)}"
+
+# More defaults
+if [[ -d ~/.gitconfig ]] ;then
+  export opts_dd_tags_developer="$(git.cfgu name)"
+  export opts_dd_tags_developer="${opts_dd_tags_developer/ /}"
+fi
+
+[[ -d .git ]] && export opts_dd_tags_branch="$(git.current-branch)"
+
+declare -a opts_dd_tags
+
+function datadog.usage() {
+  usage-box "dd-local [ flags ] [ -c command ] © Sets up Datadog environment, and optionally runs a command" \
+    " -c / --command COMMAND" "Run the following command after setting environment" \
+    "├DATADOG CONFIGURATION:" " " \
+    "-dd / --dd-disable" "Sets DATADOG_ENABLED to empty" \
+    "-dk / --dd-key KEY" "Datadog API KEY, defaults to DATADOG_API_KEY variable" \
+    "-dh / --dd-host HOST" "Datadog APM hostname that receives traces" \
+    "-de / --dd-env ENV" "Datadog environment, defaults to dev or RAILS_ENV" \
+    "-ds / --dd-service SERVICE" "Sets DATADOG_SERVICE" \
+    "├DATADOG TAGS:" " " \
+    "-ta / --tag-add TAG:VALUE" "Adds additional datadog tag and a value" \
+    "-tn / --tag-name FirstnameLastname" "Sets the 'developer' tag, defaults to ${opts_dd_tags_developer}" \
+    "-tu / --tag-username USERNAME" "Sets the name tag, defaults to \$USER (eg. $USER)" \
+    "-tb / --tag-branch BRANCH" "Sets the branch tag, defaults to ${opts_dd_tags_branch}" \
+    "-th / --tag-hostname HOST" "Sets the hostname tag, defaults to ${opts_dd_host}" \
+    "-tl / --tag-stack-language LANGUAGE" "Sets the 'stack-language' tag, eg 'node', 'ruby', etc" \
+    "-tv / --tag-stack-version VERSION" "Sets the 'stack-version' tag" \
+    "├OUTPUT:" " " \
+    "-h / --help" "Print this help screen" \
+    "-v / --verbose" "Print extra debugging info" \
+    "-e / --exit-on-error" "On any error abort" \
+    "-n / --dry-run" "Only print commands, but do not run them" \
+    " " " "
+
+  h3 EXAMPLES
+
+  echo
+  info "  ${bldblk}# Runs a Ruby application after settings datadog variables"
+  info "  ${bldblu}❯ dd-local -dk \$KEY -dh 10.10.2.2 -de \$RAILS_ENV -ds web -tn Konstantin \\ "
+  info "  ${bldblu}❯          -ta cluster:primary -c 'bundle exec puma -c config/puma.rb"
+  echo
+  exit 0
+}
+
+function is-verbose() {
+  ((opts_verbose))
+}
+
+function datadog.parse-opts() {
+  [[ -z "$1" ]] && {
+    datadog.usage
+    exit 0
+  }
+
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -c | --command)
+      shift
+      usage.option-requires-argument "--command" "$1"
+      export opts_command="$1"
+      shift
+      ;;
+    # Datadog Configuration
+
+    -dd | --dd-disable)
+      shift;
+      export opts_dd_enabled=0
+      ;;
+
+    -dk | --dd-key)
+      shift;
+      usage.option-requires-argument "--dd-key" "$1"
+      export opts_dd_api_key="$1"
+      shift
+      ;;
+
+    -dh | --dd-host)
+      shift;
+      usage.option-requires-argument "--dd-host" "$1"
+      export opts_dd_host="$1"
+      shift
+      ;;
+
+    -de | --dd-env)
+      shift;
+      usage.option-requires-argument "--dd-env" "$1"
+      export opts_dd_env="$1"
+      shift
+      ;;
+
+    -ds| -dd-service)
+      shift;
+      usage.option-requires-argument "--dd-service" "$1"
+      export opts_dd_service="$1"
+      shift
+      ;;
+
+    # Datadog Tags
+
+
+    -ta | --tag-add)
+      shift;
+      export opts_dd_enabled=0
+      ;;
+
+    -tn | --tag-name)
+      shift;
+      usage.option-requires-argument "--tag-name" "$1"
+      export opts_dd_api_key="$1"
+      shift
+      ;;
+
+    -th| --tag-hostname)
+      shift;
+      usage.option-requires-argument "--tag-hostname" "$1"
+      export opts_dd_host="$1"
+      shift
+      ;;
+
+    -tu| --tag-username)
+      shift;
+      usage.option-requires-argument "--tag-username" "$1"
+      export opts_dd_env="$1"
+      shift
+      ;;
+
+    -tb| --tag-branch)
+      shift;
+      usage.option-requires-argument "--tag-branch" "$1"
+      export opts_dd_env="$1"
+      shift
+      ;;
+
+    -tl | --tag-stack-language)
+      shift;
+      usage.option-requires-argument "--tag-stack-language" "$1"
+      export opts_dd_service="$1"
+      shift
+      ;;
+
+    -tv | --tag-stack-version)
+      shift;
+      usage.option-requires-argument "--tag-stack-version" "$1"
+      export opts_dd_service="$1"
+      shift
+      ;;
+
+    # Runtime/Output
+
+    -n | --dry-run)
+      run.set-all dry-run-on
+      shift
+      ;;
+    -e | --exit-on-error)
+      run.set-all abort-on-error
+      export opts_on_error_abort=1
+      shift
+      ;;
+    -v | --verbose)
+      export opts_verbose=1
+      shift
+      ;;
+    -h | -\? | --help)
+      shift
+      datadog.usage
+      exit 0
+      ;;
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    -?*)
+      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
+    *)
+      [[ -z "$1" ]] && break
+      shift
+      ;;
+    esac
+  done
+}
+
+function datadog.set-tags() {
+  export opts_dd_tags=(
+    hostname:"${HOSTNAME:=$(hostname)}"
+    username:"${USER}"
+    os:"$(uname -s)"
+    developer:"${NAME/ /}"
+    environment:"${DD_ENV}"
+    branch:"$(git rev-parse --abbrev-ref HEAD)"
+  )
+}
+
+# @description Sets envionment
+datadog.set-env() {
+  export DD_ENV=${DATADOG_ENV:-"dev"}
+  export DD_API_KEY="${DD_API_KEY:-${DATADOG_API_KEY}}"
+  export DD_TRACE_AGENT_HOSTNAME=${DATADOG_HOST:-"127.0.0.1"}
+  export DATADOG_ENABLED=${DATADOG_ENABLED:-"1"}
+  export DATADOG_VERSION_COMMAND="${DATADOG_LANG} --version"
+
+  [[ -n ${DATADOG_LANG} ]] && {
+    command -v "${DATADOG_LANG}" >/dev/null  && \
+    export DATADOG_LANG_VERSION=$(DATADOG_VERSION_COMMAND 2>/dev/null)
+  }
+
+  return 0
+}
+
+# @description 
+# 	Configure datadog tags so that we can separate our APM logs from
+# 	other developers within the same environment
+datadog.set-tags() {
+  export NAME="$(git config --global --get user.name)"
+  declare -a tags
+  tags=(
+    hostname:"${HOSTNAME:=$(hostname)}"
+    username:"${USER}"
+    os:"$(uname -s)"
+    developer:"${NAME/ /}"
+    environment:"${DD_ENV}"
+    branch:"$(git rev-parse --abbrev-ref HEAD)"
+  )
+
+  [[ -n ${DATADOG_APP} ]] && tags+=(app:"${DATADOG_APP}")
+  [[ -n ${DATADOG_LANG} ]] && tags+=(stack-language:"${DATADOG_LANG}")
+  [[ -n ${DATADOG_LANG_VERSION} ]] && tags+=(stack-version:"${DATADOG_LANG_VERSION}")
+
+  export DD_TAGS="$(info "${tags[*]}" | tr ' ' ',')"
+  export DD_TAGS="$(info "${DD_TAGS}" | tr -d ' ')"
+  local key
+  if [[ -n ${DD_API_KEY} ]]; then
+    key="••••••••••••••••••••"
+  fi
+  info "Printing Datadog Tags/Facets:"
+  echo
+  for tag in "${tags[@]}" key:${key} ; do
+    t=${tag/:*/}
+    v=${tag/*:/}
+    printf "${bldpur}%15s = ${bldylw}%s\n" "$t" "$v"
+  done
+  printf "${clr}\n"
+
+  # Auto-open the Datadog Traces URL pre-filtered by environment and username
+  if [[ ${BASHMATIC_OS} == "darwin" ]]; then
+    bash -c "sleep 5 && open \"https://app.datadoghq.com/apm/traces?paused=false&query=env:dev%20%40username:${USER}\"" &
+  fi
+
+  return 0
+}
+
+function datadog.check.host() {
+  local timeout
+  case ${BASHMATIC_OS} in
+    linux) 
+      timeout="-W"
+      ;;
+    darwin)
+      timeout="-t"
+      ;;
+    else)
+      error "Don't know how to detect a ping timeout on Os ${BASHMATIC_OS}"
+      exit 1
+  esac
+
+  if ping -c 1 ${timeout} 1 "${DD_TRACE_AGENT_HOSTNAME}" >/dev/null; then
+    info "Datadog APM host is reachable" >&2
+    return 0
+  else
+    error "Can not ping host at ${DD_TRACE_AGENT_HOSTNAME}" >&2
+    return 1
+  fi
+}
+
+function datadog.check.api-key() {
+  [[ -n "${DD_API_KEY}" ]] && return 0
+  error "Your Datadog API key (DATADOG_API_KEY) is missing."
+  printf "${bldylw}"
+  info "Please set DATADOG_API_KEY variable, eg:"
+  echo
+  info "  1. echo 'export DATADOG_API_KEY=XXXXXX' >>.envrc.local"
+  info "  2. echo 'export DATADOG_API_KEY=XXXXXX' >>.~/.bash_profile"
+  echo
+  info "You can create a new one at the following link:"
+  echo
+  printf "↪ ${undblu}https://app.datadoghq.com/access/application-keys${clr}\n"
+  echo
+  return 1
+}
+
+function datadog.main() {
+  set -e
+  local validation=0
+  datadog.parse-opts "$@" && \
+  datadog.set-tags && \
+  datadog.set-env && \
+  datadog.check.api-key && \
+  datadog.check.host && \
+  datadog.set-tags && \
+  validation=1
+
+  ((validation)) && [[ -n "${opts_command}" ]] && eval "${opts_command}"
+}
+
+
+datadog.main "$@" >&2 
+
+

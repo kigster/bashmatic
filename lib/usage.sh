@@ -180,3 +180,12 @@ function help-comment() {
 function help-details() {
   printf "    ${txtblu}$*\n"
 }
+
+function usage.option-requires-argument() {
+  local option="$1"
+  local value="$2"
+  [[ -n ${value} ]] && return
+  
+  error "Option ${option} requires a valid argument."
+  exit 1
+}

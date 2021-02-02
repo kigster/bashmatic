@@ -27,10 +27,28 @@ function bashmatic.reset-is-loaded() {
   __bashmatic_load_state=0
 }
 
+function .bashmatic.os-version() {
+  local version
+  case ${BASHMATIC_OS} in
+    linux) 
+      version="$(lsb_release -a 2>/dev/null | grep Description | sed -E 's/.*:\s *//g;'lsb_release -a 2>/dev/null | grep Description | sed -E 's/.*:\s *//g;')"
+      ;;
+    darwin)
+      version="$(sw_vers -productVersion)"
+      ;;
+    else)
+      error "Don't know how to detect OS version on this system"
+      exit 1
+  esac
+  echo "${version}"  
+}
+
 function .bashmatic.core() {
   # DEFINE CORE VARIABLES
   export BASHMATIC_URL="https://github.com/kigster/bashmatic"
-  export BASHMATIC_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export BASHMATIC_OS_VERSION=$(.bashmatic.os-version)
+
   # shellcheck disable=2046
   export BASHMATIC_TEMP="/tmp/${USER}/.bashmatic"
   [[ -d ${BASHMATIC_TEMP} ]] || mkdir -p "${BASHMATIC_TEMP}"
