@@ -2,10 +2,22 @@ load test_helper
 
 source lib/util.sh
 source lib/time.sh
+source lib/is.sh
 source lib/run.sh
 source lib/runtime-config.sh
 source lib/output.sh
 source lib/runtime.sh
+
+@test "run() with an unsuccessful command and defaults" {
+  set +e
+  run.set-next show-output-on 
+  run "zhopa"
+  code=$?
+  set -e
+  [[ "${code}" -ne 0 ]]
+  [[ "${LibRun__LastExitCode}" -eq 127 ]]
+}
+
 
 @test "run() with a successful command and defaults" {
   set +e
@@ -31,14 +43,6 @@ source lib/runtime.sh
   [[ ${clean_output/\/bin\/ls/} == "${clean_output}" ]]
 }
 
-@test "run() with an unsuccessful command and defaults" {
-  set +e
-  run lssdf
-  code=$?
-  set -e
-  [[ "${code}" -eq 127 ]]
-}
-
 @test "inspect variables with names starting with LibRun" {
   set +e
   output=$(run.inspect-variables-that-are starting-with LibRun)
@@ -48,3 +52,4 @@ source lib/runtime.sh
   [[ "${output}" =~ "LibRun__DryRun" ]]
   [[ "${output}" =~ "LibRun__Verbose" ]]
 }
+

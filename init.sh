@@ -3,6 +3,7 @@
 
 export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
+export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 function source-if-exists() {
   local file
@@ -13,7 +14,7 @@ function source-if-exists() {
 
 # Set initial state to 0
 # This can not be exported, because then subshells don't initialize correctly
-__bashmatic_load_state=${__bashmatic_load_state:-0}
+__bashmatic_load_state=${__bashmatic_load_state:=0}
 
 function bashmatic.is-loaded() {
   ((__bashmatic_load_state))
@@ -91,8 +92,8 @@ function .bashmatic.init.linux() {
 function .bashmatic.initialize() {
   set -e
 
-  local os="${BASHMATIC_OS}"
-  local init_func=".bashmatic.init.${os}"
+  export AppCurrentOS="${BASHMATIC_OS}"
+  local init_func=".bashmatic.init.${AppCurrentOS}"
   
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
 

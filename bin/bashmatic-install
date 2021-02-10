@@ -2,7 +2,7 @@
 # vim: ft=bash
 #
 # The purpose of this script is to bootstrap Bashmatic on a
-# new system. We are supporting OS-X and Linux, although on
+# new system. We are supporting OS-X and linux, although on
 # OS-X we do a lot more initialization to ensure Bashmatic
 # can properly function.
 #
@@ -89,7 +89,7 @@ sudo-disable() {
 }
 
 #——————————————————————————————————————————————————————————————————————————————————————
-# BASH Upgrade Functionality (OS-X/Linux)
+# BASH Upgrade Functionality (OS-X/linux)
 #——————————————————————————————————————————————————————————————————————————————————————
 bash-major-version() {
   local bash="${1:-"bash"}"
@@ -290,9 +290,9 @@ darwin-requirements() {
 # Ensure OS-specific reqquirements are satisfied
 #——————————————————————————————————————————————————————————————————————————————————————
 os-requirements() {
-  local os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
-  case ${os} in
+  case ${AppCurrentOS} in
   darwin)
     darwin-requirements
     ;;
@@ -300,7 +300,7 @@ os-requirements() {
     linux-requirements
     ;;
   *)
-    err "Operating system ${os} is not supported."
+    err "Operating system ${AppCurrentOS} is not supported."
     exit 1
     ;;
   esac

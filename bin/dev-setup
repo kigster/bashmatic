@@ -16,7 +16,7 @@ source "${BASHMATIC_HOME}/init.sh"
 
 output.constrain-screen-width 100
 
-export DEFAULT_RUBY_VERSION="2.7.1"
+export DEFAULT_RUBY_VERSION="2.7.2"
 export DEFAULT_POSTGRESQL_VERSION="latest"
 export DEFAULT_MYSQL_VERSION="11"
 

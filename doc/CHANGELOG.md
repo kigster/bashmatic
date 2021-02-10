@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.9.3...HEAD)
+
+**Closed issues:**
+
+- Bashmatic should support basic-level package installation for Linux [\#43](https://github.com/kigster/bashmatic/issues/43)
+
+**Merged pull requests:**
+
+- Minor tweaks and fixes to the git sync [\#46](https://github.com/kigster/bashmatic/pull/46) ([kigster](https://github.com/kigster))
+- Path mutation routines + usage doc fixes [\#42](https://github.com/kigster/bashmatic/pull/42) ([kigster](https://github.com/kigster))
+- Creating a generic "package" installation API [\#41](https://github.com/kigster/bashmatic/pull/41) ([kigster](https://github.com/kigster))
+
 ## [v1.9.3](https://github.com/kigster/bashmatic/tree/v1.9.3) (2021-01-13)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.9.2...v1.9.3)

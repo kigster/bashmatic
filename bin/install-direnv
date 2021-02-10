@@ -2,7 +2,7 @@
 # vim: ft=bash
 #
 # @file install-direnv
-# @desription Installs direnv on OS-X or Linux, and
+# @desription Installs direnv on OS-X or linux, and
 #     wires it up to BASH, ZSH or FISH.
 
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
@@ -28,18 +28,18 @@ function direnv.install() {
   printf " — NO."
   not-ok:
 
-  local os=$(uname -s)
+  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
-  if [[ ${os} == Darwin ]]; then
+  if [[ ${AppCurrentOS} == darwin ]]; then
     command -v brew>/dev/null || brew.install
     brew.install.package direnv
-  elif [[ ${os} == Linux ]]; then
+  elif [[ ${AppCurrentOS} == linux ]]; then
     info "Please enter your SUDO password if asked:"
     sudo echo
 
     run "sudo apt-get install -yqq direnv"
   else 
-    error "Operating system ${os} is not supported."
+    error "Operating system ${AppCurrentOS} is not supported."
     return 1
   fi
 
