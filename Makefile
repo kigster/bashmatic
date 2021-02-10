@@ -18,6 +18,7 @@ OS	 		 	:= $(shell uname -s | tr '[:upper:]' '[:lower:]')
 MAKEFILE_PATH 			:= $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIR 			:= $(notdir $(patsubst %/,%,$(dir $(MAKEFILE_PATH))))
 BASHMATIC_HOME			:= $(shell dirname $(MAKEFILE_PATH))
+SCREEN_WIDTH			:= 100
 
 help:	   			## Prints help message auto-generated from the comments.
 				@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
