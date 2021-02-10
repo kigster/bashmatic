@@ -197,7 +197,7 @@ function specs.run() {
 #------------------------------------------------------------------
 # Auxillary
 function specs.add-all-files() {
-  export os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
   if [[ -z ${all_test_files[*]} ]]; then
     all_test_files=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
     [[ -d "${BASHMATIC_TEST_DIR}/${AppCurrentOS}" ]] && all_test_files=(${all_test_files[@]} $(find "${BASHMATIC_TEST_DIR}/${AppCurrentOS}" -maxdepth 1 -name '*test*.bats' | sort))
