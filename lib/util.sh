@@ -61,12 +61,11 @@ util.i-to-ver() {
 }
 
 util.os() {
-  echo -n "${AppCurrentOS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
+  echo -n "${AppCurrentOS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
 }
 
-
 util.arch() {
-  echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'
+  echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr '[:upper:]' '[:lower:]'
 }
 
 # shellcheck disable=SC2120
@@ -238,7 +237,7 @@ util.ensure-gnu-sed() {
   command -v gsed && return 0
 
   sed_path="$(command -v sed 2>/dev/null)"
-  AppCurrentOS="$(util.os)"
+  os="${AppCurrentOS:=$(util.os)}"
 
   case "${AppCurrentOS}" in
   darwin)
@@ -264,12 +263,8 @@ util.ensure-gnu-sed() {
 
     sed_path="${gsed_path}"
     ;;
-  linux)
-    sed_path="$(which sed)"
-    ;;
   *)
-    echo "Operating system \"${AppCurrentOS}\" is not supported." 1>&2
-    return 2
+    sed_path="$(command -v sed)"
     ;;
   esac
 
