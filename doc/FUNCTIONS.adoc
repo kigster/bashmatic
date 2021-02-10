@@ -80,6 +80,6211 @@
 
 === Module `array`
 
+<<<<<<< Updated upstream
+=======
+=== Module `array`
+
+==== `array.eval.in-groups-of`
+
+[source,bash]
+----
+array.eval.in-groups-of () 
+{ 
+    local chunk="$1"
+    shift
+    local function="$1"
+    shift
+    local -a group
+    for item in "$@"
+    do
+        index="$(( index + 1 ))"
+        if [[ ${#group[@]} -eq ${chunk} ]]; then
+            ${function} "${group[@]}"
+            group=("${item}")
+        else
+            group=("${group[@]}" "${item}")
+        fi
+    done
+    if [[ ${#group[@]} -gt 0 ]]; then
+        ${function} "${group[@]}"
+    fi
+    return 0
+}
+
+----
+
+==== `array.from.command`
+
+[source,bash]
+----
+array.from.command () 
+{ 
+    local array_name=$1
+    shift
+    local command="$*"
+    local OFS="$IFS"
+    eval "IFS=\$'\\n' read -ra ${array_name} -d '' <<< \"\$(${command})\""
+    export IFS="$OFS"
+}
+
+----
+
+==== `array.has-element`
+
+[source,bash]
+----
+array.has-element () 
+{ 
+    local search="$1"
+    shift
+    local r="false"
+    local e
+    [[ "$*" =~ ${search} ]] || { 
+        echo -n $r
+        return 1
+    }
+    for e in "${@}"
+    do
+        [[ "$e" == "${search}" ]] && r="true"
+    done
+    echo -n $r
+    [[ $r == "false" ]] && return 1
+    return 0
+}
+
+----
+
+==== `array.includes`
+
+[source,bash]
+----
+array.includes () 
+{ 
+    local search="$1"
+    shift
+    [[ "$*" =~ ${search} ]] || return 1
+    for e in "${@}"
+    do
+        [[ "$e" == "${search}" ]] && { 
+            return 0
+        }
+    done
+    return 1
+}
+
+----
+
+==== `array.includes-or-complain`
+
+[source,bash]
+----
+array.includes-or-complain () 
+{ 
+    array.includes "$@" || { 
+        element="$1"
+        shift
+        local -a output=()
+        while true; do
+            [[ -z "$1" ]] && break
+            if [[ "$1" =~ " " ]]; then
+                output=("${output[@]}" "$1")
+            else
+                output=("$1")
+            fi
+            shift
+        done
+        if [[ ${#output[@]} -gt 10 ]]; then
+            error "Value ${element} must be one of the supplied values."
+        else
+            error "Value ${element} must be one of the supplied values:" "${output[@:0:10]}"
+        fi
+        echo
+        return 0
+    }
+    return 1
+}
+
+----
+
+==== `array.includes-or-exit`
+
+[source,bash]
+----
+array.includes-or-exit () 
+{ 
+    array.includes-or-complain "$@" || exit 1
+}
+
+----
+
+==== `array.join`
+
+[source,bash]
+----
+array.join () 
+{ 
+    local sep="$1"
+    shift
+    local lines="$1"
+    if [[ ${lines} == true || ${lines} == false ]]; then
+        shift
+    else
+        lines=false
+    fi
+    local elem
+    local len="$#"
+    local last_index=$(( len - 1 ))
+    local index=0
+    for elem in "$@"
+    do
+        if ${lines}; then
+            printf "${sep}%s\n" "${elem}"
+        else
+            printf "%s" "${elem}"
+            [[ ${index} -lt ${last_index} ]] && printf '%s' "${sep}"
+        fi
+        index=$(( index + 1 ))
+    done
+}
+
+----
+
+==== `array.max`
+
+[source,bash]
+----
+array.max () 
+{ 
+    local max="$1"
+    shift
+    for v in "$@"
+    do
+        is.numeric "$v" || continue
+        [[ ${v} -gt ${max} ]] && max="$v"
+    done
+    printf -- "%d" "${max}"
+}
+
+----
+
+==== `array.min`
+
+[source,bash]
+----
+array.min () 
+{ 
+    local min="$1"
+    shift
+    for v in "$@"
+    do
+        is.numeric "$v" || continue
+        [[ ${v} -lt ${min} ]] && min="$v"
+    done
+    printf -- "%d" "${min}"
+}
+
+----
+
+==== `array.sort`
+
+[source,bash]
+----
+array.sort () 
+{ 
+    local IFS_previous="${IFS}"
+    export IFS=''
+    printf "%s\n" "$@" | sort | tr '\n' ' ' | sed 's/ $//g'
+    IFS="${IFS_previous}"
+}
+
+----
+
+==== `array.sort-numeric`
+
+[source,bash]
+----
+array.sort-numeric () 
+{ 
+    local IFS_previous="${IFS}"
+    export IFS=''
+    printf "%s\n" "$@" | sort -n | tr '\n' ' ' | sed 's/ $//g'
+    IFS="${IFS_previous}"
+}
+
+----
+
+==== `array.to.bullet-list`
+
+[source,bash]
+----
+array.to.bullet-list () 
+{ 
+    array.join ' • ' true "$@"
+}
+
+----
+
+==== `array.to.csv`
+
+[source,bash]
+----
+array.to.csv () 
+{ 
+    array.join ', ' false "$@"
+}
+
+----
+
+==== `array.to.piped-list`
+
+[source,bash]
+----
+array.to.piped-list () 
+{ 
+    array.join ' | ' false "$@"
+}
+
+----
+
+==== `array.uniq`
+
+[source,bash]
+----
+array.uniq () 
+{ 
+    local IFS_previous="${IFS}"
+    IFS=''
+    printf "%s\n" "$@" | sort -u | tr '\n' ' ' | sed 's/ $//g'
+    IFS="${IFS_previous}"
+}
+
+----
+
+
+=== Module `asciidoc`
+
+==== `asciidoc.rouge-themes`
+
+[source,bash]
+----
+asciidoc.rouge-themes () 
+{ 
+    gem.install rouge
+    info "Available themes:"
+    local -a themes=($(ruby -e 'require :rouge.to_s; puts Rouge::Theme.registry.keys.sort.join ?\n'))
+    array.to.bullet-list "${themes[@]}"
+    echo
+    info "To specify a theme in your *.adoc file, put this at the top:"
+    info "${bldlyw}:source-highlighter: ${bldgrn}rouge"
+    info "${bldlyw}:rouge-style: ${bldgrn}monokai"
+}
+
+----
+
+
+=== Module `audio`
+
+==== `æ.mp3`
+
+[source,bash]
+----
+æ.mp3 () 
+{ 
+    audio.make.mp3 "$@"
+}
+
+----
+
+==== `audio.dir.mp3-to-wav`
+
+[source,bash]
+----
+audio.dir.mp3-to-wav () 
+{ 
+    local from="$1"
+    local to="$2"
+    run "cd \"${from}\""
+    trap "return 1" INT
+    while read -d '' filename; do
+        audio.file.mp3-to-wav "${filename}" "${to}" < /dev/null
+    done < <(find . -type f -name "*.mp3" -print0)
+    run "cd -"
+}
+
+----
+
+==== `audio.file.frequency`
+
+[source,bash]
+----
+audio.file.frequency () 
+{ 
+    local file="$1"
+    [[ -z $(command -V mdls) ]] && return 1
+    local frequency=$(mdls "${file}" | grep kMDItemAudioSampleRate | sed 's/.*= //g')
+    [[ -z ${frequency} ]] && frequency=48000
+    local kHz=$(maths.eval "${frequency} / 1000.0" 0)
+    printf ${kHz}
+}
+
+----
+
+==== `audio.file.mp3-to-wav`
+
+[source,bash]
+----
+audio.file.mp3-to-wav () 
+{ 
+    local from="${1/.\//}"
+    local destination="$2"
+    if [[ -z ${destination} ]]; then
+        destination="$(dirname "${from}")"
+    else
+        destination="${destination}/$(dirname "${from}")"
+    fi
+    local to="${destination}/$(basename "${from/.mp3/.wav}")"
+    if [[ ${from} =~ ".mp3" ]]; then
+        h.blue "Source:      ${from}"
+        cursor.up 1
+        h.green "Destination: ${to}"
+        [[ -f "${to}" ]] && { 
+            info: "File already converted."
+            return 0
+        }
+        run "mkdir -p \"${destination}\""
+        run.set-next show-output-on
+        run "lame --decode \"${from}\" \"${to}\""
+    else
+        error "File ${from} is not an MP3 file."
+        return 1
+    fi
+}
+
+----
+
+==== `audio.make.mp3`
+
+[source,bash]
+----
+audio.make.mp3 () 
+{ 
+    local file="$1"
+    shift
+    local nfile="$2"
+    shift
+    set +e
+    [[ -n "$(command -V lame)" ]] || brew.package.install lame
+    local default_options=" -m s -b 320 "
+    [[ -n "${file}" ]] || { 
+        audio.make.mp3.usage && return 1
+    }
+    [[ -s "${file}" ]] || { 
+        error "File '${file}' does not exist."
+        audio.make.mp3.usage && return 2
+    }
+    [[ -z ${nfile} ]] && nfile="$(echo "${file}" | sedx 's/\.(wav|aiff?)$/\.mp3/g')"
+    local khz=$(audio.file.frequency "${file}")
+    h2 "'$(basename "${file}")' —❯ ${txtylw}${nfile}${txtgrn}, sample rate: ${khz:-'Unknown'}kHz"
+    info "lame ${default_options} $* '${file}' '${nfile}'"
+    run.set-next show-output-on abort-on-error
+    run "lame ${default_options}  $* '${file}' '${nfile}'"
+    hr
+    success "MP3 file ${nfile} is $(file.size.mb "${nfile}")Mb"
+}
+
+----
+
+==== `audio.make.mp3.usage`
+
+[source,bash]
+----
+audio.make.mp3.usage () 
+{ 
+    usage-box "audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ] © Convert a RAW PCM Audio to highest quality MP3" "You can pass additional flags to ${txtylw}lame" "" "Just run ${txtylw}lame --longhelp for more info." "" "Default Flags: ${default_options}" ""
+}
+
+----
+
+==== `audio.make.mp3s`
+
+[source,bash]
+----
+audio.make.mp3s () 
+{ 
+    local dir="${1:-"."}"
+    local kHz="${2:-"48"}"
+    local first="$(find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print | head -1)"
+    h3 "Converting WAV and AIF files to MP3 in ${txtylw}${dir}."
+    if [[ -z ${first} ]]; then
+        error "No AIFF or WAV files in the folder ${bldgrn}${dir}"
+        return 1
+    fi
+    inf "Determining audio sampling rate (will apply the same rate to all files)... "
+    kHz=$(audio.file.frequency "${first}")
+    printf "${bldgrn} — ${kHz}kHz"
+    ok:
+    SAVEIFS=$IFS
+    run.set-all show-command-on show-output-off abort-on-error
+    find "${dir}" -type f -a \( -name "*.aif*" -o -name "*.wav" \) -print0 | while read -d '' file; do
+        local fn=$(ascii-clean "${file}")
+        mp3=$(echo "${file}" | sedx 's/\.(wav|aiff?)$/.mp3/g')
+        inf "checking ${txtylw}${file} $(txt-info) ... "
+        if [[ -f "${mp3}" && -z "${FORCE}" ]]; then
+            printf "${bldgrn} OK, already converted. Use FORCE=1 to overwrite. ${clr}"
+            ok:
+            continue
+        fi
+        printf "${txtcyn} Transcoding...${clr}"
+        ui.closer.kind-of-ok:
+        inf "❯ ${txtylw}lame --silent -m s -b 320  \"${file}\""
+        trap _term SIGINT
+        lame --silent -m s -b 320 "${fn}" & child_pid=$!
+        wait "$child_pid"
+        code=$?
+        if [[ ${code} -ne 0 ]]; then
+            ui.closer.not-ok:
+            info "${bakred}${bldwht}  ERROR: lame exited with an error code ${code}. Aborting!  "
+            [[ -f "${mp3}" ]] && { 
+                info "NOTE: removing unfinished MP3 file ${mp3}."
+                rm -f "${mp3}" 1>&2 > /dev/null
+            }
+            break
+        else
+            ok:
+        fi
+    done
+    success 'All done.'
+}
+
+----
+
+
+=== Module `aws`
+
+==== `aws.ec2`
+
+[source,bash]
+----
+aws.ec2 () 
+{ 
+    local cmd="$1"
+    local command="$cmd"
+    case $command in 
+        list | show | ls)
+            __utf_table "$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{name: Name, instance_id: InstanceId, ip_address: PrivateIpAddress, state: State.Name}' --output table 2>/dev/null)"
+            return $?
+        ;
+        *)
+            error "Invalid Command: ${cmd}"
+            return 1
+        ;
+    esac
+}
+
+----
+
+==== `aws.rds.hostname`
+
+[source,bash]
+----
+aws.rds.hostname () 
+{ 
+    local name=${1}
+    [[ -z $(which jq) ]] && out=$(brew.install.package jq 2>/dev/null 1>/dev/null)
+    [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2>/dev/null 1>/dev/null)
+    [[ -n ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g' | ${GrepCommand} "^${name}\."
+    [[ -z ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g'
+}
+
+----
+
+==== `aws.s3.upload`
+
+[source,bash]
+----
+aws.s3.upload () 
+{ 
+    local pathname="$1"
+    shift
+    local skip_file_modification="$1"
+    [[ -n ${skip_file_modification} ]] && skip_file_modification=true
+    [[ -z ${skip_file_modification} ]] && skip_file_modification=false
+    if [[ -z "${LibAws__DefaultUploadBucket}" || -z "${LibAws__DefaultUploadFolder}" ]]; then
+        error "Required AWS S3 configuration is not defined." "Please set variables: ${bldylw}LibAws__DefaultUploadFolder" "and ${bldylw}LibAws__DefaultUploadBucket" "before using this function."
+        return 1
+    fi
+    if [[ ! -f "${pathname}" ]]; then
+        error "Local file was not found: ${bldylw}${pathname}"
+        return 1
+    fi
+    local file=$(basename "${pathname}")
+    local remote_file="${file}"
+    local year=$(file.last-modified-year "${pathname}")
+    local date=$(file.last-modified-date "${pathname}")
+    [[ -z ${year} ]] && year=$(date +'%Y')
+    [[ -z ${date} ]] && date=$(today)
+    ${skip_file_modification} || { 
+        [[ "${remote_file}" =~ "${date}" ]] && remote_file=$(echo "${remote_file}" | sedx "s/[_\.-]?${date}[_\.-]//g")
+        [[ "${remote_file}" =~ "${date}" ]] || remote_file="${date}.${remote_file}"
+    }
+    remote_file=$(echo "${remote_file}" | sed -E 's/ /-/g;s/--+/-/g' | tr '[A-Z]' '[a-z]')
+    local remote="s3://${LibAws__DefaultUploadBucket}/${LibAws__DefaultUploadFolder}/${year}/${remote_file}"
+    run "aws s3 cp \"${pathname}\" \"${remote}\""
+    if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
+        local remoteUrl="https://s3-${LibAws__DefaultRegion}.amazonaws.com/${LibAws__DefaultUploadBucket}/${LibAws__DefaultUploadFolder}/${year}/${remote_file}"
+        [[ -n "${LibAws__ObjectUrlFile}" ]] && echo ${remoteUrl} > "${LibAws__ObjectUrlFile}"
+        echo
+        info "NOTE: You should now be able to access your resource at the following URL:"
+        hr
+        info "${bldylw}${remoteUrl}"
+        hr
+    else
+        error "AWS S3 upload failed with code ${LibRun__LastExitCode}"
+    fi
+    return ${LibRun__LastExitCode}
+}
+
+----
+
+
+=== Module `bashmatic`
+
+==== `bashmatic.auto-update`
+
+[source,bash]
+----
+bashmatic.auto-update () 
+{ 
+    ( unset -f _direnv_hook > /dev/null 2>&1
+    [[ ${Bashmatic__Test} -eq 1 ]] && return 0
+    local pwd="$(pwd -P)"
+    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}"
+    git.configure-auto-updates
+    git.repo-is-clean || { 
+        output.is-ssh || { 
+            output.is-terminal && bashmatic.auto-update-error
+            cd "${pwd}" > /dev/null
+            return 1
+        }
+    }
+    git.update-repo-if-needed
+    cd "${pwd}" > /dev/null )
+}
+
+----
+
+==== `bashmatic.auto-update-error`
+
+[source,bash]
+----
+bashmatic.auto-update-error () 
+{ 
+    bashmatic.is-developer || return
+    if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
+        cat "${__bashmatic_auto_update_help_file}"
+    else
+        box.black-on-yellow "Bashmatic — I detected locally modified changes..." "Auto-update is therefore disabled until its git state is clean." | tee -a "${__bashmatic_auto_update_help_file}" 1>&2
+    fi
+}
+
+----
+
+==== `bashmatic.bash.exit-unless-version-four-or-later`
+
+[source,bash]
+----
+bashmatic.bash.exit-unless-version-four-or-later () 
+{ 
+    bashmatic.bash.version-four-or-later || { 
+        error "Sorry, this functionality requires BASH version 4 or later."
+        exit 1 > /dev/null
+    }
+}
+
+----
+
+==== `bashmatic.bash.version`
+
+[source,bash]
+----
+bashmatic.bash.version () 
+{ 
+    echo "${BASH_VERSION/[^0-9]*/}"
+}
+
+----
+
+==== `bashmatic.bash.version-four-or-later`
+
+[source,bash]
+----
+bashmatic.bash.version-four-or-later () 
+{ 
+    [[ $(bashmatic.bash.version) -gt 3 ]]
+}
+
+----
+
+==== `bashmatic.functions`
+
+[source,bash]
+----
+bashmatic.functions () 
+{ 
+    bashmatic.functions-from '*.sh' "$@"
+}
+
+----
+
+==== `bashmatic.functions-from`
+
+[source,bash]
+----
+bashmatic.functions-from () 
+{ 
+    local pattern="${1}"
+    [[ -n ${pattern} ]] && shift
+    [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
+    cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
+    export SCREEN_WIDTH=$(screen-width)
+    if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
+        pattern="${pattern}.sh"
+    fi
+    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^(_|\.)' -v | sort | uniq | columnize "$@"
+    cd - > /dev/null || return 1
+}
+
+----
+
+==== `bashmatic.functions.output`
+
+[source,bash]
+----
+bashmatic.functions.output () 
+{ 
+    bashmatic.functions-from 'output.sh' "$@"
+}
+
+----
+
+==== `bashmatic.functions.runtime`
+
+[source,bash]
+----
+bashmatic.functions.runtime () 
+{ 
+    bashmatic.functions-from 'run*.sh' "$@"
+}
+
+----
+
+==== `bashmatic.is-developer`
+
+[source,bash]
+----
+bashmatic.is-developer () 
+{ 
+    [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
+}
+
+----
+
+==== `bashmatic.load-at-login`
+
+[source,bash]
+----
+bashmatic.load-at-login () 
+{ 
+    local file="${1}"
+    [[ -z ${file} ]] && file="$(user.login-shell-init-file)"
+    grep -q -E 'BASHMATIC_HOME' "${file}" || { 
+        { 
+            echo "export BASHMATIC_HOME=\"${BASHMATIC_HOME:-"~/.bashmatic"}\""
+            echo '[[ -f ${BASHMATIC_HOME}/init.sh ]] && source ${BASHMATIC_HOME}/init.sh'
+            echo 'export PATH="${PATH}:${BASHMATIC_HOME}/bin"'
+        } >> "${file}"
+        source "${file}"
+    }
+}
+
+----
+
+==== `bashmatic.reload`
+
+[source,bash]
+----
+bashmatic.reload () 
+{ 
+    bashmatic.reset-is-loaded
+    source "${BASHMATIC_INIT}"
+}
+
+----
+
+==== `bashmatic.setup`
+
+[source,bash]
+----
+bashmatic.setup () 
+{ 
+    [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
+    [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
+    if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
+        .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
+        return 1
+    fi
+    bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
+    bashmatic.shell-check || return 1
+    bashmatic.source util.sh git.sh file.sh color.sh brew.sh
+    bashmatic.source-dir "${BASHMATIC_LIBDIR}"
+    output.unconstrain-screen-width
+    [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+    return 0
+}
+
+----
+
+==== `bashmatic.shell-check`
+
+[source,bash]
+----
+bashmatic.shell-check () 
+{ 
+    local shell="$(user.current-shell)"
+    if [[ "${shell}" =~ bash$ || "${shell}" =~ zsh$ ]]; then
+        return 0
+    else
+        cat "${BASHMATIC_HOME}/.init.sh" 1>&2
+        return 120
+    fi
+}
+
+----
+
+==== `bashmatic.source`
+
+[source,bash]
+----
+bashmatic.source () 
+{ 
+    local __path="${BASHMATIC_LIBDIR}"
+    local file
+    for file in "${@}"
+    do
+        [[ "${file}" =~ "/" ]] || file="${__path}/${file}"
+        [[ -s "${file}" ]] || { 
+            .err "Can't source file ${file} — fils is invalid."
+            return 1
+        }
+        [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
+        source "${file}"
+    done
+    return 0
+}
+
+----
+
+==== `bashmatic.source-dir`
+
+[source,bash]
+----
+bashmatic.source-dir () 
+{ 
+    local folder="${1}"
+    local loaded=false
+    local file
+    unset files
+    declare -a files
+    eval "$(files.map.shell-scripts "${folder}" files)"
+    if [[ ${#files[@]} -eq 0 ]]; then
+        .err "No files were returned from files.map in " "\n  ${bldylw}${folder}"
+        return 1
+    fi
+    for file in "${files[@]}"
+    do
+        local n="$(basename ${file})"
+        [[ ${n:0:1} == . ]] && continue
+        bashmatic.source "${file}" && loaded=true
+    done
+    unset files
+    ${loaded} || { 
+        .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIBDIR}"
+        return 1
+    }
+    if [[ ${LoadedShown} -eq 0 ]]; then
+        hr
+        success "BashMatic was loaded! Happy Bashing :) "
+        hr
+        export LoadedShown=1
+    fi
+}
+
+----
+
+==== `bashmatic.version`
+
+[source,bash]
+----
+bashmatic.version () 
+{ 
+    cat "$(dirname "${BASHMATIC_INIT}")/.version"
+}
+
+----
+
+
+=== Module `brew`
+
+==== `brew.cache-reset`
+
+[source,bash]
+----
+brew.cache-reset () 
+{ 
+    if [[ "$1" == "cask" ]]; then
+        rm -f "${LibBrew__CaskCacheList}"
+    else
+        if [[ "$2" == "package" ]]; then
+            rm -f "${LibBrew__PackageCacheList}"
+        else
+            rm -f "${LibBrew__PackageCacheList}" "${LibBrew__CaskCacheList}"
+        fi
+    fi
+}
+
+----
+
+==== `brew.cache-reset.delayed`
+
+[source,bash]
+----
+brew.cache-reset.delayed () 
+{ 
+    ((BASH_IN_SUBSHELL)) || brew.cache-reset both
+}
+
+----
+
+==== `brew.cask.all-installed`
+
+[source,bash]
+----
+brew.cask.all-installed () 
+{ 
+    local -a installed_casks=($(brew.cask.list))
+    for item in "$@"
+    do
+        array.includes "${item}" "${installed_casks[@]}" || return 1
+    done
+    return 0
+}
+
+----
+
+==== `brew.cask.is-installed`
+
+[source,bash]
+----
+brew.cask.is-installed () 
+{ 
+    if brew.cask.all-installed "$@"; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+----
+
+==== `brew.cask.list`
+
+[source,bash]
+----
+brew.cask.list () 
+{ 
+    cache-or-command "${LibBrew__CaskCacheList}" 10 --cask -1
+}
+
+----
+
+==== `brew.cask.tap`
+
+[source,bash]
+----
+brew.cask.tap () 
+{ 
+    run "brew tap homebrew/cask-cask"
+}
+
+----
+
+==== `brew.install`
+
+[source,bash]
+----
+brew.install () 
+{ 
+    local brew=$(which brew 2>/dev/null)
+    if [[ -z "${brew}" ]]; then
+        info "Installing Homebrew, please wait..."
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    else
+        info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
+        run "brew update"
+    fi
+}
+
+----
+
+==== `brew.install.cask`
+
+[source,bash]
+----
+brew.install.cask () 
+{ 
+    local cask=$1
+    local force=
+    local verbose=
+    [[ -n "${opts_force}" ]] && force="--force"
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose"
+    local installed_app="$(osx.app.is-installed "${cask}")"
+    inf "checking if cask is installed: ${bldylw}${cask}"
+    brew.cask.all-installed "${cask}" && { 
+        ok:
+        return 0
+    }
+    if [[ -n "${installed_app}" && -z "${opts_force}" ]]; then
+        ui.closer.ok:
+        return 0
+    else
+        ui.closer.kind-of-ok:
+        run "brew install --cask ${cask} ${force} ${verbose}"
+        brew.cache-reset cask
+    fi
+}
+
+----
+
+==== `brew.install.package`
+
+[source,bash]
+----
+brew.install.package () 
+{ 
+    local package="$1"
+    local force=
+    local verbose=
+    local code
+    [[ -n "${opts_force}" ]] && force="--force"
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose"
+    [[ -z "${opt_terse}" ]] && inf "checking for 🍻 ${bldylw}${package}..."
+    if brew.package.all-installed "${package}"; then
+        [[ -z "${opt_terse}" ]] && ok:
+        [[ -z "${opt_terse}" ]] || printf "${bldgrn}○ "
+        export LibRun__LastExitCode=0
+    else
+        if [[ -z "${opt_terse}" ]]; then
+            ui.closer.kind-of-ok:
+            run "brew install ${force} ${verbose} ${package}"
+            code="${LibRun__LastExitCode}"
+        else
+            brew install ${force} ${verbose} ${package} > /dev/null 2>&1
+            code=$?
+        fi
+        brew.cache-reset package
+        brew.package.all-installed "${package}" && code=0
+        [[ -n ${force} ]] && { 
+            run.set-next continue-on-error
+            run "brew link --force --overwrite ${verbose} ${package}"
+        }
+        hash -r > /dev/null
+        ((code)) && { 
+            warning "Reinstalling ${package} as I couldn't find it after instal..."
+            brew.reinstall.package "${package}"
+        }
+        export LibRun__LastExitCode=0
+        if [[ "$(brew.package.is-installed "${package}")" == "true" ]]; then
+            [[ -n "${opt_terse}" ]] && printf "\n 🟢 "
+        else
+            [[ -n "${opt_terse}" ]] && printf "\n 🔴 "
+            export LibRun__LastExitCode=1
+        fi
+    fi
+    return ${LibRun__LastExitCode}
+}
+
+----
+
+==== `brew.install.packages`
+
+[source,bash]
+----
+brew.install.packages () 
+{ 
+    local force=
+    [[ -n "${opts_force}" ]] && force="--force"
+    for package in "$@"
+    do
+        brew.install.package "${package}"
+    done
+}
+
+----
+
+==== `brew.package.all-installed`
+
+[source,bash]
+----
+brew.package.all-installed () 
+{ 
+    local -a installed_packages=($(brew.package.list))
+    for item in "$@"
+    do
+        array.includes "${item}" "${installed_packages[@]}" || return 1
+    done
+    return 0
+}
+
+----
+
+==== `brew.package.available-versions`
+
+[source,bash]
+----
+brew.package.available-versions () 
+{ 
+    local package="$1"
+    [[ -z "$1" ]] && return 1
+    brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
+}
+
+----
+
+==== `brew.package.is-installed`
+
+[source,bash]
+----
+brew.package.is-installed () 
+{ 
+    if brew.package.all-installed "$@"; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+----
+
+==== `brew.package.link`
+
+[source,bash]
+----
+brew.package.link () 
+{ 
+    local package="${1}"
+    shift
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose"
+    run "brew link --force --overwrite ${verbose} ${package} $*"
+}
+
+----
+
+==== `brew.package.list`
+
+[source,bash]
+----
+brew.package.list () 
+{ 
+    cache-or-command "${LibBrew__PackageCacheList}" 10 --formula -1
+}
+
+----
+
+==== `brew.reinstall.package`
+
+[source,bash]
+----
+brew.reinstall.package () 
+{ 
+    local package="${1}"
+    local force=
+    local verbose=
+    [[ -n "${opts_force}" ]] && force="--force"
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose"
+    run "brew unlink --quiet ${package}"
+    run "brew uninstall ${force} ${verbose} ${package}"
+    brew.install.package "${package}"
+}
+
+----
+
+==== `brew.reinstall.packages`
+
+[source,bash]
+----
+brew.reinstall.packages () 
+{ 
+    local force=
+    local result=0
+    [[ -n "${opts_force}" ]] && force="--force"
+    for package in "$@"
+    do
+        brew.uninstall.package "${package}"
+        brew.install.package "${package}"
+        local result=$?
+    done
+    return ${result}
+}
+
+----
+
+==== `brew.relink`
+
+[source,bash]
+----
+brew.relink () 
+{ 
+    local package"${1}"
+    local verbose=
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose"
+    run "brew unlink --quiet ${package}"
+    run "brew link --force --overwrite ${verbose} ${package}"
+}
+
+----
+
+==== `brew.service.down`
+
+[source,bash]
+----
+brew.service.down () 
+{ 
+    local svc="$1"
+    run "brew services stop ${svc}"
+}
+
+----
+
+==== `brew.service.restart`
+
+[source,bash]
+----
+brew.service.restart () 
+{ 
+    local svc="$1"
+    run "brew services restart ${svc}"
+}
+
+----
+
+==== `brew.service.up`
+
+[source,bash]
+----
+brew.service.up () 
+{ 
+    local svc="$1"
+    run "brew services start ${svc}"
+}
+
+----
+
+==== `brew.setup`
+
+[source,bash]
+----
+brew.setup () 
+{ 
+    brew.upgrade
+}
+
+----
+
+==== `brew.uninstall`
+
+[source,bash]
+----
+brew.uninstall () 
+{ 
+    echo y | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
+}
+
+----
+
+==== `brew.uninstall.package`
+
+[source,bash]
+----
+brew.uninstall.package () 
+{ 
+    local package=$1
+    local force=
+    local verbose=
+    [[ -n "${opts_force}" ]] && force="--force"
+    [[ -n "${opts_verbose}" ]] && verbose="--verbose"
+    run.set-next continue-on-error
+    run "brew unlink ${package} ${force} ${verbose}"
+    run.set-next continue-on-error
+    run "brew uninstall ${package} ${force} ${verbose}"
+    brew.cache-reset.delayed
+}
+
+----
+
+==== `brew.uninstall.packages`
+
+[source,bash]
+----
+brew.uninstall.packages () 
+{ 
+    local force=
+    [[ -n "${opts_force}" ]] && force="--force"
+    for package in "$@"
+    do
+        brew.uninstall.package "${package}"
+    done
+}
+
+----
+
+==== `brew.upgrade`
+
+[source,bash]
+----
+brew.upgrade () 
+{ 
+    brew.install
+    if [[ -z "$(which brew)" ]]; then
+        warn "brew is not installed...."
+        return 1
+    fi
+    run "brew update --force"
+    run "brew upgrade"
+    run "brew cleanup -s"
+}
+
+----
+
+==== `brew.upgrade.packages`
+
+[source,bash]
+----
+brew.upgrade.packages () 
+{ 
+    [[ -z "$(which brew)" ]] || brew.install
+    [[ -z $1 ]] && { 
+        error "usage: brew.upgrade.packages package1 package2 ..."
+        return 1
+    }
+    run "brew upgrade $*"
+}
+
+----
+
+==== `cache-or-command`
+
+[source,bash]
+----
+cache-or-command () 
+{ 
+    local file="$1"
+    shift
+    local stale_minutes="$1"
+    shift
+    if file.exists-and-newer-than "${file}" "${stale_minutes}"; then
+        if [[ -s "${file}" ]]; then
+            cat "${file}"
+            return 0
+        fi
+    fi
+    is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${*} >${file}"
+    brew list "$@" > "${file}"
+    cat "${file}"
+}
+
+----
+
+==== `package.install`
+
+[source,bash]
+----
+package.install () 
+{ 
+    brew.install.packages "$@"
+    hash -r 2> /dev/null
+}
+
+----
+
+==== `package.is-installed`
+
+[source,bash]
+----
+package.is-installed () 
+{ 
+    [[ "$(brew.package.is-installed "$@")" == "true" ]]
+}
+
+----
+
+==== `package.uninstall`
+
+[source,bash]
+----
+package.uninstall () 
+{ 
+    brew.uninstall.packages "$@"
+}
+
+----
+
+
+=== Module `caller`
+
+==== `caller.stack`
+
+[source,bash]
+----
+caller.stack () 
+{ 
+    local index=${1:-"-1"}
+    while true; do
+        index=$((index + 1))
+        caller ${index} 2>&1 > /dev/null || break
+        local -a frame=($(caller ${index} | tr ' ' '\n'))
+        printf "%3d [ %-40.40s ]: %s\n" ${index} "${frame[2]}:${frame[0]}" "${frame[1]}"
+    done
+}
+
+----
+
+==== `stack.frame`
+
+[source,bash]
+----
+stack.frame () 
+{ 
+    caller.stack 0
+}
+
+----
+
+
+=== Module `color`
+
+==== `bold`
+
+[source,bash]
+----
+bold () 
+{ 
+    .ansi 1 "$@"
+}
+
+----
+
+==== `color.disable`
+
+[source,bash]
+----
+color.disable () 
+{ 
+    export clr='\e[0m'
+    unset txtblk
+    unset txtred
+    unset txtgrn
+    unset txtylw
+    unset txtblu
+    unset txtpur
+    unset txtcyn
+    unset txtwht
+    unset bldblk
+    unset bldred
+    unset bldgrn
+    unset bldylw
+    unset bldblu
+    unset bldpur
+    unset bldcyn
+    unset bldwht
+    unset unkblk
+    unset undred
+    unset undgrn
+    unset undylw
+    unset undblu
+    unset undpur
+    unset undcyn
+    unset undwht
+    unset bakblk
+    unset bakred
+    unset bakgrn
+    unset bakylw
+    unset bakblu
+    unset bakpur
+    unset bakcyn
+    unset bakwht
+    unset txtrst
+    unset italic
+    unset bold
+    unset strikethrough
+    unset underlined
+    unset white_on_orange
+    unset white_on_yellow
+    unset white_on_red
+    unset white_on_pink
+    unset white_on_salmon
+    unset yellow_on_gray
+    export BashMatic__ColorLoaded=0
+}
+
+----
+
+==== `color.enable`
+
+[source,bash]
+----
+color.enable () 
+{ 
+    if [[ ${BashMatic__ColorLoaded} -eq 1 ]]; then
+        [[ -n ${DEBUG} ]] && echo "colors are already loaded."
+    else
+        export txtblk='\e[0;30m'
+        export txtred='\e[0;31m'
+        export txtgrn='\e[0;32m'
+        export txtylw='\e[0;33m'
+        export txtblu='\e[0;34m'
+        export txtpur='\e[0;35m'
+        export txtcyn='\e[0;36m'
+        export txtwht='\e[0;37m'
+        export bldblk='\e[1;30m'
+        export bldred='\e[1;31m'
+        export bldgrn='\e[1;32m'
+        export bldylw='\e[1;33m'
+        export bldblu='\e[1;34m'
+        export bldpur='\e[1;35m'
+        export bldcyn='\e[1;36m'
+        export bldwht='\e[1;37m'
+        export unkblk='\e[4;30m'
+        export undred='\e[4;31m'
+        export undgrn='\e[4;32m'
+        export undylw='\e[4;33m'
+        export undblu='\e[4;34m'
+        export undpur='\e[4;35m'
+        export undcyn='\e[4;36m'
+        export undwht='\e[4;37m'
+        export bakblk='\e[40m'
+        export bakred='\e[41m'
+        export bakgrn='\e[42m'
+        export bakylw='\e[43m'
+        export bakblu='\e[44m'
+        export bakpur='\e[45m'
+        export bakcyn='\e[46m'
+        export bakwht='\e[47m'
+        export txtrst='\e[0m'
+        export rst='\e[0m'
+        export clr='\e[0m'
+        export bold='\e[1m'
+        export italic='\e[3m'
+        export underlined='\e[4m'
+        export strikethrough='\e[9m'
+        export inverse_on='\e[7m'
+        export inverse_off='\e[27m'
+        export default_bg='\e[49m'
+        export default_fg='\e[39m'
+        export white_on_orange="\e[48;5;208m"
+        export white_on_yellow="\e[48;5;214m"
+        export white_on_red="\e[48;5;9m"
+        export white_on_pink="\e[48;5;199m"
+        export white_on_salmon="\e[48;5;196m"
+        export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
+        export BashMatic__ColorLoaded=1
+    fi
+}
+
+----
+
+==== `error-text`
+
+[source,bash]
+----
+error-text () 
+{ 
+    printf "${txtred}"
+}
+
+----
+
+==== `italic`
+
+[source,bash]
+----
+italic () 
+{ 
+    .ansi 3 "$@"
+}
+
+----
+
+==== `red`
+
+[source,bash]
+----
+red () 
+{ 
+    .ansi 31 "$@"
+}
+
+----
+
+==== `reset-color`
+
+[source,bash]
+----
+reset-color () 
+{ 
+    echo -en "${clr}"
+}
+
+----
+
+==== `strikethrough`
+
+[source,bash]
+----
+strikethrough () 
+{ 
+    .ansi 9 "$@"
+}
+
+----
+
+==== `txt-err`
+
+[source,bash]
+----
+txt-err () 
+{ 
+    printf "${clr}${bldylw}${bakred}"
+}
+
+----
+
+==== `txt-info`
+
+[source,bash]
+----
+txt-info () 
+{ 
+    printf "${clr}${txtblu}"
+}
+
+----
+
+==== `txt-warn`
+
+[source,bash]
+----
+txt-warn () 
+{ 
+    printf "${clr}${bldylw}"
+}
+
+----
+
+==== `underline`
+
+[source,bash]
+----
+underline () 
+{ 
+    .ansi 4 "$@"
+}
+
+----
+
+
+=== Module `db`
+
+==== `db.actions.connect`
+
+[source,bash]
+----
+db.actions.connect () 
+{ 
+    db.psql.connect "$@"
+}
+
+----
+
+==== `db.actions.connections`
+
+[source,bash]
+----
+db.actions.connections () 
+{ 
+    db.config.connections
+    echo
+}
+
+----
+
+==== `db.actions.csv`
+
+[source,bash]
+----
+db.actions.csv () 
+{ 
+    export flag_quiet=1
+    db.psql.run "$@" --csv -A -P pager=off -P footer=off
+}
+
+----
+
+==== `db.actions.data-dir`
+
+[source,bash]
+----
+db.actions.data-dir () 
+{ 
+    db.psql.connect "$@" $(db.psql.args-data-only) -c 'show data_directory' | $(which grep) -E -v 'data_directory|row'
+}
+
+----
+
+==== `db.actions.db-settings-pretty`
+
+[source,bash]
+----
+db.actions.db-settings-pretty () 
+{ 
+    db.psql.connect.db-settings-pretty "$@"
+}
+
+----
+
+==== `db.actions.db-settings-toml`
+
+[source,bash]
+----
+db.actions.db-settings-toml () 
+{ 
+    db.psql.connect.db-settings-toml "$@"
+}
+
+----
+
+==== `db.actions.explain`
+
+[source,bash]
+----
+db.actions.explain () 
+{ 
+    local dbname="$1"
+    shift
+    local query="$1"
+    shift
+    local flags
+    local explain_sql="EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON)"
+    local explain_json
+    if [[ -f "${query}" ]]; then
+        local explain="${query}.explain"
+        local explain_json="${query}.explain.json"
+        echo "${explain_sql}" > "${explain}"
+        cat "${query}" >> "${explain}"
+        flags="-f ${explain} -o ${explain_json}"
+    else
+        query="${query//\"/\\\"}"
+        explain_json="$(echo "${query}" | shasum | cut -d' ' -f 1).json"
+        flags="-c \"${explain_sql} ${query}\" -o ${explain_json}"
+    fi
+    db.psql.connect "${dbname}" "-AXt -P pager=off ${flags}"
+}
+
+----
+
+==== `db.actions.run`
+
+[source,bash]
+----
+db.actions.run () 
+{ 
+    db.psql.run "$@"
+}
+
+----
+
+==== `db.actions.table-settings-set`
+
+[source,bash]
+----
+db.actions.table-settings-set () 
+{ 
+    db.psql.connect.table-settings-set "$@"
+}
+
+----
+
+==== `db.actions.table-settings-show`
+
+[source,bash]
+----
+db.actions.table-settings-show () 
+{ 
+    db.psql.connect.table-settings-show "$@"
+}
+
+----
+
+==== `db.actions.top`
+
+[source,bash]
+----
+db.actions.top () 
+{ 
+    db.top "$@"
+}
+
+----
+
+==== `db.config.connections`
+
+[source,bash]
+----
+db.config.connections () 
+{ 
+    ascii-clean "$(db.config.connections-list | awk '{print $1}')"
+}
+
+----
+
+==== `db.config.connections-list`
+
+[source,bash]
+----
+db.config.connections-list () 
+{ 
+    [[ -f ${bashmatic_db_config} ]] || return 2
+    ruby.handle-missing
+    gem.install colored2 > /dev/null
+    __yaml_source="${bashmatic_db_config}" ruby <<RUBY
+  require 'yaml'
+  require 'colored2'
+  h = YAML.load(File.read(ENV['__yaml_source']))
+  h.each_pair do |name, params|
+    printf "%50s → %s@%s/%s\n",
+      name.bold.yellow,
+      params['username'].blue,
+      params['host'].green,
+      params['database'].cyan
+  end
+RUBY
+
+}
+
+----
+
+==== `db.config.get-file`
+
+[source,bash]
+----
+db.config.get-file () 
+{ 
+    echo "${bashmatic_db_config}"
+}
+
+----
+
+==== `db.config.init`
+
+[source,bash]
+----
+db.config.init () 
+{ 
+    export bashmatic_db_connection=(host database username password)
+}
+
+----
+
+==== `db.config.parse`
+
+[source,bash]
+----
+db.config.parse () 
+{ 
+    local db="$1"
+    [[ -z ${db} ]] && return 1
+    [[ -f ${bashmatic_db_config} ]] || return 2
+    db.config.init
+    local -a script=("require 'yaml'; h = YAML.load(STDIN); ")
+    for field in "${bashmatic_db_connection[@]}"
+    do
+        script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
+    done
+    ruby.handle-missing
+    ruby -e "${script[*]}" < "${bashmatic_db_config}"
+}
+
+----
+
+==== `db.config.set-file`
+
+[source,bash]
+----
+db.config.set-file () 
+{ 
+    [[ -s "$1" ]] || return 1
+    export bashmatic_db_config="$1"
+}
+
+----
+
+==== `db.datetime`
+
+[source,bash]
+----
+db.datetime () 
+{ 
+    date '+%Y%m%d-%H%M%S'
+}
+
+----
+
+==== `db.pg.local.num-procs`
+
+[source,bash]
+----
+db.pg.local.num-procs () 
+{ 
+    /bin/ps -ef | /bin/grep "[p]ostgres" | wc -l | awk '{print $1}'
+}
+
+----
+
+==== `db.postgres.version`
+
+[source,bash]
+----
+db.postgres.version () 
+{ 
+    command -v postgres > /dev/null || return 1
+    postgres --version | sed -E 's/[^0-9.]//g'
+}
+
+----
+
+==== `db.psql.args`
+
+[source,bash]
+----
+db.psql.args () 
+{ 
+    if [[ -z "${bashmatic_db_database}" || -z "${bashmatic_db_host}" ]]; then
+        if [[ -n "$1" ]]; then
+            db.psql.args.config "$1"
+        else
+            error "Unable to determine DB connection parameters"
+            return 1
+        fi
+    else
+        export PGPASSWORD="${bashmatic_db_password}"
+        printf -- "-U ${bashmatic_db_username} -h ${bashmatic_db_host} ${bashmatic_db_database}"
+    fi
+}
+
+----
+
+==== `db.psql.args-data-only`
+
+[source,bash]
+----
+db.psql.args-data-only () 
+{ 
+    printf -- "%s" "--no-align --pset footer -q -X --tuples-only"
+}
+
+----
+
+==== `db.psql.args.config`
+
+[source,bash]
+----
+db.psql.args.config () 
+{ 
+    local output="$(db.config.parse "$1")"
+    local -a params
+    [[ -z ${output} || "${output}" =~ "null" ]] && { 
+        section.red 65 "Unknown database connection — ${bldylw}$1." 1>&2
+        info "The following are connections defined in ${bldylw}${bashmatic_db_config/${HOME}/\~}:\n" 1>&2
+        for c in $(db.config.connections)
+        do
+            info " • ${c}" 1>&2
+        done
+        echo 1>&2
+        exit 1
+    }
+    params=($(db.config.parse "$1"))
+    local dbhost
+    local dbname
+    local dbuser
+    local dbpass
+    dbhost=${params[0]}
+    dbname=${params[1]}
+    dbuser=${params[2]}
+    dbpass=${params[3]}
+    export PGPASSWORD="${dbpass}"
+    printf -- "-U ${dbuser} -h ${dbhost} -d ${dbname}"
+}
+
+----
+
+==== `db.psql.args.localhost`
+
+[source,bash]
+----
+db.psql.args.localhost () 
+{ 
+    printf -- "-U postgres -h localhost $*"
+}
+
+----
+
+==== `db.psql.args.maintenance`
+
+[source,bash]
+----
+db.psql.args.maintenance () 
+{ 
+    db.psql.args.localhost "--maintenance-db=postgres $*"
+}
+
+----
+
+==== `db.psql.connect`
+
+[source,bash]
+----
+db.psql.connect () 
+{ 
+    local dbname="$1"
+    shift
+    if [[ -z ${dbname} ]]; then
+        h1 "USAGE: db.connect connection-name" "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file." 1>&2
+        return 0``
+    fi
+    export __psql_stderr="$(file.temp)"
+    cp /dev/null "${__psql_stderr}"
+    local tempfile=$(mktemp)
+    db.psql.args.config "${dbname}" > "${tempfile}"
+    local -a args=($(cat "${tempfile}"))
+    rm -f "${tempfile}" > /dev/null
+    [[ ${flag_quiet} -eq 0 ]] && { 
+        printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n" 1>&2
+        printf "${txtylw}$(which psql) ${args[*]}${clr}\n" 1>&2
+        hr 1>&2
+    }
+    set +e
+    is-verbose && echo
+    if [[ ${action} == "run" ]]; then
+        print-cli psql --echo-errors "${args[@]}" "$@"
+        psql "${args[@]}" --echo-errors "$@" 2> "${__psql_stderr}"
+        local code=$?
+        [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
+    else
+        print-cli "psql ${args[*]} --echo-errors $*"
+        eval "psql ${args[*]} --echo-errors $*"
+        local code=$?
+    fi
+    set -e
+    return ${code}
+}
+
+----
+
+==== `db.psql.connect.db-settings-pretty`
+
+[source,bash]
+----
+db.psql.connect.db-settings-pretty () 
+{ 
+    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
+}
+
+----
+
+==== `db.psql.connect.db-settings-toml`
+
+[source,bash]
+----
+db.psql.connect.db-settings-toml () 
+{ 
+    db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
+}
+
+----
+
+==== `db.psql.connect.just-data`
+
+[source,bash]
+----
+db.psql.connect.just-data () 
+{ 
+    local dbname="$1"
+    shift
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) "$@"
+}
+
+----
+
+==== `db.psql.connect.table-settings-set`
+
+[source,bash]
+----
+db.psql.connect.table-settings-set () 
+{ 
+    local dbname="$1"
+    shift
+    local table="$1"
+    shift
+    local setting="$1"
+    shift
+    local value="$1"
+    shift
+    [[ -z ${setting} || -z ${value} ]] && { 
+        error "Either setting or value are not defined." 1>&2
+        return 1
+    }
+    info "Setting ${setting} = ${value} on table ${table}...."
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c "ALTER TABLE \"${table}\" SET (${setting} = ${value});"
+}
+
+----
+
+==== `db.psql.connect.table-settings-show`
+
+[source,bash]
+----
+db.psql.connect.table-settings-show () 
+{ 
+    local dbname="$1"
+    shift
+    local table="$1"
+    shift
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c "SELECT relname, reloptions FROM pg_class WHERE relname='${table}';"
+}
+
+----
+
+==== `db.psql.db-settings`
+
+[source,bash]
+----
+db.psql.db-settings () 
+{ 
+    psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+}
+
+----
+
+==== `db.psql.report-error`
+
+[source,bash]
+----
+db.psql.report-error () 
+{ 
+    local -a argv=("$@")
+    [[ -z "${__psql_stderr}" ]] && return 0
+    [[ -s "${__psql_stderr}" ]] || return 0
+    error "Error running command: " "${bldylw}psql ${argv[*]}"
+    printf -- "${txtred}$(cat "${__psql_stderr}" | sed -E 's/^/   /g')${clr}\n"
+    hr
+    rm -f "${__psql_stderr}"
+    unset __psql_stderr
+}
+
+----
+
+==== `db.psql.run`
+
+[source,bash]
+----
+db.psql.run () 
+{ 
+    local dbname="$1"
+    shift
+    db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c "\q"
+}
+
+----
+
+==== `db.psql.version`
+
+[source,bash]
+----
+db.psql.version () 
+{ 
+    command -v psql > /dev/null || return 1
+    psql --version | sed -E 's/[^0-9.]//g'
+}
+
+----
+
+==== `db.wait-until-db-online`
+
+[source,bash]
+----
+db.wait-until-db-online () 
+{ 
+    local db="${1}"
+    inf 'waiting for the database to come up...'
+    while true; do
+        out=$(psql -c "select count(*) from pg_stat_user_tables" "$(db.psql.args "${db}")" 2>&1)
+        code=$?
+        [[ ${code} == 0 ]] && break
+        [[ ${code} == 1 ]] && break
+        sleep 1
+        [[ ${out} =~ 'does not exist' ]] && break
+    done
+    ui.closer.ok:
+    return 0
+}
+
+----
+
+==== `print-cli`
+
+[source,bash]
+----
+print-cli () 
+{ 
+    is-verbose || return
+    h1 "Running command line:" "${bldylw}$*"
+}
+
+----
+
+
+=== Module `db_rails`
+
+==== `db.rails.schema.checksum`
+
+[source,bash]
+----
+db.rails.schema.checksum () 
+{ 
+    if [[ -d db/migrate ]]; then
+        find db/migrate -type f -ls | awk '{printf("%10d-%s\n",$7,$11)}' | sort | shasum | awk '{print $1}'
+    else
+        local schema=$(db.rails.schema.file)
+        [[ -s ${schema} ]] || error "can not find Rails schema in either ${RAILS_SCHEMA_RB} or ${RAILS_SCHEMA_SQL}"
+        [[ -s ${schema} ]] && shasum.sha-only "${schema}"
+    fi
+}
+
+----
+
+==== `db.rails.schema.file`
+
+[source,bash]
+----
+db.rails.schema.file () 
+{ 
+    if [[ -f "${RAILS_SCHEMA_RB}" && -f "${RAILS_SCHEMA_SQL}" ]]; then
+        if [[ "${RAILS_SCHEMA_RB}" -nt "${RAILS_SCHEMA_SQL}" ]]; then
+            printf "${RAILS_SCHEMA_RB}"
+        else
+            printf "${RAILS_SCHEMA_SQL}"
+        fi
+    else
+        if [[ -f "${RAILS_SCHEMA_RB}" ]]; then
+            printf "${RAILS_SCHEMA_RB}"
+        else
+            if [[ -f "${RAILS_SCHEMA_SQL}" ]]; then
+                printf "${RAILS_SCHEMA_SQL}"
+            fi
+        fi
+    fi
+}
+
+----
+
+
+=== Module `db_top`
+
+==== `db.top`
+
+[source,bash]
+----
+db.top () 
+{ 
+    local dbname
+    local width_min=90
+    local height_min=30
+    local width=$(screen.width)
+    local height=$(screen.height)
+    if [[ "$1" == "-l" || "$1" == "--list" ]]; then
+        db.config.connections
+        echo
+        return
+    fi
+    if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
+        error "Your screen is too small for db.top."
+        info "Minimum required screen dimensions are ${width_min} columns, ${height_min} rows."
+        info "Your screen is ${bldred}${width}x${height}."
+        return
+    fi
+    local -a connections_arguments
+    local -a connections_names
+    local -a connections_passwords
+    local code=0
+    local i=0
+    local arguments
+    local tof="$(mktemp -d "${TMPDIR:-/tmp/}.XXXXXXXXXXXX")/.db.top.$$"
+    cp /dev/null "${tof}" > /dev/null
+    for connection in "$@"
+    do
+        db.psql.args.config "${connection}" > /dev/null || return 1
+        db.psql.args "${connection}" > "${tof}"
+        arguments="$(cat "${tof}" | tr -d '\n')"
+        connections_arguments+=("${arguments}")
+        connections_names+=("${connection}")
+        connections_passwords+=("${PGPASSWORD}")
+        i=$((i + 1))
+    done
+    if [[ ${#connections_names[@]} -eq 0 ]]; then
+        h1 "${bldgrn}USAGE: db.top db1 db2 ... " "   EG: db.top prod-master prod-replica1 prod-replica2"
+        return 1
+    fi
+    ((BASH_IN_SUBSHELL)) && { 
+        trap "clear" TERM
+        trap "clear" EXIT
+    }
+    local interval=${bashmatic_db_top_refresh:-1}
+    local num_dbs=${#connections_names[@]}
+    h1 "Refreshing activity for ${num_dbs} databases..."
+    while true; do
+        local index=0
+        rm -f "${tof}.errors"
+        cp /dev/null "${tof}"
+        local screen_height=$(screen.height)
+        for dbname in "${connections_names[@]}"
+        do
+            local percent_total_height
+            local percent_total_height_next
+            percent_total_height=$(.db.top.vertical-offset "${num_dbs}" ${index})
+            percent_total_height_next=$(.db.top.vertical-offset "${num_dbs}" $((index + 1)))
+            local vertical_shift=$((percent_total_height * screen_height / 100))
+            local vertical_shift_next=$((percent_total_height_next * screen_height / 100))
+            local height=$((vertical_shift_next - vertical_shift - 7))
+            cursor.at.y ${vertical_shift} >> "${tof}"
+            [[ -n ${DEBUG} ]] && { 
+                .output.set-indent 0
+                info "CURRENT ❯${bldylw} % = ${percent_total_height}, %++ = ${percent_total_height_next}" >> "${tof}"
+                h1 -- "Database: ${dbname}" "PSQL arguments:" "${connections_arguments[${index}]}" >> "${tof}"
+            }
+            .db.top.connection "${tof}" "${dbname}" "${connections_passwords[${index}]}" "${height}" "${connections_arguments[${index}]}"
+            index=$((index + 1))
+        done
+        clear
+        if [[ -s "${tof}.errors" ]]; then
+            error "ERROR running psql with args: ${bldylw}${connections_arguments[${index}]}"
+            printf "${bldred}"
+            cat "${tof}.errors"
+            printf "${clr}\n"
+            h3 "Output:"
+            cat "${tof}"
+            code=111
+            break
+        else
+            .output.set-indent 0
+            hl.green "DbTop© v1.1.0 © 2016-2021 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
+            cat "${tof}"
+            cursor.at.y $(($(.output.screen-height) + 1))
+            printf "${bldwht}Press Ctrl-C to quit.${clr}"
+            code=0
+        fi
+        sleep "${interval}"
+    done
+    return ${code}
+}
+
+----
+
+==== `db.top.set-refresh`
+
+[source,bash]
+----
+db.top.set-refresh () 
+{ 
+    export bashmatic_db_top_refresh="$1"
+}
+
+----
+
+
+=== Module `deploy`
+
+==== `deploy.slack`
+
+[source,bash]
+----
+deploy.slack () 
+{ 
+    local original_text="$*"
+    [[ -z ${LibDeploy__SlackHookUrl} ]] && return 1
+    local text=$(echo "${original_text}" | sed -E 's/"/\"/g' | sed -E "s/'/\'/g")
+    local json="{\"text\": \"$text\"}"
+    local slack_url="${LibDeploy__SlackHookUrl}"
+    [[ ${LibRun__DryRun} -eq ${False} ]] && { 
+        if ${LibDeploy__NoSlack}; then
+            hl.green "${original_text}"
+        else
+            curl -s -d "payload=$json" "${slack_url}" > /dev/null
+            if [[ $? -eq 0 ]]; then
+                info: "sent to Slack: [${text}]"
+            else
+                warning: "error sending to Slack, is your SLACK_URL set?"
+            fi
+        fi
+    }
+    [[ ${LibRun__DryRun} -eq ${True} ]] && run "send to slack [${text}]"
+}
+
+----
+
+==== `deploy.slack-ding`
+
+[source,bash]
+----
+deploy.slack-ding () 
+{ 
+    deploy.slack "<!here> $@"
+}
+
+----
+
+==== `deploy.validate-vpn`
+
+[source,bash]
+----
+deploy.validate-vpn () 
+{ 
+    .deploy.check-vpn "$@" || .deploy.vpn-error "$@"
+}
+
+----
+
+
+=== Module `dir`
+
+==== `dir.count-slashes`
+
+[source,bash]
+----
+dir.count-slashes () 
+{ 
+    local dir="${1}"
+    echo "${dir}" | sed 's/[^/]//g' | tr -d '\n' | wc -c | tr -d ' '
+}
+
+----
+
+==== `dir.expand-dir`
+
+[source,bash]
+----
+dir.expand-dir () 
+{ 
+    local dir="${1}"
+    if [[ "${dir:0:1}" != "/" && "${dir:0:1}" != "~" ]]; then
+        dir="$(pwd)/${dir}"
+    else
+        if [[ "${dir:0:1}" == "~" ]]; then
+            dir="${HOME}/${dir:1:1000}"
+        fi
+    fi
+    printf -- "%s" "${dir}"
+}
+
+----
+
+==== `dir.is-a-dir`
+
+[source,bash]
+----
+dir.is-a-dir () 
+{ 
+    local dir="${1}"
+    [[ -d "${dir}" ]]
+}
+
+----
+
+==== `dir.short-home`
+
+[source,bash]
+----
+dir.short-home () 
+{ 
+    local dir="$1"
+    printf -- "%s" "${dir}" | sed -E "s#${HOME}#~#g"
+}
+
+----
+
+
+=== Module `docker`
+
+==== `docker.abort-if-down`
+
+[source,bash]
+----
+docker.abort-if-down () 
+{ 
+    local should_exit="${1:-true}"
+    inf 'Checking if Docker is running...'
+    docker ps 2> /dev/null > /dev/null
+    code=$?
+    if [[ ${code} == 0 ]]; then
+        ui.closer.ok:
+    else
+        ui.closer.not-ok:
+        error "docker ps returned ${code}, is Docker running?"
+        [[ "${should_exit}" == "true" ]] && exit 127
+        return 127
+    fi
+}
+
+----
+
+==== `docker.actions.build`
+
+[source,bash]
+----
+docker.actions.build () 
+{ 
+    docker.build.container "$@"
+}
+
+----
+
+==== `docker.actions.clean`
+
+[source,bash]
+----
+docker.actions.clean () 
+{ 
+    .docker.exec "docker-compose rm"
+}
+
+----
+
+==== `docker.actions.pull`
+
+[source,bash]
+----
+docker.actions.pull () 
+{ 
+    local tag=${1:-'latest'}
+    .docker.check-repo "${2}" || return 1
+    .docker.exec "docker pull ${AppDockerRepo}:${tag}"
+}
+
+----
+
+==== `docker.actions.push`
+
+[source,bash]
+----
+docker.actions.push () 
+{ 
+    local tag=${1:-$(.docker.next-version)}
+    .docker.check-repo "${2}" || return 1
+    docker.actions.tag latest
+    [[ -n ${tag} ]] && docker.actions.tag "${tag}"
+    .docker.check-repo || return 1
+    .docker.exec docker push "${AppDockerRepo}:${tag}"
+    [[ ${tag} != 'latest' ]] && .docker.exec docker push "${AppDockerRepo}:latest"
+}
+
+----
+
+==== `docker.actions.setup`
+
+[source,bash]
+----
+docker.actions.setup () 
+{ 
+    setup.docker
+    docker.pull
+    docker.build
+}
+
+----
+
+==== `docker.actions.start`
+
+[source,bash]
+----
+docker.actions.start () 
+{ 
+    .docker.exec "docker-compose start"
+}
+
+----
+
+==== `docker.actions.stop`
+
+[source,bash]
+----
+docker.actions.stop () 
+{ 
+    .docker.exec "docker-compose stop"
+}
+
+----
+
+==== `docker.actions.tag`
+
+[source,bash]
+----
+docker.actions.tag () 
+{ 
+    local tag=${1}
+    [[ -z ${tag} ]] && return 1
+    .docker.check-repo "${2}" || return 1
+    .docker.exec docker tag "${AppDockerRepo}" "${AppDockerRepo}:${tag}"
+}
+
+----
+
+==== `docker.actions.up`
+
+[source,bash]
+----
+docker.actions.up () 
+{ 
+    .docker.exec "docker-compose up"
+}
+
+----
+
+==== `docker.actions.update`
+
+[source,bash]
+----
+docker.actions.update () 
+{ 
+    docker.build
+    docker.push
+}
+
+----
+
+==== `docker.build.container`
+
+[source,bash]
+----
+docker.build.container () 
+{ 
+    .docker.check-repo "${1}" || return 1
+    local tag=${AppDockerRepo}
+    .docker.exec "docker build -m 3G -c 4 --pull -t ${tag} . $*"
+}
+
+----
+
+==== `docker.containers.clean`
+
+[source,bash]
+----
+docker.containers.clean () 
+{ 
+    local -a args=("$@")
+    run "docker rm $(docker ps -q -a) ${args[*]}"
+}
+
+----
+
+==== `docker.image.inspect`
+
+[source,bash]
+----
+docker.image.inspect () 
+{ 
+    run.set-next show-output-on
+    local jq=" | jq"
+    [[ -z $(command -v jq) ]] && jq=
+    run "docker image inspect ${*} $jq"
+}
+
+----
+
+==== `docker.image.rm`
+
+[source,bash]
+----
+docker.image.rm () 
+{ 
+    run "docker image rm ${*}"
+}
+
+----
+
+==== `docker.images-named`
+
+[source,bash]
+----
+docker.images-named () 
+{ 
+    local name="${1}"
+    local func="${2}"
+    docker.abort-if-down false || return 127
+    hl.subtle "Processing Docker images matching ${name} with function ${func}..."
+    local images="$(docker images | grep "^${name}" | sed 's/  */ /g' | cut -d ' ' -f 3 | tr '\n' ' ')"
+    ${func} ${images}
+}
+
+----
+
+==== `docker.images.clean`
+
+[source,bash]
+----
+docker.images.clean () 
+{ 
+    local name=${1:-"<none>"}
+    docker.images-named "${name}" "docker.image.rm"
+}
+
+----
+
+==== `docker.images.inspect`
+
+[source,bash]
+----
+docker.images.inspect () 
+{ 
+    local name=${1:-"<none>"}
+    docker.images-named "${name}" "docker.image.inspect"
+}
+
+----
+
+==== `docker.last-version`
+
+[source,bash]
+----
+docker.last-version () 
+{ 
+    .docker.check-repo "${1}" || return 1
+    [[ -z ${AppDockerRepo} ]] && { 
+        error "usage: docker.last-version organization/reponame:version"
+        return 1
+    }
+    .docker.last-version "$@"
+}
+
+----
+
+==== `docker.next-version`
+
+[source,bash]
+----
+docker.next-version () 
+{ 
+    .docker.check-repo "${1}" || return 1
+    [[ -z ${AppDockerRepo} ]] && { 
+        error "usage: docker.next-version [ organization/repo-name:version ]"
+        return 1
+    }
+    .docker.next-version "$@"
+}
+
+----
+
+==== `docker.set-repo`
+
+[source,bash]
+----
+docker.set-repo () 
+{ 
+    [[ -n "$1" ]] && export AppDockerRepo="$1"
+}
+
+----
+
+
+=== Module `file`
+
+==== `dir.find`
+
+[source,bash]
+----
+dir.find () 
+{ 
+    find . -name "*$1*" -type d -print
+}
+
+----
+
+==== `file.ask.if-exists`
+
+[source,bash]
+----
+file.ask.if-exists () 
+{ 
+    local file="$1"
+    shift
+    local message="$*"
+    [[ -z "${message}" ]] && message="File ${file} exists. Overwrite?"
+    if [[ -f ${file} ]]; then
+        run.set-next on-decline-return
+        run.ui.ask "${message}" || return 1
+    fi
+    return 0
+}
+
+----
+
+==== `file.exists-and-newer-than`
+
+[source,bash]
+----
+file.exists-and-newer-than () 
+{ 
+    local file="${1}"
+    shift
+    local minutes="${1}"
+    shift
+    if [[ -n "$(find ${file} -mmin -${minutes} -print 2>/dev/null)" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+----
+
+==== `file.extension`
+
+[source,bash]
+----
+file.extension () 
+{ 
+    local filename="$1"
+    printf "${filename##*.}"
+}
+
+----
+
+==== `file.extension.remove`
+
+[source,bash]
+----
+file.extension.remove () 
+{ 
+    local filename="$1"
+    printf "${filename%.*}"
+}
+
+----
+
+==== `file.extension.replace`
+
+[source,bash]
+----
+file.extension.replace () 
+{ 
+    local ext="$1"
+    shift
+    [[ -z "$1" ]] && { 
+        info "USAGE: file.extension.replace <new-extension> file1 file2 ... "
+        return 1
+    }
+    ext=".$(echo ${ext} | tr -d '.')"
+    local first=true
+    for file in "$@"
+    do
+        ${first} || printf " "
+        printf "%s%s" "$(file.strip.extension "${file}")" "${ext}"
+        first=false
+    done
+}
+
+----
+
+==== `file.find`
+
+[source,bash]
+----
+file.find () 
+{ 
+    find . -name "*$1*" -type f -print
+}
+
+----
+
+==== `file.gsub`
+
+[source,bash]
+----
+file.gsub () 
+{ 
+    local file="$1"
+    shift
+    local find="$1"
+    shift
+    local replace="$1"
+    shift
+    local runtime_options="$*"
+    [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && { 
+        error "Invalid usage of file.sub — " "USAGE: file.gsub <file>    <find-regex>        <replace-regex>" "EG:    file.gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'"
+        return 1
+    }
+    ${GrepCommand} -q "${find}" "${file}" || return 0
+    [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options}
+    run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
+}
+
+----
+
+==== `file.install-with-backup`
+
+[source,bash]
+----
+file.install-with-backup () 
+{ 
+    local source="$1"
+    local dest="$2"
+    if [[ ! -f "${source}" ]]; then
+        error "file ${source} can not be found"
+        return 4
+    fi
+    if [[ -f "${dest}" ]]; then
+        if [[ -z $(diff "${dest}" "${source}" 2>/dev/null) ]]; then
+            info: "${dest} is up to date"
+            return 0
+        else
+            ((LibFile__ForceOverwrite)) || { 
+                info "file ${dest} already exists, skipping (use -f to overwrite)"
+                return 0
+            }
+            inf "making a backup of ${dest} (${dest}.bak)"
+            cp "${dest}" "${dest}.bak" > /dev/null
+            ui.closer.ok:
+        fi
+    fi
+    run "mkdir -p $(dirname ${dest}) && cp ${source} ${dest}"
+}
+
+----
+
+==== `file.last-modified-date`
+
+[source,bash]
+----
+file.last-modified-date () 
+{ 
+    stat -f "%Sm" -t "%Y-%m-%d" "$1"
+}
+
+----
+
+==== `file.last-modified-year`
+
+[source,bash]
+----
+file.last-modified-year () 
+{ 
+    stat -f "%Sm" -t "%Y" "$1"
+}
+
+----
+
+==== `file.list.filter-existing`
+
+[source,bash]
+----
+file.list.filter-existing () 
+{ 
+    for file in "$@"
+    do
+        [[ -f "${file}" ]] && echo "${file}"
+    done
+}
+
+----
+
+==== `file.list.filter-non-empty`
+
+[source,bash]
+----
+file.list.filter-non-empty () 
+{ 
+    for file in "$@"
+    do
+        [[ -s "${file}" ]] && echo "${file}"
+    done
+}
+
+----
+
+==== `file.size`
+
+[source,bash]
+----
+file.size () 
+{ 
+    AppCurrentOS=${AppCurrentOS:-$(uname -s)}
+    if [[ "Linux" == ${AppCurrentOS} ]]; then
+        stat -c %s "$1"
+    else
+        file.stat "$1" st_size
+    fi
+}
+
+----
+
+==== `file.size.mb`
+
+[source,bash]
+----
+file.size.mb () 
+{ 
+    local file="$1"
+    shift
+    local s=$(file.size "${file}")
+    local mb=$(echo $((s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
+    printf "%.2f MB" ${mb}
+}
+
+----
+
+==== `file.source-if-exists`
+
+[source,bash]
+----
+file.source-if-exists () 
+{ 
+    local file
+    for file in "$@"
+    do
+        [[ -f "${file}" ]] && source "${file}"
+    done
+}
+
+----
+
+==== `file.stat`
+
+[source,bash]
+----
+file.stat () 
+{ 
+    local file="$1"
+    local field="$2"
+    [[ -f ${file} ]] || { 
+        error "file ${file} is not found. Usage: file.stat <filename> <stat-field-name>"
+        info "eg: ${bldylw}file.stat README.md st_size"
+        return 1
+    }
+    [[ -n ${field} ]] || { 
+        error "Second argument field is required."
+        info "eg: ${bldylw}file.stat README.md st_size"
+        return 2
+    }
+    eval $(stat -s "${file}" | tr ' ' '\n' | sed 's/^/local /g')
+    echo ${!field}
+}
+
+----
+
+==== `file.strip.extension`
+
+[source,bash]
+----
+file.strip.extension () 
+{ 
+    file.extension.remove "$@"
+}
+
+----
+
+==== `file.sync`
+
+[source,bash]
+----
+file.sync () 
+{ 
+    local from="$1"
+    local to="$2"
+}
+
+----
+
+==== `file.temp`
+
+[source,bash]
+----
+file.temp () 
+{ 
+    local host="${HOST:-${HOSTNAME:-$(hostname)}}"
+    local user="${USER:-"$(whoami)"}"
+    local temp_file_pattern=".bashmatic.${host}.${user}."
+    local n="$(epoch)"
+    local t=$((n % 99991))
+    local file="/tmp/${temp_file_pattern}${n}$$${t}${RANDOM}${RANDOM}"
+    find "$(dirname "${file}")" -maxdepth 1 -type f -name "${temp_file_pattern}*" -mtime +1 -delete > /dev/null 2>&1
+    echo "${file}"
+}
+
+----
+
+==== `files.find`
+
+[source,bash]
+----
+files.find () 
+{ 
+    local folder="$1"
+    local pattern="${2}"
+    [[ -z ${folder} || -z ${pattern} ]] && { 
+        echo "usage: files.find <folder> <pattern>" 1>&2
+        return 1
+    }
+    find "$1" -name "${pattern}"
+}
+
+----
+
+==== `files.map`
+
+[source,bash]
+----
+files.map () 
+{ 
+    local folder="${1}"
+    local pattern="${2}"
+    local array="${3}"
+    local -a files
+    if bashmatic.bash.version-four-or-later; then
+        mapfile -t files < <(files.find "${folder}" "${pattern}")
+    else
+        files=()
+        while IFS='' read -r line; do
+            files+=("$line")
+        done < <(files.find "${folder}" "${pattern}")
+    fi
+    if [[ -n ${array} ]]; then
+        printf "%s" "unset ${array}; declare -a ${array}; ${array}=(${files[*]}); export ${array}"
+    else
+        printf "%s" "${files[*]}"
+    fi
+}
+
+----
+
+==== `files.map.shell-scripts`
+
+[source,bash]
+----
+files.map.shell-scripts () 
+{ 
+    files.map "$1" '*.sh' "$2"
+}
+
+----
+
+
+=== Module `ftrace`
+
+==== `ftrace-in`
+
+[source,bash]
+----
+ftrace-in () 
+{ 
+    local func=$1
+    shift
+    local args="$*"
+    [[ -z ${TraceON} ]] && return
+    export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} + 1 ))
+    printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' ${func} "${args}" 1>&2
+}
+
+----
+
+==== `ftrace-off`
+
+[source,bash]
+----
+ftrace-off () 
+{ 
+    unset TraceON
+}
+
+----
+
+==== `ftrace-on`
+
+[source,bash]
+----
+ftrace-on () 
+{ 
+    export TraceON=true
+}
+
+----
+
+==== `ftrace-out`
+
+[source,bash]
+----
+ftrace-out () 
+{ 
+    local func=$1
+    shift
+    local code=$1
+    shift
+    local msg="$*"
+    [[ -z ${TraceON} ]] && return
+    local color="${bldgrn}"
+    [[ ${code} -ne 0 ]] && color="${bldred}"
+    printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' ${func} ${code} "${msg}" 1>&2
+    export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} - 1 ))
+}
+
+----
+
+
+=== Module `gem`
+
+==== `g-i`
+
+[source,bash]
+----
+g-i () 
+{ 
+    gem.install "$@"
+}
+
+----
+
+==== `g-u`
+
+[source,bash]
+----
+g-u () 
+{ 
+    gem.uninstall "$@"
+}
+
+----
+
+==== `gem.cache-installed`
+
+[source,bash]
+----
+gem.cache-installed () 
+{ 
+    gem.configure-cache
+    if [[ ! -s "${LibGem__GemListCache}" || -z $(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null) ]]; then
+        run "gem list > ${LibGem__GemListCache}" > /dev/null
+    fi
+}
+
+----
+
+==== `gem.cache-refresh`
+
+[source,bash]
+----
+gem.cache-refresh () 
+{ 
+    ( gem.configure-cache
+    gem.clear-cache
+    gem.cache-installed ) > /dev/null
+}
+
+----
+
+==== `gem.cache-reset`
+
+[source,bash]
+----
+gem.cache-reset () 
+{ 
+    gem.cache-refresh
+}
+
+----
+
+==== `gem.clear-cache`
+
+[source,bash]
+----
+gem.clear-cache () 
+{ 
+    rm -f "${LibGem__GemListCache}" > /dev/null
+}
+
+----
+
+==== `gem.configure-cache`
+
+[source,bash]
+----
+gem.configure-cache () 
+{ 
+    export LibGem__GemListCacheBase="${BASHMATIC_TEMP}/.gem/gem.list"
+    export LibGem__GemListCache=
+    export LibGem__GemInstallFlags=" -N --force --quiet "
+    local ruby_version=$(ruby.numeric-version)
+    export LibGem__GemListCache="${LibGem__GemListCacheBase}.${ruby_version}"
+    local dir=$(dirname ${LibGem__GemListCache})
+    [[ -d ${dir} ]] || run "mkdir -p ${dir}" > /dev/null
+}
+
+----
+
+==== `gem.ensure-gem-version`
+
+[source,bash]
+----
+gem.ensure-gem-version () 
+{ 
+    local gem=$1
+    local gem_version=$2
+    [[ -z ${gem} || -z ${gem_version} ]] && return
+    gem.cache-installed
+    if [[ -z $(cat ${LibGem__GemListCache} | grep "${gem} (${gem_version})") ]]; then
+        gem.uninstall ${gem}
+        gem.install ${gem} ${gem_version}
+    else
+        info "gem ${gem} version ${gem_version} is already installed."
+    fi
+}
+
+----
+
+==== `gem.gemfile.bundler-version`
+
+[source,bash]
+----
+gem.gemfile.bundler-version () 
+{ 
+    [[ -f Gemfile.lock ]] && grep -A2 BUNDLED Gemfile.lock | tail -1 | tr -d ' '
+}
+
+----
+
+==== `gem.gemfile.version`
+
+[source,bash]
+----
+gem.gemfile.version () 
+{ 
+    local gem=$1
+    [[ -z ${gem} ]] && return
+    if [[ -f Gemfile.lock ]]; then
+        grep -E -e "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
+    fi
+}
+
+----
+
+==== `gem.global.latest-version`
+
+[source,bash]
+----
+gem.global.latest-version () 
+{ 
+    local gem="$1"
+    [[ -z ${gem} ]] && return
+    declare -a versions=($(gem.global.versions ${gem}))
+    local max=0
+    local max_version=${versions[0]}
+    for v in "${versions[@]}"
+    do
+        vi=$(util.ver-to-i "${v}")
+        if [[ ${vi} -gt ${max} ]]; then
+            max=${vi}
+            max_version="${v}"
+        fi
+    done
+    printf "%s" "${max_version}"
+}
+
+----
+
+==== `gem.global.versions`
+
+[source,bash]
+----
+gem.global.versions () 
+{ 
+    local gem=$1
+    [[ -z ${gem} ]] && return
+    gem.cache-installed
+    cat "${LibGem__GemListCache}" | grep -E -e "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
+}
+
+----
+
+==== `gem.install`
+
+[source,bash]
+----
+gem.install () 
+{ 
+    .gem.verify-name "$@" || return 1
+    local gem_name="$1"
+    local gem_version="$2"
+    local gem_version_flags=
+    local gem_version_name=
+    gem_version=${gem_version:-$(gem.version ${gem_name})}
+    if [[ -z ${gem_version} ]]; then
+        gem_version_name=latest
+        gem_version_flags=
+    else
+        gem_version_name="${gem_version}"
+        gem_version_flags="--version ${gem_version}"
+    fi
+    if gem.is-installed ${gem_name} ${gem_version}; then
+        info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed"
+    else
+        info "installing ${bldylw}${gem_name} ${bldgrn}(${gem_version_name})${txtblu}..."
+        run "gem install ${gem_name} ${gem_version_flags} ${LibGem__GemInstallFlags}"
+        if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
+            rbenv rehash > /dev/null 2> /dev/null
+            gem.cache-refresh
+        else
+            error "Unable to install gem ${bldylw}${gem_name}"
+        fi
+        return ${LibRun__LastExitCode}
+    fi
+}
+
+----
+
+==== `gem.is-installed`
+
+[source,bash]
+----
+gem.is-installed () 
+{ 
+    local gem=$1
+    local version=$2
+    gem.cache-installed > /dev/null
+    if [[ -z ${version} ]]; then
+        grep -q -E -e "^${gem} \(" "${LibGem__GemListCache}"
+    else
+        grep -E -e "^${gem} \(" "${LibGem__GemListCache}" | grep -E -q -e "${version}"
+    fi
+}
+
+----
+
+==== `gem.remote.version`
+
+[source,bash]
+----
+gem.remote.version () 
+{ 
+    [[ -z "$1" ]] && return
+    gem query "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
+}
+
+----
+
+==== `gem.uninstall`
+
+[source,bash]
+----
+gem.uninstall () 
+{ 
+    .gem.verify-name "$@" || return 1
+    local gem_name=$1
+    local gem_version=$2
+    gem.is-installed "${gem_name}" "${gem_version}" || { 
+        info "gem ${bldylw}${gem_name}${txtblu} is not installed"
+        return
+    }
+    local gem_flags="-x -I --force"
+    if [[ -z ${gem_version} ]]; then
+        gem_flags="${gem_flags} -a"
+    else
+        gem_flags="${gem_flags} --version ${gem_version}"
+    fi
+    run "gem uninstall ${gem_name} ${gem_flags}"
+    gem.clear-cache
+    return ${LibRun__LastExitCode}
+}
+
+----
+
+==== `gem.version`
+
+[source,bash]
+----
+gem.version () 
+{ 
+    local gem="$1"
+    local default="$2"
+    [[ -z ${gem} ]] && return
+    local version
+    [[ -f Gemfile.lock ]] && version=$(gem.gemfile.version "${gem}")
+    if [[ -z ${version} ]]; then
+        if gem.is-installed "${gem}"; then
+            version=$(gem.global.latest-version "${gem}")
+        else
+            version=$(gem.remote.version "${gem}")
+        fi
+    fi
+    [[ -z ${version} && -n ${default} ]] && version=${default}
+    printf "%s" "${version}"
+}
+
+----
+
+
+=== Module `git`
+
+==== `git.branch.current`
+
+[source,bash]
+----
+git.branch.current () 
+{ 
+    git rev-parse --abbrev-ref HEAD
+}
+
+----
+
+==== `git.cfgu`
+
+[source,bash]
+----
+git.cfgu () 
+{ 
+    [[ -z $1 ]] && { 
+        git config --global -l
+        return
+    }
+    if [[ -n $2 ]]; then
+        rm -f ~/.gitconfig.lock
+        git config --global --replace-all user.$1 $2
+    else
+        if [[ $1 =~ - ]]; then
+            git config --global $1
+        else
+            git config --global user.$1
+        fi
+    fi
+}
+
+----
+
+==== `git.commits.last.message`
+
+[source,bash]
+----
+git.commits.last.message () 
+{ 
+    git log --pretty=format:"%s" -1
+}
+
+----
+
+==== `git.commits.last.sha`
+
+[source,bash]
+----
+git.commits.last.sha () 
+{ 
+    git log --pretty=format:"%H" -1
+}
+
+----
+
+==== `git.config.kigster`
+
+[source,bash]
+----
+git.config.kigster () 
+{ 
+    [[ $(git.cfgu name) == "Konstantin Gredeskoul" && $(git.cfgu email) == "kigster@gmail.com" ]] && return 0
+    git.cfgu name "Konstantin Gredeskoul"
+    git.cfgu email "kigster@gmail.com"
+}
+
+----
+
+==== `git.configure-auto-updates`
+
+[source,bash]
+----
+git.configure-auto-updates () 
+{ 
+    export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
+    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
+    mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
+}
+
+----
+
+==== `git.current-branch`
+
+[source,bash]
+----
+git.current-branch () 
+{ 
+    git branch --no-color | grep -F "*" | cut -f 2 -d " "
+}
+
+----
+
+==== `git.is-it-time-to-update`
+
+[source,bash]
+----
+git.is-it-time-to-update () 
+{ 
+    local last_update_at=$(git.last-update-at)
+    local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
+    local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
+    [[ ${second_since_update} -gt ${update_period_seconds} ]]
+}
+
+----
+
+==== `git.last-update-at`
+
+[source,bash]
+----
+git.last-update-at () 
+{ 
+    git.configure-auto-updates
+    local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
+    local last_update=0
+    if [[ ${LibGit__ForceUpdate} -eq 0 && -f ${file} ]]; then
+        last_update="$(cat $file | tr -d '\n')"
+    else
+        last_update=0
+    fi
+    printf "%d" ${last_update}
+}
+
+----
+
+==== `git.local-vs-remote`
+
+[source,bash]
+----
+git.local-vs-remote () 
+{ 
+    local upstream=${1:-'@{u}'}
+    local local_repo=$(git rev-parse @)
+    local remote_repo=$(git rev-parse "$upstream")
+    local base=$(git merge-base @ "$upstream")
+    if [[ -n ${DEBUG} ]]; then
+        printf "
+      pwd         = $(pwd)
+      remote      = $(git.remotes)
+      base        = ${base}
+      upstream    = ${upstream}
+      local_repo  = ${local_repo}
+      remote_repo = ${remote_repo}
+    "
+    fi
+    local result=
+    if [[ "${local_repo}" == "${remote_repo}" ]]; then
+        result="ok"
+    else
+        if [[ "${local_repo}" == "${base}" ]]; then
+            result="behind"
+        else
+            if [[ "${remote_repo}" == "${base}" ]]; then
+                result="ahead"
+            else
+                result="diverged"
+            fi
+        fi
+    fi
+    printf '%s' ${result}
+    [[ ${result} == "ok" ]] && return 0
+    return 1
+}
+
+----
+
+==== `git.open`
+
+[source,bash]
+----
+git.open () 
+{ 
+    local remote="${1:-"origin"}"
+    local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
+    info "Opening URL ${bldylw}${url}"
+    open -a 'Google Chrome' ${url}
+}
+
+----
+
+==== `git.quiet`
+
+[source,bash]
+----
+git.quiet () 
+{ 
+    [[ -n ${LibGit__QuietUpdate} ]]
+}
+
+----
+
+==== `git.remotes`
+
+[source,bash]
+----
+git.remotes () 
+{ 
+    git remote -v | awk '{print $2}' | uniq
+}
+
+----
+
+==== `git.repo-is-clean`
+
+[source,bash]
+----
+git.repo-is-clean () 
+{ 
+    local repo="${1:-${BASHMATIC_HOME:="${HOME}/.bashmatic"}}"
+    cd "${repo}" > /dev/null
+    if [[ -z $(git status -s) ]]; then
+        cd - > /dev/null
+        return 0
+    else
+        cd - > /dev/null
+        return 1
+    fi
+}
+
+----
+
+==== `git.repo.remote-to-git@`
+
+[source,bash]
+----
+git.repo.remote-to-git@ () 
+{ 
+    local f=".git/config"
+    if [[ -f "$f" ]]; then
+        grep -q "url = git@" "$f" && { 
+            info "The repo is already using git@ syntax for the remote."
+            return 0
+        }
+        cat "${f}" | sed -E 's#url = https://github\.com/([^/]*)/#url = git@github\.com:\1/#g' > "${f}.ssh"
+        mv "${f}" "${f}.https"
+        cd .git
+        ln -nfs config.ssh config
+        cd - > /dev/null
+        hr
+        info "Created an ssh version of .git/config file, and symlinked it:"
+        ls -l .git/config*
+        info "Your new remote:"
+        info $(grep "git@" "${f}")
+        hr
+    fi
+}
+
+----
+
+==== `git.save-last-update-at`
+
+[source,bash]
+----
+git.save-last-update-at () 
+{ 
+    echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
+}
+
+----
+
+==== `git.seconds-since-last-pull`
+
+[source,bash]
+----
+git.seconds-since-last-pull () 
+{ 
+    local last_update="$1"
+    local now=$(epoch)
+    printf $((now - last_update))
+}
+
+----
+
+==== `git.squash`
+
+[source,bash]
+----
+git.squash () 
+{ 
+    local number="${1}"
+    is.numeric ${number} || { 
+        info "USAGE: git.squash <number> # of commits to go back"
+        return
+    }
+    run "git reset --soft HEAD~${number}"
+    info "We've squashed down ${number} commits locally."
+    info "Now, you must commit this squash, and likely force push."
+}
+
+----
+
+==== `git.sync`
+
+[source,bash]
+----
+git.sync () 
+{ 
+    local dir="$(pwd -P)"
+    cd "${BASHMATIC_HOME}" > /dev/null
+    git.repo-is-clean || { 
+        output.is-ssh || warning "${BASHMATIC_HOME} has locally modified files." "Please commit or stash them to allow auto-upgrade to function as designed." 1>&2
+        cd "${dir}" > /dev/null
+        return 1
+    }
+    git.update-repo-if-needed
+    cd "${dir}" > /dev/null
+    return 0
+}
+
+----
+
+==== `git.sync-dirs`
+
+[source,bash]
+----
+git.sync-dirs () 
+{ 
+    local pattern="${1:-'*'}"
+    set -e
+    run.set-all abort-on-error
+    for dir in $(find . -type d -maxdepth 1 -name "${pattern}*")
+    do
+        hl.yellow-on-gray "syncing [$dir]..."
+        cd $dir > /dev/null
+        run "git pull --rebase"
+        cd - > /dev/null
+    done
+}
+
+----
+
+==== `git.sync-remote`
+
+[source,bash]
+----
+git.sync-remote () 
+{ 
+    git.is-it-time-to-update || return 0
+    if git.quiet; then
+        ( git remote update && git fetch ) 2>&1 > /dev/null
+    else
+        run "git remote update && git fetch"
+    fi
+    local git_status="$(git.local-vs-remote)"
+    if [[ ${git_status} == "behind" ]]; then
+        git.quiet || run "git pull --rebase"
+        git.quiet && git pull --rebase 2>&1 > /dev/null
+    else
+        if [[ ${git_status} != "ahead" ]]; then
+            git.save-last-update-at
+        else
+            if [[ ${git_status} != "ok" ]]; then
+                error "Report $(pwd) is ${status} compared to the remote." "Please fix manually to continue."
+                return 1
+            fi
+        fi
+    fi
+    git.save-last-update-at
+    return 0
+}
+
+----
+
+==== `git.update-repo-if-needed`
+
+[source,bash]
+----
+git.update-repo-if-needed () 
+{ 
+    git.is-it-time-to-update && git.sync-remote
+}
+
+----
+
+==== `git.upstream`
+
+[source,bash]
+----
+git.upstream () 
+{ 
+    local this_branch=$(git.current-branch)
+    this_branch=${this_branch:-master}
+    run.set-next show-output-on
+    run "git branch --set-upstream-to=origin/${this_branch} ${this_branch}"
+}
+
+----
+
+
+=== Module `github`
+
+==== `github.clone`
+
+[source,bash]
+----
+github.clone () 
+{ 
+    test -n "$1" && github.validate && run "git clone git@github.com:$(github.org)/$1"
+}
+
+----
+
+==== `github.org`
+
+[source,bash]
+----
+github.org () 
+{ 
+    local namespace="$1"
+    if [[ -z ${namespace} ]]; then
+        git config --global --get user.github
+    else
+        git config --global --unset user.github
+        git config --global --add user.github "${namespace}"
+    fi
+}
+
+----
+
+==== `github.setup`
+
+[source,bash]
+----
+github.setup () 
+{ 
+    local namespace="$(github.org)"
+    if [[ -z "${namespace}" ]]; then
+        unset GITHUB_ORG
+        run.ui.ask-user-value GITHUB_ORG "Please enter the name of your Github Organization:" || return 1
+        github.org "${GITHUB_ORG}"
+        echo
+        h2 "Your github organization was saved in your ~/.gitconfig file." "To change it in the future, run: ${bldylw}github.org ${blgrn}new-organization"
+        echo
+    fi
+    github.org > /dev/null
+}
+
+----
+
+==== `github.validate`
+
+[source,bash]
+----
+github.validate () 
+{ 
+    inf "Validating Github Configuration..."
+    if github.org > /dev/null; then
+        ok:
+        return 0
+    else
+        not-ok:
+        github.setup
+        return $?
+    fi
+}
+
+----
+
+
+=== Module `is`
+
+==== `is-validations`
+
+[source,bash]
+----
+is-validations () 
+{ 
+    util.functions-matching.diff is\\. | sedx 's/^/is./g'
+}
+
+----
+
+==== `is.a-command`
+
+[source,bash]
+----
+is.a-command () 
+{ 
+    is.command "$@"
+}
+
+----
+
+==== `is.a-directory`
+
+[source,bash]
+----
+is.a-directory () 
+{ 
+    [[ -d "${1}" ]]
+}
+
+----
+
+==== `is.a-function`
+
+[source,bash]
+----
+is.a-function () 
+{ 
+    if typeset -f "$1" > /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+----
+
+==== `is.a-function.invoke`
+
+[source,bash]
+----
+is.a-function.invoke () 
+{ 
+    local func="$1"
+    shift
+    is.a-function "${func}" && eval "${func} $*"
+}
+
+----
+
+==== `is.a-non-empty-array`
+
+[source,bash]
+----
+is.a-non-empty-array () 
+{ 
+    local var_name="$1"
+    local -a array
+    echo "array=( \"\${${var_name}[@]}\" )"
+    eval "array=( \"\${${var_name}[@]}\" )"
+    [[ -n ${array[*]} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${#array[@]} -gt 0 ]]
+}
+
+----
+
+==== `is.a-non-empty-file`
+
+[source,bash]
+----
+is.a-non-empty-file () 
+{ 
+    [[ -s "${1}" ]]
+}
+
+----
+
+==== `is.a-script`
+
+[source,bash]
+----
+is.a-script () 
+{ 
+    bashmatic.detect-subshell
+    [[ ${BASH_IN_SUBSHELL} -eq 1 ]]
+}
+
+----
+
+==== `is.a-variable`
+
+[source,bash]
+----
+is.a-variable () 
+{ 
+    local var_name="$1"
+    local shell="$(user.current-shell)"
+    case $shell in 
+        bash)
+            [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && -n ${!var_name+x} ]] && return 0
+        ;
+        zsh)
+            eval "[[ -v ${var_name} ]]" && return 0
+        ;
+        *)
+            return 1
+        ;
+    esac
+}
+
+----
+
+==== `is.alias`
+
+[source,bash]
+----
+is.alias () 
+{ 
+    alias "$1" 2> /dev/null
+}
+
+----
+
+==== `is.an-empty-file`
+
+[source,bash]
+----
+is.an-empty-file () 
+{ 
+    [[ ! -s "${1}" ]]
+}
+
+----
+
+==== `is.an-existing-file`
+
+[source,bash]
+----
+is.an-existing-file () 
+{ 
+    [[ -f "${1}" ]]
+}
+
+----
+
+==== `is.avariable`
+
+[source,bash]
+----
+is.avariable () 
+{ 
+    local var_name="$1"
+    local shell="$(user.current-shell)"
+    case $shell in 
+        bash)
+            [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && -n ${!var_name+x} ]] && return 0
+        ;
+        zsh)
+            eval "[[ -v ${var_name} ]]" && return 0
+        ;
+        *)
+            return 1
+        ;
+    esac
+}
+
+----
+
+==== `is.blank`
+
+[source,bash]
+----
+is.blank () 
+{ 
+    [[ -z "${1}" ]]
+}
+
+----
+
+==== `is.command`
+
+[source,bash]
+----
+is.command () 
+{ 
+    command -v "$1" > /dev/null
+}
+
+----
+
+==== `is.integer`
+
+[source,bash]
+----
+is.integer () 
+{ 
+    is.numeric "$1" && [[ ! $1 =~ \. ]]
+}
+
+----
+
+==== `is.missing`
+
+[source,bash]
+----
+is.missing () 
+{ 
+    ! is.command "$@"
+}
+
+----
+
+==== `is.not-a-blank-var`
+
+[source,bash]
+----
+is.not-a-blank-var () 
+{ 
+    local var="$1"
+    [[ -n "${!var}" ]]
+}
+
+----
+
+==== `is.not-blank`
+
+[source,bash]
+----
+is.not-blank () 
+{ 
+    [[ -n "${1}" ]]
+}
+
+----
+
+==== `is.numeric`
+
+[source,bash]
+----
+is.numeric () 
+{ 
+    case $1 in 
+        '' | *[!\-0-9.]*)
+            return 1
+        ;
+        *)
+            return 0
+        ;
+    esac
+}
+
+----
+
+==== `is.sourced-in`
+
+[source,bash]
+----
+is.sourced-in () 
+{ 
+    bashmatic.detect-subshell
+    [[ ${BASH_IN_SUBSHELL} -eq 0 ]]
+}
+
+----
+
+==== `unless`
+
+[source,bash]
+----
+unless () 
+{ 
+    ! __is.validation.error "${2}" "${1}" __is.validation.ignore-error "${@:3}"
+}
+
+----
+
+==== `validations.add-error`
+
+[source,bash]
+----
+validations.add-error () 
+{ 
+    local error="$1"
+    local value="$2"
+    is.not-blank "${error}" && is.not-blank "${value}" && { 
+        export Bashmatic__IsErrors+=("${error}")
+        export Bashmatic__IsValues+=("${value}")
+    }
+}
+
+----
+
+==== `validations.begin`
+
+[source,bash]
+----
+validations.begin () 
+{ 
+    export Bashmatic__IsErrors=()
+    export Bashmatic__IsValues=()
+    export Bashmatic__IsSessionName="$1"
+}
+
+----
+
+==== `validations.end`
+
+[source,bash]
+----
+validations.end () 
+{ 
+    validations.print-errors "$@"
+    validations.begin ""
+}
+
+----
+
+==== `validations.print-errors`
+
+[source,bash]
+----
+validations.print-errors () 
+{ 
+    local error_count="${#Bashmatic__IsErrors}"
+    ((error_count)) || return 0
+    is.not-blank "${Bashmatic__IsSessionName}" && hl.salmon "Reporing errors for ${Bashmatic__IsSessionName}"
+    for i in $(seq 1 "${error_count}")
+    do
+        local error=${Bashmatic__IsErrors[$((i - 1))]}
+        local value=${Bashmatic__IsValues[$((i - 1))]}
+        error "${error}" "Invalid value: ${value}"
+    done
+    return "${error_count}"
+}
+
+----
+
+==== `whenever`
+
+[source,bash]
+----
+whenever () 
+{ 
+    __is.validation.error "${2}" "${1}" __is.validation.report-error "${@:3}"
+}
+
+----
+
+
+=== Module `jemalloc`
+
+==== `jm.check`
+
+[source,bash]
+----
+jm.check () 
+{ 
+    local JM_Quiet=false
+    local JM_Ruby=false
+    local JM_Stats=false
+    while :; do
+        case $1 in 
+            -q | --quiet)
+                shift
+                export JM_Quiet=true
+            ;
+            -r | --ruby)
+                shift
+                export JM_Ruby=true
+            ;
+            -s | --stats)
+                shift
+                export JM_Stats=true
+                exit $?
+            ;
+            -h | -\? | --help)
+                shift
+                jm.usage
+                exit 0
+            ;
+            --)
+                shift
+                break
+            ;
+            *)
+                break
+            ;
+        esac
+    done
+    ${JM_Ruby} && { 
+        jm.ruby.report
+        exit 0
+    }
+    ${JM_Quiet} && { 
+        jm.jemalloc.detect-quiet
+        code=$?
+        exit ${code}
+    }
+    ${JM_Stats} && { 
+        jm.jemalloc.stats
+        exit 0
+    }
+    jm.jemalloc.detect-loud
+}
+
+----
+
+==== `jm.jemalloc.detect-loud`
+
+[source,bash]
+----
+jm.jemalloc.detect-loud () 
+{ 
+    jm.jemalloc.detect-quiet
+    local code=$?
+    local local_ruby=$(jm.ruby.detect)
+    printf "${ColorBlue}Checking if ruby ${ColorYellow}${local_ruby}${ColorBlue} is linked with jemalloc... \n\n "
+    if [[ ${code} -eq 0 ]]; then
+        printf " ✅ ${ColorGreen} — jemalloc was detected.\n"
+    else
+        printf " 🚫 ${ColorRed} — jemalloc was not detected.\n"
+    fi
+    printf "${ColorReset}\n"
+    return ${code}
+}
+
+----
+
+==== `jm.jemalloc.detect-quiet`
+
+[source,bash]
+----
+jm.jemalloc.detect-quiet () 
+{ 
+    MALLOC_CONF=stats_print:true ruby -e "exit" 2>&1 | grep -q "jemalloc statistics"
+    return $?
+}
+
+----
+
+==== `jm.jemalloc.stats`
+
+[source,bash]
+----
+jm.jemalloc.stats () 
+{ 
+    jm.jemalloc.detect-quiet || { 
+        printf "No Jemalloc was found for the curent ruby $(jm.ruby.detect)\n"
+        return 1
+    }
+    MALLOC_CONF=stats_print:true ruby -e "exit" 2>&1 | less -S
+}
+
+----
+
+==== `jm.ruby.detect`
+
+[source,bash]
+----
+jm.ruby.detect () 
+{ 
+    local ruby_loc
+    if [[ -n $(which rbenv) ]]; then
+        ruby_loc=$(rbenv versions | grep '*' | awk '{print $2}')
+        [[ -n ${ruby_loc} ]] && ruby_loc="(rbenv) ${ruby_loc}"
+    else
+        ruby_loc="$(which ruby) $(ruby -e 'puts "#{RUBY_VERSION} (#{RUBY_PLATFORM})"')"
+    fi
+    printf "%s" "${ruby_loc}"
+}
+
+----
+
+==== `jm.ruby.report`
+
+[source,bash]
+----
+jm.ruby.report () 
+{ 
+    printf "Ruby version being tested:\n  →  ${ColorBlue}$(which ruby) ${ColorYellow}$(jm.ruby.detect)${ColorReset}\n"
+}
+
+----
+
+==== `jm.usage`
+
+[source,bash]
+----
+jm.usage () 
+{ 
+    printf "
+${ColorBlue}USAGE:${ColorReset}
+  $(basename $0) [ -q/--quiet ]
+                 [ -r/--ruby  ]
+                 [ -s/--stats ]
+                 [ -h/--help  ]
+
+${ColorBlue}DESCRIPTION:${ColorReset}
+  Determines whether the currently defined in the PATH ruby
+  interpreter is linked with libjemalloc memory allocator.
+
+${ColorBlue}OPTIONS${ColorReset}
+  -q/--quiet        Do not print output, exit with 1 if no jemalloc
+  -r/--ruby         Print which ruby is currently in the PATH
+  -s/--stats        Print the jemalloc stats
+  -h/--help         This page.
+%s
+" ""
+    exit 0
+}
+
+----
+
+
+=== Module `json`
+
+==== `json.begin-array`
+
+[source,bash]
+----
+json.begin-array () 
+{ 
+    [[ -n "$1" ]] && json.begin-key "$1"
+    echo " ["
+}
+
+----
+
+==== `json.begin-hash`
+
+[source,bash]
+----
+json.begin-hash () 
+{ 
+    [[ -n "$1" ]] && json.begin-key "$1"
+    echo "{"
+}
+
+----
+
+==== `json.begin-key`
+
+[source,bash]
+----
+json.begin-key () 
+{ 
+    if [[ -n "$1" ]]; then
+        printf "\"${1}\": "
+    fi
+}
+
+----
+
+==== `json.end-array`
+
+[source,bash]
+----
+json.end-array () 
+{ 
+    printf "]"
+    [[ "$1" == "true" ]] && printf ","
+    echo
+}
+
+----
+
+==== `json.end-hash`
+
+[source,bash]
+----
+json.end-hash () 
+{ 
+    printf "}"
+    [[ "$1" == "true" ]] && printf ","
+    echo
+}
+
+----
+
+==== `json.file-to-array`
+
+[source,bash]
+----
+json.file-to-array () 
+{ 
+    json.begin-array "$1"
+    cat $2 | tr -d '\r' | tr -d '\015' | sed 's/^/"/g;s/$/",/g' | tail -r | awk -F, '{if (FNR!=1) print; else print $1} ' | tail -r
+    json.end-array $3
+}
+
+----
+
+
+=== Module `maths`
+
+==== `maths.eval`
+
+[source,bash]
+----
+maths.eval () 
+{ 
+    local __math_chars=(!²³¹¼½¾×÷ΠΣ⁰ⁱ⁴⁵⁶⁷⁸⁹ⁿ⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞∅∈∉√∛∜∞∩∪∿⊂⊃⟌τ𝛕𝜏𝝉𝞃𝞽०१२३४५६७८९ℯ𝐞𝑒𝒆𝖾𝗲𝘦𝙚𝚎ｅπϖ𝛑𝛡𝜋𝜛𝝅𝝕𝝿𝞏𝞹𝟉𝐢𝑖𝒊𝒾𝓲𝔦𝕚𝖎𝗂𝗶𝘪𝙞𝚒)
+    local -a __math_chars_array=($(echo "${__math_chars}" | sedx 's/(.)/\1 /g'))
+    local __math_chars_array
+    [[ -z "$1" ]] && { 
+        output.set-max-width 100
+        output.set-min-width 40
+        usage-box "maths.eval 'expression' [ floating precitions [ total width ] © Computes a mathematical expression with UTF support" "Example 1." "maths.eval '√(57)*⅓×(sin(π÷(1.3)))' => 1.66882" "Example 2." "maths.eval '5!×(ｅ)' => 326.19382" "Special Characters:" "" " 0 through 23" "${__math_chars_array[*]:0:24}" "24 through 48" "${__math_chars_array[*]:24:24}" "48 through 72" "${__math_chars_array[*]:48:24}" "72 through 96" "${__math_chars_array[*]:72:24}"
+        info "NOTE: ensure to use () brackets to group items you want to compute."
+        info "NOTE: if in doubt, add more brackets :) "
+        output.reset-min-max-width
+        return 0
+    }
+    gem.install unicode_math > /dev/null
+    local expression="$1"
+    shift
+    local output_precision="${1:-"5"}"
+    shift
+    local output_width="${1}"
+    local ruby_script="require 'unicode_math'; printf('%${output_width}.${output_precision}f', (Math.module_eval { ${expression} }))"
+    ruby_script="$(echo "${ruby_script}" | sedx 's/ ?(×|÷|!)/\.\1/g')"
+    local temp_file
+    temp_file="$(mktemp)"
+    ruby -r 'unicode_math' -e "${ruby_script}" 2> "${temp_file}"
+    local code="$?"
+    [[ ${code} -ne 0 ]] && { 
+        error "Unable to perform an arithmetic expression:" "${bldylw}${ruby_script}" 1>&2
+        info "Error: \n${bldylw}$(cat "${temp_file}")"
+        return 1
+    }
+    rm -f "${temp_file}"
+    return 0
+}
+
+----
+
+
+=== Module `net`
+
+==== `net.fast-scan`
+
+[source,bash]
+----
+net.fast-scan () 
+{ 
+    local subnet="${1:-"$(net.local-subnet)"}"
+    local out=$(mktemp)
+    run.set-next show-output-on
+    local colored=/tmp/colored.$$
+    run "sudo nmap --min-parallelism 15 -O --host-timeout 5 -F ${subnet} > ${out}"
+    run "echo 'printf \"' > ${colored}"
+    cat ${out} | sed -E "s/Nmap scan report for (.*)$/\n\${bldylw}Nmap scan report for \1\${clr}\n/g" >> ${colored}
+    run "echo '\"' >> ${colored}"
+    bash ${colored}
+}
+
+----
+
+==== `net.local-net`
+
+[source,bash]
+----
+net.local-net () 
+{ 
+    ifconfig -a | grep inet | grep broadcast | awk '{print $2}' | awk 'BEGIN{FS="."}{printf "%d.%d.%d.%s", $1, $2, $3, "0/24"}'
+}
+
+----
+
+==== `net.local-subnet`
+
+[source,bash]
+----
+net.local-subnet () 
+{ 
+    local subnet="$(ifconfig -a |
+    grep inet | grep broadcast | 
+    grep -v 'inet 169' |
+    grep -v 'inet 127' |
+    awk '{print $2}' |
+    cut -d '.' -f 1,2,3 |
+    sort |
+    uniq |
+    head -1).0/24"
+    printf '%s' ${subnet}
+}
+
+----
+
+
+=== Module `openssl`
+
+==== `openssl.certs.generate-csr`
+
+[source,bash]
+----
+openssl.certs.generate-csr () 
+{ 
+    local domain="${1:-"domain"}"
+    local subject="${2:-"${default_certificate_info}"}${domain}"
+    local server="${domain/\*/star}"
+    hl.desc "Generating CSR + Private Key for domain [${domain}]"
+    set -e
+    openssl req -new -newkey rsa:4096 -nodes -keyout "${server}.key" -out "${server}.csr" -subj "${subject}"
+    pbcopy < "${server}.csr"
+    success "CSR is now in the file ${server}.csr and your clipboard."
+    set +e
+    .openssl.certs.print-generated "${server}.csr" 2> /dev/null
+    return 0
+}
+
+----
+
+
+=== Module `osx`
+
+==== `afp.servers`
+
+[source,bash]
+----
+afp.servers () 
+{ 
+    osx.local-servers afp
+}
+
+----
+
+==== `bashmatic-set-fqdn`
+
+[source,bash]
+----
+bashmatic-set-fqdn () 
+{ 
+    osx.set-fqdn "$@"
+}
+
+----
+
+==== `bashmatic-term`
+
+[source,bash]
+----
+bashmatic-term () 
+{ 
+    open $(bashmatic-term-program)
+}
+
+----
+
+==== `bashmatic-term-program`
+
+[source,bash]
+----
+bashmatic-term-program () 
+{ 
+    if [[ -d /Applications/iTerm.app ]]; then
+        printf '%s' /Applications/iTerm.app
+    else
+        if [[ -d /Applications/Utilities/Terminal.app ]]; then
+            printf '%s' /Applications/Utilities/Terminal.app
+        else
+            printf '%s' "echo 'No TERMINAL application found'"
+        fi
+    fi
+}
+
+----
+
+==== `change-underscan`
+
+[source,bash]
+----
+change-underscan () 
+{ 
+    set +e
+    local amount_percentage="$1"
+    if [[ -z "${amount_percentage}" ]]; then
+        printf "%s\n\n" "USAGE: change-underscan percent"
+        printf "%s\n" "   eg: change-underscan   5  # underscan by 5%"
+        printf "%s\n" "   eg: change-underscan -10  # overscan by 10%"
+        return -1
+    fi
+    local file="/var/db/.com.apple.iokit.graphics"
+    local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"
+    local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
+    h1 'This utility allows you to change underscan/overscan' 'on monitors that do not offer that option via GUI.'
+    run.ui.ask "Continue?"
+    info "Great! First we need to identify your monitor."
+    hl.yellow "Please make sure that the external monitor is plugged in."
+    run.ui.ask "Is it plugged in?"
+    info "Making a backup of your current graphics settings..."
+    inf "Please enter your password, if asked: "
+    set -e
+    bash -c 'set -e; sudo ls -1 > /dev/null; set +e'
+    ok
+    run "sudo rm -f \"${backup}\""
+    export LibRun__AbortOnError=${True}
+    run "sudo cp -v \"${file}\" \"${backup}\""
+    h2 "Now: please change the resolution ${bldylw}on the problem monitor." "NOTE: it's ${italic}not important what resolution you choose," "as long as it's different than what you had previously..." "Finally: exit Display Preferences once you changed resolution."
+    run "open /System/Library/PreferencePanes/Displays.prefPane"
+    run.ui.ask "Have you changed the resolution and exited Display Prefs? "
+    local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')
+    [[ -n $DEBUG ]] && info "diff line is at ${line}"
+    value=
+    if [[ "${line}" -gt 0 ]]; then
+        line_pscn_key=$(($line - 4))
+        line_pscn_value=$(($line - 3))
+        ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && { 
+            value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}')
+            [[ -n $DEBUG ]] && info "current value is ${value}"
+        }
+    else
+        error "It does not appear that anything changed, sorry."
+        return -1
+    fi
+    h2 "Now, please unplug the problem monitor temporarily..."
+    run.ui.ask "...and press Enter to continue "
+    if [[ -n ${value} && ${value} -ne ${new_value} ]]; then
+        export LibRun__AbortOnError=${True}
+        run "sudo sed -i.backup \"${line_pscn_value}s/${value}/${new_value}/g\" \"${file}\""
+        echo
+        h2 "Congratulations!" "Your display underscan value has been changed."
+        info "Previous Value — ${bldpur}${value}"
+        info "New value:     — ${bldgrn}${new_value}"
+        hr
+        info "${bldylw}IMPORTANT!"
+        info "You must restart your computer for the settings to take affect."
+        echo
+        run.ui.ask "Should I reboot your computer now? "
+        info "Very well, rebooting!"
+        run "sudo reboot"
+    else
+        warning "Unable to find the display scan value to change. "
+        info "Could it be that you haven't restarted since your last run?"
+        echo
+        info "Feel free to edit file directly, using:"
+        info "eg: ${bldylw}vim ${file} +${line_pscn_value}"
+    fi
+}
+
+----
+
+==== `cookie-dump`
+
+[source,bash]
+----
+cookie-dump () 
+{ 
+    osx.cookie-dump "$@"
+}
+
+----
+
+==== `http.servers`
+
+[source,bash]
+----
+http.servers () 
+{ 
+    osx.local-servers http
+}
+
+----
+
+==== `https.servers`
+
+[source,bash]
+----
+https.servers () 
+{ 
+    osx.local-servers https
+}
+
+----
+
+==== `osx.app.is-installed`
+
+[source,bash]
+----
+osx.app.is-installed () 
+{ 
+    local app="$1"
+    shift
+    /bin/ls -1 /Applications ~/Applications | grep -E '\.app$' | sort -u | grep "$@" -E -i "${app}|${app/*-/}"
+}
+
+----
+
+==== `osx.cookie-dump`
+
+[source,bash]
+----
+osx.cookie-dump () 
+{ 
+    local file="$1"
+    local tmp
+    if [[ ! -s ${file} ]]; then
+        tmp=$(mktemp)
+        file=${tmp}
+        pbpaste > "${file}"
+        local size=$(file.size "${file}")
+        if [[ ${size} -lt 4 ]]; then
+            error "Pasted data is too small to be a valid cookie?"
+            info "Here is what we got in your clipboard:\n\n$(cat ${file})\n"
+            return 1
+        fi
+    fi
+    if [[ -s ${file} ]]; then
+        cat "${file}" | tr '; ' '\n' | sed '/^$/d' | awk 'BEGIN{FS="="}{printf( "%10d = %s\n", length($2), $1) }' | sort -n
+    else
+        info "File ${file} does not exist or is empty. "
+        info "Copy the value of the ${bldylw}Set-Cookie:${txtblu} header into the clipboard,"
+        info "and rerun this function."
+    fi
+    [[ -z ${tmp} ]] || rm -f ${tmp}
+}
+
+----
+
+==== `osx.dropbox.exclude`
+
+[source,bash]
+----
+osx.dropbox.exclude () 
+{ 
+    local dir="$1"
+    if [[ -d "${dir}" ]]; then
+        xattr -w com.dropbox.ignored 1 "$1"
+    else
+        error "Folder '${dir}' does not exist or is blank."
+        return 1
+    fi
+}
+
+----
+
+==== `osx.dropbox.exclude-pwd`
+
+[source,bash]
+----
+osx.dropbox.exclude-pwd () 
+{ 
+    xattr -w com.dropbox.ignored 1 "${PWD}"
+}
+
+----
+
+==== `osx.env-print`
+
+[source,bash]
+----
+osx.env-print () 
+{ 
+    local var="$1"
+    printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} ${!var}
+}
+
+----
+
+==== `osx.local-servers`
+
+[source,bash]
+----
+osx.local-servers () 
+{ 
+    local protocol="${1:-"ssh"}"
+    run.set-next show-output-on
+    run "timeout 20 dns-sd -B _${protocol}._tcp ."
+}
+
+----
+
+==== `osx.ramdisk.mount`
+
+[source,bash]
+----
+osx.ramdisk.mount () 
+{ 
+    local size="${1:-"8"}"
+    local diskname="${2:-"ramdisk"}"
+    local total=$((size * 2 * 1024))
+    [[ $(uname -s) != "Darwin" ]] && { 
+        error "This function only works on OSX"
+        return 1
+    }
+    if [[ "${diskname}" =~ ' ' ]]; then
+        error "Disk name can not contain spaces."
+        return 1
+    fi
+    local path="/Volumes/${diskname}"
+    if ( mount | ${GrepCommand} -q "/[V]olumes/${diskname}" ); then
+        info "Looks like RAM disk already exists at ${path}..."
+        return 1
+    else
+        run.ui.ask "Creating RAM disk sized ${size}Mb at ${path}"
+        run.set-next show-output-on
+        run "diskutil erasevolume HFS+ '${diskname}' $(hdiutil attach -nomount ram://${total})"
+    fi
+}
+
+----
+
+==== `osx.ramdisk.unmount`
+
+[source,bash]
+----
+osx.ramdisk.unmount () 
+{ 
+    local diskname="${2:-"ramdisk"}"
+    [[ $(uname -s) != "Darwin" ]] && { 
+        error "This function only works on OSX"
+        return 1
+    }
+    local path="/Volumes/${diskname}"
+    if ( mount | ${GrepCommand} -q "/[V]olumes/${diskname}" ); then
+        run.ui.ask "Unmount RAM disk at ${path}? "
+        run "umount ${path}"
+    else
+        info "Couldn't find volume ${bldylw}${path}. Does the RAM disk exist?"
+        return 1
+    fi
+}
+
+----
+
+==== `osx.scutil-print`
+
+[source,bash]
+----
+osx.scutil-print () 
+{ 
+    local var="$1"
+    printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} $(sudo scutil --get ${var} | tr -d '\n')
+}
+
+----
+
+==== `osx.set-fqdn`
+
+[source,bash]
+----
+osx.set-fqdn () 
+{ 
+    local fqdn="$1"
+    local domain=$(echo ${fqdn} | sed -E 's/^[^.]*\.//g')
+    local host=$(echo ${fqdn} | sed -E 's/\..*//g')
+    h1 "Current HostName: ${bldylw}${HOSTNAME}"
+    echo
+    info "• You provided the following FQDN : ${bldylw}${fqdn}"
+    echo
+    info "• Hostname will be set to: ${bldgrn}${host}"
+    info "• Domain will also change: ${bldgrn}${domain}"
+    echo
+    run.ui.ask "Does that look correct to you?"
+    echo
+    inf "Now, please provide your SUDO password, if asked: "
+    sudo printf '' || { 
+        ui.closer.not-ok:
+        exit 1
+    }
+    ui.closer.ok:
+    run "sudo scutil --set HostName ${fqdn}"
+    run "sudo scutil --set LocalHostName ${host}.local 2>/dev/null|| true"
+    run "sudo scutil --set ComputerName ${host}"
+    run "dscacheutil -flushcache"
+    echo
+    h2 "Result of the changes:"
+    osx.scutil-print HostName
+    osx.scutil-print LocalHostName
+    osx.scutil-print ComputerName
+    osx.env-print HOSTNAME
+    echo
+    hr
+}
+
+----
+
+==== `ssh.servers`
+
+[source,bash]
+----
+ssh.servers () 
+{ 
+    osx.local-servers ssh
+}
+
+----
+
+
+=== Module `output`
+
+==== `ascii-clean`
+
+[source,bash]
+----
+ascii-clean () 
+{ 
+    .output.clean "$@"
+}
+
+----
+
+==== `ascii-pipe`
+
+[source,bash]
+----
+ascii-pipe () 
+{ 
+    cat | .output.clean.pipe
+}
+
+----
+
+==== `center`
+
+[source,bash]
+----
+center () 
+{ 
+    .output.center "$@"
+}
+
+----
+
+==== `command-spacer`
+
+[source,bash]
+----
+command-spacer () 
+{ 
+    local color="${txtgrn}"
+    [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"
+    [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
+    printf "%s${color}" ""
+    local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10))
+    [[ ${__width} -gt 0 ]] && .output.replicate-to "▪" "${__width}"
+}
+
+----
+
+==== `cursor.at.x`
+
+[source,bash]
+----
+cursor.at.x () 
+{ 
+    .output.cursor-move-to-x "$@"
+}
+
+----
+
+==== `cursor.at.y`
+
+[source,bash]
+----
+cursor.at.y () 
+{ 
+    .output.cursor-move-to-y "$@"
+}
+
+----
+
+==== `cursor.down`
+
+[source,bash]
+----
+cursor.down () 
+{ 
+    .output.cursor-down-by "$@"
+}
+
+----
+
+==== `cursor.left`
+
+[source,bash]
+----
+cursor.left () 
+{ 
+    .output.cursor-left-by "$@"
+}
+
+----
+
+==== `cursor.rewind`
+
+[source,bash]
+----
+cursor.rewind () 
+{ 
+    local x=${1:-0}
+    .output.cursor-move-to-x ${x}
+}
+
+----
+
+==== `cursor.right`
+
+[source,bash]
+----
+cursor.right () 
+{ 
+    .output.cursor-right-by "$@"
+}
+
+----
+
+==== `cursor.shift.x`
+
+[source,bash]
+----
+cursor.shift.x () 
+{ 
+    local shift="$1"
+    if [[ "${shift:0:1}" == "-" ]]; then
+        .output.cursor-left-by "${shift:1}"
+    else
+        .output.cursor-right-by "${shift}"
+    fi
+}
+
+----
+
+==== `cursor.up`
+
+[source,bash]
+----
+cursor.up () 
+{ 
+    .output.cursor-up-by "$@"
+}
+
+----
+
+==== `duration`
+
+[source,bash]
+----
+duration () 
+{ 
+    local millis="$1"
+    local exit_code="$2"
+    [[ -n $(which bc) ]] || return
+    if [[ -n ${millis} && ${millis} -ge 0 ]]; then
+        local pattern
+        pattern=" %6.6s ms "
+        pattern="${txtblu}〔${pattern}〕"
+        printf "${txtblu}${pattern}" "${millis}"
+    fi
+    if [[ -n ${exit_code} ]]; then
+        [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" ${exit_code}
+        [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" ${exit_code}
+    fi
+}
+
+----
+
+==== `hr`
+
+[source,bash]
+----
+hr () 
+{ 
+    [[ -z "$*" ]] || printf "$*"
+    .output.hr
+}
+
+----
+
+==== `hr.colored`
+
+[source,bash]
+----
+hr.colored () 
+{ 
+    local color="$*"
+    [[ -z ${color} ]] && color="${bldred}"
+    .output.hr "$(screen-width)" "—" "${*}"
+}
+
+----
+
+==== `left`
+
+[source,bash]
+----
+left () 
+{ 
+    .output.left-justify "$@"
+}
+
+----
+
+==== `left-prefix`
+
+[source,bash]
+----
+left-prefix () 
+{ 
+    [[ -z ${LibOutput__LeftPrefix} ]] && { 
+        export LibOutput__LeftPrefix=$(.output.replicate-to " " "${LibOutput__LeftPrefixLen}")
+    }
+    printf "${LibOutput__LeftPrefix}"
+}
+
+----
+
+==== `not-ok`
+
+[source,bash]
+----
+not-ok () 
+{ 
+    ui.closer.not-ok "$@"
+}
+
+----
+
+==== `not-ok:`
+
+[source,bash]
+----
+not-ok: () 
+{ 
+    ui.closer.not-ok: "$@"
+}
+
+----
+
+==== `ok`
+
+[source,bash]
+----
+ok () 
+{ 
+    ui.closer.ok "$@"
+}
+
+----
+
+==== `ok:`
+
+[source,bash]
+----
+ok: () 
+{ 
+    ui.closer.ok: "$@"
+}
+
+----
+
+==== `output.color.off`
+
+[source,bash]
+----
+output.color.off () 
+{ 
+    reset-color: 1>&2
+    reset-color: 1>&1
+}
+
+----
+
+==== `output.color.on`
+
+[source,bash]
+----
+output.color.on () 
+{ 
+    printf "${bldred}" 1>&2
+    printf "${bldblu}" 1>&1
+}
+
+----
+
+==== `output.constrain-screen-width`
+
+[source,bash]
+----
+output.constrain-screen-width () 
+{ 
+    export LibOutput__WidthDetectionStrategy="constrained"
+    [[ $1 -gt 0 ]] && output.set-max-width "$1"
+    [[ $2 -gt 0 ]] && output.set-min-width "$2"
+}
+
+----
+
+==== `output.has-stdin`
+
+[source,bash]
+----
+output.has-stdin () 
+{ 
+    test -s /dev/stdin
+}
+
+----
+
+==== `output.is-pipe`
+
+[source,bash]
+----
+output.is-pipe () 
+{ 
+    [[ -p /dev/stdout ]]
+}
+
+----
+
+==== `output.is-redirect`
+
+[source,bash]
+----
+output.is-redirect () 
+{ 
+    [[ ! -t 1 && ! -p /dev/stdout ]]
+}
+
+----
+
+==== `output.is-ssh`
+
+[source,bash]
+----
+output.is-ssh () 
+{ 
+    [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]
+}
+
+----
+
+==== `output.is-terminal`
+
+[source,bash]
+----
+output.is-terminal () 
+{ 
+    output.is-tty || output.is-redirect || output.is-pipe || output.is-ssh
+}
+
+----
+
+==== `output.is-tty`
+
+[source,bash]
+----
+output.is-tty () 
+{ 
+    [[ -t 1 ]]
+}
+
+----
+
+==== `output.print-at-x-y`
+
+[source,bash]
+----
+output.print-at-x-y () 
+{ 
+    local x=$1
+    shift
+    local y=$1
+    shift
+    .output.cursor-move-to-x "${x}"
+    cursor.up "${y}"
+    printf "%s" "$*"
+    cursor.down "${y}"
+    .output.cursor-move-to-x 0
+}
+
+----
+
+==== `output.reset-min-max-width`
+
+[source,bash]
+----
+output.reset-min-max-width () 
+{ 
+    export LibOutput__MinWidth=${LibOutput__MinWidth:-${LibOutput__MinWidth__Default}}
+    export LibOutput__MaxWidth=${LibOutput__MaxWidth:-${LibOutput__MaxWidth__Default}}
+}
+
+----
+
+==== `output.set-max-width`
+
+[source,bash]
+----
+output.set-max-width () 
+{ 
+    [[ $1 -gt 0 ]] && export LibOutput__MaxWidth="$1"
+}
+
+----
+
+==== `output.set-min-width`
+
+[source,bash]
+----
+output.set-min-width () 
+{ 
+    [[ $1 -gt 0 ]] && export LibOutput__MinWidth="$1"
+}
+
+----
+
+==== `output.unconstrain-screen-width`
+
+[source,bash]
+----
+output.unconstrain-screen-width () 
+{ 
+    export LibOutput__WidthDetectionStrategy="unconstrained"
+}
+
+----
+
+==== `screen-height`
+
+[source,bash]
+----
+screen-height () 
+{ 
+    .output.screen-height
+}
+
+----
+
+==== `screen-width`
+
+[source,bash]
+----
+screen-width () 
+{ 
+    .output.screen-width
+}
+
+----
+
+==== `screen.height`
+
+[source,bash]
+----
+screen.height () 
+{ 
+    .output.screen-height
+}
+
+----
+
+==== `screen.width`
+
+[source,bash]
+----
+screen.width () 
+{ 
+    .output.screen-width
+}
+
+----
+
+==== `section`
+
+[source,bash]
+----
+section () 
+{ 
+    .output.left-powerline pur "$@"
+}
+
+----
+
+==== `stderr`
+
+[source,bash]
+----
+stderr () 
+{ 
+    local file=$1
+    hl.subtle STDERR
+    printf "${txtred}"
+    [[ -s ${file} ]] && cat ${file}
+    reset-color
+}
+
+----
+
+==== `stdout`
+
+[source,bash]
+----
+stdout () 
+{ 
+    local file=$1
+    hl.subtle STDOUT
+    printf "${clr}"
+    [[ -s ${file} ]] && cat ${file}
+    reset-color
+}
+
+----
+
+==== `ui.closer.kind-of-ok`
+
+[source,bash]
+----
+ui.closer.kind-of-ok () 
+{ 
+    .output.cursor-left-by 1000
+    printf " ${bakylw}${bldwht} ❖ ${clr} "
+}
+
+----
+
+==== `ui.closer.kind-of-ok:`
+
+[source,bash]
+----
+ui.closer.kind-of-ok: () 
+{ 
+    ui.closer.kind-of-ok $@
+    echo
+}
+
+----
+
+==== `ui.closer.not-ok`
+
+[source,bash]
+----
+ui.closer.not-ok () 
+{ 
+    .output.cursor-left-by 1000
+    printf " ${bakred}${bldwht} ✘ ${clr} "
+}
+
+----
+
+==== `ui.closer.not-ok:`
+
+[source,bash]
+----
+ui.closer.not-ok: () 
+{ 
+    ui.closer.not-ok $@
+    echo
+}
+
+----
+
+==== `ui.closer.ok`
+
+[source,bash]
+----
+ui.closer.ok () 
+{ 
+    .output.cursor-left-by 1000
+    printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
+}
+
+----
+
+==== `ui.closer.ok:`
+
+[source,bash]
+----
+ui.closer.ok: () 
+{ 
+    ui.closer.ok "$@"
+    echo
+}
+
+----
+
+
+=== Module `output-boxes`
+
+==== `attention`
+
+[source,bash]
+----
+attention () 
+{ 
+    .output.left-powerline blu 65 "${txtwht}${bakblu}$@"
+}
+
+----
+
+==== `box.black-on-blue`
+
+[source,bash]
+----
+box.black-on-blue () 
+{ 
+    .output.box "${txtblk}${bakblu}" "${bakblu}" "$@"
+}
+
+----
+
+==== `box.black-on-green`
+
+[source,bash]
+----
+box.black-on-green () 
+{ 
+    .output.box "${txtblk}${bakgrn}" "${bakgrn}" "$@"
+}
+
+----
+
+==== `box.black-on-purple`
+
+[source,bash]
+----
+box.black-on-purple () 
+{ 
+    .output.box "${txtblk}${bakpur}" "${bakpur}" "$@"
+}
+
+----
+
+==== `box.black-on-red`
+
+[source,bash]
+----
+box.black-on-red () 
+{ 
+    .output.box "${txtblk}${bakred}" "${bakred}" "$@"
+}
+
+----
+
+==== `box.black-on-yellow`
+
+[source,bash]
+----
+box.black-on-yellow () 
+{ 
+    .output.box "${txtblk}${bakylw}" "${txtblk}${bakylw}" "$@"
+}
+
+----
+
+==== `box.blue-in-green`
+
+[source,bash]
+----
+box.blue-in-green () 
+{ 
+    .output.box "${bldblu}" "${bldgrn}" "$@"
+}
+
+----
+
+==== `box.blue-in-yellow`
+
+[source,bash]
+----
+box.blue-in-yellow () 
+{ 
+    .output.box "${bldylw}" "${bldblu}" "$@"
+}
+
+----
+
+==== `box.green-in-cyan`
+
+[source,bash]
+----
+box.green-in-cyan () 
+{ 
+    .output.box "${bldgrn}" "${bldcyn}" "$@"
+}
+
+----
+
+==== `box.green-in-green`
+
+[source,bash]
+----
+box.green-in-green () 
+{ 
+    .output.box "${bldgrn}" "${bldgrn}" "$@"
+}
+
+----
+
+==== `box.green-in-magenta`
+
+[source,bash]
+----
+box.green-in-magenta () 
+{ 
+    .output.box "${bldgrn}" "${bldpur}" "$@"
+}
+
+----
+
+==== `box.green-in-yellow`
+
+[source,bash]
+----
+box.green-in-yellow () 
+{ 
+    .output.box "${bldgrn}" "${bldylw}" "$@"
+}
+
+----
+
+==== `box.magenta-in-blue`
+
+[source,bash]
+----
+box.magenta-in-blue () 
+{ 
+    .output.box "${bldblu}" "${bldpur}" "$@"
+}
+
+----
+
+==== `box.magenta-in-green`
+
+[source,bash]
+----
+box.magenta-in-green () 
+{ 
+    .output.box "${bldpur}" "${bldgrn}" "$@"
+}
+
+----
+
+==== `box.red-in-magenta`
+
+[source,bash]
+----
+box.red-in-magenta () 
+{ 
+    .output.box "${bldred}" "${bldpur}" "$@"
+}
+
+----
+
+==== `box.red-in-red`
+
+[source,bash]
+----
+box.red-in-red () 
+{ 
+    .output.box "${txtred}" "${txtred}" "$@"
+}
+
+----
+
+==== `box.red-in-yellow`
+
+[source,bash]
+----
+box.red-in-yellow () 
+{ 
+    .output.box "${bldred}" "${bldylw}" "$@"
+}
+
+----
+
+==== `box.white-on-blue`
+
+[source,bash]
+----
+box.white-on-blue () 
+{ 
+    .output.box "${bakblu}${bldwht}" "${bakblu}${bldwht}" "$@"
+}
+
+----
+
+==== `box.white-on-green`
+
+[source,bash]
+----
+box.white-on-green () 
+{ 
+    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldwht}" "$@"
+}
+
+----
+
+==== `box.white-on-red`
+
+[source,bash]
+----
+box.white-on-red () 
+{ 
+    .output.box "${bakred}${bldwht}" "${bakred}${bldwht}" "$@"
+}
+
+----
+
+==== `box.yellow-in-blue`
+
+[source,bash]
+----
+box.yellow-in-blue () 
+{ 
+    .output.box "${bldylw}" "${bldblu}" "$@"
+}
+
+----
+
+==== `box.yellow-in-red`
+
+[source,bash]
+----
+box.yellow-in-red () 
+{ 
+    .output.box "${bldred}" "${bldylw}" "$@"
+}
+
+----
+
+==== `box.yellow-in-yellow`
+
+[source,bash]
+----
+box.yellow-in-yellow () 
+{ 
+    .output.box "${bldylw}" "${txtylw}" "$@"
+}
+
+----
+
+==== `box.yellow-on-green`
+
+[source,bash]
+----
+box.yellow-on-green () 
+{ 
+    .output.box "${bakgrn}${bldwht}" "${bakgrn}${bldylw}" "$@"
+}
+
+----
+
+==== `box.yellow-on-purple`
+
+[source,bash]
+----
+box.yellow-on-purple () 
+{ 
+    .output.box "${bakpur}" "${bldylw}" "$@"
+}
+
+----
+
+==== `h.black`
+
+[source,bash]
+----
+h.black () 
+{ 
+    center "${bldylw}${bakblk}" "$@"
+}
+
+----
+
+==== `h.blue`
+
+[source,bash]
+----
+h.blue () 
+{ 
+    center "${txtblk}${bakblu}" "$@"
+}
+
+----
+
+==== `h.e`
+
+[source,bash]
+----
+h.e () 
+{ 
+    .output.box "${bakred}${txtblk}" "${bakred}" "$@"
+}
+
+----
+
+==== `h.green`
+
+[source,bash]
+----
+h.green () 
+{ 
+    center "${txtblk}${bakgrn}" "$@"
+}
+
+----
+
+==== `h.orange`
+
+[source,bash]
+----
+h.orange () 
+{ 
+    left "${white_on_orange}" "$@"
+}
+
+----
+
+==== `h.orange-center`
+
+[source,bash]
+----
+h.orange-center () 
+{ 
+    center "${white_on_orange}" "$@"
+}
+
+----
+
+==== `h.red`
+
+[source,bash]
+----
+h.red () 
+{ 
+    center "${txtblk}${bakred}" "$@"
+}
+
+----
+
+==== `h.salmon`
+
+[source,bash]
+----
+h.salmon () 
+{ 
+    left "${white_on_salmon}" "$@"
+}
+
+----
+
+==== `h.salmon-center`
+
+[source,bash]
+----
+h.salmon-center () 
+{ 
+    center "${white_on_salmon}" "$@"
+}
+
+----
+
+==== `h.yellow`
+
+[source,bash]
+----
+h.yellow () 
+{ 
+    center "${txtblk}${bakylw}" "$@"
+}
+
+----
+
+==== `h1`
+
+[source,bash]
+----
+h1 () 
+{ 
+    box.blue-in-yellow "$@"
+}
+
+----
+
+==== `h1.blue`
+
+[source,bash]
+----
+h1.blue () 
+{ 
+    box.magenta-in-blue "$@"
+}
+
+----
+
+==== `h1.green`
+
+[source,bash]
+----
+h1.green () 
+{ 
+    box.green-in-magenta "$@"
+}
+
+----
+
+==== `h1.purple`
+
+[source,bash]
+----
+h1.purple () 
+{ 
+    box.magenta-in-green "$@"
+}
+
+----
+
+==== `h1.red`
+
+[source,bash]
+----
+h1.red () 
+{ 
+    box.red-in-red "$@"
+}
+
+----
+
+==== `h1.yellow`
+
+[source,bash]
+----
+h1.yellow () 
+{ 
+    box.yellow-in-red "$@"
+}
+
+----
+
+==== `h1bg`
+
+[source,bash]
+----
+h1bg () 
+{ 
+    box.white-on-blue "$@"
+}
+
+----
+
+==== `h2`
+
+[source,bash]
+----
+h2 () 
+{ 
+    box.blue-in-green "$@"
+}
+
+----
+
+==== `h2.green`
+
+[source,bash]
+----
+h2.green () 
+{ 
+    box.green-in-cyan "$@"
+}
+
+----
+
+==== `h2bg`
+
+[source,bash]
+----
+h2bg () 
+{ 
+    box.white-on-green "$@"
+}
+
+----
+
+==== `h3`
+
+[source,bash]
+----
+h3 () 
+{ 
+    box.magenta-in-green "$@"
+}
+
+----
+
+==== `h3bg`
+
+[source,bash]
+----
+h3bg () 
+{ 
+    box.yellow-on-purple "$@"
+}
+
+----
+
+==== `h4`
+
+[source,bash]
+----
+h4 () 
+{ 
+    section.blue "$@"
+}
+
+----
+
+==== `h5`
+
+[source,bash]
+----
+h5 () 
+{ 
+    section.purple "$@"
+}
+
+----
+
+==== `h6`
+
+[source,bash]
+----
+h6 () 
+{ 
+    section.yellow "$@"
+}
+
+----
+
+==== `h7`
+
+[source,bash]
+----
+h7 () 
+{ 
+    section.salmon "$@"
+}
+
+----
+
+==== `h8`
+
+[source,bash]
+----
+h8 () 
+{ 
+    section.cyan "$@"
+}
+
+----
+
+==== `hdr`
+
+[source,bash]
+----
+hdr () 
+{ 
+    h1 "$@"
+}
+
+----
+
+==== `hl.blue`
+>>>>>>> Stashed changes
 
 === Module `asciidoc`
 
@@ -171,8 +6376,199 @@
 === Module `package`
 
 
+=== Module `package`
+
+==== `package.ensure.commmand-available`
+
+[source,bash]
+----
+package.ensure.commmand-available () 
+{ 
+    local package="$1"
+    shift
+    local binary="$1"
+    shift
+    is.a-command "${binary}" && return 0
+    package.ensure.is-installed "${package}"
+    hash -r > /dev/null 2>&1
+    is.a-command "${binary}" && return 0
+    error "After installing package ${package}, binary ${binary} still is not found."
+}
+
+----
+
+==== `package.ensure.is-installed`
+
+[source,bash]
+----
+package.ensure.is-installed () 
+{ 
+    for pkg in "$@"
+    do
+        package.is-installed ${pkg} || package.install
+        package.is-installed ${pkg} || { 
+            error "Package ${pkg} does not appear installed, broken package or version?"
+            return 1
+        }
+    done
+}
+
+----
+
+
 === Module `path`
 
+<<<<<<< Updated upstream
+=======
+==== `PATH_add`
+
+[source,bash]
+----
+PATH_add () 
+{ 
+    path.mutate.append "$@"
+}
+
+----
+
+==== `path.append`
+
+[source,bash]
+----
+path.append () 
+{ 
+    local new_path="${PATH}"
+    for __path in "$@"
+    do
+        is.a-directory "${__path}" || { 
+            error "Argument ${__path} is not a valid directory, abort." 1>&2
+            return 1
+        }
+        path.dirs.uniq | grep -q -E "^${__path}$" && continue
+        new_path="${new_path}:${__path}"
+    done
+    echo "${new_path}"
+}
+
+----
+
+==== `path.dirs`
+
+[source,bash]
+----
+path.dirs () 
+{ 
+    local path="${1:-${PATH}}"
+    echo "${path//:/'
+'}" | /usr/bin/tr -d "'" | sedx '/^$/d; s/://g'
+}
+
+----
+
+==== `path.dirs.size`
+
+[source,bash]
+----
+path.dirs.size () 
+{ 
+    path.dirs "$@" | /usr/bin/wc -l | /usr/bin/tr -d ' '
+}
+
+----
+
+==== `path.dirs.uniq`
+
+[source,bash]
+----
+path.dirs.uniq () 
+{ 
+    local -a paths=($(path.dirs "$@"))
+    for path in $(array.uniq "${paths[@]}")
+    do
+        echo "${path}"
+    done
+}
+
+----
+
+==== `path.mutate.append`
+
+[source,bash]
+----
+path.mutate.append () 
+{ 
+    export PATH="$(path.append "$@")"
+}
+
+----
+
+==== `path.mutate.prepend`
+
+[source,bash]
+----
+path.mutate.prepend () 
+{ 
+    export PATH="$(path.prepend "$@")"
+}
+
+----
+
+==== `path.mutate.uniq`
+
+[source,bash]
+----
+path.mutate.uniq () 
+{ 
+    export PATH="$(path.uniq "$@")"
+}
+
+----
+
+==== `path.prepend`
+
+[source,bash]
+----
+path.prepend () 
+{ 
+    local new_path="${PATH}"
+    for __path in "$@"
+    do
+        is.a-directory "${__path}" || { 
+            error "Argument ${__path} is not a valid directory, abort." 1>&2
+            return 1
+        }
+        local p="$(path.dirs.uniq | grep -v -E "^${__path}$" | tr '\n' ':')"
+        new_path="${__path}:${p}"
+    done
+    echo "${new_path}"
+}
+
+----
+
+==== `path.strip-slash`
+
+[source,bash]
+----
+path.strip-slash () 
+{ 
+    local path="$(echo "$1" | sed -E 's#\/+$##g')"
+    printf -- "%s" "${path}"
+}
+
+----
+
+==== `path.uniq`
+
+[source,bash]
+----
+path.uniq () 
+{ 
+    array.join ':' $(path.dirs.uniq "$@")
+}
+
+----
+
+>>>>>>> Stashed changes
 
 === Module `pdf`
 
@@ -233,6 +6629,192 @@
 
 === Module `time`
 
+<<<<<<< Updated upstream
+=======
+==== `date.now.with-time`
+
+[source,bash]
+----
+date.now.with-time () 
+{ 
+    date '+%F.%T'
+}
+
+----
+
+==== `epoch`
+
+[source,bash]
+----
+epoch () 
+{ 
+    date +%s
+}
+
+----
+
+==== `millis`
+
+[source,bash]
+----
+millis () 
+{ 
+    .run.millis
+}
+
+----
+
+==== `time.date-from-epoch`
+
+[source,bash]
+----
+time.date-from-epoch () 
+{ 
+    local epoch_ts="$1"
+    .time.init
+    if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+        printf "date -r ${epoch_ts}"
+    else
+        printf "date --date='@${epoch_ts}'"
+    fi
+}
+
+----
+
+==== `time.duration.humanize`
+
+[source,bash]
+----
+time.duration.humanize () 
+{ 
+    local seconds=${1}
+    local hours=$((${seconds} / 3600))
+    local remainder=$((${seconds} - ${hours} * 3600))
+    local mins=$((${remainder} / 60))
+    local secs=$((${seconds} - ${hours} * 3600 - ${mins} * 60))
+    local prefixed=0
+    [[ ${hours} -gt 0 ]] && { 
+        printf "%02dh:" ${hours}
+        prefixed=1
+    }
+    [[ ${mins} -gt 0 || ${prefixed} == 1 ]] && { 
+        printf "%02dm:" ${mins}
+        prefixed=1
+    }
+    { 
+        printf "%02ds" ${secs}
+    }
+}
+
+----
+
+==== `time.duration.millis-to-secs`
+
+[source,bash]
+----
+time.duration.millis-to-secs () 
+{ 
+    local duration="$1"
+    local format="${2:-"%d.%d"}"
+    local seconds=$((duration / 1000))
+    local leftover=$((duration - 1000 * seconds))
+    printf "${format}" ${seconds} ${leftover}
+}
+
+----
+
+==== `time.epoch-to-iso`
+
+[source,bash]
+----
+time.epoch-to-iso () 
+{ 
+    local epoch_ts=$1
+    eval "$(time.date-from-epoch ${epoch_ts}) -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
+}
+
+----
+
+==== `time.epoch-to-local`
+
+[source,bash]
+----
+time.epoch-to-local () 
+{ 
+    local epoch_ts=$1
+    [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch)
+    eval "$(time.date-from-epoch ${epoch_ts}) \"+%m/%d/%Y, %r\""
+}
+
+----
+
+==== `time.epoch.minutes-ago`
+
+[source,bash]
+----
+time.epoch.minutes-ago () 
+{ 
+    local mins=${1}
+    [[ -z ${mins} ]] && mins=1
+    local seconds=$((${mins} * 60))
+    local epoch=$(epoch)
+    echo $((${epoch} - ${seconds}))
+}
+
+----
+
+==== `time.now.db`
+
+[source,bash]
+----
+time.now.db () 
+{ 
+    date '+%F.%T.%S   ' | tr -d '[\:\-\.]'
+}
+
+----
+
+==== `time.now.file-extension`
+
+[source,bash]
+----
+time.now.file-extension () 
+{ 
+    time.now.db
+}
+
+----
+
+==== `time.now.with-ms`
+
+[source,bash]
+----
+time.now.with-ms () 
+{ 
+    local date_runnable
+    .time.init
+    date_runnable='date'
+    if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+        [[ -z $(command -v gdate) ]] && .time.osx.coreutils
+        [[ -n $(command -v gdate) ]] && date_runnable='gdate'
+    fi
+    ${date_runnable} '+%T.%3N'
+}
+
+----
+
+==== `today`
+
+[source,bash]
+----
+today () 
+{ 
+    date +'%Y-%m-%d'
+}
+
+----
+
+>>>>>>> Stashed changes
 
 === Module `trap`
 
@@ -248,9 +6830,597 @@
 
 === Module `util`
 
+<<<<<<< Updated upstream
+=======
+==== `is-func`
+
+[source,bash]
+----
+is-func () 
+{ 
+    is.a-function "$@"
+}
+
+----
+
+==== `pause`
+
+[source,bash]
+----
+pause () 
+{ 
+    sleep "${1:-1}"
+}
+
+----
+
+==== `pause.long`
+
+[source,bash]
+----
+pause.long () 
+{ 
+    sleep "${1:-10}"
+}
+
+----
+
+==== `pause.medium`
+
+[source,bash]
+----
+pause.medium () 
+{ 
+    sleep "${1:-0.3}"
+}
+
+----
+
+==== `pause.short`
+
+[source,bash]
+----
+pause.short () 
+{ 
+    sleep "${1:-0.1}"
+}
+
+----
+
+==== `sedx`
+
+[source,bash]
+----
+sedx () 
+{ 
+    [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
+    eval "${bashmatic__sed_command} \"$@\""
+}
+
+----
+
+==== `sedx.cache-command`
+
+[source,bash]
+----
+sedx.cache-command () 
+{ 
+    local sed_path="$(util.ensure-gnu-sed)"
+    local sed_command="${sed_path} -E "
+    export bashmatic__sed_command="${sed_command}"
+}
+
+----
+
+==== `util.append-to-init-files`
+
+[source,bash]
+----
+util.append-to-init-files () 
+{ 
+    local string="$1"
+    local search="${2:-$1}"
+    is_installed=
+    declare -a shell_files=($(util.shell-init-files))
+    for init_file in "${shell_files[@]}"
+    do
+        file="${init_file}"
+        [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && { 
+            is_installed=${file}
+            break
+        }
+    done
+    if [[ -z "${is_installed}" ]]; then
+        for init_file in "${shell_files[@]}"
+        do
+            file="${init_file}"
+            [[ -f ${file} ]] && { 
+                echo "${string}" >> "${file}"
+                is_installed="${file}"
+                break
+            }
+        done
+    fi
+    printf "${is_installed}"
+}
+
+----
+
+==== `util.arch`
+
+[source,bash]
+----
+util.arch () 
+{ 
+    echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr '[:upper:]' '[:lower:]'
+}
+
+----
+
+==== `util.call-if-function`
+
+[source,bash]
+----
+util.call-if-function () 
+{ 
+    local func="$1"
+    shift
+    util.is-a-function "${func}" && { 
+        ${func} "$@"
+    }
+}
+
+----
+
+==== `util.dev-setup.update`
+
+[source,bash]
+----
+util.dev-setup.update () 
+{ 
+    run "rm -f ${BASHMATIC_HOME}/bin/.dev-setup"
+    run "dev-setup -N -h > /tmp/a"
+    run "mv /tmp/a ${BASHMATIC_HOME}/bin/.dev-setup"
+    run "cd ${BASHMATIC_HOME} && git add bin/.dev-setup"
+    run "cd -"
+}
+
+----
+
+==== `util.ensure-gnu-sed`
+
+[source,bash]
+----
+util.ensure-gnu-sed () 
+{ 
+    local sed_path
+    local gsed_path
+    local os
+    command -v gsed && return 0
+    sed_path="$(command -v sed 2>/dev/null)"
+    os="${AppCurrentOS:=$(util.os)}"
+    case "${os}" in 
+        darwin)
+            gsed_path="$(command -v gsed 2>/dev/null)"
+            if [[ -z "${gsed_path}" ]]; then
+                echo
+                h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
+                ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed ) 1>&2 > /dev/null
+                hash -r 2> /dev/null
+                gsed_path="$(command -v gsed 2>/dev/null)"
+                [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
+            fi
+            [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || { 
+                error "Can't find GNU sed even after installation." 1>&2
+                return 2
+            }
+            sed_path="${gsed_path}"
+        ;
+        *)
+            sed_path="$(command -v sed)"
+        ;
+    esac
+    echo -n "${sed_path}"
+}
+
+----
+
+==== `util.functions-matching`
+
+[source,bash]
+----
+util.functions-matching () 
+{ 
+    local prefix="${1}"
+    local extra_command=${2:-"cat"}
+    set | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+}
+
+----
+
+==== `util.functions-matching.diff`
+
+[source,bash]
+----
+util.functions-matching.diff () 
+{ 
+    for e in $(util.functions-matching "${1}")
+    do
+        echo "${e/${1}/}"
+    done
+}
+
+----
+
+==== `util.functions-starting-with`
+
+[source,bash]
+----
+util.functions-starting-with () 
+{ 
+    local prefix="${1}"
+    local extra_command=${2:-"cat"}
+    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+}
+
+----
+
+==== `util.functions-starting-with-csv`
+
+[source,bash]
+----
+util.functions-starting-with-csv () 
+{ 
+    local prefix="$1"
+    util.functions-starting-with "${prefix}" | sedx "s/${prefix/./\\.}//g; s/\s+(\w)/, \1/g;"
+}
+
+----
+
+==== `util.functions-starting-with-lines`
+
+[source,bash]
+----
+util.functions-starting-with-lines () 
+{ 
+    local prefix="${1}"
+    local extra_command=${2:-"cat"}
+    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command}
+}
+
+----
+
+==== `util.generate-password`
+
+[source,bash]
+----
+util.generate-password () 
+{ 
+    local len=${1:-32}
+    local val=$(($(date '+%s') - 100000 * $RANDOM))
+    [[ ${val:0:1} == "-" ]] && val=${val/-//}
+    printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c "${len}")"
+}
+
+----
+
+==== `util.i-to-ver`
+
+[source,bash]
+----
+util.i-to-ver () 
+{ 
+    version=${1}
+    /usr/bin/env ruby -e "ver='${version}'; printf %Q{%d.%d.%d}, ver[1..2].to_i, ver[3..5].to_i, ver[6..8].to_i"
+}
+
+----
+
+==== `util.install-direnv`
+
+[source,bash]
+----
+util.install-direnv () 
+{ 
+    "${BASHMATIC_HOME}/bin/install-direnv"
+}
+
+----
+
+==== `util.invoke-if-function`
+
+[source,bash]
+----
+util.invoke-if-function () 
+{ 
+    local namespace="$1"
+    shift
+    local action="$1"
+    shift
+    local func="${namespace}.${action}"
+    util.is-a-function "${func}" || return 255
+    ${func} "$@"
+}
+
+----
+
+==== `util.is-a-function`
+
+[source,bash]
+----
+util.is-a-function () 
+{ 
+    is.a-function "$@"
+}
+
+----
+
+==== `util.is-numeric`
+
+[source,bash]
+----
+util.is-numeric () 
+{ 
+    is.numeric "$1"
+}
+
+----
+
+==== `util.is-variable-defined`
+
+[source,bash]
+----
+util.is-variable-defined () 
+{ 
+    local var_name="$1"
+    [[ -n ${!var_name+x} ]]
+}
+
+----
+
+==== `util.lines-in-folder`
+
+[source,bash]
+----
+util.lines-in-folder () 
+{ 
+    local folder=${1:-'.'}
+    find "${folder}" -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
+}
+
+----
+
+==== `util.os`
+
+[source,bash]
+----
+util.os () 
+{ 
+    echo -n "${AppCurrentOS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
+}
+
+----
+
+==== `util.random-number`
+
+[source,bash]
+----
+util.random-number () 
+{ 
+    local limit="${1:-"1000000"}"
+    printf $(((RANDOM % ${limit})))
+}
+
+----
+
+==== `util.remove-from-init-files`
+
+[source,bash]
+----
+util.remove-from-init-files () 
+{ 
+    local search="${1}"
+    local backup_extension="${2}"
+    [[ -z ${backup_extension} ]] && backup_extension="$(epoch).backup"
+    [[ -z ${search} ]] && return
+    declare -a shell_files=($(util.shell-init-files))
+    local temp_holder=$(mktemp)
+    for init_file in "${shell_files[@]}"
+    do
+        run.config.detail-is-enabled && inf "verifying file ${init_file}..."
+        file="${init_file}"
+        if [[ -f ${file} && -n $(grep "${search}" "${file}") ]]; then
+            run.config.detail-is-enabled && ui.closer.ok:
+            local matches=$(grep -c "${search}" "${file}")
+            run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"
+            run "grep -v \"${search}\" ${file} > ${temp_holder}"
+            if [[ -n "${backup_extension}" ]]; then
+                local backup="${file}.${backup_extension}"
+                run.config.detail-is-enabled && info "backup file will created in ${bldylw}${backup}"
+                [[ -n "${do_backup_changes}" ]] && "mv ${file} ${backup}"
+            fi
+            run "cp -v ${temp_holder} ${file}"
+        else
+            run.config.detail-is-enabled && ui.closer.not-ok:
+        fi
+    done
+    return "${LibRun__LastExitCode}"
+}
+
+----
+
+==== `util.rot13`
+
+[source,bash]
+----
+util.rot13 () 
+{ 
+    local value="$*"
+    echo "$value" | util.rot13-stdin
+}
+
+----
+
+==== `util.rot13-stdin`
+
+[source,bash]
+----
+util.rot13-stdin () 
+{ 
+    ruby -e 'puts STDIN.read.
+  tr(
+    "0123456789",
+    "5678901234").
+  tr(
+    "abcdefghijklmnopqrstuvwxyz",
+    "nopqrstuvwxyzabcdefghijklm").
+  tr(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "NOPQRSTUVWXYZABCDEFGHIJKLM")'
+}
+
+----
+
+==== `util.shell-init-files`
+
+[source,bash]
+----
+util.shell-init-files () 
+{ 
+    local shell_function="${1:-"user.login-shell"}"
+    local shell_name=$(${shell_function})
+    if [[ ${shell_name} == "bash" ]]; then
+        echo "${HOME}/.bash_profile ${HOME}/.bash_login ${HOME}/.bashrc ${HOME}/.profile"
+    else
+        if [[ ${shell_name} == "zsh" ]]; then
+            echo "${HOME}/.zshrc"
+        else
+            error "Shell ${shell_name} is not supported."
+            return 1
+        fi
+    fi
+}
+
+----
+
+==== `util.ver-to-i`
+
+[source,bash]
+----
+util.ver-to-i () 
+{ 
+    version=${1}
+    echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
+}
+
+----
+
+==== `util.whats-installed`
+
+[source,bash]
+----
+util.whats-installed () 
+{ 
+    declare -a hb_aliases=($(alias | ${GrepCommand} 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
+    h2 "Installed app aliases:" ' ' "${hb_aliases[@]}"
+    h2 "Installed DB Functions:"
+    info "hb.db  [ ms | r1 | r2 | c ]"
+    info "hb.ssh <server-name-substring>, eg hb.ssh web"
+}
+
+----
+
+==== `var.expand`
+
+[source,bash]
+----
+var.expand () 
+{ 
+    .subst "$@"
+}
+
+----
+
+==== `watch.command`
+
+[source,bash]
+----
+watch.command () 
+{ 
+    [[ -z "$1" ]] && return 1
+    trap "return 1" SIGINT
+    while true; do
+        clear
+        hr.colored "${txtblu}"
+        printf " ❯ Command: ${bldgrn}$*${clr}  •  ${txtblu}$(date)${clr}  •  Refresh: ${bldcyn}${LibUtil__WatchRefreshSeconds}${clr}\n"
+        hr.colored "${txtblu}"
+        eval "$*"
+        hr.colored "${txtblu}"
+        printf "To change refresh rate run ${bldylw}watch.set-refresh <seconds>${clr}\n\n\n"
+        sleep "${LibUtil__WatchRefreshSeconds}"
+    done
+}
+
+----
+
+==== `watch.ls-al`
+
+[source,bash]
+----
+watch.ls-al () 
+{ 
+    while true; do
+        ls -al
+        sleep "${LibUtil__WatchRefreshSeconds}"
+        clear
+    done
+}
+
+----
+
+==== `watch.set-refresh`
+
+[source,bash]
+----
+watch.set-refresh () 
+{ 
+    export LibUtil__WatchRefreshSeconds="${1:-"0.5"}"
+}
+
+----
+>>>>>>> Stashed changes
 
 === Module `video`
 
+<<<<<<< Updated upstream
+=======
+=== Module `video`
+
+==== `video.convert.compress`
+
+[source,bash]
+----
+video.convert.compress () 
+{ 
+    local file="$1"
+    shift
+    local output=${file/\.*/.mkv}
+    local ratio="${2:-"1"}"
+    [[ "${file}" == "${output}" ]] && output="${output/\.mkv/-smaller-${ratio}.mkv}"
+    h2 "Starting ffmpeg conversion from ${file} to ${output}" "Source file size is $(file.size.mb ${file})"
+    run.set-next show-output-on
+    run "ffmpeg -stats -y -i ${file} -preset:v veryfast -loglevel error -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/3:ih/3' ${output}"
+    local before=$(file.size ${file})
+    local after=$(file.size ${output})
+    local reduction=$(( 100 * ( before - after ) / before ))
+    success "File ${output} was prodiced with ${reduction}% size savings."
+}
+
+----
+
+
+=== Module `vim`
+>>>>>>> Stashed changes
 
 === Module `vim`
 

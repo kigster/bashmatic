@@ -23,7 +23,10 @@ trap "rm -f ${usage_md}-e ${usage_adoc}" EXIT
 
 function docs.setup() {
   #shdoc.install
-  [[ -n $(command -V kramdoc) ]] || gem.install kramdoc
+  [[ -n "$(command -v kramdoc 2>/dev/null)" && -n "$(kramdoc --version 2>/dev/null)" ]] || { 
+    run "gem install kramdown -N "
+    run "gem install kramdown-asciidoc -N "
+  }
 }
 
 function docs.generate() {
