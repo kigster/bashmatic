@@ -265,12 +265,8 @@ util.ensure-gnu-sed() {
 
     sed_path="${gsed_path}"
     ;;
-  linux)
-    sed_path="$(which sed)"
-    ;;
   *)
-    echo "Operating system \"${os}\" is not supported." 1>&2
-    return 2
+    sed_path="$(command -v sed)"
     ;;
   esac
 
@@ -286,7 +282,7 @@ export bashmatic__sed_command
 #———————————————————————————————————————————————————————
 function sedx.cache-command() {
   local sed_path="$(util.ensure-gnu-sed)"
-  local sed_command="${sed_path} -E "
+  local sed_command="${sed_path:=$(command -v sed)} -E "
   export bashmatic__sed_command="${sed_command}"
 }
 

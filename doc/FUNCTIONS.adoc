@@ -40,6 +40,7 @@
 * xref:#module-output-boxes[output-boxes]
 * xref:#module-output-repeat-char[output-repeat-char]
 * xref:#module-output-utils[output-utils]
+* xref:#module-package[package]
 * xref:#module-path[path]
 * xref:#module-pdf[pdf]
 * xref:#module-pg[pg]
@@ -66,6 +67,7 @@
 * xref:#module-usage[usage]
 * xref:#module-user[user]
 * xref:#module-util[util]
+* xref:#module-video[video]
 * xref:#module-vim[vim]
 * xref:#module-yaml[yaml]
 * xref:#module-zsh[zsh]
@@ -481,6 +483,17 @@ asciidoc.rouge-themes ()
 
 === Module `audio`
 
+==== `æ.mp3`
+
+[source,bash]
+----
+æ.mp3 () 
+{ 
+    audio.make.mp3 "$@"
+}
+
+----
+
 ==== `audio.dir.mp3-to-wav`
 
 [source,bash]
@@ -735,6 +748,46 @@ aws.s3.upload ()
 
 === Module `bashmatic`
 
+==== `bashmatic.auto-update`
+
+[source,bash]
+----
+bashmatic.auto-update () 
+{ 
+    ( unset -f _direnv_hook > /dev/null 2>&1
+    [[ ${Bashmatic__Test} -eq 1 ]] && return 0
+    local pwd="$(pwd -P)"
+    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}"
+    git.configure-auto-updates
+    git.repo-is-clean || { 
+        output.is-ssh || { 
+            output.is-terminal && bashmatic.auto-update-error
+            cd "${pwd}" > /dev/null
+            return 1
+        }
+    }
+    git.update-repo-if-needed
+    cd "${pwd}" > /dev/null )
+}
+
+----
+
+==== `bashmatic.auto-update-error`
+
+[source,bash]
+----
+bashmatic.auto-update-error () 
+{ 
+    bashmatic.is-developer || return
+    if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
+        cat "${__bashmatic_auto_update_help_file}"
+    else
+        box.black-on-yellow "Bashmatic — I detected locally modified changes..." "Auto-update is therefore disabled until its git state is clean." | tee -a "${__bashmatic_auto_update_help_file}" 1>&2
+    fi
+}
+
+----
+
 ==== `bashmatic.bash.exit-unless-version-four-or-later`
 
 [source,bash]
@@ -948,6 +1001,8 @@ bashmatic.source-dir ()
     fi
     for file in "${files[@]}"
     do
+        local n="$(basename ${file})"
+        [[ ${n:0:1} == . ]] && continue
         bashmatic.source "${file}" && loaded=true
     done
     unset files
@@ -1444,6 +1499,40 @@ cache-or-command ()
     is-dbg && info "REFRESHING CACHE with command: ${bldylw}brew list ${*} >${file}"
     brew list "$@" > "${file}"
     cat "${file}"
+}
+
+----
+
+==== `package.install`
+
+[source,bash]
+----
+package.install () 
+{ 
+    brew.install.packages "$@"
+    hash -r 2> /dev/null
+}
+
+----
+
+==== `package.is-installed`
+
+[source,bash]
+----
+package.is-installed () 
+{ 
+    [[ "$(brew.package.is-installed "$@")" == "true" ]]
+}
+
+----
+
+==== `package.uninstall`
+
+[source,bash]
+----
+package.uninstall () 
+{ 
+    brew.uninstall.packages "$@"
 }
 
 ----
@@ -2836,17 +2925,6 @@ dir.find ()
 
 ----
 
-==== `ff`
-
-[source,bash]
-----
-ff () 
-{ 
-    file.find "$@"
-}
-
-----
-
 ==== `file.ask.if-exists`
 
 [source,bash]
@@ -3126,6 +3204,18 @@ file.stat ()
 file.strip.extension () 
 { 
     file.extension.remove "$@"
+}
+
+----
+
+==== `file.sync`
+
+[source,bash]
+----
+file.sync () 
+{ 
+    local from="$1"
+    local to="$2"
 }
 
 ----
@@ -3558,31 +3648,6 @@ gem.version ()
 
 === Module `git`
 
-==== `bashmatic.auto-update`
-
-[source,bash]
-----
-bashmatic.auto-update () 
-{ 
-    [[ ${Bashmatic__Test} -eq 1 ]] && return 0
-    git.configure-auto-updates
-    git.repo-is-clean || { 
-        output.is-ssh || { 
-            output.is-terminal && bashmatic.is-developer && { 
-                if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
-                    cat ${__bashmatic_auto_update_help_file}
-                else
-                    box.black-on-yellow "Bashmatic — I detected locally modified changes..." "Auto-update is therefore disabled until its git state is clean." | tee -a ${__bashmatic_auto_update_help_file} 1>&2
-                fi
-            }
-        }
-        return 1
-    }
-    git.sync
-}
-
-----
-
 ==== `git.branch.current`
 
 [source,bash]
@@ -3793,7 +3858,7 @@ git.remotes ()
 ----
 git.repo-is-clean () 
 { 
-    local repo="${1:-${BASHMATIC_HOME}}"
+    local repo="${1:-${BASHMATIC_HOME:="${HOME}/.bashmatic"}}"
     cd "${repo}" > /dev/null
     if [[ -z $(git status -s) ]]; then
         cd - > /dev/null
@@ -3882,7 +3947,7 @@ git.squash ()
 ----
 git.sync () 
 { 
-    local dir="$(pwd)"
+    local dir="$(pwd -P)"
     cd "${BASHMATIC_HOME}" > /dev/null
     git.repo-is-clean || { 
         output.is-ssh || warning "${BASHMATIC_HOME} has locally modified files." "Please commit or stash them to allow auto-upgrade to function as designed." 1>&2
@@ -4053,6 +4118,17 @@ github.validate ()
 is-validations () 
 { 
     util.functions-matching.diff is\\. | sedx 's/^/is./g'
+}
+
+----
+
+==== `is.a-command`
+
+[source,bash]
+----
+is.a-command () 
+{ 
+    is.command "$@"
 }
 
 ----
@@ -6837,6 +6913,46 @@ warning: ()
 ----
 
 
+=== Module `package`
+
+==== `package.ensure.commmand-available`
+
+[source,bash]
+----
+package.ensure.commmand-available () 
+{ 
+    local package="$1"
+    shift
+    local binary="$1"
+    shift
+    is.a-command "${binary}" && return 0
+    package.ensure.is-installed "${package}"
+    hash -r > /dev/null 2>&1
+    is.a-command "${binary}" && return 0
+    error "After installing package ${package}, binary ${binary} still is not found."
+}
+
+----
+
+==== `package.ensure.is-installed`
+
+[source,bash]
+----
+package.ensure.is-installed () 
+{ 
+    for pkg in "$@"
+    do
+        package.is-installed ${pkg} || package.install
+        package.is-installed ${pkg} || { 
+            error "Package ${pkg} does not appear installed, broken package or version?"
+            return 1
+        }
+    done
+}
+
+----
+
+
 === Module `path`
 
 ==== `PATH_add`
@@ -6960,6 +7076,18 @@ path.prepend ()
         new_path="${__path}:${p}"
     done
     echo "${new_path}"
+}
+
+----
+
+==== `path.strip-slash`
+
+[source,bash]
+----
+path.strip-slash () 
+{ 
+    local path="$(echo "$1" | sed -E 's#\/+$##g')"
+    printf -- "%s" "${path}"
 }
 
 ----
@@ -9585,6 +9713,7 @@ millis ()
 time.date-from-epoch () 
 { 
     local epoch_ts="$1"
+    .time.init
     if [[ "${AppCurrentOS}" == "Darwin" ]]; then
         printf "date -r ${epoch_ts}"
     else
@@ -9705,6 +9834,7 @@ time.now.file-extension ()
 time.now.with-ms () 
 { 
     local date_runnable
+    .time.init
     date_runnable='date'
     if [[ "${AppCurrentOS}" == "Darwin" ]]; then
         [[ -z $(command -v gdate) ]] && .time.osx.coreutils
@@ -10346,7 +10476,7 @@ sedx ()
 sedx.cache-command () 
 { 
     local sed_path="$(util.ensure-gnu-sed)"
-    local sed_command="${sed_path} -E -e "
+    local sed_command="${sed_path:=$(command -v sed)} -E "
     export bashmatic__sed_command="${sed_command}"
 }
 
@@ -10436,14 +10566,14 @@ util.ensure-gnu-sed ()
     local sed_path
     local gsed_path
     local os
+    command -v gsed && return 0
     sed_path="$(command -v sed 2>/dev/null)"
-    os="$(uname -s)"
-    case ${os} in 
-        Darwin)
+    os="$(util.os)"
+    case "${os}" in 
+        darwin)
             gsed_path="$(command -v gsed 2>/dev/null)"
             if [[ -z "${gsed_path}" ]]; then
                 echo
-                output.constrain-screen-width 100
                 h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
                 ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed ) 1>&2 > /dev/null
                 hash -r 2> /dev/null
@@ -10456,15 +10586,10 @@ util.ensure-gnu-sed ()
             }
             sed_path="${gsed_path}"
         ;
-        Linux)
-            sed_path="$(which sed)"
-        ;
         *)
-            echo "Operating system \"${os}\" is not supported." 1>&2
-            return 2
+            sed_path="$(command -v sed)"
         ;
     esac
-    output.unconstrain-screen-width
     echo -n "${sed_path}"
 }
 
@@ -10631,6 +10756,17 @@ util.lines-in-folder ()
 { 
     local folder=${1:-'.'}
     find "${folder}" -type f -exec wc -l {} \; | awk 'BEGIN{a=0}{a+=$1}END{print a}'
+}
+
+----
+
+==== `util.os`
+
+[source,bash]
+----
+util.os () 
+{ 
+    echo -n "${AppCurrentOS:=$(/usr/bin/env uname -s | tr 'A-Z' 'a-z')}"
 }
 
 ----
@@ -10819,6 +10955,31 @@ watch.ls-al ()
 watch.set-refresh () 
 { 
     export LibUtil__WatchRefreshSeconds="${1:-"0.5"}"
+}
+
+----
+
+
+=== Module `video`
+
+==== `video.convert.compress`
+
+[source,bash]
+----
+video.convert.compress () 
+{ 
+    local file="$1"
+    shift
+    local output=${file/\.*/.mkv}
+    local ratio="${2:-"1"}"
+    [[ "${file}" == "${output}" ]] && output="${output/\.mkv/-smaller-${ratio}.mkv}"
+    h2 "Starting ffmpeg conversion from ${file} to ${output}" "Source file size is $(file.size.mb ${file})"
+    run.set-next show-output-on
+    run "ffmpeg -stats -y -i ${file} -preset:v veryfast -loglevel error -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/3:ih/3' ${output}"
+    local before=$(file.size ${file})
+    local after=$(file.size ${output})
+    local reduction=$(( 100 * ( before - after ) / before ))
+    success "File ${output} was prodiced with ${reduction}% size savings."
 }
 
 ----
