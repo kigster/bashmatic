@@ -125,11 +125,11 @@ output.color.off() {
 
 .output.current-screen-width.unconstrained() {
   local w
-  local os=$(uname -s)
+  AppCurrentOS="${AppCurrentOS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
 
-  if [[ $os == 'Darwin' ]]; then
+  if [[ $AppCurrentOS == darwin ]]; then
     w=$(.output.stty.field columns)
-  elif [[ $os == 'Linux' ]]; then
+  elif [[ $AppCurrentOS == linux ]]; then
     w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')
   fi
   printf -- "%d" "$w"
@@ -181,9 +181,10 @@ output.color.off() {
 }
 
 .output.screen-height() {
-  if [[ ${AppCurrentOS:-$(uname -s)} == 'Darwin' ]]; then
+  AppCurrentOS=${AppCurrentOS:=$(util.os)}
+  if [[ ${AppCurrentOS} == darwin ]]; then
     h=$(.output.stty.field rows)
-  elif [[ ${AppCurrentOS} == 'Linux' ]]; then
+  elif [[ ${AppCurrentOS} == linux ]]; then
     h=$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')
   fi
 
@@ -493,7 +494,7 @@ output.is-pipe() {
 }
 
 output.has-stdin() {
-  test -s /dev/stdin
+  [[ ! -t 0 ]]
 }
 
 output.is-redirect() {

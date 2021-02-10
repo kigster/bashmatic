@@ -845,7 +845,7 @@ bashmatic.functions-from ()
     [[ -n ${pattern} ]] && shift
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
     cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
-    export SCREEN_WIDTH=$(screen-width)
+    export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
     if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
         pattern="${pattern}.sh"
     fi
@@ -3133,8 +3133,8 @@ file.list.filter-non-empty ()
 ----
 file.size () 
 { 
-    AppCurrentOS=${AppCurrentOS:-$(uname -s)}
-    if [[ "Linux" == ${AppCurrentOS} ]]; then
+    AppCurrentOS=${AppCurrentOS:=$(util.os)}
+    if [[ "linux" == ${AppCurrentOS} ]]; then
         stat -c %s "$1"
     else
         file.stat "$1" st_size
@@ -4865,7 +4865,7 @@ bashmatic-set-fqdn ()
 ----
 bashmatic-term () 
 { 
-    open $(bashmatic-term-program)
+    open "$(bashmatic-term-program)"
 }
 
 ----
@@ -4895,7 +4895,7 @@ bashmatic-term-program ()
 ----
 change-underscan () 
 { 
-    set +e
+    set +
     local amount_percentage="$1"
     if [[ -z "${amount_percentage}" ]]; then
         printf "%s\n\n" "USAGE: change-underscan percent"
@@ -4905,7 +4905,7 @@ change-underscan ()
     fi
     local file="/var/db/.com.apple.iokit.graphics"
     local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"
-    local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
+    local new_value=$(ruby -   "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
     h1 'This utility allows you to change underscan/overscan' 'on monitors that do not offer that option via GUI.'
     run.ui.ask "Continue?"
     info "Great! First we need to identify your monitor."
@@ -4913,8 +4913,8 @@ change-underscan ()
     run.ui.ask "Is it plugged in?"
     info "Making a backup of your current graphics settings..."
     inf "Please enter your password, if asked: "
-    set -e
-    bash -c 'set -e; sudo ls -1 > /dev/null; set +e'
+    set -
+    bash -c 'set -  ; sudo ls -1 > /dev/null; set +  '
     ok
     run "sudo rm -f \"${backup}\""
     export LibRun__AbortOnError=${True}
@@ -5102,7 +5102,8 @@ osx.ramdisk.mount ()
     local size="${1:-"8"}"
     local diskname="${2:-"ramdisk"}"
     local total=$((size * 2 * 1024))
-    [[ $(uname -s) != "Darwin" ]] && { 
+    export AppCurrentOS=$(util.os)
+    [[ ${AppCurrentOS} != "darwin" ]] && { 
         error "This function only works on OSX"
         return 1
     }
@@ -5130,7 +5131,7 @@ osx.ramdisk.mount ()
 osx.ramdisk.unmount () 
 { 
     local diskname="${2:-"ramdisk"}"
-    [[ $(uname -s) != "Darwin" ]] && { 
+    [[ $(os.util) != "darwin" ]] && { 
         error "This function only works on OSX"
         return 1
     }
@@ -5515,7 +5516,7 @@ output.constrain-screen-width ()
 ----
 output.has-stdin () 
 { 
-    test -s /dev/stdin
+    [[ ! -t 0 ]]
 }
 
 ----
@@ -6628,8 +6629,8 @@ br ()
 columnize () 
 { 
     local columns="${1:-2}"
-    local sw=${SCREEN_WIDTH:-120}
-    [[ -z ${sw} ]] && sw=$(screen-width)
+    local sw="${SCREEN_WIDTH:=$(.output.screen-width)}"
+    [[ ${sw} -lt 90 ]] && sw=100
     pr -l 10000 -${columns} -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
 }
 
@@ -8851,7 +8852,8 @@ run.with.minimum-duration ()
     info "starting a command with the minimum duration of ${bldylw}${min_duration} seconds"
     run "${command}"
     local result=$?
-    local duration=$((($(millis) - ${started}) / 1000))
+    local now=$(millis)
+    local duration=$(((now - started) / 1000))
     if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
         local cmd="$(echo ${command} | sedx 's/\"//g')"
         error "An operation finished too quickly. The threshold was set to ${bldylw}${min_duration} sec." "The command took ${bldylw}${duration}${txtred} secs." "${bldylw}${cmd}${txtred}"
@@ -9482,7 +9484,7 @@ sym.dev.have-key ()
 sym.dev.import () 
 { 
     local skip_instructions=${1:-0}
-    if [[ ${AppCurrentOS} != 'Darwin' ]]; then
+    if [[ ${AppCurrentOS} != 'darwin' ]]; then
         error 'This is only meant to run on Mac OS-X'
         return
     fi
@@ -9713,8 +9715,7 @@ millis ()
 time.date-from-epoch () 
 { 
     local epoch_ts="$1"
-    .time.init
-    if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+    if [[ "${AppCurrentOS}" == "darwin" ]]; then
         printf "date -r ${epoch_ts}"
     else
         printf "date --date='@${epoch_ts}'"
@@ -9834,9 +9835,8 @@ time.now.file-extension ()
 time.now.with-ms () 
 { 
     local date_runnable
-    .time.init
     date_runnable='date'
-    if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+    if [[ "${AppCurrentOS}" == "darwin" ]]; then
         [[ -z $(command -v gdate) ]] && .time.osx.coreutils
         [[ -n $(command -v gdate) ]] && date_runnable='gdate'
     fi
@@ -10522,7 +10522,7 @@ util.append-to-init-files ()
 ----
 util.arch () 
 { 
-    echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr 'A-Z' 'a-z'
+    echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr '[:upper:]' '[:lower:]'
 }
 
 ----
@@ -10565,17 +10565,16 @@ util.ensure-gnu-sed ()
 { 
     local sed_path
     local gsed_path
-    local os
     command -v gsed && return 0
     sed_path="$(command -v sed 2>/dev/null)"
-    os="$(util.os)"
-    case "${os}" in 
+    os="${AppCurrentOS:=$(util.os)}"
+    case "${AppCurrentOS}" in 
         darwin)
             gsed_path="$(command -v gsed 2>/dev/null)"
             if [[ -z "${gsed_path}" ]]; then
                 echo
                 h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
-                ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed ) 1>&2 > /dev/null
+                ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed --force --quiet && brew link gnu-sed --overwrite ) 1>&2 > /dev/null
                 hash -r 2> /dev/null
                 gsed_path="$(command -v gsed 2>/dev/null)"
                 [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
@@ -10766,7 +10765,7 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    echo -n "${AppCurrentOS:=$(/usr/bin/env uname -s | tr 'A-Z' 'a-z')}"
+    echo -n "${AppCurrentOS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
 }
 
 ----

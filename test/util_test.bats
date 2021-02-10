@@ -68,12 +68,13 @@ moo() {
   [ $code -ne 0 ]
 }
 
-config-moo() {
+config-moo() {   
   echo "config/moo.enc" | sedx 's/\.(sym|enc)$//g'
 }
 
 @test "sedx() with gnu-sed installed" {
-  if [[ $(uname -s) == "Darwin" ]]; then
+  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  if [[ ${AppCurrentOS} == "darwin" ]]; then
     if [[ -n $(which brew) && -z $(which gsed) ]]; then
       brew install --force --quiet gnu-sed 2>&1 | cat >/dev/null
     fi
@@ -85,7 +86,8 @@ config-moo() {
 }
 
 @test "sedx() without gnu-sed installed" {
-  if [[ $(uname -s) == "Darwin" ]]; then
+  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  if [[ ${AppCurrentOS} == "darwin" ]]; then
     if [[ -n $(which brew) ]]; then
       if [[ -n "${INTEGRATION_TEST}" ]]; then
         brew uninstall --force --quiet gnu-sed 2>&1 | cat >/dev/null

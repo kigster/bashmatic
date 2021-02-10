@@ -154,8 +154,8 @@ file.stat() {
 }
 
 file.size() {
-  AppCurrentOS=${AppCurrentOS:-$(uname -s)}
-  if [[ "Linux" == ${AppCurrentOS} ]]; then
+  AppCurrentOS=${AppCurrentOS:=$(util.os)}
+  if [[ "linux" == ${AppCurrentOS} ]]; then
     stat -c %s "$1"
   else
     file.stat "$1" st_size

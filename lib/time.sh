@@ -7,10 +7,6 @@
 # Any modifications, © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
-.time.init() {
-  export AppCurrentOS="${AppCurrentOS:="$(/usr/bin/env uname -s)"}"
-}
-
 # Install necessary dependencies on OSX
 .time.osx.coreutils() {
   # install gdate quietly
@@ -26,21 +22,18 @@
 # milliseconds
 .run.millis() {
   local date_runnable
-  .time.init
-  date_runnable='date'
-  if [[ "${AppCurrentOS}" == "Darwin" ]]; then
-    [[ -z $(command -v gdate) ]] && .time.osx.coreutils
-    [[ -n $(command -v gdate) ]] && date_runnable='gdate'
+  if [[ "${AppCurrentOS}" == "darwin" ]]; then
+    command -v gdate >/dev/null || .time.osx.coreutils
   fi
-  ${date_runnable} '+%s%3N'
+  date_runnable=$(command -v gdate || command -v date)
+  eval "${date_runnable} '+%s%3N'"
 }
 
 # milliseconds
 function time.now.with-ms() {
   local date_runnable
-  .time.init
   date_runnable='date'
-  if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+  if [[ "${AppCurrentOS}" == "darwin" ]]; then
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
     [[ -n $(command -v gdate) ]] && date_runnable='gdate'
   fi
@@ -55,11 +48,10 @@ function date.now.with-time() {
 
 
 # Returns the date command that constructs a date from a given
-# epoch number. Appears to be different on Linux vs OSX.
+# epoch number. Appears to be different on linux vs OSX.
 time.date-from-epoch() {
   local epoch_ts="$1"
-  .time.init
-  if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+  if [[ "${AppCurrentOS}" == "darwin" ]]; then
     printf "date -r ${epoch_ts}"
   else
     printf "date --date='@${epoch_ts}'"

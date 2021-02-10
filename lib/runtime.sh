@@ -133,7 +133,7 @@ export commands_completed=0
     eval "${command}"
     export LibRun__LastExitCode=$?
   else
-    eval "${command}" 2>${stderr} 1>${stdout}
+    eval "${command}" 2>"${stderr}" 1>"${stdout}"
     export LibRun__LastExitCode=$?
   fi
 }
@@ -224,7 +224,8 @@ run.print-long-command() {
 
   local __Previous__ShowCommandOutput=${LibRun__ShowCommandOutput}
   set +e
-  start=$(millis)
+  local ts_start
+  ts_start=$(millis)
 
   local tries=1
 
@@ -240,7 +241,7 @@ run.print-long-command() {
 
     export LibRun__RetryCount="$((LibRun__RetryCount - 1))"
 
-    [[ -n ${LibRun__RetrySleep} ]] && sleep ${LibRun__RetrySleep}
+    [[ -n ${LibRun__RetrySleep} ]] && sleep "${LibRun__RetrySleep}"
 
     info "warning: command exited with code ${bldred}${LibRun__LastExitCode}" \
       "$(txt-info)and ${LibRun__RetryCount} retries left."
@@ -250,7 +251,8 @@ run.print-long-command() {
     tries=$((tries + 1))
   done
 
-  duration=$(($(millis) - start))
+  local ts_end=$(millis)
+  local duration=$(ruby -e "puts ${ts_end} - ${ts_start}")
 
   export LibRun__ShowCommandOutput=${__Previous__ShowCommandOutput}
 
@@ -321,7 +323,8 @@ run.with.minimum-duration() {
   run "${command}"
   local result=$?
 
-  local duration=$((($(millis) - ${started}) / 1000))
+  local now=$(millis)
+  local duration=$(((now - started) / 1000))
 
   if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
     local cmd="$(echo ${command} | sedx 's/\"//g')"

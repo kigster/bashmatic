@@ -44,7 +44,7 @@ bashmatic.functions-from() {
 
   cd "${BASHMATIC_HOME}/lib" >/dev/null || return 1
 
-  export SCREEN_WIDTH=$(screen-width)
+  export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
 
   if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
     pattern="${pattern}.sh"

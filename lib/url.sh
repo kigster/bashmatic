@@ -5,8 +5,8 @@ export BITLY_LOGIN
 export BITLY_API_KEY
 
 # These globals define flags used in fetching URLs.
-export LibUrl__CurlDownloaderFlags="-fsSL --connect-timeout 3 --retry 2 --retry-delay 1 --retry-max-time 3"
-export LibUrl__WgetDownloaderFlags="-q --connect-timeout=5 --retry-connrefused --tries 15 -O - "
+export LibUrl__CurlDownloaderFlags="-fsSL --connect-timeout 2 --retry 2 --retry-delay 1 --retry-max-time 2"
+export LibUrl__WgetDownloaderFlags="-q --connect-timeout=2 --retry-connrefused --tries 2 -O - "
 
 # Description:
 #      If BITLY_LOGIN and BITLY_API_KEY are set, shortens the URL using Bitly.

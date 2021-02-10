@@ -21,9 +21,9 @@ function test-group() {
 function specs.init() {
   dbg "Script Source: ${BASH_SOURCE[0]}"
 
-
   export TERM=${TERM:-xterm-256color}
-  export MIN_WIDTH=${MIN_WIDTH:-"100"}
+  export MIN_WIDTH=${MIN_WIDTH:-"110"}
+  output.constrain-screen-width 110
 
   export ProjectRoot="$(specs.find-project-root)"
   dbg "ProjectRoot is ${ProjectRoot}"
@@ -197,10 +197,10 @@ function specs.run() {
 #------------------------------------------------------------------
 # Auxillary
 function specs.add-all-files() {
-  export os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
   if [[ -z ${all_test_files[*]} ]]; then
     all_test_files=($(find "${BASHMATIC_TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
-    [[ -d "${BASHMATIC_TEST_DIR}/${os}" ]] && all_test_files=(${all_test_files[@]} $(find "${BASHMATIC_TEST_DIR}/${os}" -maxdepth 1 -name '*test*.bats' | sort))
+    [[ -d "${BASHMATIC_TEST_DIR}/${AppCurrentOS}" ]] && all_test_files=(${all_test_files[@]} $(find "${BASHMATIC_TEST_DIR}/${AppCurrentOS}" -maxdepth 1 -name '*test*.bats' | sort))
   fi
 }
 

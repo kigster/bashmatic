@@ -86,7 +86,7 @@ cookie-dump() {
 }
 
 change-underscan() {
-  set +e
+  set + 
   local amount_percentage="$1"
   if [[ -z "${amount_percentage}" ]]; then
     printf "%s\n\n" "USAGE: change-underscan percent"
@@ -99,7 +99,7 @@ change-underscan() {
   local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"
 
   # Compute new value as a percentage of 10000
-  local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
+  local new_value=$(ruby -   "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
 
   h1 'This utility allows you to change underscan/overscan' \
     'on monitors that do not offer that option via GUI.'
@@ -112,8 +112,8 @@ change-underscan() {
 
   info "Making a backup of your current graphics settings..."
   inf "Please enter your password, if asked: "
-  set -e
-  bash -c 'set -e; sudo ls -1 > /dev/null; set +e'
+  set - 
+  bash -c 'set -  ; sudo ls -1 > /dev/null; set +  '
   ok
   run "sudo rm -f \"${backup}\""
   export LibRun__AbortOnError=${True}
@@ -179,7 +179,8 @@ osx.ramdisk.mount() {
   local diskname="${2:-"ramdisk"}"
 
   local total=$((size * 2 * 1024))
-  [[ $(uname -s) != "Darwin" ]] && {
+  export AppCurrentOS=$(util.os)
+  [[ ${AppCurrentOS} != "darwin" ]] && {
     error "This function only works on OSX"
     return 1
   }
@@ -206,7 +207,7 @@ osx.ramdisk.mount() {
 osx.ramdisk.unmount() {
   local diskname="${2:-"ramdisk"}"
 
-  [[ $(uname -s) != "Darwin" ]] && {
+  [[ $(os.util) != "darwin" ]] && {
     error "This function only works on OSX"
     return 1
   }
@@ -297,7 +298,7 @@ bashmatic-term-program() {
 }
 
 bashmatic-term() {
-  open $(bashmatic-term-program)
+  open "$(bashmatic-term-program)"
 }
 
 osx.local-servers() {

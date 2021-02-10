@@ -3,7 +3,7 @@
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
-os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 set +e
 
 export Bashmatic__Test=1

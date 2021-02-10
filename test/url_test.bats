@@ -3,8 +3,8 @@ load test_helper
 
 @test "url.downloader()" {
   source lib/url.sh
-  local curl_path=$(which curl)
-  local wget_path=$(which wget)
+  local curl_path=$(command -v curl)
+  local wget_path=$(command -v wget)
   if [[ -n ${curl_path} ]]; then
     [[ "$(url.downloader)" =~ "${curl_path}" ]]
   elif [[ -n ${wget_path}  ]]; then
