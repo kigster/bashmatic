@@ -61,7 +61,7 @@ util.i-to-ver() {
 }
 
 util.os() {
-  echo -n "${AppCurrentOS:=$(/usr/bin/env uname -s | tr 'A-Z' 'a-z')}"
+  echo -n "${AppCurrentOS:="$(uname -s | tr '[:upper:]' '[:lower:]')"}"
 }
 
 
@@ -234,14 +234,13 @@ util.install-direnv() {
 util.ensure-gnu-sed() {
   local sed_path
   local gsed_path
-  local os
 
   command -v gsed && return 0
 
   sed_path="$(command -v sed 2>/dev/null)"
-  os="$(util.os)"
+  AppCurrentOS="$(util.os)"
 
-  case "${os}" in
+  case "${AppCurrentOS}" in
   darwin)
     gsed_path="$(command -v gsed 2>/dev/null)"
 
@@ -250,7 +249,7 @@ util.ensure-gnu-sed() {
       h3 "Please wait while we install gnu-sed using Brew..." \
          "It's a required dependency for many key features." 1>&2
 
-      ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed ) 1>&2 >/dev/null
+      ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed --force --quiet && brew link gnu-sed --overwrite) 1>&2 >/dev/null
 
       hash -r 2>/dev/null
       gsed_path="$(command -v gsed 2>/dev/null)"
@@ -265,8 +264,12 @@ util.ensure-gnu-sed() {
 
     sed_path="${gsed_path}"
     ;;
+  linux)
+    sed_path="$(which sed)"
+    ;;
   *)
-    sed_path="$(command -v sed)"
+    echo "Operating system \"${AppCurrentOS}\" is not supported." 1>&2
+    return 2
     ;;
   esac
 

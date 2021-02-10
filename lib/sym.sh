@@ -80,7 +80,7 @@ __pause() {
 sym.dev.import() {
   local skip_instructions=${1:-0}
 
-  if [[ ${AppCurrentOS} != 'Darwin' ]]; then
+  if [[ ${AppCurrentOS} != 'darwin' ]]; then
     error 'This is only meant to run on Mac OS-X'
     return
   fi

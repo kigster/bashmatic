@@ -27,11 +27,11 @@ err() {
 }
 
 command -v git >/dev/null || {
-  OS="$(uname -s)"
-  if [[ "${OS}" == "Darwin" ]]; then
+  OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  if [[ "${OS}" == "darwin" ]]; then
     puts "Please install xcode command line tools, "
     puts "by running: xcode-select --install"
-  elif [[ "${OS}" == "Linux" ]]; then
+  elif [[ "${OS}" == "linux" ]]; then
     puts "Please install Git."
     puts "eg. apt-get install git"
   fi

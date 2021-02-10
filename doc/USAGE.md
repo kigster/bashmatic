@@ -152,6 +152,21 @@ Local debugging helper, activate it with DEBUG=1
 ---
 
 
+## File `lib/brew.sh`
+
+
+
+* [package.is-installed()](#packageis-installed)
+
+### `package.is-installed()`
+
+For each passed argument checks if it's installed.
+
+
+
+---
+
+
 ## File `lib/output.sh`
 
 
@@ -172,6 +187,20 @@ Prints a "arrow-like" line using powerline characters
 ---
 
 
+## File `lib/video.sh`
+
+# is.sh
+
+
+video conversions
+
+
+
+
+
+---
+
+
 ## File `lib/path.sh`
 
 
@@ -180,6 +209,7 @@ Utilities for managing the $PATH variable
 
 
 
+* [path.strip-slash()](#pathstrip-slash)
 * [path.dirs()](#pathdirs)
 * [path.dirs.size()](#pathdirssize)
 * [path.dirs.uniq()](#pathdirsuniq)
@@ -190,6 +220,10 @@ Utilities for managing the $PATH variable
 * [path.mutate.append()](#pathmutateappend)
 * [path.mutate.prepend()](#pathmutateprepend)
 * [PATH_add()](#path_add)
+
+### `path.strip-slash()`
+
+Removes a trailing slash from an argument path
 
 ### `path.dirs()`
 
@@ -459,6 +493,31 @@ git.open origin # same thing
 #### Arguments
 
 * **$1** (optional): name of the remote to open, defaults to "orogin"
+
+
+
+---
+
+
+## File `lib/package.sh`
+
+
+
+* [package.ensure.is-installed()](#packageensureis-installed)
+* [package.ensure.commmand-available()](#packageensurecommmand-available)
+
+### `package.ensure.is-installed()`
+
+fr
+
+### `package.ensure.commmand-available()`
+
+#### Example
+
+```bash
+In this example we skip installation if `gem` exists and in the PATH.
+Oherwise we install the package and retry, and return if not found
+```
 
 
 
