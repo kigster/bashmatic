@@ -101,10 +101,8 @@ function reset-color:() {
 
 function columnize() {
   local columns="${1:-2}"
-
-  local sw=${SCREEN_WIDTH:-120}
-  [[ -z ${sw} ]] && sw=$(screen-width)
-
+  local sw="${SCREEN_WIDTH:=$(.output.screen-width)}"
+  [[ ${sw} -lt 90 ]] && sw=100
   pr -l 10000 -${columns} -e4 -w ${sw} |
     expand -8 |
     sed -E '/^ *$/d' |

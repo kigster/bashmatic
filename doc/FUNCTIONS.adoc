@@ -77,11 +77,110 @@
 
 === Module `7z`
 
+==== `7z.a`
 
-=== Module `array`
+[source,bash]
+----
+7z.a () 
+{ 
+    7z.zip "$@"
+}
 
-<<<<<<< Updated upstream
-=======
+----
+
+==== `7z.install`
+
+[source,bash]
+----
+7z.install () 
+{ 
+    [[ -n $(which 7z) ]] || run "brew install p7zip"
+    [[ -n $(which 7z) ]] || { 
+        error "7z is not found after installation"
+        return 1
+    }
+    return 0
+}
+
+----
+
+==== `7z.unzip`
+
+[source,bash]
+----
+7z.unzip () 
+{ 
+    7z.install
+    local archive="$1"
+    [[ -f ${archive} ]] || archive="${archive}.tar.7z"
+    [[ -f ${archive} ]] || { 
+        error "Neither $1 nor ${archive} were found."
+        return 1
+    }
+    info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size ${archive}) bytes."
+    run.set-next show-output-on
+    run "7za x -so ${archive} | tar xfv -"
+}
+
+----
+
+==== `7z.x`
+
+[source,bash]
+----
+7z.x () 
+{ 
+    7z.unzip "$@"
+}
+
+----
+
+==== `7z.zip`
+
+[source,bash]
+----
+7z.zip () 
+{ 
+    local folder="$1"
+    shift
+    7z.install
+    local archive="${folder}"
+    [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sed -E 's/\./-/g').tar.7z"
+    [[ -f ${archive} ]] && { 
+        run.set-next on-decline-return
+        run.ui.ask "File ${archive} already exists. Press Y to remove it and continue." || return 1
+        run "rm -f ${archive}"
+    }
+    local -a flags=
+    local -a args=
+    for arg in $@
+    do
+        if [[ ${arg:0:1} == "-" ]]; then
+            flags=(${flags[@]} "${arg}")
+        else
+            args=(${args[@]} "${arg}")
+        fi
+    done
+    printf "${bldgrn}"
+    printf "${args[*]}\n"
+    printf "${bldylw}"
+    set +e
+    local command="tar cf - ${folder} ${args[*]} | 7za a ${flags[*]} -si -bd ${archive}"
+    run.print-command "${command}"
+    eval "${command}"
+    local code=$?
+    printf "${clr}"
+    if [[ ${code} -eq 0 ]]; then
+        success "${archive} created."
+    else
+        error "Tar/7z Exited with code ${code}"
+        return 1
+    fi
+}
+
+----
+
+
 === Module `array`
 
 ==== `array.eval.in-groups-of`
@@ -746,7 +845,7 @@ bashmatic.functions-from ()
     [[ -n ${pattern} ]] && shift
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
     cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
-    export SCREEN_WIDTH=$(screen-width)
+    export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
     if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
         pattern="${pattern}.sh"
     fi
@@ -3034,8 +3133,8 @@ file.list.filter-non-empty ()
 ----
 file.size () 
 { 
-    AppCurrentOS=${AppCurrentOS:-$(uname -s)}
-    if [[ "Linux" == ${AppCurrentOS} ]]; then
+    AppCurrentOS=${AppCurrentOS:=$(util.os)}
+    if [[ "linux" == ${AppCurrentOS} ]]; then
         stat -c %s "$1"
     else
         file.stat "$1" st_size
@@ -4766,7 +4865,7 @@ bashmatic-set-fqdn ()
 ----
 bashmatic-term () 
 { 
-    open $(bashmatic-term-program)
+    open "$(bashmatic-term-program)"
 }
 
 ----
@@ -4796,7 +4895,7 @@ bashmatic-term-program ()
 ----
 change-underscan () 
 { 
-    set +e
+    set +
     local amount_percentage="$1"
     if [[ -z "${amount_percentage}" ]]; then
         printf "%s\n\n" "USAGE: change-underscan percent"
@@ -4806,7 +4905,7 @@ change-underscan ()
     fi
     local file="/var/db/.com.apple.iokit.graphics"
     local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"
-    local new_value=$(ruby -e "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
+    local new_value=$(ruby -   "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
     h1 'This utility allows you to change underscan/overscan' 'on monitors that do not offer that option via GUI.'
     run.ui.ask "Continue?"
     info "Great! First we need to identify your monitor."
@@ -4814,8 +4913,8 @@ change-underscan ()
     run.ui.ask "Is it plugged in?"
     info "Making a backup of your current graphics settings..."
     inf "Please enter your password, if asked: "
-    set -e
-    bash -c 'set -e; sudo ls -1 > /dev/null; set +e'
+    set -
+    bash -c 'set -  ; sudo ls -1 > /dev/null; set +  '
     ok
     run "sudo rm -f \"${backup}\""
     export LibRun__AbortOnError=${True}
@@ -5003,7 +5102,8 @@ osx.ramdisk.mount ()
     local size="${1:-"8"}"
     local diskname="${2:-"ramdisk"}"
     local total=$((size * 2 * 1024))
-    [[ $(uname -s) != "Darwin" ]] && { 
+    export AppCurrentOS=$(util.os)
+    [[ ${AppCurrentOS} != "darwin" ]] && { 
         error "This function only works on OSX"
         return 1
     }
@@ -5031,7 +5131,7 @@ osx.ramdisk.mount ()
 osx.ramdisk.unmount () 
 { 
     local diskname="${2:-"ramdisk"}"
-    [[ $(uname -s) != "Darwin" ]] && { 
+    [[ $(os.util) != "darwin" ]] && { 
         error "This function only works on OSX"
         return 1
     }
@@ -5416,7 +5516,7 @@ output.constrain-screen-width ()
 ----
 output.has-stdin () 
 { 
-    test -s /dev/stdin
+    [[ ! -t 0 ]]
 }
 
 ----
@@ -6284,87 +6384,202 @@ hdr ()
 ----
 
 ==== `hl.blue`
->>>>>>> Stashed changes
 
-=== Module `asciidoc`
+[source,bash]
+----
+hl.blue () 
+{ 
+    left "${bldwht}${bakpur}" "$@"
+}
 
+----
 
-=== Module `audio`
+==== `hl.desc`
 
+[source,bash]
+----
+hl.desc () 
+{ 
+    left "${bakylw}${txtblk}${bakylw}" "$@"
+}
 
-=== Module `aws`
+----
 
+==== `hl.green`
 
-=== Module `bashmatic`
+[source,bash]
+----
+hl.green () 
+{ 
+    left "${txtblk}${bakgrn}" "$@"
+}
 
+----
 
-=== Module `brew`
+==== `hl.subtle`
 
+[source,bash]
+----
+hl.subtle () 
+{ 
+    left "${bldwht}${bakblk}${underlined}" "$@"
+}
 
-=== Module `caller`
+----
 
+==== `hl.yellow`
 
-=== Module `color`
+[source,bash]
+----
+hl.yellow () 
+{ 
+    left "${txtblk}${bakylw}" "$@"
+}
 
+----
 
-=== Module `db`
+==== `hl.yellow-on-black`
 
+[source,bash]
+----
+hl.yellow-on-black () 
+{ 
+    left "${yellow_on_black}" "$@"
+}
 
-=== Module `db_rails`
+----
 
+==== `hl.yellow-on-gray`
 
-=== Module `db_top`
+[source,bash]
+----
+hl.yellow-on-gray () 
+{ 
+    left "${yellow_on_gray}" "$@"
+}
 
+----
 
-=== Module `deploy`
+==== `notice`
 
+[source,bash]
+----
+notice () 
+{ 
+    .output.left-powerline ylw 65 "${itablk}${bakylw}$@"
+}
 
-=== Module `dir`
+----
 
+==== `section.blue`
 
-=== Module `docker`
+[source,bash]
+----
+section.blue () 
+{ 
+    .output.left-powerline blu "$@"
+}
 
+----
 
-=== Module `file`
+==== `section.cyan`
 
+[source,bash]
+----
+section.cyan () 
+{ 
+    .output.left-powerline cyn "$@"
+}
 
-=== Module `ftrace`
+----
 
+==== `section.gray`
 
-=== Module `gem`
+[source,bash]
+----
+section.gray () 
+{ 
+    .output.left-powerline blk "$@"
+}
 
+----
 
-=== Module `git`
+==== `section.gray-yellow`
 
+[source,bash]
+----
+section.gray-yellow () 
+{ 
+    section.gray "${bldylw}${bakblk}$*"
+}
 
-=== Module `github`
+----
 
+==== `section.green`
 
-=== Module `is`
+[source,bash]
+----
+section.green () 
+{ 
+    .output.left-powerline grn "$@"
+}
 
+----
 
-=== Module `jemalloc`
+==== `section.purple`
 
+[source,bash]
+----
+section.purple () 
+{ 
+    .output.left-powerline pur "$@"
+}
 
-=== Module `json`
+----
 
+==== `section.red`
 
-=== Module `maths`
+[source,bash]
+----
+section.red () 
+{ 
+    .output.left-powerline red "$@"
+}
 
+----
 
-=== Module `net`
+==== `section.salmon`
 
+[source,bash]
+----
+section.salmon () 
+{ 
+    .output.left-powerline wht 65 "${white_on_salmon}  $@  "
+}
 
-=== Module `openssl`
+----
 
+==== `section.white`
 
-=== Module `osx`
+[source,bash]
+----
+section.white () 
+{ 
+    .output.left-powerline wht "$@"
+}
 
+----
 
-=== Module `output`
+==== `section.yellow`
 
+[source,bash]
+----
+section.yellow () 
+{ 
+    .output.left-powerline ylw "$@"
+}
 
-=== Module `output-boxes`
+----
 
 
 === Module `output-repeat-char`
@@ -6372,8 +6587,331 @@ hdr ()
 
 === Module `output-utils`
 
+==== `abort`
 
-=== Module `package`
+[source,bash]
+----
+abort () 
+{ 
+    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
+    echo
+}
+
+----
+
+==== `ask`
+
+[source,bash]
+----
+ask () 
+{ 
+    printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}"
+    printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
+}
+
+----
+
+==== `br`
+
+[source,bash]
+----
+br () 
+{ 
+    echo
+}
+
+----
+
+==== `columnize`
+
+[source,bash]
+----
+columnize () 
+{ 
+    local columns="${1:-2}"
+    local sw="${SCREEN_WIDTH:=$(.output.screen-width)}"
+    [[ ${sw} -lt 90 ]] && sw=100
+    pr -l 10000 -${columns} -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
+}
+
+----
+
+==== `dbg`
+
+[source,bash]
+----
+dbg () 
+{ 
+    is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" 1>&2
+    return 0
+}
+
+----
+
+==== `dbg-off`
+
+[source,bash]
+----
+dbg-off () 
+{ 
+    unset DEBUG
+}
+
+----
+
+==== `dbg-on`
+
+[source,bash]
+----
+dbg-on () 
+{ 
+    export DEBUG=$(time.now.db)
+}
+
+----
+
+==== `dbgf`
+
+[source,bash]
+----
+dbgf () 
+{ 
+    local func="$1"
+    shift
+    is.a-function "${func}" || { 
+        error "${func} is not a function"
+        return 1
+    }
+    dbg "${func}(" "$@" ")"
+    ${func} "$@"
+    local code=$?
+    is-dbg || return "${code}"
+    cursor.up 1
+    cursor.at.x 0
+    if [[ ${code} -eq 0 ]]; then
+        ok:
+    else
+        not-ok:
+    fi
+    return ${code}
+}
+
+----
+
+==== `err`
+
+[source,bash]
+----
+err () 
+{ 
+    printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldwht}$*${clr}" 1>&2
+}
+
+----
+
+==== `error`
+
+[source,bash]
+----
+error () 
+{ 
+    header=$(printf -- "${clr}${txtred}  « ERROR » ")
+    box.white-on-red "${header} ${clr}${bldwht}${bakred} — $1" "${@:2}" 1>&2
+}
+
+----
+
+==== `error:`
+
+[source,bash]
+----
+error: () 
+{ 
+    err "$*"
+    ui.closer.not-ok:
+}
+
+----
+
+==== `fatal`
+
+[source,bash]
+----
+fatal () 
+{ 
+    header=$(printf -- "${clr}${bldwht}  « ABORT » ")
+    box.black-on-red "${header} ${clr}${txtblk}${bakred} — $1" "${@:2}" 1>&2
+    exit 1
+}
+
+----
+
+==== `inf`
+
+[source,bash]
+----
+inf () 
+{ 
+    printf -- "${LibOutput__LeftPrefix}${clr}${txtcyn}$*${clr}"
+}
+
+----
+
+==== `info`
+
+[source,bash]
+----
+info () 
+{ 
+    inf "$@"
+    echo
+}
+
+----
+
+==== `info-debug`
+
+[source,bash]
+----
+info-debug () 
+{ 
+    [[ -z ${DEBUG} ]] && return
+    printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
+}
+
+----
+
+==== `info:`
+
+[source,bash]
+----
+info: () 
+{ 
+    inf "$*"
+    ui.closer.ok:
+}
+
+----
+
+==== `is-dbg`
+
+[source,bash]
+----
+is-dbg () 
+{ 
+    [[ -n $DEBUG ]]
+}
+
+----
+
+==== `okay`
+
+[source,bash]
+----
+okay () 
+{ 
+    printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" 1>&2
+    echo
+}
+
+----
+
+==== `puts`
+
+[source,bash]
+----
+puts () 
+{ 
+    printf "  ⇨ ${txtwht}$*${clr}"
+}
+
+----
+
+==== `reset-color`
+
+[source,bash]
+----
+reset-color () 
+{ 
+    echo -en "${clr}"
+}
+
+----
+
+==== `reset-color:`
+
+[source,bash]
+----
+reset-color: () 
+{ 
+    printf "${clr}"
+}
+
+----
+
+==== `shutdown`
+
+[source,bash]
+----
+shutdown () 
+{ 
+    local message=${1:-"Shutting down..."}
+    echo
+    box.red-in-red "${message}"
+    echo
+    exit 1
+}
+
+----
+
+==== `success`
+
+[source,bash]
+----
+success () 
+{ 
+    printf -- "\n${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
+    printf -- "\n\n" 1>&2
+}
+
+----
+
+==== `warn`
+
+[source,bash]
+----
+warn () 
+{ 
+    printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" 1>&2
+}
+
+----
+
+==== `warning`
+
+[source,bash]
+----
+warning () 
+{ 
+    header=$(printf -- "${clr}${txtylw}  « WARNING » ")
+    local first="$1"
+    shift
+    box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" 1>&2
+}
+
+----
+
+==== `warning:`
+
+[source,bash]
+----
+warning: () 
+{ 
+    warn "$*"
+    ui.closer.kind-of-ok:
+}
+
+----
 
 
 === Module `package`
@@ -6418,8 +6956,6 @@ package.ensure.is-installed ()
 
 === Module `path`
 
-<<<<<<< Updated upstream
-=======
 ==== `PATH_add`
 
 [source,bash]
@@ -6568,39 +7104,1910 @@ path.uniq ()
 
 ----
 
->>>>>>> Stashed changes
 
 === Module `pdf`
+
+==== `pdf.combine`
+
+[source,bash]
+----
+pdf.combine () 
+{ 
+    local merged="${1}"
+    shift
+    local files=""
+    for f in "$@"
+    do
+        [[ -f "${f}" ]] && { 
+            info "Appending file ${bldylw}${f}"
+            files="${files} '${f}'"
+        }
+    done
+    [[ -s "${merged}" ]] && { 
+        warning "Merged file ${merged} already exists, removing..."
+        run "rm -f \"${merged}\""
+    }
+    unalias gs 2> /dev/null
+    [[ -n $(command -V gs) ]] || brew.install.package gs
+    run "mkdir -p $(dirname "${merged}")"
+    info "Please wait while GhostScript combines your PDFs into"
+    info "destination file: ${bldylw}${merged}"
+    run "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${merged} ${files}"
+    return ${LibRun__LastExitCode}
+}
+
+----
 
 
 === Module `pg`
 
+==== `pg.is-running`
+
+[source,bash]
+----
+pg.is-running () 
+{ 
+    [[ $(/bin/ps -ef | grep -c '[p]ostgres:') -gt 4 ]]
+}
+
+----
+
+==== `pg.running.data-dirs`
+
+[source,bash]
+----
+pg.running.data-dirs () 
+{ 
+    ps -eo 'args' | $(which grep) '[p]ostgres.*-D' | awk 'BEGIN{FS="-D"}{print $2}' | awk '{print $1}' | sort
+}
+
+----
+
+==== `pg.running.server-binaries`
+
+[source,bash]
+----
+pg.running.server-binaries () 
+{ 
+    ps -eo 'args' | $(which grep) '[p]ostgres.*-D' | awk '{print $1}' | sort
+}
+
+----
+
+==== `pg.server-in-path.version`
+
+[source,bash]
+----
+pg.server-in-path.version () 
+{ 
+    is.command postgres || return 1
+    $(which postgres) -V | sed -E 's/[^0-9.]//g;s/\..*$//g'
+}
+
+----
+
 
 === Module `pids`
+
+==== `pall`
+
+[source,bash]
+----
+pall () 
+{ 
+    pids.all "$@"
+}
+
+----
+
+==== `pid.alive`
+
+[source,bash]
+----
+pid.alive () 
+{ 
+    local pid="$1"
+    util.is-numeric || { 
+        error "First argument to pid.alive must be numeric."
+        return 1
+    }
+    [[ -n "${pid}" && -n $(ps -p "${pid}" | grep -v TTY) ]]
+}
+
+----
+
+==== `pid.sig`
+
+[source,bash]
+----
+pid.sig () 
+{ 
+    local pid="${1}"
+    shift
+    local signal="${1}"
+    shift
+    [[ -z "${pid}" || -z "${signal}" ]] && { 
+        printf "
+USAGE:
+  pid.sig pid signal
+"
+        return 1
+    }
+    util.is-numeric ${pid} || { 
+        error "First argument to pid.sig must be numeric."
+        return 1
+    }
+    util.is-numeric ${signal} || sig.is-valid ${signal} || { 
+        error "First argument to pid.sig must be numeric."
+        return 1
+    }
+    if pid.alive ${pid}; then
+        info "sending ${bldred}${signal}$(txt-info) to ${bldylw}${pid}..."
+        /bin/kill -s ${signal} ${pid} 2>&1 | cat > /dev/null
+    else
+        warning "pid ${pid} was dead by the time we tried sending ${sig} to it."
+        return 1
+    fi
+}
+
+----
+
+==== `pid.stop`
+
+[source,bash]
+----
+pid.stop () 
+{ 
+    local pid=${1}
+    shift
+    local delay=${1:-"0.3"}
+    shift
+    if [[ -z ${pid} ]]; then
+        printf "
+DESCRIPTION:
+  If the given PID is active, first sends kill -TERM, waits a bit,
+  then sends kill -9.
+
+USAGE:
+  ${bldgrn}pid.stop pid${clr}
+
+EXAMPLES:
+  # stop all sidekiqs, waiting half a sec in between
+  ${bldgrn}pid.stop sidekiq 0.5${clr}
+"
+        return 1
+    fi
+    pid.alive "${pid}" && ( pid.sig "${pid}" "TERM" || true ) && sleep ${delay}
+    pid.alive "${pid}" && pid.sig "${pid}" "KILL"
+}
+
+----
+
+==== `pid.stop-and-kill`
+
+[source,bash]
+----
+pid.stop-and-kill () 
+{ 
+    local pid="$1"
+    delta=1
+    sig=STOP
+    while true; do
+        pid.alive $pid || return 0
+        kill -${sig} ${pid} 2>&1 > /dev/null
+        delta=$((delta * 2))
+        [[ ${delta} -gt 16 ]] && sig="KILL"
+        sleep "0.${delta}"
+    done
+    pid.alive $pid && { 
+        error "PID ${pid} is miraculously still alive..." 1>&2
+        return 1
+    }
+}
+
+----
+
+==== `pids-with-args`
+
+[source,bash]
+----
+pids-with-args () 
+{ 
+    local -a permitted=("%cpu" "%mem" acflag acflg args blocked caught comm command cpu cputime etime f flags gid group ignored inblk inblock jobc ktrace ktracep lim login logname lstart majflt minflt msgrcv msgsnd ni nice nivcsw nsignals nsigs nswap nvcsw nwchan oublk oublock p_ru paddr pagein pcpu pending pgid pid pmem ppid pri pstime putime re rgid rgroup rss ruid ruser sess sig sigmask sl start stat state stime svgid svuid tdev time tpgid tsess tsiz tt tty ucomm uid upr user usrpri utime vsize vsz wchan wq wqb wql wqr xstat)
+    local -a additional=()
+    local -a matching=()
+    for arg in $@
+    do
+        array.includes "${arg}" "${permitted[@]}" && additional=(${additional[@]} $arg) && continue
+        matching=("${matching[@]}" "${arg}")
+    done
+    local columns="pid,ppid,user,%cpu,%mem,command"
+    if [[ ${#additional[@]} -gt 0 ]]; then
+        columns="${columns},$(array.join ',' "${additional[@]}")"
+    fi
+    pids.matching.regexp "${matching[*]}" | xargs /bin/ps -www -o"${columns}" -p
+}
+
+----
+
+==== `pids.all`
+
+[source,bash]
+----
+pids.all () 
+{ 
+    if [[ -z "${1}" ]]; then
+        printf "
+DESCRIPTION:
+  prints processes matching a given pattern
+
+USAGE:
+  ${bldgrn}pids.all pattern${clr}
+
+EXAMPLES:
+  ${bldgrn}pids.all puma${clr}
+"
+        return 0
+    fi
+    local pattern="$(pids.normalize.search-string "$1")"
+    shift
+    ps -ef | ${GrepCommand} "${pattern}" | ${GrepCommand} -v grep
+}
+
+----
+
+==== `pids.for-each`
+
+[source,bash]
+----
+pids.for-each () 
+{ 
+    if [[ -z "${1}" || -z "${2}" ]]; then
+        printf "
+DESCRIPTION:
+  loops over matching PIDs and calls a named BASH function
+
+USAGE:
+  ${bldgrn}pids.for-each pattern function${clr}
+
+EXAMPLES:
+  ${bldgrn}pids.for-each puma echo
+  function hup() { kill -HUP \$1; }; pids.for-each sidekiq hup${clr}
+"
+        return 0
+    fi
+    local pattern="$(pids.normalize.search-string "$1")"
+    shift
+    local func=${1:-"echo"}
+    if [[ -z $(which ${func}) && -z $(type ${func} 2>/dev/null) ]]; then
+        errror "Function ${func} does not exist."
+        return 1
+    fi
+    while true; do
+        local -a pids=($(pids.matching "${pattern}"))
+        [[ ${#pids[@]} == 0 ]] && break
+        eval "${func} ${pids[0]}"
+        sleep 0.1
+    done
+}
+
+----
+
+==== `pids.matching`
+
+[source,bash]
+----
+pids.matching () 
+{ 
+    local pattern="${1}"
+    if [[ -z "${pattern}" ]]; then
+        printf "
+DESCRIPTION:
+  Finds process IDs matching a given string.
+
+USAGE:
+  ${bldgrn}pids.matching string${clr}
+
+EXAMPLES:
+  ${bldgrn}pids.matching sidekiq${clr}
+"
+        return 0
+    fi
+    pattern="$(pids.normalize.search-string ${pattern})"
+    pids.matching.regexp "${pattern}"
+}
+
+----
+
+==== `pids.matching.regexp`
+
+[source,bash]
+----
+pids.matching.regexp () 
+{ 
+    local pattern="${1}"
+    if [[ -z "${pattern}" ]]; then
+        printf "
+DESCRIPTION:
+  Finds process IDs matching a given regexp.
+
+USAGE:
+  ${bldgrn}pids.matching regular-expression${clr}
+
+EXAMPLES:
+  ${bldgrn}pids.matching '[s]idekiq\s+' ${clr}
+"
+        return 0
+    fi
+    ps -ef | ${GrepCommand} "${pattern}" | ${GrepCommand} -v grep | awk '{print $2}' | sort -n
+}
+
+----
+
+==== `pids.normalize.search-string`
+
+[source,bash]
+----
+pids.normalize.search-string () 
+{ 
+    local pattern="$*"
+    [[ "${pattern:0:1}" == '[' ]] || pattern="[${pattern:0:1}]${pattern:1}"
+    printf "${pattern}"
+}
+
+----
+
+==== `pids.stop`
+
+[source,bash]
+----
+pids.stop () 
+{ 
+    if [[ -z "${1}" ]]; then
+        printf "
+DESCRIPTION:
+  finds and stops IDs matching a given pattern
+
+USAGE:
+  ${bldgrn}pids.stop <pattern>${clr}
+
+EXAMPLES:
+  ${bldgrn}pids.stop puma${clr}
+"
+        return 0
+    fi
+    pids.for-each "${1}" "pid.stop"
+}
+
+----
+
+==== `pstop`
+
+[source,bash]
+----
+pstop () 
+{ 
+    pids.stop "$@"
+}
+
+----
+
+==== `sig.is-valid`
+
+[source,bash]
+----
+sig.is-valid () 
+{ 
+    [[ -n $(kill -l ${1} 2>/dev/null) ]]
+}
+
+----
+
+==== `sig.list`
+
+[source,bash]
+----
+sig.list () 
+{ 
+    /bin/kill -l | sed -E 's/([ 0-9][0-9]\) SIG)//g; s/\s+/\n/g' | tr 'a-z' 'A-Z' | sort
+}
+
+----
 
 
 === Module `pipe`
 
+==== `pipe.extract-variables`
+
+[source,bash]
+----
+pipe.extract-variables () 
+{ 
+    sedx '/^\(\s*\)#.*$/D; /^\s*$/D; /^[^A-Z].*$/D' | sedx 's/export //ig' | cut -d '=' -f 1
+}
+
+----
+
+==== `pipe.remove-blank-lines`
+
+[source,bash]
+----
+pipe.remove-blank-lines () 
+{ 
+    sedx '/^$/D'
+}
+
+----
+
+==== `pipe.remove-hash-comments`
+
+[source,bash]
+----
+pipe.remove-hash-comments () 
+{ 
+    sedx '/^\(\s*\)?#.*$/D; s/#.*$//g;'
+}
+
+----
+
 
 === Module `progress-bar`
+
+==== `progress.bar.auto-run`
+
+[source,bash]
+----
+progress.bar.auto-run () 
+{ 
+    .progress.reset
+    .progress.bar "$@"
+    code=$?
+    if [[ ${code} -ne 0 ]]; then
+        .progress.reset
+        return 1
+    fi
+    return 0
+}
+
+----
+
+==== `progress.bar.config`
+
+[source,bash]
+----
+progress.bar.config () 
+{ 
+    while true; do
+        local setting="$1"
+        shift
+        [[ -z ${setting} ]] && break
+        local key=${setting/=*/}
+        local value=${setting/*=/}
+        eval "export LibProgress__${key}=\"${value}\""
+    done
+}
+
+----
+
+==== `progress.bar.configure.color-green`
+
+[source,bash]
+----
+progress.bar.configure.color-green () 
+{ 
+    progress.bar.config BarColor=${bldgrn}
+}
+
+----
+
+==== `progress.bar.configure.color-red`
+
+[source,bash]
+----
+progress.bar.configure.color-red () 
+{ 
+    progress.bar.config BarColor=${bldred}
+}
+
+----
+
+==== `progress.bar.configure.color-yellow`
+
+[source,bash]
+----
+progress.bar.configure.color-yellow () 
+{ 
+    progress.bar.config BarColor=${bldylw}
+}
+
+----
+
+==== `progress.bar.configure.symbol-arrow`
+
+[source,bash]
+----
+progress.bar.configure.symbol-arrow () 
+{ 
+    progress.bar.config BarChar="❯"
+}
+
+----
+
+==== `progress.bar.configure.symbol-bar`
+
+[source,bash]
+----
+progress.bar.configure.symbol-bar () 
+{ 
+    progress.bar.config BarChar="█"
+}
+
+----
+
+==== `progress.bar.configure.symbol-block`
+
+[source,bash]
+----
+progress.bar.configure.symbol-block () 
+{ 
+    progress.bar.config BarChar="${LibProgress__BarChar__Default}"
+}
+
+----
+
+==== `progress.bar.configure.symbol-square`
+
+[source,bash]
+----
+progress.bar.configure.symbol-square () 
+{ 
+    progress.bar.config BarChar="◼︎"
+}
+
+----
+
+==== `progress.bar.launch-and-wait`
+
+[source,bash]
+----
+progress.bar.launch-and-wait () 
+{ 
+    local command="$*"
+    run.print-command "${command}\n"
+    ${command} > /dev/null 2>&1 & local pid=$!
+    info "Waiting for background process to finish; PID=${bldylw}${pid}"
+    set -e
+    while .progress.bar.check-pid-alive $pid; do
+        progress.bar.auto-run 0.5 10
+    done
+    set +e
+    return 0
+}
+
+----
 
 
 === Module `repositories`
 
+==== `repo.rebase`
+
+[source,bash]
+----
+repo.rebase () 
+{ 
+    run "git pull origin master --rebase"
+}
+
+----
+
+==== `repo.stash-and-rebase`
+
+[source,bash]
+----
+repo.stash-and-rebase () 
+{ 
+    run "git stash >/dev/null"
+    run "git reset --hard"
+    repo.rebase
+}
+
+----
+
+==== `repo.update`
+
+[source,bash]
+----
+repo.update () 
+{ 
+    local folder="$1"
+    h2 "Entering repo ► ${bldgren}${folder}"
+    [[ -d "${folder}" ]] || return 1
+    [[ -d "${folder}/.git" ]] || return 1
+    [[ "$(pwd)" != "${folder}" ]] && { 
+        cd "${folder}" || return 2
+    }
+    if [[ -z "$(git status -s)" ]]; then
+        repo.rebase
+    else
+        repo.stash-and-rebase
+    fi
+}
+
+----
+
+==== `repos.catch-interrupt`
+
+[source,bash]
+----
+repos.catch-interrupt () 
+{ 
+    export LibRepo__Interrupted=true
+}
+
+----
+
+==== `repos.init-interrupt`
+
+[source,bash]
+----
+repos.init-interrupt () 
+{ 
+    export LibRepo__Interrupted=false
+    trap 'repos.catch-interrupt' SIGINT
+}
+
+----
+
+==== `repos.recursive-update`
+
+[source,bash]
+----
+repos.recursive-update () 
+{ 
+    local repo="${1}"
+    run.set-all show-output-off
+    if [[ ${LibRepo__Interrupted} == true ]]; then
+        warn "Detected SINGINT, exiting..."
+        return 2
+    fi
+    if [[ -n "$repo" ]]; then
+        repo.update "$repo"
+    else
+        for dir in $(find . -type d -name '.git')
+        do
+            local subdir=$(dirname "$dir")
+            [[ -n "${DEBUG}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
+            repos.recursive-update "${subdir}"
+            if [[ $? -eq 2 ]]; then
+                error "folder ${bldylw}${subdir}${bldred} return error!"
+                return 2
+            fi
+        done
+    fi
+    if [[ -n ${repo} ]]; then
+        info "returning to the root dir ${bldylw}${root_folder}..."
+        cd "${root_folder}" > /dev/null || return 2
+    fi
+}
+
+----
+
+==== `repos.update`
+
+[source,bash]
+----
+repos.update () 
+{ 
+    export root_folder="$(pwd)"
+    bash -c "
+    [[ -d ${BASHMATIC_HOME} ]] || {
+      echo 'Can not find bashmatic installation sorry'
+      return
+    }
+    source ${BASHMATIC_HOME}/init.sh
+    repos.init-interrupt
+    repos.recursive-update '$*'
+  "
+}
+
+----
+
+==== `repos.was-interrupted`
+
+[source,bash]
+----
+repos.was-interrupted () 
+{ 
+    [[ ${LibRepo__Interrupted} == true ]]
+}
+
+----
+
 
 === Module `ruby`
+
+==== `bundle.gems-with-c-extensions`
+
+[source,bash]
+----
+bundle.gems-with-c-extensions () 
+{ 
+    run.set-next show-output-on
+    run "bundle show --paths | ruby -e \"STDIN.each_line {|dep| puts dep.split('/').last if File.directory?(File.join(dep.chomp, 'ext')) }\""
+}
+
+----
+
+==== `interrupted`
+
+[source,bash]
+----
+interrupted () 
+{ 
+    export BashMatic__Interrupted=true
+}
+
+----
+
+==== `ruby.bundle-install`
+
+[source,bash]
+----
+ruby.bundle-install () 
+{ 
+    if [[ -f Gemfile.lock ]]; then
+        run "bundle install"
+    fi
+}
+
+----
+
+==== `ruby.bundler-version`
+
+[source,bash]
+----
+ruby.bundler-version () 
+{ 
+    if [[ ! -f Gemfile.lock ]]; then
+        error "Can not find Gemfile.lock"
+        return 1
+    fi
+    tail -1 Gemfile.lock | sedx 's/ //g'
+}
+
+----
+
+==== `ruby.compiled-with`
+
+[source,bash]
+----
+ruby.compiled-with () 
+{ 
+    if [[ -z "$*" ]]; then
+        error "usage: ruby.compiled-with <library>"
+        return 1
+    fi
+    ruby -r rbconfig -e "puts RbConfig.CONFIG['LIBS']" | grep -q "$*"
+}
+
+----
+
+==== `ruby.default-gems`
+
+[source,bash]
+----
+ruby.default-gems () 
+{ 
+    declare -a DEFAULT_RUBY_GEMS=(bundler rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools kramdown-asciidoc asciidoctor kramdown gemsmith rspec rspec-its)
+    export DEFAULT_RUBY_GEMS
+    printf "${DEFAULT_RUBY_GEMS[*]}"
+}
+
+----
+
+==== `ruby.ensure-rbenv`
+
+[source,bash]
+----
+ruby.ensure-rbenv () 
+{ 
+    [[ -n $(command -v rbenv) ]] && return 0
+    brew.install
+    brew.install.package rbenv ruby-build
+    grep -q "rbenv init" ~/.bash_profile && echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+    [[ -n $(command -V rbenv) ]] && return 0
+    return 1
+}
+
+----
+
+==== `ruby.ensure-rbenv-or-complain`
+
+[source,bash]
+----
+ruby.ensure-rbenv-or-complain () 
+{ 
+    ruby.ensure-rbenv || { 
+        error "Can't install rbenv via HomeBrew, please try manually."
+        return 1
+    }
+    return 0
+}
+
+----
+
+==== `ruby.full-version`
+
+[source,bash]
+----
+ruby.full-version () 
+{ 
+    /usr/bin/env ruby --version
+}
+
+----
+
+==== `ruby.gemfile-lock-version`
+
+[source,bash]
+----
+ruby.gemfile-lock-version () 
+{ 
+    local gem=${1}
+    if [[ ! -f Gemfile.lock ]]; then
+        error "Can not find Gemfile.lock"
+        return 1
+    fi
+    ${GrepCommand} " ${gem} \([0-9]" Gemfile.lock | sed -e 's/[\(\)]//g' | awk '{print $2}'
+}
+
+----
+
+==== `ruby.gems`
+
+[source,bash]
+----
+ruby.gems () 
+{ 
+    ruby.gems.install "$@"
+}
+
+----
+
+==== `ruby.gems.install`
+
+[source,bash]
+----
+ruby.gems.install () 
+{ 
+    local -a gems=($@)
+    gem.clear-cache
+    [[ ${#gems[@]} -eq 0 ]] && gems=($(ruby.default-gems))
+    local -a existing=($(ruby.installed-gems))
+    [[ ${#gems[@]} -eq 0 ]] && { 
+        error 'Unable to determine what gems to install. ' "Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" "USAGE: ${bldgrn}ruby.gems ${bldred} rails rubocop puma pry"
+        return 1
+    }
+    h2 "There are a total of ${#existing[@]} of globally installed Gems." "Total of ${#gems[@]} need to be installed unless they already exist. " "${bldylw}Checking for gems that still missing..."
+    local -a gems_to_be_installed=()
+    for gem in "${gems[@]}"
+    do
+        local gem_info=
+        if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
+            gem_info="${bldgrn} ✔  ${gem}${clr}\n"
+        else
+            gem_info="${bldred} x  ${gem}${clr}\n"
+            gems_to_be_installed+=("${gem}")
+        fi
+        printf "   ${gem_info}"
+    done
+    if [[ ${#gems_to_be_installed[@]} -eq 0 ]]; then
+        info "All gems are already installed. 👍🏼"
+        return 0
+    fi
+    info "Looks like ${#gems_to_be_installed[@]} gems are left to install..."
+    local -a gem_installed
+    for gem in "${gems_to_be_installed[@]}"
+    do
+        run "gem install -q --force --no-document $gem"
+        if [[ ${LibRun__LastExitCode} -ne 0 ]]; then
+            error "Gem ${gem} refuses to install." "Perhaps try installing it manually?" "${bldgrn}Action: Skip and Continuing..."
+            break
+        else
+            gem_installed+=("${gem}")
+            continue
+        fi
+    done
+    gem.clear-cache
+    info "Total of ${#gem_installed[@]} gems were installed."
+    echo
+}
+
+----
+
+==== `ruby.gems.uninstall`
+
+[source,bash]
+----
+ruby.gems.uninstall () 
+{ 
+    local -a gems
+    gems=("$@")
+    gem.clear-cache
+    [[ ${#gems[@]} -eq 0 ]] && declare -a gems=($(ruby.default-gems))
+    local -a existing=($(ruby.installed-gems))
+    [[ ${#gems[@]} -eq 0 ]] && { 
+        error "Unable to determine what gems to remove. Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" "USAGE: ${bldgrn}ruby.gems.uninstall ${bldred} rails rubocop puma pry"
+        return 1
+    }
+    h1.blue "There are a total of ${#existing[@]} of gems installed in a global namespace." "Total of ${#gems[@]} need to be removed."
+    local deleted=0
+    for gem in "${gems[@]}"
+    do
+        local gem_info=
+        if [[ $(array.has-element "${gem}" "${existing[@]}") == "true" ]]; then
+            run "gem uninstall -a -x -I -D --force ${gem}"
+            deleted=$((deleted + 1))
+        else
+            gem_info="${bldred} x [not found] ${bldylw}${gem}${clr}\n"
+        fi
+        printf "   ${gem_info}"
+    done
+    gem.clear-cache
+    echo
+    success "Total of ${deleted} gems were successfully obliterated."
+    echo
+}
+
+----
+
+==== `ruby.handle-missing`
+
+[source,bash]
+----
+ruby.handle-missing () 
+{ 
+    command -v ruby > /dev/null || { 
+        info "Couldn't find Ruby, installing it..." 1>&2
+        ruby.install-ruby "$(ruby.numeric-version)"
+    }
+    command -v ruby > /dev/null
+}
+
+----
+
+==== `ruby.init`
+
+[source,bash]
+----
+ruby.init () 
+{ 
+    h1 "Installing Critical Gems for Your Glove, Thanos..."
+    ruby.rubygems-update
+    ruby.install-upgrade-bundler
+    ruby.gems.install
+    ruby.kigs-gems
+}
+
+----
+
+==== `ruby.install`
+
+[source,bash]
+----
+ruby.install () 
+{ 
+    ruby.install-ruby "$@"
+}
+
+----
+
+==== `ruby.install-ruby`
+
+[source,bash]
+----
+ruby.install-ruby () 
+{ 
+    local version="$1"
+    shift
+    local version_source="provided as an argument"
+    if [[ -z ${version} && -f .ruby-version ]]; then
+        version="$(cat .ruby-version | tr -d '\n')"
+        version_source="auto-detected from .ruby-version file"
+    fi
+    [[ -z ${version} ]] && { 
+        error "USAGE: ruby.install-ruby VERSION" "Or, you can create a local .ruby-version file"
+        return 1
+    }
+    local -a required_packages
+    required_packages=(rbenv ruby-build)
+    h3 "Installing Ruby Version ${bldpur}${version} ${bldblu}${version_source}."
+    ruby.validate-version "${version}" || return 1
+    brew.install.packages "${required_packages[@]}"
+    brew.upgrade.packages "${required_packages[@]}"
+    if [[ -n "$*" ]]; then
+        info "Attemping to install additional packages via Brew:"
+        for package in "$@"
+        do
+            run.set-next abort-on-error
+            brew.install.package "${package}"
+            local func=".ruby.configure-with.${package}"
+            util.is-a-function "${func}" && ${func}
+        done
+    fi
+    eval "$(rbenv init -)"
+    h2 "RUBY_CONFIGURE_OPTS: ${bldgrn}${RUBY_CONFIGURE_OPTS}"
+    run "RUBY_CONFIGURE_OPTS=\"${RUBY_CONFIGURE_OPTS}\" rbenv install -s ${version}"
+    return "${LibRun__LastExitCode:-"0"}"
+}
+
+----
+
+==== `ruby.install-ruby-with-deps`
+
+[source,bash]
+----
+ruby.install-ruby-with-deps () 
+{ 
+    local version="$1"
+    declare -a packages=(cask bash bash-completion git go haproxy htop jemalloc libxslt jq libiconv libzip netcat nginx openssl pcre pstree p7zip rbenv redis ruby_build readline tree vim watch wget zlib)
+    run.set-next show-output-on
+    run "brew install --display-times ${packages[*]}"
+}
+
+----
+
+==== `ruby.install-ruby-with-readline-and-openssl`
+
+[source,bash]
+----
+ruby.install-ruby-with-readline-and-openssl () 
+{ 
+    local version="$1"
+    [[ -z ${version} ]] && { 
+        error "usage: ruby.install-ruby-with-readline-and-openssl ruby-version"
+        return 1
+    }
+    shift
+    ruby.install-ruby ${version} openssl readline "$@"
+}
+
+----
+
+==== `ruby.install-upgrade-bundler`
+
+[source,bash]
+----
+ruby.install-upgrade-bundler () 
+{ 
+    gem.install bundler
+    run "bundle --update bundler || true"
+}
+
+----
+
+==== `ruby.installed-gems`
+
+[source,bash]
+----
+ruby.installed-gems () 
+{ 
+    gem list | cut -d ' ' -f 1 | uniq
+}
+
+----
+
+==== `ruby.kigs-gems`
+
+[source,bash]
+----
+ruby.kigs-gems () 
+{ 
+    if [[ -z $(type wd 2>/dev/null) && -n $(command -v warp-dir) ]]; then
+        [[ -f ~/.bash_wd ]] || { 
+            warp-dir install --dotfile ~/.bashrc > /dev/null
+            source ~/.bash_wd
+        }
+    fi
+    [[ -n $(command -v sym) ]] && { 
+        [[ -f ~/.sym.completion.bash ]] || { 
+            sym -B ~/.bashrc
+        }
+    }
+}
+
+----
+
+==== `ruby.linked-libs`
+
+[source,bash]
+----
+ruby.linked-libs () 
+{ 
+    ruby -r rbconfig -e "puts RbConfig.CONFIG['LIBS']"
+}
+
+----
+
+==== `ruby.numeric-version`
+
+[source,bash]
+----
+ruby.numeric-version () 
+{ 
+    /usr/bin/env ruby --version | sed 's/^ruby //g; s/ (.*//g'
+}
+
+----
+
+==== `ruby.rbenv`
+
+[source,bash]
+----
+ruby.rbenv () 
+{ 
+    ruby.ensure-rbenv-or-complain || return 1
+    if [[ -n "$*" ]]; then
+        rbenv $*
+    else
+        eval "$(rbenv init -)"
+    fi
+    run "rbenv rehash"
+}
+
+----
+
+==== `ruby.rubygems-update`
+
+[source,bash]
+----
+ruby.rubygems-update () 
+{ 
+    info "Updating RubyGems..."
+    run.set-next show-output-on
+    run "gem update --system"
+    gem.clear-cache
+}
+
+----
+
+==== `ruby.stop`
+
+[source,bash]
+----
+ruby.stop () 
+{ 
+    local regex='/[r]uby| [p]uma| [i]rb| [r]ails | [b]undle| [u]nicorn| [r]ake'
+    local procs=$(ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | wc -l)
+    [[ ${procs} -eq 0 ]] && { 
+        info: "No ruby processes were found."
+        return 0
+    }
+    local -a pids=$(ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')
+    h2 "Detected ${#pids[@]} Ruby Processes..., here is the tree:"
+    printf "${txtcyn}"
+    pstree ${pids[*]}
+    printf "${clr}"
+    hr
+    printf "To abort, press Ctrl-C. To kill them all press any key.."
+    run.ui.press-any-key
+    ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
+}
+
+----
+
+==== `ruby.top-versions`
+
+[source,bash]
+----
+ruby.top-versions () 
+{ 
+    local platform="${1:-"2\."}"
+    local arg="$(.ruby.ruby-build.list-argument)"
+    rbenv install ${arg} | ${GrepCommand} "^${platform}" | ruby -e '
+      last_v = nil
+      last_m = nil
+      ARGF.each do |line|
+        v = line.split(".")[0..1].join(".")
+        if last_v != v
+          puts last_m if last_m
+          last_v = v
+        end
+        last_m = line
+      end
+      puts last_m if last_m'
+}
+
+----
+
+==== `ruby.top-versions-as-yaml`
+
+[source,bash]
+----
+ruby.top-versions-as-yaml () 
+{ 
+    ruby.top-versions | sed 's/^/ - /g'
+}
+
+----
+
+==== `ruby.validate-version`
+
+[source,bash]
+----
+ruby.validate-version () 
+{ 
+    local version="$1"
+    local -a ruby_versions=()
+    run "brew upgrade ruby-build || true"
+    [[ -d ~/.rbenv/plugins/ruby-build ]] && { 
+        run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
+    }
+    local arg="$(.ruby.ruby-build.list-argument)"
+    array.from.stdin ruby_versions "rbenv install ${arg} | sed -E \"s/\s+//g\""
+    inf "Validating ruby version: ${version}"
+    array.includes "${version}" "${ruby_versions[@]}" || { 
+        not-ok:
+        error "Ruby Version provided was NOT found by rbenv: ${bldylw}${version}" "Found a total of ${bldgrn}${#ruby_versions[*]} ruby versions."
+        return 1
+    }
+    ok:
+    return 0
+}
+
+----
 
 
 === Module `run`
 
+==== `run`
+
+[source,bash]
+----
+run () 
+{ 
+    .run "$@"
+    return ${LibRun__LastExitCode}
+}
+
+----
+
+==== `run.ui.ask`
+
+[source,bash]
+----
+run.ui.ask () 
+{ 
+    local question=$*
+    local func="${LibRun__AskDeclineFunction}"
+    export LibRun__AskDeclineFunction="${LibRun__AskDeclineFunction__Default}"
+    echo
+    inf "${bldcyn}${question}${clr} [Y/n] ${bldylw}"
+    read a 2> /dev/null
+    code=$?
+    if [[ ${code} != 0 ]]; then
+        error "Unable to read from STDIN."
+        eval "${func} 12"
+    fi
+    echo
+    if [[ ${a} == 'y' || ${a} == 'Y' || ${a} == '' ]]; then
+        info "${bldblu}Roger that."
+        info "Let's just hope it won't go nuclear on us :) 💥"
+        hr
+        echo
+    else
+        info "${bldred}(Great idea!) Abort! Abandon ship!  🛳   "
+        hr
+        echo
+        eval "${func} 1"
+    fi
+}
+
+----
+
+==== `run.ui.ask-user-value`
+
+[source,bash]
+----
+run.ui.ask-user-value () 
+{ 
+    local variable="$1"
+    shift
+    local text="$*"
+    local user_input
+    trap 'echo; echo Aborting at user request... ; echo; abort; return' int
+    ask "${text}"
+    read user_input
+    if [[ -z "${user_input}" ]]; then
+        error "Sorry, I didn't get that. Please try again or press Ctrl-C to abort."
+        return 1
+    else
+        eval "export ${variable}=\"${user_input}\""
+        return 0
+    fi
+}
+
+----
+
+==== `run.ui.get-user-value`
+
+[source,bash]
+----
+run.ui.get-user-value () 
+{ 
+    run.ui.retry-command run.ui.ask-user-value "${@}"
+}
+
+----
+
+==== `run.ui.press-any-key`
+
+[source,bash]
+----
+run.ui.press-any-key () 
+{ 
+    local prompt="$*"
+    [[ -z ${prompt} ]] && prompt="Press any key to continue..."
+    br
+    printf "    ${txtgrn}${italic}${prompt} ${clr}  "
+    read -r -s -n1 key
+    cursor.rewind
+    printf "                                                           "
+    cursor.up 2
+    cursor.rewind
+    echo
+}
+
+----
+
+==== `run.ui.retry-command`
+
+[source,bash]
+----
+run.ui.retry-command () 
+{ 
+    local command="$*"
+    local retries=5
+    n=0
+    until [ $n -ge ${retries} ]; do
+        [[ ${n} -gt 0 ]] && info "Retry number ${n}..."
+        command && break
+        n=$(($n + 1))
+        sleep 1
+    done
+}
+
+----
+
 
 === Module `runtime`
+
+==== `run`
+
+[source,bash]
+----
+run () 
+{ 
+    .run "$@"
+    return ${LibRun__LastExitCode}
+}
+
+----
+
+==== `run.config.detail-is-enabled`
+
+[source,bash]
+----
+run.config.detail-is-enabled () 
+{ 
+    [[ ${LibRun__Detail} -eq ${True} ]]
+}
+
+----
+
+==== `run.config.is-dry-run`
+
+[source,bash]
+----
+run.config.is-dry-run () 
+{ 
+    [[ ${LibRun__DryRun} -eq ${True} ]]
+}
+
+----
+
+==== `run.config.verbose-is-enabled`
+
+[source,bash]
+----
+run.config.verbose-is-enabled () 
+{ 
+    [[ ${LibRun__Verbose} -eq ${True} ]]
+}
+
+----
+
+==== `run.dry-run-prefix`
+
+[source,bash]
+----
+run.dry-run-prefix () 
+{ 
+    if [[ ${LibRun__DryRun} == ${True} ]]; then
+        printf "${txtcyn}${italic}« dry run »${clr} "
+    fi
+}
+
+----
+
+==== `run.inspect`
+
+[source,bash]
+----
+run.inspect () 
+{ 
+    if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
+        run.inspect-variables-that-are starting-with LibRun
+    fi
+    if [[ ${#@} -eq 0 || $(array.has-element "totals" "$@") == "true" ]]; then
+        hl.subtle "TOTALS"
+        info "${bldgrn}${commands_completed} commands completed successfully"
+        [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed"
+        [[ ${commands_ignored} -gt 0 ]] && info "${bldylw}${commands_ignored} commands failed, but were ignored."
+        echo
+    fi
+    if [[ ${#@} -eq 0 || $(array.has-element "current" "$@") == "true" ]]; then
+        run.inspect-variables-that-are ending-with __LastExitCode
+    fi
+    reset-color
+}
+
+----
+
+==== `run.inspect-variable`
+
+[source,bash]
+----
+run.inspect-variable () 
+{ 
+    local var_name=${1}
+    local var_value=${!var_name}
+    local value=""
+    local print_value=
+    local max_len=120
+    local avail_len=$(($(screen.width) - 45))
+    local lcase_var_name="$(echo ${var_name} | tr 'A-Z' 'a-z')"
+    local print_value=1
+    local color="${bldblu}"
+    local value_off=" ✘   "
+    local value_check="✔︎"
+    if [[ -n "${var_value}" ]]; then
+        if [[ ${lcase_var_name} =~ 'exit' ]]; then
+            if [[ ${var_value} -eq 0 ]]; then
+                value=${value_check}
+                color="${bldgrn}"
+            else
+                print_value=1
+                value=${var_value}
+                color="${bldred}"
+            fi
+        else
+            if [[ "${var_value}" == "${True}" || "${var_value}" == "1" ]]; then
+                value="${value_check}"
+                color="${bldgrn}"
+            else
+                if [[ "${var_value}" == "${False}" || "${var_value}" == "0" ]]; then
+                    value="${value_off}"
+                    color="${bldred}"
+                fi
+            fi
+        fi
+    else
+        value="${value_off}"
+        color="${bldred}"
+    fi
+    if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_off}" ]]; then
+        return 0
+    fi
+    printf "    ${bldylw}%-35s ${txtblk}${color} " ${var_name}
+    [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
+    if [[ "${print_value}" -eq 1 ]]; then
+        if [[ -n "${value}" ]]; then
+            printf "%*.*s" ${avail_len} ${avail_len} "${value}"
+        else
+            if $(util.is-numeric "${var_value}"); then
+                avail_len=$((${avail_len} - 5))
+                if [[ "${var_value}" =~ '.' ]]; then
+                    printf "%*.2f" ${avail_len} "${var_value}"
+                else
+                    printf "%*d" ${avail_len} "${var_value}"
+                fi
+            else
+                avail_len=$((${avail_len} - 5))
+                printf "%*.*s" ${avail_len} ${avail_len} "${var_value}"
+            fi
+        fi
+    else
+        printf "%*.*s" ${avail_len} ${avail_len} "${value}"
+    fi
+    echo
+}
+
+----
+
+==== `run.inspect-variables`
+
+[source,bash]
+----
+run.inspect-variables () 
+{ 
+    local title=${1}
+    shift
+    hl.subtle "${title}"
+    for var in $@
+    do
+        run.inspect-variable "${var}"
+    done
+}
+
+----
+
+==== `run.inspect-variables-that-are`
+
+[source,bash]
+----
+run.inspect-variables-that-are () 
+{ 
+    local pattern_type="${1}"
+    local pattern="${2}"
+    run.inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"
+}
+
+----
+
+==== `run.inspect.set-skip-false-or-blank`
+
+[source,bash]
+----
+run.inspect.set-skip-false-or-blank () 
+{ 
+    local value="${1}"
+    [[ -n "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${value}
+    [[ -z "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${True}
+}
+
+----
+
+==== `run.on-error.ask-is-enabled`
+
+[source,bash]
+----
+run.on-error.ask-is-enabled () 
+{ 
+    [[ ${LibRun__AskOnError} -eq ${True} ]]
+}
+
+----
+
+==== `run.print-command`
+
+[source,bash]
+----
+run.print-command () 
+{ 
+    local command="$1"
+    local max_width=${2:-"100"}
+    local min_width=60
+    local w
+    w=$(($(.output.screen-width) - 10))
+    [[ ${w} -gt ${max_width} ]] && w=${max_width}
+    export LibRun__AssignedWidth=${w}
+    local prefix="${LibOutput__LeftPrefix}${clr}"
+    local ascii_cmd
+    local command_prompt="${prefix}❯ "
+    local command_width=$((w - 30))
+    [[ ${command_width} -lt ${min_width} ]] && command_width=${min_width}
+    ascii_cmd="$(printf "${command_prompt}$(run.dry-run-prefix)%-.${command_width}s " "${command:0:${command_width}}")"
+    export LibRun__CommandLength=${#ascii_cmd}
+    [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && { 
+        export LibRun__AssignedWidth=$((w - 3))
+        export LibRun__CommandLength=1
+        printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"
+    }
+    if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
+        printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(.output.replicate-to "*" 40)"
+    else
+        printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}"
+    fi
+}
+
+----
+
+==== `run.print-command-full-screen`
+
+[source,bash]
+----
+run.print-command-full-screen () 
+{ 
+    run.print-long-command "$1" $(screen.width)
+}
+
+----
+
+==== `run.print-long-command`
+
+[source,bash]
+----
+run.print-long-command () 
+{ 
+    local command="$1"
+    local max_width=${2:-"150"}
+    local w
+    w=$(($(.output.screen-width) - 10))
+    [[ ${w} -gt ${max_width} ]] && w=${max_width}
+    export LibRun__AssignedWidth=${w}
+    local prefix="${LibOutput__LeftPrefix}${clr}"
+    local ascii_cmd
+    local command_prompt="${prefix}❯ $(run.dry-run-prefix)"
+    local command_width=$((w - 10))
+    printf "${prefix}❯ ${bldylw}"
+    printf "${command}" | fold -s -w${w} | awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
+}
+
+----
+
+==== `run.print-variable`
+
+[source,bash]
+----
+run.print-variable () 
+{ 
+    run.inspect-variable $1
+}
+
+----
+
+==== `run.print-variables`
+
+[source,bash]
+----
+run.print-variables () 
+{ 
+    local title=${1}
+    shift
+    hl.yellow "${title}"
+    for var in $@
+    do
+        run.print-variable "${var}"
+    done
+}
+
+----
+
+==== `run.ui.press-any-key`
+
+[source,bash]
+----
+run.ui.press-any-key () 
+{ 
+    local prompt="$*"
+    [[ -z ${prompt} ]] && prompt="Press any key to continue..."
+    br
+    printf "    ${txtgrn}${italic}${prompt} ${clr}  "
+    read -r -s -n1 key
+    cursor.rewind
+    printf "                                                           "
+    cursor.up 2
+    cursor.rewind
+    echo
+}
+
+----
+
+==== `run.variables-ending-with`
+
+[source,bash]
+----
+run.variables-ending-with () 
+{ 
+    local suffix="${1}"
+    env | grep -E -e ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
+}
+
+----
+
+==== `run.variables-starting-with`
+
+[source,bash]
+----
+run.variables-starting-with () 
+{ 
+    local prefix="${1}"
+    env | grep -E -e "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
+}
+
+----
+
+==== `run.was-successful`
+
+[source,bash]
+----
+run.was-successful () 
+{ 
+    [[ ${LibRun__LastExitCode} -eq 0 ]]
+}
+
+----
+
+==== `run.with.minimum-duration`
+
+[source,bash]
+----
+run.with.minimum-duration () 
+{ 
+    local min_duration=$1
+    shift
+    local command="$*"
+    local started=$(millis)
+    info "starting a command with the minimum duration of ${bldylw}${min_duration} seconds"
+    run "${command}"
+    local result=$?
+    local now=$(millis)
+    local duration=$(((now - started) / 1000))
+    if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
+        local cmd="$(echo ${command} | sedx 's/\"//g')"
+        error "An operation finished too quickly. The threshold was set to ${bldylw}${min_duration} sec." "The command took ${bldylw}${duration}${txtred} secs." "${bldylw}${cmd}${txtred}"
+        ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
+    else
+        if [[ ${duration} -gt ${min_duration} ]]; then
+            info "minimum duration operation ran in ${duration} seconds."
+        fi
+    fi
+    return ${result}
+}
+
+----
+
+==== `run.with.ruby-bundle`
+
+[source,bash]
+----
+run.with.ruby-bundle () 
+{ 
+    .run.bundle.exec "$@"
+}
+
+----
+
+==== `run.with.ruby-bundle-and-output`
+
+[source,bash]
+----
+run.with.ruby-bundle-and-output () 
+{ 
+    .run.bundle.exec.with-output "$@"
+}
+
+----
 
 
 === Module `runtime-config`
 
+==== `run.inspect`
+
+[source,bash]
+----
+run.inspect () 
+{ 
+    if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
+        run.inspect-variables-that-are starting-with LibRun
+    fi
+    if [[ ${#@} -eq 0 || $(array.has-element "totals" "$@") == "true" ]]; then
+        hl.subtle "TOTALS"
+        info "${bldgrn}${commands_completed} commands completed successfully"
+        [[ ${commands_failed} -gt 0 ]] && info "${bldred}${commands_failed} commands failed"
+        [[ ${commands_ignored} -gt 0 ]] && info "${bldylw}${commands_ignored} commands failed, but were ignored."
+        echo
+    fi
+    if [[ ${#@} -eq 0 || $(array.has-element "current" "$@") == "true" ]]; then
+        run.inspect-variables-that-are ending-with __LastExitCode
+    fi
+    reset-color
+}
+
+----
+
+==== `run.set-all`
+
+[source,bash]
+----
+run.set-all () 
+{ 
+    ____run.configure all "$@"
+}
+
+----
+
+==== `run.set-all.list`
+
+[source,bash]
+----
+run.set-all.list () 
+{ 
+    set | ${GrepCommand} '^____run.set.all' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+}
+
+----
+
+==== `run.set-next`
+
+[source,bash]
+----
+run.set-next () 
+{ 
+    ____run.configure next "$@"
+}
+
+----
+
+==== `run.set-next.list`
+
+[source,bash]
+----
+run.set-next.list () 
+{ 
+    set | ${GrepCommand} '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+}
+
+----
+
 
 === Module `set`
+
+==== `set-e-restore`
+
+[source,bash]
+----
+set-e-restore () 
+{ 
+    [[ -f ${__bash_set_errexit_status} ]] && { 
+        error "You must first save it with the function:s ${bldgrn}set-e-save"
+        return 1
+    }
+    local status=$(cat ${__bash_set_errexit_status} | tr -d '\n')
+    if [[ ${status} != 'on' && ${status} != 'off' ]]; then
+        error "Invalid data in the set -e tempfile:" "$(cat ${__bash_set_errexit_status})"
+        return 1
+    fi
+    set -o errexit ${status}
+    rm -f ${__bash_set_errexit_status} 2> /dev/null
+}
+
+----
+
+==== `set-e-save`
+
+[source,bash]
+----
+set-e-save () 
+{ 
+    export __bash_set_errexit_status=$(mktemp -t 'errexit')
+    rm -f ${__bash_set_errexit_status} 2> /dev/null
+    set-e-status > ${__bash_set_errexit_status}
+}
+
+----
+
+==== `set-e-status`
+
+[source,bash]
+----
+set-e-status () 
+{ 
+    set -o | grep errexit | awk '{print $2}'
+}
+
+----
 
 
 === Module `settings`
@@ -6608,11 +9015,236 @@ path.uniq ()
 
 === Module `shasum`
 
+==== `shasum.all-files`
+
+[source,bash]
+----
+shasum.all-files () 
+{ 
+    shasum.sha "$@" | awk '{print $2 " " $1}' | sort | .sha-only
+}
+
+----
+
+==== `shasum.all-files-in-dir`
+
+[source,bash]
+----
+shasum.all-files-in-dir () 
+{ 
+    local dir="$1"
+    shift
+    local name_pattern="$1"
+    shift
+    [[ -n ${name_pattern} ]] && name_pattern=" -name \"${name_pattern}\""
+    shasum.sha $(eval "find \"${dir}\" -type f ${name_pattern}" ) | awk '{print $2 " " $1}' | sort | .sha-only
+}
+
+----
+
+==== `shasum.set-algo`
+
+[source,bash]
+----
+shasum.set-algo () 
+{ 
+    local algo="${1:-1}"
+    export __bashmatic__sha_command="${__default_bashmatic__sha_command} -a ${algo}"
+}
+
+----
+
+==== `shasum.set-command`
+
+[source,bash]
+----
+shasum.set-command () 
+{ 
+    export __bashmatic__sha_command="$*"
+}
+
+----
+
+==== `shasum.sha`
+
+[source,bash]
+----
+shasum.sha () 
+{ 
+    .sha "$@" 2> /dev/null
+}
+
+----
+
+==== `shasum.sha-only`
+
+[source,bash]
+----
+shasum.sha-only () 
+{ 
+    .sha-only "$@" 2> /dev/null
+}
+
+----
+
+==== `shasum.sha-only-stdin`
+
+[source,bash]
+----
+shasum.sha-only-stdin () 
+{ 
+    echo "$*" | eval "${__bashmatic__sha_command}" | cut -d' ' -f 1
+}
+
+----
+
+==== `shasum.to-hash`
+
+[source,bash]
+----
+shasum.to-hash () 
+{ 
+    local hash_name="$1"
+    shift
+    local index=0
+    local last_sha
+    for file in $(shasum.sha "$@")
+    do
+        index=$((index + 1))
+        if [[ $((index % 2)) == 0 ]]; then
+            is-dbg && info "${last_sha} <- ${bldpur}${file}"
+            eval "${hash_name}['${file}']=${last_sha}"
+        else
+            last_sha="${file}"
+        fi
+    done
+    is-dbg && { 
+        local count=$((index / 2))
+        eval "local size=\${#${hash_name}[@]}"
+        h.yellow "Total ${count} files, ${size} hash entries in a Hash Variable '${hash_name}'"
+    }
+    return
+}
+
+----
+
 
 === Module `shdoc`
 
+==== `gawk.install`
+
+[source,bash]
+----
+gawk.install () 
+{ 
+    local gawk_path="$(command -v gawk 2>/dev/null)"
+    [[ -n "${gawk_path}" && -x "${gawk_path}" ]] || brew.install.package gawk
+}
+
+----
+
 
 === Module `shell-set`
+
+==== `save-restore-x`
+
+[source,bash]
+----
+save-restore-x () 
+{ 
+    shell-set.pop-stack x
+}
+
+----
+
+==== `save-set-x`
+
+[source,bash]
+----
+save-set-x () 
+{ 
+    shell-set.push-stack x
+}
+
+----
+
+==== `shell-set.init-stack`
+
+[source,bash]
+----
+shell-set.init-stack () 
+{ 
+    unset SetOptsStack
+    declare -a SetOptsStack=()
+    export SetOptsStack
+}
+
+----
+
+==== `shell-set.is-set`
+
+[source,bash]
+----
+shell-set.is-set () 
+{ 
+    local v="$1"
+    local is_set=${-//[^${v}]/}
+    if [[ -n ${is_set} ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+----
+
+==== `shell-set.pop-stack`
+
+[source,bash]
+----
+shell-set.pop-stack () 
+{ 
+    local value="$1"
+    local len=${#SetOptsStack[@]}
+    local last_index=$((len - 1))
+    local last=${SetOptsStack[${last_index}]}
+    if [[ ${last} != "-${value}" && ${last} != "+${value}" ]]; then
+        error "Can not restore ${value}, not the last element in ${SetOptsStack[*]} stack."
+        return 1
+    fi
+    local pop=(${last})
+    export SetOptsStack=("${SetOptsStack[@]/$pop/}")
+    [[ -n ${DEBUG} ]] && shell-set-show
+    eval "set ${last}"
+}
+
+----
+
+==== `shell-set.push-stack`
+
+[source,bash]
+----
+shell-set.push-stack () 
+{ 
+    local value="$1"
+    local is_set=${-//[^${value}]/}
+    shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
+    shell-set.is-set ${value} || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
+    [[ -n ${DEBUG} ]] && shell-set-show
+}
+
+----
+
+==== `shell-set.show-stack`
+
+[source,bash]
+----
+shell-set.show-stack () 
+{ 
+    info "Current Shell Set Stack: ${bldylw}[${SetOptsStack[*]}]"
+}
+
+----
 
 
 === Module `ssh`
@@ -6620,17 +9252,429 @@ path.uniq ()
 
 === Module `subshell`
 
+==== `bashmatic.detect-subshell`
+
+[source,bash]
+----
+bashmatic.detect-subshell () 
+{ 
+    bashmatic.subshell-init
+    [[ -n ${BASH_SUBSHELL_DETECTED} && -n ${BASH_IN_SUBSHELL} ]] && return "${BASH_IN_SUBSHELL}"
+    unset BASH_IN_SUBSHELL
+    export BASH_SUBSHELL_DETECTED=true
+    local len="${#BASH_SOURCE[@]}"
+    local last_index=$((len - 1))
+    [[ -n ${DEBUG} ]] && { 
+        echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2
+        echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2
+        echo "\$0            = $0" 1>&2
+    }
+    if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] || [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
+        export BASH_IN_SUBSHELL=0
+    else
+        export BASH_IN_SUBSHELL=1
+    fi
+    return ${BASH_IN_SUBSHELL}
+}
+
+----
+
+==== `bashmatic.subshell-init`
+
+[source,bash]
+----
+bashmatic.subshell-init () 
+{ 
+    export BASH_SUBSHELL_DETECTED=
+}
+
+----
+
+==== `bashmatic.validate-sourced-in`
+
+[source,bash]
+----
+bashmatic.validate-sourced-in () 
+{ 
+    bashmatic.detect-subshell
+    [[ ${BASH_IN_SUBSHELL} -eq 0 ]] || { 
+        echo "This script is meant to be sourced in, not run in a subshell." 1>&2
+        return 1
+    }
+    return 0
+}
+
+----
+
+==== `bashmatic.validate-subshell`
+
+[source,bash]
+----
+bashmatic.validate-subshell () 
+{ 
+    bashmatic.detect-subshell
+    [[ ${BASH_IN_SUBSHELL} -eq 1 ]] || { 
+        echo "This script is meant to be run, not sourced-in" 1>&2
+        return 1
+    }
+    return 0
+}
+
+----
+
 
 === Module `sym`
+
+==== `decrypt.secrets`
+
+[source,bash]
+----
+decrypt.secrets () 
+{ 
+    ./bin/decrypt
+    local code=$?
+    [[ ${code} != 0 ]] && { 
+        error "bin/decrypt returned non-zero exit status ${code}"
+        echo
+        exit ${code}
+    }
+}
+
+----
+
+==== `dev.crypt.chef`
+
+[source,bash]
+----
+dev.crypt.chef () 
+{ 
+    sym -ck APP_CHEF_SYM_KEY $*
+}
+
+----
+
+==== `dev.decrypt.file`
+
+[source,bash]
+----
+dev.decrypt.file () 
+{ 
+    [[ -f ${1} ]] || { 
+        error 'usage: dev.decrypt.file <filename.enc>'
+        return
+    }
+    sym -ck APP_SYM_KEY -n "${1}"
+}
+
+----
+
+==== `dev.decrypt.str`
+
+[source,bash]
+----
+dev.decrypt.str () 
+{ 
+    [[ -z ${1} ]] && { 
+        error 'usage: dev.decrypt.str "string to decrypt"'
+        return
+    }
+    sym -ck APP_SYM_KEY -d -s "$*"
+}
+
+----
+
+==== `dev.edit.file`
+
+[source,bash]
+----
+dev.edit.file () 
+{ 
+    [[ -f ${1} ]] || { 
+        error 'usage: dev.edit.file <filename>'
+        return
+    }
+    sym -ck APP_SYM_KEY -t "${1}"
+}
+
+----
+
+==== `dev.encrypt.file`
+
+[source,bash]
+----
+dev.encrypt.file () 
+{ 
+    [[ -f ${1} ]] || { 
+        error 'usage: dev.encrypt.file <filename>'
+        return
+    }
+    sym -ck APP_SYM_KEY -e -f "${1}" -o "${1}.enc"
+}
+
+----
+
+==== `dev.encrypt.str`
+
+[source,bash]
+----
+dev.encrypt.str () 
+{ 
+    [[ -z "${1}" ]] && { 
+        error 'usage: dev.encrypt.str "string to encrypt"'
+        return
+    }
+    sym -ck APP_SYM_KEY -e -s "$*"
+}
+
+----
+
+==== `dev.sym`
+
+[source,bash]
+----
+dev.sym () 
+{ 
+    sym -cqk APP_SYM_KEY $*
+}
+
+----
+
+==== `sym.dev.configure`
+
+[source,bash]
+----
+sym.dev.configure () 
+{ 
+    export SYMIT__KEY="APP_SYM_KEY"
+}
+
+----
+
+==== `sym.dev.files`
+
+[source,bash]
+----
+sym.dev.files () 
+{ 
+    find . -name '*.enc' -type f
+}
+
+----
+
+==== `sym.dev.have-key`
+
+[source,bash]
+----
+sym.dev.have-key () 
+{ 
+    sym.dev.configure
+    if [[ -z ${CI} ]]; then
+        [[ -z "$(keychain ${SYMIT__KEY} find 2>/dev/null)" ]] || printf "yes"
+    else
+        [[ -n "${APP_SYM_KEY}" ]] && print "yes"
+    fi
+}
+
+----
+
+==== `sym.dev.import`
+
+[source,bash]
+----
+sym.dev.import () 
+{ 
+    local skip_instructions=${1:-0}
+    if [[ ${AppCurrentOS} != 'darwin' ]]; then
+        error 'This is only meant to run on Mac OS-X'
+        return
+    fi
+    sym.dev.configure
+    sym.install.symit
+    [[ -f ~/.sym.symit.bash ]] && source ~/.sym.symit.bash
+    h2 'Encryption Key Import'
+    info "Checking for the existence of the current key..."
+    if [[ -n "$(sym.dev.have-key)" ]]; then
+        info: "Key ${SYMIT_KEY} is already in you your OS-X Key Chain."
+        run.ui.ask "Would you like to re-import it?"
+        [[ $? != 0 ]] && return
+    fi
+    if [[ ${skip_instructions} == ${false} ]]; then
+        hr
+        echo
+        info "1. Please open 1Password App and search for 'Encryption Key'"
+        echo
+        info "2. Once you find the entry, it will contain two items: encryption key"
+        info "      and password. Start by copying the key to the clipboard."
+        echo
+        info "3. You will need to paste the key first, and then copy/paste"
+        info "      the key password (also in 1Password)"
+        echo
+        info "4. As a final setup, you will be asked to create a new password."
+        info "      It must be at least 7 characters long, and will be used to encrypt"
+        info "      the key locally on your machine."
+        echo
+        echo
+        run.ui.ask "Ready?"
+        [[ $? != 0 ]] && return
+    fi
+    echo
+    hr
+    sym -iqpx APP_SYM_KEY
+    code=$?
+    [[ ${code} != 0 ]] && { 
+        error "Sym exited with error code ${code}"
+        return ${code}
+    }
+    hr
+    echo
+    info "Key import was successful, great job! ${bldylw}☺ "
+    info "You can test that it works by encrypting, and decrypting a string,"
+    echo
+    info "\$ ${bldylw}source bin/bash"
+    info "\$ ${bldylw}dev.encrypt.str hello"
+    info "\$ ${bldylw}dev.decrypt.str \$(dev.encrypt.str hello )"
+    echo
+    info "Or a file:"
+    info "\$ ${bldylw}dev.decrypt.file config/application.dev.yml.enc"
+    echo
+    info "You can edit the file as if it wasn't encrypted:"
+    info "\$ ${bldylw}dev.edit.file config/application.dev.yml.enc"
+    echo
+}
+
+----
+
+==== `sym.dev.install-shell-helpers`
+
+[source,bash]
+----
+sym.dev.install-shell-helpers () 
+{ 
+    local found=
+    declare -a init_files=($(util.shell-init-files))
+    for file in "${init_files[@]}"
+    do
+        f="${file}"
+        [[ ! -f "${f}" ]] && continue
+        [[ -n $(grep sym.symit ${f}) ]] && { 
+            found=${f}
+            break
+        }
+    done
+    if [[ -z ${found} ]]; then
+        for file in "${init_files[@]}"
+        do
+            f="${file}"
+            if [[ -f "${f}" ]]; then
+                run "sym -B ${f} 1>/dev/null"
+                return $?
+            fi
+        done
+    else
+        run "sym -B ${found} 1>/dev/null"
+    fi
+}
+
+----
+
+==== `sym.install.symit`
+
+[source,bash]
+----
+sym.install.symit () 
+{ 
+    if [[ ! -f config.ru ]]; then
+        error "Please run this command from the RAILS_ROOT folder"
+        return 1
+    fi
+    [[ -n "$(which sym 2>/dev/null)" && -f ~/.sym.symit.bash ]] && return
+    local symit_source="/tmp/sym.symit.bash.$$"
+    trap "rm -f ${symit__source}; " EXIT
+    local symit_url="https://raw.githubusercontent.com/kigster/sym/master/bin/sym.symit.bash"
+    local cmd="curl -fsSL ${symit_url} -o ${symit_source}"
+    export LibRun__AbortOnError=${True}
+    run "${cmd}"
+    if [[ ! -f ${symit_source} ]]; then
+        err "unable to find downloaded file ${symit_source}"
+        return 1
+    fi
+    source ${symit_source}
+    rm -f ${symit_source}
+    run "symit install"
+    sym.dev.install-shell-helpers
+}
+
+----
 
 
 === Module `text`
 
+==== `text.chr`
+
+[source,bash]
+----
+text.chr () 
+{ 
+    [ "$1" -lt 256 ] || return 1
+    printf "\\$(printf '%03o' "$1")"
+}
+
+----
+
+==== `text.markdown-to-asciidoc`
+
+[source,bash]
+----
+text.markdown-to-asciidoc () 
+{ 
+    local file="$1"
+    shift
+    local default_flags="--imagesdir=/assets/images --no-html-to-native"
+    [[ -n $(command -v kramdoc) ]] || gem.install "kramdown-asciidoc"
+    if [[ -z "${file}" ]]; then
+        usage.set-min-flag-len 1
+        usage-box "text.markdown-to-asciidoc markdown-file [ flags ] © Converts a markdown doc to asciidoc using the kramdown-asciidoc ruby gem" " " "Default flags: ${bldcyn}${default_flags}" " " "To override pass any flags that are supported by ${bldred}kramdoc${bldylw}, see below:"
+        printf "\n${txtblu}"
+        kramdoc --help | tail -16
+        printf "${clr}\n"
+        return 0
+    fi
+    [[ -f ${file} && $(file.extension "${file}") == "md" ]] || { 
+        error "File ${file} either does not exist, or is not markdown."
+        run.set-all on-decline-return
+        run.ui.ask "Convert anyway?"
+    }
+    local target="$(file.extension.replace adoc "${file}")"
+    file.ask.if-exists "${target}" || { 
+        info "Aborting conversion, leaving ${target} in place."
+        return 1
+    }
+    gem.install "kramdown-asciidoc"
+    local args
+    if [[ -z "$*" ]]; then
+        args="--auto-ids --auto-id-prefix=_ --auto-id-separator=_ --imagesdir=/assets/images --no-html-to-native"
+    else
+        args="$*"
+    fi
+    run "kramdoc -o ${target} ${args} ${file}"
+}
+
+----
+
+==== `text.ord`
+
+[source,bash]
+----
+text.ord () 
+{ 
+    LC_CTYPE=C printf '%d' "'$1"
+}
+
+----
+
 
 === Module `time`
 
-<<<<<<< Updated upstream
-=======
 ==== `date.now.with-time`
 
 [source,bash]
@@ -6671,8 +9715,7 @@ millis ()
 time.date-from-epoch () 
 { 
     local epoch_ts="$1"
-    .time.init
-    if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+    if [[ "${AppCurrentOS}" == "darwin" ]]; then
         printf "date -r ${epoch_ts}"
     else
         printf "date --date='@${epoch_ts}'"
@@ -6792,9 +9835,8 @@ time.now.file-extension ()
 time.now.with-ms () 
 { 
     local date_runnable
-    .time.init
     date_runnable='date'
-    if [[ "${AppCurrentOS}" == "Darwin" ]]; then
+    if [[ "${AppCurrentOS}" == "darwin" ]]; then
         [[ -z $(command -v gdate) ]] && .time.osx.coreutils
         [[ -n $(command -v gdate) ]] && date_runnable='gdate'
     fi
@@ -6814,24 +9856,552 @@ today ()
 
 ----
 
->>>>>>> Stashed changes
 
 === Module `trap`
+
+==== `trap-setup`
+
+[source,bash]
+----
+trap-setup () 
+{ 
+    .trap-remove
+    local signal="${1:-"SIGINT"}"
+    trap '.trap-catch' "${signal}"
+    export __int_signal__="${signal}"
+}
+
+----
+
+==== `trap-was-fired`
+
+[source,bash]
+----
+trap-was-fired () 
+{ 
+    if [[ -n "${__int_marker__}" && -f "${__int_marker__}" ]]; then
+        rm -f "${__int_marker__}"
+        return 0
+    fi
+    return 1
+}
+
+----
+
+==== `trapped`
+
+[source,bash]
+----
+trapped () 
+{ 
+    if [[ ${__int_flag__} -eq 1 ]]; then
+        unset __int__flag__
+        return 0
+    fi
+    return 1
+}
+
+----
 
 
 === Module `url`
 
+==== `url.downloader`
+
+[source,bash]
+----
+url.downloader () 
+{ 
+    local downloader=
+    if [[ -z "${LibUrl__Downloader}" ]]; then
+        [[ -z "${downloader}" && -n $(which curl) ]] && downloader="$(which curl) ${LibUrl__CurlDownloaderFlags}"
+        [[ -z "${downloader}" && -n $(which wget) ]] && downloader="$(which wget) ${LibUrl__WgetDownloaderFlags}"
+        [[ -z "${downloader}" ]] && { 
+            error "Neither Curl nor WGet appear in the \$PATH... HALP?"
+            return 1
+        }
+        export LibUrl__Downloader="${downloader}"
+    fi
+    printf "${LibUrl__Downloader}"
+}
+
+----
+
+==== `url.http-code`
+
+[source,bash]
+----
+url.http-code () 
+{ 
+    local url="$1"
+    local quiet="${2:-false}"
+    [[ -z $(which wget) ]] && { 
+        echo 1>&2
+        err "This function currently only supports ${bldylw}wget.\n" 1>&2
+        echo 1>&2
+        return 100
+    }
+    url.is-valid "$url" || { 
+        echo 1>&2
+        err "The URL provided is not a valid URL: ${bldylw}${url}\n" 1>&2
+        echo 1>&2
+        return 101
+    }
+    local result=$(wget -v --spider "${url}" 2>&1 | ${GrepCommand} "response" | awk '{print $6}' | tr -d ' ' | tail -1)
+    export LibUrl__LastHttpCode="${result}"
+    if [[ ${quiet} == true ]]; then
+        if [[ ${result} -gt 199 && ${result} -lt 210 ]]; then
+            return 0
+        else
+            return 1
+        fi
+    else
+        [[ -n "${result}" ]] && printf ${result} || printf "404"
+    fi
+}
+
+----
+
+==== `url.is-valid`
+
+[source,bash]
+----
+url.is-valid () 
+{ 
+    local url="$1"
+    if [[ $(url.valid-status "$url") = "ok" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+----
+
+==== `url.shorten`
+
+[source,bash]
+----
+url.shorten () 
+{ 
+    local longUrl="$1"
+    error "This function used Bitly API V3 which is now defunct."
+    return 1
+    if [[ -z "${BITLY_LOGIN}" || -z "${BITLY_API_KEY}" ]]; then
+        printf "${longUrl}"
+    else
+        export BITLY_LOGIN=$(printf '%s' "${BITLY_LOGIN}" | tr -d '\r' | tr -d '\n')
+        export BITLY_API_KEY=$(printf '%s' "${BITLY_API_KEY}" | tr -d '\r' | tr -d '\n')
+        if [[ -n $(which ruby) ]]; then
+            longUrl=$(ruby -e "require 'uri'; str = '${longUrl}'.force_encoding('ASCII-8BIT'); puts URI.encode(str)")
+        fi
+        bitlyUrl="http://api.bit.ly/v3/shorten?login=${BITLY_LOGIN}&apiKey=${BITLY_API_KEY}&format=txt&longURL=${longUrl}"
+        debug "BITLY_LOLGIN : ${clr}${bldylw}${BITLY_LOGIN}" 1>&2
+        debug "BITLY_LOLGIN : ${clr}${bldgrn}${BITLY_API_KEY}" 1>&2
+        debug "BITLY_API_URL: ${clr}${undblu}${bitlyUrl}${clr}" 1>&2
+        local output="$($(url.downloader) "${bitlyUrl}" 2>&1)"
+        if [[ "${output}" =~ "INVALID" || "${output}" =~ "Server Error" ]]; then
+            error "${output}"
+            return 1
+        else
+            printf "%s" "${output}" | tr -d '\n' | tr -d ' '
+            return 0
+        fi
+    fi
+}
+
+----
+
+==== `url.valid-status`
+
+[source,bash]
+----
+url.valid-status () 
+{ 
+    local url="$1"
+    echo "${url}" | ruby -ne '
+    require "uri"
+    u = URI.parse("#{$_}".chomp)
+    if u && u.host && u.host&.include?(".") && u&.scheme =~ /^http/
+      print "ok"
+    else
+      print "invalid"
+    end'
+}
+
+----
+
 
 === Module `usage`
+
+==== `help-command`
+
+[source,bash]
+----
+help-command () 
+{ 
+    printf "    ${bldylw}\$ $*\n"
+}
+
+----
+
+==== `help-comment`
+
+[source,bash]
+----
+help-comment () 
+{ 
+    printf "    ${txtblk}# $*\n"
+}
+
+----
+
+==== `help-details`
+
+[source,bash]
+----
+help-details () 
+{ 
+    printf "    ${txtblu}$*\n"
+}
+
+----
+
+==== `help-example`
+
+[source,bash]
+----
+help-example () 
+{ 
+    printf "    ${bldgrn}\$ $*\n"
+}
+
+----
+
+==== `help-name`
+
+[source,bash]
+----
+help-name () 
+{ 
+    box.white-on-green "$@"
+}
+
+----
+
+==== `help-section`
+
+[source,bash]
+----
+help-section () 
+{ 
+    printf "\n${bldgrn}$(echo "$*" | tr '[:lower:]' '[:upper:]')\n"
+}
+
+----
+
+==== `usage-box`
+
+[source,bash]
+----
+usage-box () 
+{ 
+    local backup="$(.usage-cache-file)"
+    if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
+        cat "${backup}"
+    else
+        .usage.box "$@" | tee ${backup}
+    fi
+}
+
+----
+
+==== `usage-box.section`
+
+[source,bash]
+----
+usage-box.section () 
+{ 
+    printf "${__color_headers}"
+    .usage.hdr "$*"
+}
+
+----
+
+==== `usage-box.sub-section`
+
+[source,bash]
+----
+usage-box.sub-section () 
+{ 
+    .output.box-separator "${__color_bdr}"
+    .output.boxed-text "${__color_bdr}" "${__color_sub_headers}" "$(.usage.hdr "$1")"
+}
+
+----
+
+==== `usage.set-min-flag-len`
+
+[source,bash]
+----
+usage.set-min-flag-len () 
+{ 
+    export LibUsage__MinFlagLen="${1}"
+}
+
+----
 
 
 === Module `user`
 
+==== `user`
+
+[source,bash]
+----
+user () 
+{ 
+    local user
+    user=$(user.finger.name)
+    [[ -z "${user}" ]] && user="$(user.gitconfig.name)"
+    [[ -z "${user}" ]] && user="$(user.gitconfig.email)"
+    [[ -z "${user}" ]] && user="$(user.username)"
+    echo "${user}"
+}
+
+----
+
+==== `user.current-shell`
+
+[source,bash]
+----
+user.current-shell () 
+{ 
+    /bin/ps -p $$ -o comm | tail -1 | sed -E 's/-//g'
+}
+
+----
+
+==== `user.current-shell-init-file`
+
+[source,bash]
+----
+user.current-shell-init-file () 
+{ 
+    declare -a shell_files=($(util.shell-init-files user.current-shell))
+    .user.pick-shell-init-file "${shell_files[@]}"
+}
+
+----
+
+==== `user.finger.name`
+
+[source,bash]
+----
+user.finger.name () 
+{ 
+    [[ -n $(which finge) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
+}
+
+----
+
+==== `user.first`
+
+[source,bash]
+----
+user.first () 
+{ 
+    user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'
+}
+
+----
+
+==== `user.gitconfig.email`
+
+[source,bash]
+----
+user.gitconfig.email () 
+{ 
+    if [[ -s ${HOME}/.gitconfig ]]; then
+        grep email "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
+    fi
+}
+
+----
+
+==== `user.gitconfig.name`
+
+[source,bash]
+----
+user.gitconfig.name () 
+{ 
+    if [[ -s ${HOME}/.gitconfig ]]; then
+        grep name "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
+    fi
+}
+
+----
+
+==== `user.host`
+
+[source,bash]
+----
+user.host () 
+{ 
+    local host=
+    host=$(user.my.reverse-ip)
+    [[ -z ${host} ]] && host=$(user.my.ip)
+    printf "${host}"
+}
+
+----
+
+==== `user.login-shell`
+
+[source,bash]
+----
+user.login-shell () 
+{ 
+    basename "$(user.login-shell-path)"
+}
+
+----
+
+==== `user.login-shell-init-file`
+
+[source,bash]
+----
+user.login-shell-init-file () 
+{ 
+    declare -a shell_files=($(util.shell-init-files))
+    .user.pick-shell-init-file "${shell_files[@]}"
+}
+
+----
+
+==== `user.login-shell-path`
+
+[source,bash]
+----
+user.login-shell-path () 
+{ 
+    if [[ -n $(command -v finger 2>/dev/null) ]]; then
+        finger "${USER}" | grep Shell: | sed 's/^.*Shell: //g'
+    else
+        if grep -q "${USER}" /etc/passwd 2> /dev/null; then
+            grep "${USER}" /etc/passwd | sed 's/.*://g'
+        else
+            command -v "$(user.current-shell)"
+        fi
+    fi
+}
+
+----
+
+==== `user.my.ip`
+
+[source,bash]
+----
+user.my.ip () 
+{ 
+    dig +short myip.opendns.com @resolver1.opendns.com
+}
+
+----
+
+==== `user.my.reverse-ip`
+
+[source,bash]
+----
+user.my.reverse-ip () 
+{ 
+    nslookup "$(user.my.ip)" | grep 'name =' | sedx 's/.*name = //g'
+}
+
+----
+
+==== `user.pairs.email`
+
+[source,bash]
+----
+user.pairs.email () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    local username="$(user.pairs.username "$1")"
+    local domain="$(grep domain "${bashmatic_git_pairs}" | sed 's/.*domain://g' | tr -d ' ')"
+    [[ -n ${username} && -n "${domain}" ]] || { 
+        error "Couldn't determine username or domain from ${bashmatic_git_pairs} file for input ${bldwht}$*"
+        return 1
+    }
+    echo "${username}@${domain}"
+}
+
+----
+
+==== `user.pairs.firstname`
+
+[source,bash]
+----
+user.pairs.firstname () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $2}' | tr -d ';'
+}
+
+----
+
+==== `user.pairs.lastname`
+
+[source,bash]
+----
+user.pairs.lastname () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $3}' | tr -d ';'
+}
+
+----
+
+==== `user.pairs.set-file`
+
+[source,bash]
+----
+user.pairs.set-file () 
+{ 
+    [[ -s "$1" ]] || { 
+        error "Please pass a valid path to the .pairs file, typically in your home. You passed: [$1]"
+        return 1
+    }
+    export bashmatic_git_pairs="$1"
+}
+
+----
+
+==== `user.pairs.username`
+
+[source,bash]
+----
+user.pairs.username () 
+{ 
+    [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
+    grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $4}' | tr -d ';'
+}
+
+----
+
+==== `user.username`
+
+[source,bash]
+----
+user.username () 
+{ 
+    echo "${USER:-$(whoami)}"
+}
+
+----
+
 
 === Module `util`
 
-<<<<<<< Updated upstream
-=======
 ==== `is-func`
 
 [source,bash]
@@ -6906,7 +10476,7 @@ sedx ()
 sedx.cache-command () 
 { 
     local sed_path="$(util.ensure-gnu-sed)"
-    local sed_command="${sed_path} -E "
+    local sed_command="${sed_path:=$(command -v sed)} -E "
     export bashmatic__sed_command="${sed_command}"
 }
 
@@ -6995,17 +10565,16 @@ util.ensure-gnu-sed ()
 { 
     local sed_path
     local gsed_path
-    local os
     command -v gsed && return 0
     sed_path="$(command -v sed 2>/dev/null)"
     os="${AppCurrentOS:=$(util.os)}"
-    case "${os}" in 
+    case "${AppCurrentOS}" in 
         darwin)
             gsed_path="$(command -v gsed 2>/dev/null)"
             if [[ -z "${gsed_path}" ]]; then
                 echo
                 h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
-                ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed ) 1>&2 > /dev/null
+                ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed --force --quiet && brew link gnu-sed --overwrite ) 1>&2 > /dev/null
                 hash -r 2> /dev/null
                 gsed_path="$(command -v gsed 2>/dev/null)"
                 [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
@@ -7388,12 +10957,8 @@ watch.set-refresh ()
 }
 
 ----
->>>>>>> Stashed changes
 
-=== Module `video`
 
-<<<<<<< Updated upstream
-=======
 === Module `video`
 
 ==== `video.convert.compress`
@@ -7420,12 +10985,175 @@ video.convert.compress ()
 
 
 === Module `vim`
->>>>>>> Stashed changes
 
-=== Module `vim`
+==== `gvim.off`
+
+[source,bash]
+----
+gvim.off () 
+{ 
+    vim.gvim-off
+}
+
+----
+
+==== `gvim.on`
+
+[source,bash]
+----
+gvim.on () 
+{ 
+    vim.gvim-on
+}
+
+----
+
+==== `vim.gvim-off`
+
+[source,bash]
+----
+vim.gvim-off () 
+{ 
+    vim.setup
+    [[ "${EDITOR}" == "vim" ]] && return 0
+    local regex_from='^export EDITOR=.*$'
+    local regex_to='export EDITOR=vim'
+    file.gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
+    file.gsub "${LibVim__initFile}" '^gvim.on$' 'gvim.off'
+    ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
+    ${GrepCommand} -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >> ${LibVim__initFile}
+    eval "
+    [[ -n '${DEBUG}' ]] && set -x
+    export EDITOR=${LibVim__editorGvimOff}
+    unalias ${LibVim__editorVi} 2>/dev/null
+    unalias ${LibVim__editorGvimOff} 2>/dev/null
+  "
+}
+
+----
+
+==== `vim.gvim-on`
+
+[source,bash]
+----
+vim.gvim-on () 
+{ 
+    vim.setup
+    [[ "${EDITOR}" == "gvim" ]] && return 0
+    local regex_from='^export EDITOR=.*$'
+    local regex_to='export EDITOR=gvim'
+    file.gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
+    file.gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'
+    ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
+    ${GrepCommand} -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >> ${LibVim__initFile}
+    eval "
+    [[ -n '${DEBUG}' ]] && set -x
+    export EDITOR=${LibVim__editorGvimOn}
+    alias ${LibVim__editorVi}=${LibVim__editorGvimOn}
+    alias ${LibVim__editorGvimOff}=${LibVim__editorGvimOn}
+  "
+}
+
+----
+
+==== `vim.setup`
+
+[source,bash]
+----
+vim.setup () 
+{ 
+    export LibVim__initFile="${HOME}/.bash_profile"
+    export LibVim__editorVi="vi"
+    export LibVim__editorGvimOn="gvim"
+    export LibVim__editorGvimOff="vim"
+}
+
+----
 
 
 === Module `yaml`
+
+==== `yaml-diff`
+
+[source,bash]
+----
+yaml-diff () 
+{ 
+    yaml.diff "$@"
+}
+
+----
+
+==== `yaml-dump`
+
+[source,bash]
+----
+yaml-dump () 
+{ 
+    yaml.dump "$@"
+}
+
+----
+
+==== `yaml.diff`
+
+[source,bash]
+----
+yaml.diff () 
+{ 
+    local f1="$1"
+    shift
+    local f2="$1"
+    shift
+    [[ -f "$f1" && -f "$f2" ]] || { 
+        h2 "USAGE: ${bldylw}yaml-diff file1.yml file2.yml [ ydiff-options ]"
+        return 1
+    }
+    [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
+    local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
+    local t2="/tmp/${RANDOM}.$(basename ${f2}).$$.yml"
+    yaml.expand-aliases "$f1" > "$t1"
+    yaml.expand-aliases "$f2" > "$t2"
+    run.set-next show-output-on
+    hr
+    run "ydiff $* ${t1} ${t2}"
+    hr
+    run "rm -rf ${t1} ${t2}"
+}
+
+----
+
+==== `yaml.dump`
+
+[source,bash]
+----
+yaml.dump () 
+{ 
+    local f1="$1"
+    shift
+    [[ -f "$f1" ]] || { 
+        h2 "USAGE: ${bldylw}yaml-dump file.yml"
+        return 1
+    }
+    [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
+    local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
+    yaml.expand-aliases "$f1" > "$t1"
+    vim "$t1"
+    run "rm -rf ${t1}"
+}
+
+----
+
+==== `yaml.expand-aliases`
+
+[source,bash]
+----
+yaml.expand-aliases () 
+{ 
+    ruby -e "require 'yaml'; require 'json'; puts YAML.dump(JSON.parse(JSON.pretty_generate(YAML.load(File.read('${1}')))))"
+}
+
+----
 
 
 === Module `zsh`
