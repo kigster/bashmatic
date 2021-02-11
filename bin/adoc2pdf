@@ -5,22 +5,82 @@
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 source "${BASHMATIC_HOME}/init.sh" >/dev/null
 
-install.imagemagick6() {
-  local package="graphicsmagick"
+export bashmatic_gemfile="${BASHMATIC_HOME}/Gemfile"
+export bashmatic_gems="${HOME}/.bundle/gems/bashmatic"
 
+function adoc-header() {
+  local file="$1"
+cat <<EOF
+:pdf-fontsdir: ${BASHMATIC_HOME}./fonts;GEM_FONTS_DIR
+:pdf-theme: ${BASHMATIC_HOME}/.asciidoc-pdf-theme-titilium.yml
+:source-highlighter: rouge
+:rouge-style: base16.monokai
+:safe: unsafe
+:allow-uri-read:
+:icons: font
+EOF
+}
+
+function install-fonts() {
+  ( 
+    cd ${BASHMATIC_HOME}
+    [[ -d .fonts ]] || run "tar xvzf .fonts.tar.gz"
+    cd -
+  ) >/dev/null
+}
+
+function install-graphicsmagick() {
+  local package="graphicsmagick"
   brew.cache-reset
   brew.install.package ${package}
   local dir=$(brew --prefix ${package})
   brew.package.link ${package}
-
-  gem.is-installed prawn         || gem.install prawn
-  gem.is-installed prawn-gmagick || run "gem install prawn-gmagick -- --with-opt-include=${dir}/include/GraphicsMagick"
 }
 
+function install-gems() {
+  gem.cache-refresh
+  gem.is-installed prawn-gmagick || run "gem install prawn-gmagick -- --with-opt-include=${dir}/include/GraphicsMagick"
+  run "mkdir -p ${bashmatic_gems}"
+  run "bundle install --gemfile=\"${bashmatic_gemfile}\" --path=\" ${bashmatic_gems}\"" 
+}
+
+function ensure-dependencies() {
+  h6 "Ensuring PDF conversion dependencies are installed..."
+
+  install-fonts
+  install-graphicsmagick
+  install-gems
+}
+
+function install-gems-manually() {
+  local -a gems=(
+    prawn
+    specific_install
+    prawnpdf/prawn-table
+    asciidoctor-pdf
+    rouge
+    pygments.rb
+    coderay
+    rghost
+    hexapdf
+    text-hyphen
+  )
+
+  for gem in ${gems[@]}; do
+    if [[ ${gem} =~ / ]]; then
+      run "gem specific_install ${gem} --silent"
+    else
+      gem.install ${gem}
+    fi
+  done
+}
 
 main() {
   local file="${1:-"README.adoc"}"; shift
-  output.constrain-screen-width 120
+  local temp=${file/.adoc/-pdf.adoc}
+  local target=${file/adoc/pdf}
+
+  output.constrain-screen-width 130
   
   [[ -f ${file} ]] || file="${file}.adoc"
   [[ -f ${file} ]] || {
@@ -28,25 +88,72 @@ main() {
     return 1
   }
 
-  h6 "Ensuring PDF conversion dependencies are installed..."
+  ensure-dependencies
 
-  eval install.imagemagick6 
-
-  gem.install asciidoctor 
-  gem.install asciidoc 
-  gem.install asciidoctor-pdf 
-  gem.install rouge
-
-  local target=${file/adoc/pdf}
-
-  run "rm -f ${target}"
+  run "rm -f ${target} ${temp}"
   h6 "Starting ADOC -> PDF Conversion..."
 
-  run.set-next show-output-on
-  run "asciidoctor-pdf -v -a allow-uri-read ${file} -a pdf-theme=${PWD}/.asciidoc-pdf-theme.yml -a pdf-fontsdir=\"${PWD}/.fonts;GEM_FONTS_DIR\" $*"
+  if grep -E -q '^:pdf-' "${file}" ; then
+    run "cp \"${file}\" ${temp}"
+  else
+    info "Pre-pending PDF font configuration..."
+    ( 
+      sed -n '1p' "${file}"
+      adoc-header
+      sed -n '2,$p' "${file}"
+    ) >${temp}
+  fi
 
+  info "Rendering ADOC file: ${bldylw}${temp}"
+  
+  local script=$(file.temp)
+  trap "rm -f ${script} ${temp}" EXIT
+
+  # Create a tiny script so that we can debug it later if needed
+  # as well as print it to STDOUT
+  ( cat<<EOF
+#!/usr/bin/env bash
+export BUNDLE_PATH="${bashmatic_gems}"
+bundle exec --gemfile="${bashmatic_gemfile}" asciidoctor-pdf \\
+      --verbose \\
+      --quiet \\
+      --timings \\
+      --attribute allow-uri-read \\
+      --attribute pdf-theme="${BASHMATIC_HOME}/.asciidoc-pdf-theme.yml" \\
+      --attribute pdf-fontsdir="${BASHMATIC_HOME}/.fonts;GEM_FONTS_DIR"  \\
+      --out-file ${target} \\
+      ${temp} $*
+EOF
+  ) >${script}
+
+  info "Printing the complete asciidoctor-pdf command for debugging:\n"
+  printf -- "${txtylw}$(cat ${script})${clr}\n\n${txtgrn}"
+  hr
+  local out=$(file.temp)
+  echo
+  inf "Generating PDF from ${file} to ${bldylw}${target}... please wait..."
+  local s=$(millis)
+  ( bash ${script} ) >${out} 2>&1
+  local code=$?
+  local e=$(millis)
+  ((code)) && { 
+    not-ok:
+    error "Command exited with status code ${code}."
+    cat ${out}
+    return ${code}
+  }
+  duration $((e - s))
+  ok:; hr ; echo
+  info "Generation Statistics:"
+  printf "${bldblu}\n"
+  cat "${out}"
+  rm -f "${out} ${temp}"
+  echo
   [[ -s ${target} ]] && \
     success "File ${target} has been re-generated, and is of size $(file.size.mb ${target})"
+
+  info "HINT: to reduce size of the PDF run ${bldgrn}pdf-reduce ${target}"
+  echo
 }
 
 main "$@"
