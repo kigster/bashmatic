@@ -60,7 +60,7 @@ gem.global.versions() {
 
 gem.remote.version() {
   [[ -z "$1" ]] && return
-  gem query "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
+  gem search "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
 }
 
 # Returns a space-separated list of installed gem versions

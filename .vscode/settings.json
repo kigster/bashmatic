@@ -1,4 +1,5 @@
 {
+   "asciidoc.preview.style": ".asciidoctor.css",
    "command-runner.commands": {
       "Run Bats Unit Tests": "cd ${workspaceFolder} && bin/specs ${file}",
    },

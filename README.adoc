@@ -1,13 +1,8 @@
-
 :title: Bashmatic™ - BASH primitives for humans and for fun.
-:pdf-fontsdir: ./fonts;GEM_FONTS_DIR
-:pdf-theme: .asciidoc-pdf-theme-titilium.yml
-:source-highlighter: rouge
-:rouge-style: base16.monokai
-:safe: unsafe
-:allow-uri-read:
 :doctype: book
 :toc:
+:source-highlighter: rouge
+:rouge-style: base16.monokai
 :toclevels: 4
 :sectnums:
 :icons: font
