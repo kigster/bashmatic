@@ -7,8 +7,9 @@
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
-export LibOutput__MinWidth__Default=80
-export LibOutput__MaxWidth__Default=
+export LibOutput__MinWidth__Default=50
+export LibOutput__MaxWidth__Default=300
+export LibOutput__MinHeight__Default=20
 
 export LibOutput__WidthDetectionStrategy="unconstrained"
 
@@ -18,6 +19,7 @@ export bashmatic_spacer_width="${bashmatic_spacer_width:-4}"
 function output.reset-min-max-width() {
   export LibOutput__MinWidth=${LibOutput__MinWidth:-${LibOutput__MinWidth__Default}}
   export LibOutput__MaxWidth=${LibOutput__MaxWidth:-${LibOutput__MaxWidth__Default}}
+  export LibOutput__MinHeight=${LibOutput__MaxHeight:-${LibOutput__MinHeight__Default}}
 }
 
 output.reset-min-max-width
@@ -117,20 +119,18 @@ output.color.off() {
   reset-color: >&1
 }
 
-
 .output.stty.field() {
   local field="$1"
-  stty -a | grep ${field} | tr -d ';' | tr ' ' '\n' | grep -B 1 ${field} | head -1
+  stty -a | grep "${field}" | tr -d ';' | tr ' ' '\n' | grep -B 1 "${field}" | head -1
 }
 
 .output.current-screen-width.unconstrained() {
   local w
-  AppCurrentOS="${AppCurrentOS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
-
-  if [[ $AppCurrentOS == darwin ]]; then
-    w=$(.output.stty.field columns)
-  elif [[ $AppCurrentOS == linux ]]; then
-    w=$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')
+  util.os
+  if [[ ${AppCurrentOS} =~ darwin ]]; then
+    w="$(.output.stty.field columns)"
+  elif [[ ${AppCurrentOS} =~ linux ]]; then
+    w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
   fi
   printf -- "%d" "$w"
 }
@@ -165,32 +165,34 @@ output.color.off() {
     return 0
   fi
 
-  local now="$(millis)"
+  # local now
+  # now="$(millis)"
 
-  if [[ -n "${LibOutput__CachedScreenWidth}" && $((now - LibOutput__CachedScreenMillis)) -lt ${LibOutput__CachedScreenWidthMs} ]]; then
-    printf -- "${LibOutput__CachedScreenWidth}"
-    return
-  fi
+  # if [[ -n "${LibOutput__CachedScreenWidth}" && $((now - LibOutput__CachedScreenMillis)) -lt ${LibOutput__CachedScreenWidthMs} ]]; then
+  #   printf -- "${LibOutput__CachedScreenWidth}"
+  #   return 0
+  # fi
 
-  local w=$(.output.current-screen-width)
+  local w
+  w="$(.output.current-screen-width)"
 
-  export LibOutput__CachedScreenWidth="${w}"
-  export LibOutput__CachedScreenMillis="${now}"
+  # export LibOutput__CachedScreenWidth="${w}"
+  # export LibOutput__CachedScreenMillis="${now}"
 
   printf -- "%d" "${w}"
 }
 
 .output.screen-height() {
-  AppCurrentOS=${AppCurrentOS:=$(util.os)}
-  if [[ ${AppCurrentOS} == darwin ]]; then
-    h=$(.output.stty.field rows)
-  elif [[ ${AppCurrentOS} == linux ]]; then
-    h=$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')
+  util.os
+  local h
+  if [[ ${AppCurrentOS} =~ darwin ]]; then
+    h="$(.output.stty.field rows)"
+  elif [[ ${AppCurrentOS} =~ linux ]]; then
+    h="$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
   fi
 
-  MIN_HEIGHT=${MIN_HEIGHT:-30}
-  h=${h:-${MIN_HEIGHT}}
-  [[ "${h}" -lt "${MIN_HEIGHT}" ]] && h=${MIN_HEIGHT}
+  [[ -z ${h} ]] && h=${LibOutput__MinHeight}
+  [[ ${h} -lt ${LibOutput__MinHeight} ]] && h=${LibOutput__MinHeight}
   printf -- $((h - 2))
 }
 
@@ -204,7 +206,7 @@ output.color.off() {
   local color=${3:-${txtylw}}
 
   printf "${color}"
-  .output.repeat-char "─"
+  .output.repeat-char "─" "${cols}"
   reset-color
 }
 

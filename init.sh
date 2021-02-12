@@ -31,7 +31,8 @@ function bashmatic.reset-is-loaded() {
 function .bashmatic.core() {
   # DEFINE CORE VARIABLES
   export BASHMATIC_URL="https://github.com/kigster/bashmatic"
-  export BASHMATIC_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  export BASHMATIC_OS="${AppCurrentOS}"
+
   # shellcheck disable=2046
   export BASHMATIC_TEMP="/tmp/${USER}/.bashmatic"
   [[ -d ${BASHMATIC_TEMP} ]] || mkdir -p "${BASHMATIC_TEMP}"
@@ -91,8 +92,6 @@ function .bashmatic.init.linux() {
 
 function .bashmatic.initialize() {
   set -e
-
-  export AppCurrentOS="${BASHMATIC_OS}"
   local init_func=".bashmatic.init.${AppCurrentOS}"
   
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}

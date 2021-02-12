@@ -12,8 +12,6 @@ export BinaryUname=$(command -v uname 2>/dev/null)
  )
 }
 
-export AppCurrentOS=$(${BinaryUname} -s)
-
 # Last updated 12/06/2019
 
 export AppNodeVersion="13.2.0"

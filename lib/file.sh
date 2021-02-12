@@ -149,13 +149,13 @@ file.stat() {
   }
 
   # use stat and add local so that all variables created are not global
-  eval $(stat -s "${file}" | tr ' ' '\n' | sed 's/^/local /g')
-  echo ${!field}
+  eval "$(stat -s "${file}" | tr ' ' '\n' | sed 's/^/local /g')"
+  echo "${!field}"
 }
 
 file.size() {
-  AppCurrentOS=${AppCurrentOS:=$(util.os)}
-  if [[ "linux" == ${AppCurrentOS} ]]; then
+  util.os
+  if [[ ${AppCurrentOS} =~ linux ]]; then
     stat -c %s "$1"
   else
     file.stat "$1" st_size

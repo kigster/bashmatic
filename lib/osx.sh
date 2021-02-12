@@ -179,7 +179,7 @@ osx.ramdisk.mount() {
   local diskname="${2:-"ramdisk"}"
 
   local total=$((size * 2 * 1024))
-  export AppCurrentOS=$(util.os)
+  util.os
   [[ ${AppCurrentOS} != "darwin" ]] && {
     error "This function only works on OSX"
     return 1

@@ -9,7 +9,6 @@ declare -a db_actions
 export db_actions=($(util.functions-matching.diff db.actions.))
 
 db.usage() {
-  output.constrain-screen-width 110
 
   usage-box "db action [ script-flags ] [ -- [ psql flags] ] © Performs one of many supported actions against PostgreSQL" \
     "-q / --quiet" "Suppress the colorful header messages" \

@@ -39,12 +39,12 @@ util.is-variable-defined() {
 
 util.random-number() {
   local limit="${1:-"1000000"}" # maxinum number
-  printf $(((RANDOM % ${limit})))
+  printf $(((RANDOM % limit)))
 }
 
 util.generate-password() {
   local len=${1:-32}
-  local val=$(($(date '+%s') - 100000 * $RANDOM))
+  local val=$(($(date '+%s') - 100000 * RANDOM))
   [[ ${val:0:1} == "-" ]] && val=${val/-//}
   printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c "${len}")"
 }
@@ -61,7 +61,7 @@ util.i-to-ver() {
 }
 
 util.os() {
-  echo -n "${AppCurrentOS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
+  export AppCurrentOS="${AppCurrentOS:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
 }
 
 util.arch() {
@@ -134,7 +134,7 @@ util.remove-from-init-files() {
   for init_file in "${shell_files[@]}"; do
     run.config.detail-is-enabled && inf "verifying file ${init_file}..."
     file="${init_file}"
-    if [[ -f ${file} && -n $(grep "${search}" "${file}") ]]; then
+    if [[ -f ${file} && -n "$(grep "${search}" "${file}")" ]]; then
       run.config.detail-is-enabled && ui.closer.ok:
       local matches=$(grep -c "${search}" "${file}")
       run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"
@@ -234,8 +234,7 @@ util.ensure-gnu-sed() {
   local sed_path
   local gsed_path
 
-  export AppCurrentOS="${AppCurrentOS:-$(util.os)}"
-
+  util.os
   case "${AppCurrentOS}" in
   darwin)
     gsed_path="$(command -v gsed 2>/dev/null)"
