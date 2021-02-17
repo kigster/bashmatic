@@ -106,3 +106,5 @@ test-install-verbose:
 				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v"
 
 
+				## Task invoked by VSCode when right-clicking the test directory
+test-integration: 		test
