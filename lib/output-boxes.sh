@@ -6,6 +6,14 @@
 # Sections
 #————————————————————
 
+status.ok() {
+   cursor.right 5; section.cyan "       $*" ; cursor.up 2;  ok:; cursor.down 2;
+}
+
+status.failed() {
+   cursor.right 5; section.red "       $*" ; cursor.up 2;  not-ok:; cursor.down 2;
+}
+
 section.green() {
   .output.left-powerline grn "$@"
 }
@@ -43,15 +51,15 @@ section.gray-yellow() {
 }
 
 section.salmon() {
-  .output.left-powerline wht 65 "${white_on_salmon}  $@  "
+  .output.left-powerline wht 65 "${txtwht}${white_on_salmon}  $*  "
 }
 
 notice() {
-  .output.left-powerline ylw 65 "${itablk}${bakylw}$@"
+  .output.left-powerline ylw 65 "${itablk}${bakylw} $*  "
 }
 
 attention() {
-  .output.left-powerline blu 65 "${txtwht}${bakblu}$@"
+  .output.left-powerline blu 65 "${txtwht}${bakblu}  $*  "
 }
 
 #————————————————————
@@ -283,7 +291,7 @@ h3() {
 }
 
 h3bg() {
-  box.yellow-on-purple "$@"
+  box.black-on-yellow "$@"
 }
 
 h4() {

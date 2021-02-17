@@ -35,7 +35,6 @@
 # milliseconds
 function time.now.with-ms() {
   local date_runnable
-  .time.init
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "darwin" ]]; then
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils

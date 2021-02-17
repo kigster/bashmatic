@@ -3,12 +3,21 @@
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
-export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 set +e
 
 export Bashmatic__Test=1
 
+load.bashmatic-deps() {
+  source "${BASHMATIC_INIT}"  
+  load "${BASHMATIC_LIBDIR}/output.sh"
+  load "${BASHMATIC_LIBDIR}/output-boxes.sh"
+  load "${BASHMATIC_LIBDIR}/time.sh"
+  load "${BASHMATIC_LIBDIR}/sedx.sh"
+  load "${BASHMATIC_LIBDIR}/util.sh"
+}
+
 load.deps() {
+  load.bashmatic-deps
   ( git submodule update && git submodule sync ) 1>/dev/null 2>&1
   declare -a deps=(support file assert)
   for dep in "${deps[@]}"; do
