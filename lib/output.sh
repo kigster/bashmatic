@@ -28,10 +28,12 @@ function output.constrain-screen-width() {
   export LibOutput__WidthDetectionStrategy="constrained"
   [[ $1 -gt 0 ]] && output.set-max-width "$1"
   [[ $2 -gt 0 ]] && output.set-min-width "$2"
+  return 0
 }
 
 function output.unconstrain-screen-width() {
   export LibOutput__WidthDetectionStrategy="unconstrained"
+  return 0
 }
 
 output.set-max-width() {
