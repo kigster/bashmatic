@@ -8,6 +8,9 @@
 # IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
 # shellcheck disable=2046
 
+export BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
+export BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
+
 function test-group() {
   h1bg "$@"
   echo
@@ -40,6 +43,7 @@ function specs.init() {
   export BatsRoot="${ProjectRoot}/.bats-sources"
   export BatsSource="${ProjectRoot}/.bats-sources"
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
+  
 
   export PATH="${ProjectRoot}/bin:/usr/bin:/usr/local/bin:/bin:/sbin:/opt/bin:/opt/local/bin:/opt/sbin"
 
@@ -103,10 +107,10 @@ function specs.install-bats.sources() {
   run.set-next show-output-off abort-on-error
 
   [[ ! -d "${BatsRoot}" ]] &&
-    run "git clone https://github.com/sstephenson/bats.git ${BatsRoot}"
+    run "git clone ${BATS_SOURCES_CORE} ${BatsRoot}"
 
   [[ ! -d "${BatsSource}" ]] &&
-    run "cd $(dirname "${BatsSource}") && git clone https://github.com/sstephenson/bats.git $(basename "${BatsSource}")"
+    run "cd $(dirname "${BatsSource}") && git clone ${BATS_SOURCES_CORE} $(basename "${BatsSource}")"
 
   [[ -d "${BatsSource}" && -x "${BatsSource}/install.sh" ]] || {
     error "Can't find Bats source folder: expected ${BatsSource} to contain Bats sources..."
