@@ -34,7 +34,7 @@ export DevSetup__Version="0.4.0"
   info "Using PostgreSQL Version: ${bldylw}${postgres_version}" >&2
 }
 
-.dev-setup.brew.postgres-package() {
+.dev-setup.action.postgres-package() {
   local package
   if [[ ${postgres_version} == "latest" ]]; then
     package="postgresql"
@@ -91,7 +91,22 @@ export DevSetup__BrewServices
 export DevSetup__BrewFonts
 export DevSetup__Callbacks
 
-.dev-setup.brew.fonts() {
+.dev-setup.action.z() {
+  local dir=/usr/local/src/z
+  local script=/usr/local/src/z/z.sh
+  [[ -d ${dir} ]] || run "git clone https://github.com/rupa/z ${dir}"
+
+  for init in ${HOME}/.bash_profile ${HOME}/.zshrc; do
+    grep -q "${script}" ${init} || {
+      info "Appending ${script} to ${init}..."
+      echo "[[ -s ${script} ]] && source ${script}" >> ${init}
+    } 
+  done
+
+  source "${script}"
+}
+
+.dev-setup.action.fonts() {
   export DevSetup__BrewFonts=(
     font-advent-pro
     font-andale-mono
@@ -145,7 +160,7 @@ export DevSetup__Callbacks
     font-victor-mono
   )
 }
-.dev-setup.brew.dev() {
+.dev-setup.action.dev() {
   # List of Brew Formulas to install and l`ink
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     ack
@@ -222,7 +237,7 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.gnu() {
+.dev-setup.action.gnu() {
   # List of Brew Formulas to install and l`ink
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     gnutls
@@ -237,14 +252,14 @@ export DevSetup__Callbacks
   opts_force=1 brew.install.package gnupg
 }
 
-.dev-setup.brew.gpg() {
+.dev-setup.action.gpg() {
   export DevSetup__Callbacks+=(.dev-setup.callbacks.gpg)
   export DevSetup__BrewCasks=("${DevSetup__BrewCasks[@]}"
     gpg-suite
   )
 }
 
-.dev-setup.brew.cpp() {
+.dev-setup.action.cpp() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     autoconf
     automake
@@ -268,7 +283,7 @@ export DevSetup__Callbacks
   fi
 }
 
-.dev-setup.brew.js() {
+.dev-setup.action.js() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     node
     yarn
@@ -281,14 +296,14 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.python() {
+.dev-setup.action.python() {
   # List of Brew Formulas to install and l`ink
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     python
   )
 }
 
-.dev-setup.brew.ruby() {
+.dev-setup.action.ruby() {
   set +e
   .dev-setup.detect.ruby-version 2>/dev/null
   [[ -z ${ruby_version} ]] && {
@@ -344,7 +359,7 @@ export DevSetup__Callbacks
   ruby.bundle-install
 }
 
-.dev-setup.brew.java() {
+.dev-setup.action.java() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     openjdk@11
     maven
@@ -355,13 +370,13 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.go() {
+.dev-setup.action.go() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     go
   )
 }
 
-.dev-setup.brew.bazel() {
+.dev-setup.action.bazel() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     openjdk@11
     buildifier
@@ -370,7 +385,7 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.monitoring() {
+.dev-setup.action.monitoring() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     htop
     glances
@@ -378,7 +393,7 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.load-balancing() {
+.dev-setup.action.load-balancing() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     haproxy
     nginx
@@ -389,7 +404,7 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.caching() {
+.dev-setup.action.caching() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     memcached
     redis
@@ -400,8 +415,8 @@ export DevSetup__Callbacks
   )
 }
 
-.dev-setup.brew.postgres() {
-  local package="$(.dev-setup.brew.postgres-package)"
+.dev-setup.action.postgres() {
+  local package="$(.dev-setup.action.postgres-package)"
 
   export DevSetup__BrewPackages+=("${package}")
   export DevSetup__BrewServices+=("${package}")
@@ -409,7 +424,7 @@ export DevSetup__Callbacks
 }
 
 .dev-setup.callbacks.postgres() {
-  local package="$(.dev-setup.brew.postgres-package)"
+  local package="$(.dev-setup.action.postgres-package)"
   brew.package.is-installed "${package}"
 
   set +e
@@ -422,7 +437,7 @@ export DevSetup__Callbacks
   run "createdb -E UTF8 -U ${USER} ${USER}"
 }
 
-.dev-setup.brew.mysql() {
+.dev-setup.action.mysql() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     "mysql@${mysql_version}"
   )
@@ -432,7 +447,7 @@ export DevSetup__Callbacks
 }
 
 # TODO: fix install-grc script
-__dev-setup.brew.grc() {
+_.dev-setup.action.grc() {
   bash "${BASHMATIC_HOME}/bin/install-grc"
 
   local code=$?
@@ -449,7 +464,7 @@ __dev-setup.brew.grc() {
   return 0
 }
 
-declare -a components=($(util.functions-matching.diff ".dev-setup.brew."))
+declare -a components=($(util.functions-matching.diff ".dev-setup.action."))
 declare -a components_to_install=()
 export flag_verbose=0
 export flag_force=0
@@ -604,9 +619,9 @@ usage() {
     "-q / --quiet" "Do not print as much output." \
     " " " " \
     "├GROUPS:" " " \
-    " " "${bldylw}$(array.to.csv ${components[@]:0:5})" \
-    " " "${bldylw}$(array.to.csv ${components[@]:5:6})" \
-    " " "${bldylw}$(array.to.csv ${components[@]:11:5})$(cursor.shift.x -1)$(cursor.shift.x 2)" \
+    " " "${bldylw}$(array.to.csv ${components[@]:0:6})" \
+    " " "${bldylw}$(array.to.csv ${components[@]:6:6})" \
+    " " "${bldylw}$(array.to.csv ${components[@]:12:6})$(cursor.shift.x -1)$(cursor.shift.x 2)" \
     " " " "
 
   echo
@@ -799,7 +814,7 @@ if [[ $0 =~ 'dev-setup' ]]; then
   [[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})
 
   for c in "${components_to_install[@]}"; do
-    func=".dev-setup.brew.${c}"
+    func=".dev-setup.action.${c}"
     eval "${func}"
   done
 
