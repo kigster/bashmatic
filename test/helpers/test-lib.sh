@@ -11,20 +11,37 @@
 export BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
 export BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
-function test-group() {
-  h1bg "$@"
-  echo
-}
+if [[ -n $CI ]] ; then
 
-function test-group-ok() {
-  status.ok "Tests passed in ${1}"
-  echo
-}
+  function test-group() {
+    hl.subtle "$@"
+    echo
+  }
+  function test-group-ok() {
+    hl.subtle "  ✅ Tests passed in ${1}"
+    echo
+  }
+  function test-group-failed() {
+    hl.subtle "  ❌ Some tests failed in ${1}"
+    echo
+  }
+  
+else
 
-function test-group-failed() {
-  status.failed "Some tests failed in ${1}"
-  echo
-}
+  function test-group() {
+    h1bg "$@"
+    echo
+  }
+  function test-group-ok() {
+    status.ok "Tests passed in ${1}"
+    echo
+  }
+  function test-group-failed() {
+    status.failed "Some tests failed in ${1}"
+    echo
+  }
+
+fi
 
 # @description Initialize specs
 function specs.init() {
