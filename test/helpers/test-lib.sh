@@ -13,17 +13,20 @@ export BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
 if [[ -n $CI ]] ; then
 
+  output.constrain-screen-width 60
+  export __prefix="⮀ "
+
   function test-group() {
-    hl.subtle "$@"
-    echo
+    echo "${__prefix}📦  $*"
+    hr; echo
   }
   function test-group-ok() {
-    hl.subtle "  ✅ Tests passed in ${1}"
-    echo
+    echo "${__prefix}✅  Tests passed in ${1}"
+    hr; echo
   }
   function test-group-failed() {
-    hl.subtle "  ❌ Some tests failed in ${1}"
-    echo
+    echo "${__prefix}❌  Some tests failed in ${1}"
+    hr; echo
   }
   
 else
