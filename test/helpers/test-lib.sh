@@ -63,12 +63,9 @@ function specs.init() {
   export BatsRoot="${ProjectRoot}/.bats-sources"
   export BatsSource="${ProjectRoot}/.bats-sources"
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
-  
-
-  export PATH="${ProjectRoot}/bin:/usr/bin:/usr/local/bin:/bin:/sbin:/opt/bin:/opt/local/bin:/opt/sbin"
 
   dbg "BatsPrefix is ${BatsPrefix}"
-
+  
   export True=1
   export False=0
   export GrepCommand="$(which grep) -E -e "
@@ -79,7 +76,8 @@ function specs.init() {
   (mkdir -p "${BatsPrefix}"/bin 2>/dev/null) || true
   (mkdir -p "${BatsPrefix}"/libexec 2>/dev/null) || true
 
-  export PATH="$PATH:${BatsPrefix}/bin:${BatsPrefix}/libexec"
+  export PATH="${ProjectRoot}/bin:/usr/bin:/usr/local/bin:/bin:/sbin:/opt/bin:/opt/local/bin:/opt/sbin"
+  export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${PATH}"
 
   export Bashmatic__BatsInstallMethod="sources"
   declare -a Bashmatic__BatsInstallPrefixes
@@ -87,8 +85,8 @@ function specs.init() {
   export Bashmatic__BatsInstallMethods="$(array.to.csv "${Bashmatic__BatsInstallPrefixes[@]}")"
 
   if [[ -n ${CI} ]]; then
-    .output.set-indent 0
-    color.disable
+    .output.set-indent 1
+    #color.disable
   else
     .output.set-indent 1
     color.enable
