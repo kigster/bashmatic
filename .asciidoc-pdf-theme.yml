@@ -37,14 +37,14 @@ page:
   size: Letter
 base:
   font:
-    size: 10
-    line-height-length: 12
+    size: 12
+    line-height-length: 15
     line-height: $base-line-height-length / $base-font-size
     family: Barlow
 code:
   font:
-    size: 8
-    line-height-length: 10
+    size: 10
+    line-height-length: 13
     family: Cascadia
     line-height: $base-line-height-length / $base-font-size
 heading:

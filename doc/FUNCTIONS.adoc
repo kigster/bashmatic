@@ -2018,6 +2018,7 @@ db.config.parse ()
     do
         script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
     done
+    is.a-function ruby.handle-missing || source "${BASHMATIC_LIBDIR}/ruby.sh"
     ruby.handle-missing
     ruby -e "${script[*]}" < "${bashmatic_db_config}"
 }
@@ -3133,8 +3134,8 @@ file.list.filter-non-empty ()
 ----
 file.size () 
 { 
-    AppCurrentOS=${AppCurrentOS:=$(util.os)}
-    if [[ "linux" == ${AppCurrentOS} ]]; then
+    util.os
+    if [[ ${AppCurrentOS} =~ linux ]]; then
         stat -c %s "$1"
     else
         file.stat "$1" st_size
@@ -3191,8 +3192,8 @@ file.stat ()
         info "eg: ${bldylw}file.stat README.md st_size"
         return 2
     }
-    eval $(stat -s "${file}" | tr ' ' '\n' | sed 's/^/local /g')
-    echo ${!field}
+    eval "$(stat -s "${file}" | tr ' ' '\n' | sed 's/^/local /g')"
+    echo "${!field}"
 }
 
 ----
@@ -3417,6 +3418,32 @@ gem.cache-reset ()
 
 ----
 
+==== `gem.changelog-generate`
+
+[source,bash]
+----
+gem.changelog-generate () 
+{ 
+    local project="$1"
+    [[ -z ${project} ]] && { 
+        error "usage: gem.changelog-generate username/repo"
+        return 1
+    }
+    local user
+    local repo
+    user="${project/\/*/}"
+    repo="${project/*\//}"
+    gem.install github_changelog_generator
+    [[ -z ${GITHUB_TOKEN} ]] && { 
+        error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
+        exit 1
+    }
+    run "github_changelog_generator --project ${repo} --user ${user} -t ${GITHUB_TOKEN} --no-verbose"
+    ls -al CHANGELOG.md
+}
+
+----
+
 ==== `gem.clear-cache`
 
 [source,bash]
@@ -3590,7 +3617,7 @@ gem.is-installed ()
 gem.remote.version () 
 { 
     [[ -z "$1" ]] && return
-    gem query "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
+    gem search "$1" --remote -e | sedx "s/^${1} //g; s/[(),]//g"
 }
 
 ----
@@ -5102,7 +5129,7 @@ osx.ramdisk.mount ()
     local size="${1:-"8"}"
     local diskname="${2:-"ramdisk"}"
     local total=$((size * 2 * 1024))
-    export AppCurrentOS=$(util.os)
+    util.os
     [[ ${AppCurrentOS} != "darwin" ]] && { 
         error "This function only works on OSX"
         return 1
@@ -5506,6 +5533,7 @@ output.constrain-screen-width ()
     export LibOutput__WidthDetectionStrategy="constrained"
     [[ $1 -gt 0 ]] && output.set-max-width "$1"
     [[ $2 -gt 0 ]] && output.set-min-width "$2"
+    return 0
 }
 
 ----
@@ -5603,6 +5631,7 @@ output.reset-min-max-width ()
 { 
     export LibOutput__MinWidth=${LibOutput__MinWidth:-${LibOutput__MinWidth__Default}}
     export LibOutput__MaxWidth=${LibOutput__MaxWidth:-${LibOutput__MaxWidth__Default}}
+    export LibOutput__MinHeight=${LibOutput__MaxHeight:-${LibOutput__MinHeight__Default}}
 }
 
 ----
@@ -5636,6 +5665,7 @@ output.set-min-width ()
 output.unconstrain-screen-width () 
 { 
     export LibOutput__WidthDetectionStrategy="unconstrained"
+    return 0
 }
 
 ----
@@ -5806,7 +5836,7 @@ ui.closer.ok: ()
 ----
 attention () 
 { 
-    .output.left-powerline blu 65 "${txtwht}${bakblu}$@"
+    .output.left-powerline blu 65 "${txtwht}${bakblu}  $*  "
 }
 
 ----
@@ -6312,7 +6342,7 @@ h3 ()
 ----
 h3bg () 
 { 
-    box.yellow-on-purple "$@"
+    box.black-on-yellow "$@"
 }
 
 ----
@@ -6466,7 +6496,7 @@ hl.yellow-on-gray ()
 ----
 notice () 
 { 
-    .output.left-powerline ylw 65 "${itablk}${bakylw}$@"
+    .output.left-powerline ylw 65 "${itablk}${bakylw} $*  "
 }
 
 ----
@@ -6554,7 +6584,7 @@ section.red ()
 ----
 section.salmon () 
 { 
-    .output.left-powerline wht 65 "${white_on_salmon}  $@  "
+    .output.left-powerline wht 65 "${txtwht}${white_on_salmon}  $*  "
 }
 
 ----
@@ -6577,6 +6607,36 @@ section.white ()
 section.yellow () 
 { 
     .output.left-powerline ylw "$@"
+}
+
+----
+
+==== `status.failed`
+
+[source,bash]
+----
+status.failed () 
+{ 
+    cursor.right 5
+    section.red "       $*"
+    cursor.up 2
+    not-ok:
+    cursor.down 2
+}
+
+----
+
+==== `status.ok`
+
+[source,bash]
+----
+status.ok () 
+{ 
+    cursor.right 5
+    section.cyan "       $*"
+    cursor.up 2
+    ok:
+    cursor.down 2
 }
 
 ----
@@ -10565,23 +10625,21 @@ util.ensure-gnu-sed ()
 { 
     local sed_path
     local gsed_path
-    command -v gsed && return 0
-    sed_path="$(command -v sed 2>/dev/null)"
-    os="${AppCurrentOS:=$(util.os)}"
+    util.os
     case "${AppCurrentOS}" in 
         darwin)
             gsed_path="$(command -v gsed 2>/dev/null)"
             if [[ -z "${gsed_path}" ]]; then
                 echo
                 h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
-                ( [[ $(brew.package.is-installed gnu-sed) == "false" ]] && brew install gnu-sed --force --quiet && brew link gnu-sed --overwrite ) 1>&2 > /dev/null
+                ( brew install gnu-sed --force --quiet && brew unlink gnu-sed
+                brew link gnu-sed --overwrite ) 1>&2 > /dev/null
                 hash -r 2> /dev/null
                 gsed_path="$(command -v gsed 2>/dev/null)"
                 [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
             fi
             [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || { 
                 error "Can't find GNU sed even after installation." 1>&2
-                return 2
             }
             sed_path="${gsed_path}"
         ;
@@ -10666,7 +10724,7 @@ util.functions-starting-with-lines ()
 util.generate-password () 
 { 
     local len=${1:-32}
-    local val=$(($(date '+%s') - 100000 * $RANDOM))
+    local val=$(($(date '+%s') - 100000 * RANDOM))
     [[ ${val:0:1} == "-" ]] && val=${val/-//}
     printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c "${len}")"
 }
@@ -10765,7 +10823,7 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    echo -n "${AppCurrentOS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
+    export AppCurrentOS="${AppCurrentOS:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
 }
 
 ----
@@ -10777,7 +10835,7 @@ util.os ()
 util.random-number () 
 { 
     local limit="${1:-"1000000"}"
-    printf $(((RANDOM % ${limit})))
+    printf $(((RANDOM % limit)))
 }
 
 ----
@@ -10798,7 +10856,7 @@ util.remove-from-init-files ()
     do
         run.config.detail-is-enabled && inf "verifying file ${init_file}..."
         file="${init_file}"
-        if [[ -f ${file} && -n $(grep "${search}" "${file}") ]]; then
+        if [[ -f ${file} && -n "$(grep "${search}" "${file}")" ]]; then
             run.config.detail-is-enabled && ui.closer.ok:
             local matches=$(grep -c "${search}" "${file}")
             run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"
