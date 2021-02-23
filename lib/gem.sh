@@ -203,6 +203,29 @@ gem.uninstall() {
   return ${LibRun__LastExitCode}
 }
 
+gem.changelog-generate() {
+  local project="$1"
+  [[ -z ${project} ]] && {
+    error "usage: gem.changelog-generate username/repo"
+    return 1
+  }
+
+  local user
+  local repo
+  user="${project/\/*/}"
+  repo="${project/*\//}"
+
+  gem.install github_changelog_generator
+
+  [[ -z  ${GITHUB_TOKEN} ]] && {
+    error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
+    exit 1
+  }
+
+  run "github_changelog_generator --project ${repo} --user ${user} -t ${GITHUB_TOKEN} --no-verbose"
+  ls -al CHANGELOG.md
+}
+
 ## Shortcuts
 
 g-i() {

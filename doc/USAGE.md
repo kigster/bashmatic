@@ -813,26 +813,6 @@ Regenerates USAGE.adoc && USAGE.pdf
 ---
 
 
-## File `bin/specs`
-
-
-
-* [specs.init()](#specsinit)
-* [specs.determine-test-filename()](#specsdetermine-test-filename)
-
-### `specs.init()`
-
-Initialize specs
-
-### `specs.determine-test-filename()`
-
-Based on a shortname attempt to determine the actual test file names
-
-
-
----
-
-
 ## File `bin/pdf-reduce`
 
 

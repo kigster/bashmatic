@@ -4,12 +4,18 @@
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.9.3...HEAD)
 
+**Fixed bugs:**
+
+- Fixing the issue with gnu sed and gnu time [\#47](https://github.com/kigster/bashmatic/pull/47) ([kigster](https://github.com/kigster))
+
 **Closed issues:**
 
 - Bashmatic should support basic-level package installation for Linux [\#43](https://github.com/kigster/bashmatic/issues/43)
 
 **Merged pull requests:**
 
+- Refactor spec script to use a library file [\#49](https://github.com/kigster/bashmatic/pull/49) ([kigster](https://github.com/kigster))
+- Use Gemfile for asciidoctor-pdf and rewrite adoc2pdf [\#48](https://github.com/kigster/bashmatic/pull/48) ([kigster](https://github.com/kigster))
 - Minor tweaks and fixes to the git sync [\#46](https://github.com/kigster/bashmatic/pull/46) ([kigster](https://github.com/kigster))
 - Path mutation routines + usage doc fixes [\#42](https://github.com/kigster/bashmatic/pull/42) ([kigster](https://github.com/kigster))
 - Creating a generic "package" installation API [\#41](https://github.com/kigster/bashmatic/pull/41) ([kigster](https://github.com/kigster))

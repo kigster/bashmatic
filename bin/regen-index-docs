@@ -77,3 +77,5 @@ generate-changelog() {
   [[ -s "${BASHMATIC_HOME}/doc/CHANGELOG.md" ]] && success "Changelog is ready."
 }
 
+
+
