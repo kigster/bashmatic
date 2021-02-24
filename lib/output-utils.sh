@@ -5,22 +5,25 @@ function puts() {
 }
 
 function okay() {
-  printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" >&2
+  printf -- " ${txtblk}${bakgrn} ✓ ${clr}   ❯ ${clr}${italic}${bldcyn}$*${clr} ❯ ${bldgrn} ALL GOOD, YO 👍  ${clr}" >&2
   echo
 }
 
 function success() {
-  printf -- "\n${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  printf -- "\n${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
   printf -- "\n\n" >&2
 }
 
 function abort() {
+  echo
   printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
   echo
 }
 
 function err() {
+  echo
   printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldwht}$*${clr}" >&2
+  echo
 }
 
 function ask() {
