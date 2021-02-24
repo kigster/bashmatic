@@ -9,6 +9,11 @@ function okay() {
   echo
 }
 
+function note() {
+  printf -- "\n${bldwht}${bakblu}  « NOTE »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  printf -- "\n\n" >&2
+}
+
 function success() {
   printf -- "\n${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
   printf -- "\n\n" >&2
