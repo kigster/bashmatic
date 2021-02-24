@@ -274,32 +274,16 @@ h1() {
   box.blue-in-yellow "$@"
 }
 
-h1bg() {
-  box.white-on-blue "$@"
-}
-
 h2() {
   box.blue-in-green "$@"
-}
-
-h2bg() {
-  box.white-on-green "$@"
 }
 
 h3() {
   box.magenta-in-green "$@"
 }
 
-h3bg() {
-  box.black-on-yellow "$@"
-}
-
 h4() {
   section.blue "$@"
-}
-
-h5() {
-  section.purple "$@"
 }
 
 h6() {
@@ -313,6 +297,34 @@ h7() {
 h8() {
   section.cyan "$@"
 }
+
+# 
+# Boxes with filled backgrounds of various colors
+
+h1bg() {
+  box.white-on-blue "$@"
+}
+
+h2bg() {
+  box.white-on-green "$@"
+}
+
+h3bg() {
+  box.black-on-yellow "$@"
+}
+
+h4bg() {
+  box.white-on-red "$@"
+}
+
+# Aliases to the above
+h1.blue()   { h1bg "${@}"; }
+h2.green()  { h2bg "${@}"; }
+h3.yellow() { h3bg "${@}"; }
+h4.red()    { h4bg "${@}"; }
+
+  
+
 
 hdr() {
   h1 "$@"
