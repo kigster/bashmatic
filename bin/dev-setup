@@ -228,6 +228,7 @@ export DevSetup__Callbacks
     watch
     wget
     ydiff
+    zsh-completions
     zlib
   )
 

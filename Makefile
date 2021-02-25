@@ -37,10 +37,6 @@ docker-run-zsh:     		docker-build ## Drops you into a ZSH session with Bashmati
 docker-run-fish:    		docker-build ## Drops you into a FISH session with Bashmatic Loaded
 				docker run -it --entrypoint=/bin/fish bashmatic:latest -l
 
-install:			## install BashMatic Locally in ~/.bashmatic
-				@printf " 👉  $(green)Running bin/bashmatic-installer script..$(clear)\n"
-				@$(BASHMATIC_HOME)/bin/bashmatic-install
-
 fonts-setup:			
 				@bash -c 'tar xzf .fonts.tar.gz'
 
@@ -108,3 +104,18 @@ test-install-verbose:
 
 				## Task invoked by VSCode when right-clicking the test directory
 test-integration: 		test
+
+install-local:			## install BashMatic in ~/.bashmatic via a local installer script 
+				@printf " 👉  $(green)Running bin/bashmatic-installer script..$(clear)\n"
+				@$(BASHMATIC_HOME)/bin/bashmatic-install
+
+
+install:			## Install Bashmatic locally
+				@printf " 👉  $(green)Installing Bashmatic via a remote installer... $(clear)\n"
+				@curl -fsSL https://bashmatic.re1.re -o /tmp/installer
+				@bash -c "source /tmp/installer && bashmatic-install -v"
+
+
+reinstall:			## Wipe out the ~/.bashmatic folder, and install from scratch
+				@printf " 👉  $(green)Re-Installing Bashmatic via a remote installer... $(clear)\n"
+				@bash -c "mv ${BASHMAGTIC_HOME:-\"${HOME}/.bashmatic\"}} ${HOME}/.bashmatic.backup.\$(time.db)""	
