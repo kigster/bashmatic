@@ -345,6 +345,7 @@ ${bldylw}FLAGS:${clr}
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
   -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
+  -u, --uninstall               Uninstall Bashmatic, remove the folder and references.
   -g, --skip-git                Do not abort if the destination has local changes
   -i, --skip-install            Only install/verify prerequisites, skip install.
   -v, --verbose                 See additional output as bootstrap is running.
@@ -354,8 +355,8 @@ ${bldylw}FLAGS:${clr}
 ${clr}\n\n"
 }
 
-parse-opts() {
-  # Parse additional flags
+function parse-opts() {
+  # Parse CLI options
   while :; do
     case $1 in
     -V | --bash-version)
@@ -400,6 +401,11 @@ parse-opts() {
       shift
       export bootstrap__skip_install=1
       ;;
+    -u | --uninstall)
+      shift
+      bashmatic-uninstall
+      exit 0
+      ;;
     -h | -\? | --help)
       shift
       usage
@@ -425,24 +431,24 @@ parse-opts() {
 bashmatic-download-and-install() {
   export BASHMATIC_HOME="${bootstrap__bashmatic_home}"
   local code=0
-
+  
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
     git-sync || return 1
   else
     git clone -q ${BASHMATIC_URL} "${BASHMATIC_HOME}"
-    code=$? 
+    code=$?
   fi
-
-  if [[ ${code} -ne 0 ]]; then 
+  
+  if [[ ${code} -ne 0 ]]; then
     err "Bashmatic could not install or update correctly."
     err "Please run this manualy:\n\n\t${bldgrn}cd \$(dirname ${BASHMATIC_HOME} && git clone ${BASHMATIC_URL} ${BASHMATIC_HOME})\n\n"
     return 1
-  else 
+  else
     export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
-     [[ -s "${BASHMATIC_INIT}" ]] || {
-       err "Unexpected error: ${BASHMATIC_INIT} was not found."
-       return 1
-     }
+    [[ -s "${BASHMATIC_INIT}" ]] || {
+      err "Unexpected error: ${BASHMATIC_INIT} was not found."
+      return 1
+    }
     # shellcheck disable=SC1090
     source "${BASHMATIC_INIT}"
     bashmatic.load-at-login
@@ -451,27 +457,51 @@ bashmatic-download-and-install() {
   fi
 }
 
-bashmatic-install() {
+function bashmatic-uninstall() {
+  local dir="${BASHMATIC_HOME:-"${HOME}/.bashmatic"}"
+  if [[ -d "${dir}" ]]; then
+    source "${dir}/init.sh"
+    h.e "Uninstalling Bashmatic from" "${dir}"
+    run "echo mv ${dir} ${dir}.backup.$(time.db)"
+  else
+    error "Can't find Bashmatic Foler to remove."
+    return 1
+  fi
+  for file in ${HOME}/.zshrc ${HOME}/.bash_profile ${HOME}/.bashrc ${HOME}/.bash_login ${HOME}/.profile; do
+    [[ -s "${file}" ]] && grep -qi bashmatic "${file}" && {
+      info "Removing Bashmatic initialization from ${file}..."
+      run "sed -i'' '/bashmatic/d' \"${file}\""
+    }
+  done
+  success "Bashmatic was successfully Uninstalled."
+  return 0
+}
+
+function bashmatic-install() {
   parse-opts "$@" || return
   os-requirements
   ((bootstrap__skip_install)) || bashmatic-download-and-install
 }
 
-len="${#BASH_SOURCE[@]}"
-last_index=$((len - 1))
-[[ ${last_index} -lt 0 ]] && last_index=0
-current_shell=$(ps -p $$ -o comm | grep -v COMM | sed 's/-//g')
+######################## MAIN ##############################################
 
-set +e
+function .main() {
+  local len="${#BASH_SOURCE[@]}"
+  local last_index=$((len - 1))
+  [[ ${last_index} -lt 0 ]] && last_index=0
+  local current_shell=$(ps -p $$ -o comm | grep -v COMM | sed 's/-//g')
+  
+  set +e
+  
+  # Allow sourcing in bin/bashmatic-install and using it's shell functions, eg:
+  # source bin/bashmatic-install init
+  if [[ ${current_shell} != "bash" ]] ||
+    [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
+    [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
+      echo >/dev/null
+  else
+    bashmatic-install "$@"
+  fi
+}
 
-# Allow sourcing in bin/bashmatic-install and using it's shell functions, eg:
-# source bin/bashmatic-install init
-if [[ ${current_shell} != "bash" ]] ||
-   [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
-   [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
-  echo >/dev/null
-else
-  bashmatic-install "$@"
-fi
-
-
+.main "$@"

@@ -1,3 +1,4 @@
+# vim: ft=make
 # vim: tabstop=8
 # vim: shiftwidth=8
 # vim: noexpandtab
@@ -51,7 +52,7 @@ update-functions: 		## Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/p
 				@printf " 👉  $(green)Regenerating doc/FUNCTIONS.adoc — functions INDEX...$(clear)\n"
 				@bash -c "source ${BASHMATIC_HOME}/bin/regen-index-docs; generate-functions-index"
 
-update-usage: 			fonts-setup ## Auto-generate doc/USAGE documentation from lib shell files, to doc/USAGE.adoc/pdf
+update-usage: 			fonts-setup ## Auto-generate doc/USAGE.adoc & PDF files from shell docs
 				@printf " 👉  $(green)Running bin/regen-usage-docs command...$(clear)\n"
 				@bin/regen-usage-docs
 
@@ -102,20 +103,22 @@ test-install-verbose:
 				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v"
 
 
-				## Task invoked by VSCode when right-clicking the test directory
-test-integration: 		test
+test-integration: 		test ## Task invoked by VSCode when right-clicking the test directory
 
-install-local:			## install BashMatic in ~/.bashmatic via a local installer script 
+install-local:			## install BashMatic in ~/.bashmatic via the local installer script 
 				@printf " 👉  $(green)Running bin/bashmatic-installer script..$(clear)\n"
-				@$(BASHMATIC_HOME)/bin/bashmatic-install
+				@bash -c "$(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v"
 
 
-install:			## Install Bashmatic locally
+install-remote:			## Install Bashmatic via a remote installer that's downloaded via Curl
 				@printf " 👉  $(green)Installing Bashmatic via a remote installer... $(clear)\n"
 				@curl -fsSL https://bashmatic.re1.re -o /tmp/installer
 				@bash -c "source /tmp/installer && bashmatic-install -v"
+				@bash -c "rm -f /tmp/installer"
 
-
-reinstall:			## Wipe out the ~/.bashmatic folder, and install from scratch
-				@printf " 👉  $(green)Re-Installing Bashmatic via a remote installer... $(clear)\n"
-				@bash -c "mv ${BASHMAGTIC_HOME:-\"${HOME}/.bashmatic\"}} ${HOME}/.bashmatic.backup.\$(time.db)""	
+uninstall:			## Wipe out the ~/.bashmatic folder, and install from scratch
+				@printf " 👉  $(red)Removing Bashmatic Locally... $(clear)\n"
+				@bash -c "$(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v"
+				@cd ${HOME}
+				
+reinstall:			uninstall install  ## First uninstalls, then re-installs Bashmatic"
