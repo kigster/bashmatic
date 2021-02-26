@@ -314,6 +314,7 @@ export bootstrap__debug=0
 export bootstrap__skip_git_check=0
 export bootstrap__skip_install=0
 export bootstrap__verbose=0
+export bootstrap__remove=0
 export bootstrap__quiet=0
 export bootstrap__bashmatic_home=${HOME}/.bashmatic
 export bootstrap__bash_version="5.1-rc2"
@@ -337,15 +338,24 @@ usage() {
 ${bldylw}USAGE: 
   ${bldgrn}bin/bashmatic-install [ flags ]
 
-${bldylw}DESCRIPTION:
-  ${bldblu}Install Bashmatic, and on OSX also installs build tools, brew and latest bash
-  into /usr/local/bin/bash.
+${bldylw}INSTALLING:
+  ${txtblu}Install or uninstalls Bashmatic, and on OSX also installs build tools, 
+  brew and latest bash into /usr/local/bin/bash.
+  
+${bldylw}UNINSTALLING:
+  ${txtblu}You can disable Bashmatic, but move the folder to a backup location
+  with the -u/--uninstall flag, or you can completely remove Bashmatic
+  if you add -r/--remove flag, as shown below:
+
+  # Eg. full remove uninstall:
+  bin/bashmatic-install -ur
 
 ${bldylw}FLAGS:${clr}
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
   -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
-  -u, --uninstall               Uninstall Bashmatic, remove the folder and references.
+  -u, --uninstall               Uninstall Bashmatic, but leave a backup folder in place.
+  -r, --remove                  Uninstall Bashmatic, remove the folder and all references.
   -g, --skip-git                Do not abort if the destination has local changes
   -i, --skip-install            Only install/verify prerequisites, skip install.
   -v, --verbose                 See additional output as bootstrap is running.
@@ -383,6 +393,10 @@ function parse-opts() {
       export bootstrap__debug=1
       set -x
       ;;
+    -r | --remove)
+      shift
+      export bootstrap__remove=1
+      ;;
     -v | --verbose)
       shift
       export bootstrap__verbose=1
@@ -404,7 +418,7 @@ function parse-opts() {
     -u | --uninstall)
       shift
       bashmatic-uninstall
-      exit 0
+      return $?
       ;;
     -h | -\? | --help)
       shift
@@ -459,26 +473,36 @@ bashmatic-download-and-install() {
 
 function bashmatic-uninstall() {
   local dir="${BASHMATIC_HOME:-"${HOME}/.bashmatic"}"
+  [[ -d "${dir}" ]] || {
+    echo "No Bashmatic folder was detected. Abort."
+    exit 111
+  } 
   if [[ -d "${dir}" ]]; then
     source "${dir}/init.sh"
-    h.e "Uninstalling Bashmatic from" "${dir}"
-    run "echo mv ${dir} ${dir}.backup.$(time.db)"
+    local backup="${dir}.backup.$(time.now.db)"
+    if [[ ${bootstrap__remove} -eq 1 ]]; then
+      h.e "Uninstalling Bashmatic Completely" "Removing -> ${bldcyn}${dir}"
+      run "rm -rf \"${dir}\""
+    else
+      h.e "Uninstalling Bashmatic with a backup:" "From: ${bldylw}${dir}" "To: ${bldgrn}${backup}"
+      run "mv ${dir} ${backup}"
+    fi
   else
-    error "Can't find Bashmatic Foler to remove."
+    error "Can't find Bashmatic Folder to remove."
     return 1
   fi
   for file in ${HOME}/.zshrc ${HOME}/.bash_profile ${HOME}/.bashrc ${HOME}/.bash_login ${HOME}/.profile; do
     [[ -s "${file}" ]] && grep -qi bashmatic "${file}" && {
-      info "Removing Bashmatic initialization from ${file}..."
-      run "sed -i'' '/bashmatic/d' \"${file}\""
+      info "Removing the detected Bashmatic initialization from ${file}..."
+      run "sed -i'' '/bashmatic/di' \"${file}\""
     }
   done
-  success "Bashmatic was successfully Uninstalled."
+  success "Bashmatic was successfully uninstalled."
   return 0
 }
 
 function bashmatic-install() {
-  parse-opts "$@" || return
+  parse-opts "$@" || return $?
   os-requirements
   ((bootstrap__skip_install)) || bashmatic-download-and-install
 }

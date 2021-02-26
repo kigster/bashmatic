@@ -118,7 +118,10 @@ install-remote:			## Install Bashmatic via a remote installer that's downloaded 
 
 uninstall:			## Wipe out the ~/.bashmatic folder, and install from scratch
 				@printf " 👉  $(red)Removing Bashmatic Locally... $(clear)\n"
-				@bash -c "$(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v"
+				@bash -c "$(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v -u -r "
 				@cd ${HOME}
 				
 reinstall:			uninstall install  ## First uninstalls, then re-installs Bashmatic"
+
+
+
