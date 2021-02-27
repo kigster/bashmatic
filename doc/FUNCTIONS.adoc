@@ -483,17 +483,6 @@ asciidoc.rouge-themes ()
 
 === Module `audio`
 
-==== `æ.mp3`
-
-[source,bash]
-----
-æ.mp3 () 
-{ 
-    audio.make.mp3 "$@"
-}
-
-----
-
 ==== `audio.dir.mp3-to-wav`
 
 [source,bash]
@@ -820,6 +809,18 @@ bashmatic.bash.version ()
 bashmatic.bash.version-four-or-later () 
 { 
     [[ $(bashmatic.bash.version) -gt 3 ]]
+}
+
+----
+
+==== `bashmatic.cd-into`
+
+[source,bash]
+----
+bashmatic.cd-into () 
+{ 
+    [[ -d ${BASHMATIC_HOME} ]] || return 1
+    cd "${BASHMATIC_HOME}"
 }
 
 ----
@@ -6232,7 +6233,7 @@ h1 ()
 ----
 h1.blue () 
 { 
-    box.magenta-in-blue "$@"
+    h1bg "${@}"
 }
 
 ----
@@ -6309,7 +6310,7 @@ h2 ()
 ----
 h2.green () 
 { 
-    box.green-in-cyan "$@"
+    h2bg "${@}"
 }
 
 ----
@@ -6336,6 +6337,17 @@ h3 ()
 
 ----
 
+==== `h3.yellow`
+
+[source,bash]
+----
+h3.yellow () 
+{ 
+    h3bg "${@}"
+}
+
+----
+
 ==== `h3bg`
 
 [source,bash]
@@ -6358,13 +6370,24 @@ h4 ()
 
 ----
 
-==== `h5`
+==== `h4.red`
 
 [source,bash]
 ----
-h5 () 
+h4.red () 
 { 
-    section.purple "$@"
+    h4bg "${@}"
+}
+
+----
+
+==== `h4bg`
+
+[source,bash]
+----
+h4bg () 
+{ 
+    box.white-on-red "$@"
 }
 
 ----
@@ -6653,6 +6676,7 @@ status.ok ()
 ----
 abort () 
 { 
+    echo
     printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
     echo
 }
@@ -6764,7 +6788,9 @@ dbgf ()
 ----
 err () 
 { 
+    echo
     printf -- "${LibOutput__LeftPrefix}${bldylw}${bakred}  « ERROR! »  ${clr} ${bldwht}$*${clr}" 1>&2
+    echo
 }
 
 ----
@@ -6864,13 +6890,25 @@ is-dbg ()
 
 ----
 
+==== `note`
+
+[source,bash]
+----
+note () 
+{ 
+    printf -- "\n${bldwht}${bakblu}  « NOTE »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
+    printf -- "\n\n" 1>&2
+}
+
+----
+
 ==== `okay`
 
 [source,bash]
 ----
 okay () 
 { 
-    printf -- " ${bldgrn} ✓ ALL OK 👍  $*${clr}" 1>&2
+    printf -- " ${txtblk}${bakgrn} ✓ ${clr}   ❯ ${clr}${italic}${bldcyn}$*${clr} ❯ ${bldgrn} ALL GOOD, YO 👍  ${clr}" 1>&2
     echo
 }
 
@@ -6930,7 +6968,7 @@ shutdown ()
 ----
 success () 
 { 
-    printf -- "\n${LibOutput__LeftPrefix}${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
+    printf -- "\n${txtblk}${bakgrn}  « SUCCESS »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
     printf -- "\n\n" 1>&2
 }
 

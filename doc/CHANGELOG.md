@@ -14,6 +14,7 @@
 
 **Merged pull requests:**
 
+- Extracting changeog into a separate function [\#50](https://github.com/kigster/bashmatic/pull/50) ([kigster](https://github.com/kigster))
 - Refactor spec script to use a library file [\#49](https://github.com/kigster/bashmatic/pull/49) ([kigster](https://github.com/kigster))
 - Use Gemfile for asciidoctor-pdf and rewrite adoc2pdf [\#48](https://github.com/kigster/bashmatic/pull/48) ([kigster](https://github.com/kigster))
 - Minor tweaks and fixes to the git sync [\#46](https://github.com/kigster/bashmatic/pull/46) ([kigster](https://github.com/kigster))

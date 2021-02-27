@@ -6,6 +6,11 @@
 # True if .envrc.local file is present. We take it as a sign 
 # you may be developing bashmatic.
 
+bashmatic.cd-into() {
+ [[ -d ${BASHMATIC_HOME} ]] || return 1
+ cd "${BASHMATIC_HOME}"
+}
+
 # @descripion True if .envrc.local file is present. We take it as a sign 
 #             you may be developing bashmatic.
 bashmatic.is-developer() {
