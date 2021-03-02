@@ -322,10 +322,6 @@ h1.blue()   { h1bg "${@}"; }
 h2.green()  { h2bg "${@}"; }
 h3.yellow() { h3bg "${@}"; }
 h4.red()    { h4bg "${@}"; }
-
-  
-
-
 hdr() {
   h1 "$@"
 }
