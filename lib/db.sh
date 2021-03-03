@@ -1,6 +1,14 @@
 # Private Functions
 #===============================================================================
 
+function is-verbose() {
+  ((flag_verbose))
+}
+
+function is-quiet() {
+  ((flag_quiet))
+}
+
 export bashmatic_db_config=${bashmatic_db_config:-"${HOME}/.db/database.yml"}
 declare -a bashmatic_db_connection
 
@@ -133,7 +141,7 @@ db.psql.connect() {
   if [[ -z ${dbname} ]]; then
     h1 "USAGE: db.connect connection-name" \
       "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file." >&2
-    return 0``
+    return 0
   fi
 
   export __psql_stderr="$(file.temp)"
@@ -164,7 +172,7 @@ db.psql.connect() {
     eval "psql ${args[*]} --echo-errors $*"
     local code=$?
   fi
-  set -e
+
   return ${code}
 }
 
@@ -181,7 +189,12 @@ db.psql.connect.just-data() {
 
 db.psql.run() {
   local dbname="$1"; shift
-  db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c "\q"
+  db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c '\\q'
+}
+
+db.psql.list-users() {
+  local dbname="$1"; shift
+  db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\du' | sedx 's/\|.*$//g' # awk 'BEGIN{FS="|"}{print $0}'
 }
 
 db.psql.connect.table-settings-show() {
@@ -368,6 +381,10 @@ db.actions.table-settings-set() {
 db.actions.connections() {
   db.config.connections
   echo
+}
+
+db.actions.list-users() {
+  db.psql.list-users "$@"
 }
 
 db.actions.db-settings-pretty() {

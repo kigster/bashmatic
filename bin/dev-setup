@@ -866,14 +866,14 @@ dev-setup.install() {
 }
 
 function dev-setup.invoke-actions() {
-  for c in "$@"; do
+  for c in $@; do
     dev-setup.run-action "${c}"
   done
   cursor.down 3
 }
 
 function dev-setup.run-actions() {
-  if [[ ${FOSSA__OSNAME} == "darwin" ]]; then
+  if [[ ${AppCurrentOS} =~ darwin ]]; then
     brew.install
   fi
 
