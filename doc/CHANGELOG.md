@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+## [v1.10.0](https://github.com/kigster/bashmatic/tree/v1.10.0) (2021-03-03)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.9.3...HEAD)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.9.3...v1.10.0)
 
 **Fixed bugs:**
 
@@ -14,6 +14,7 @@
 
 **Merged pull requests:**
 
+- Kig/dev setup improvements [\#51](https://github.com/kigster/bashmatic/pull/51) ([kigster](https://github.com/kigster))
 - Extracting changeog into a separate function [\#50](https://github.com/kigster/bashmatic/pull/50) ([kigster](https://github.com/kigster))
 - Refactor spec script to use a library file [\#49](https://github.com/kigster/bashmatic/pull/49) ([kigster](https://github.com/kigster))
 - Use Gemfile for asciidoctor-pdf and rewrite adoc2pdf [\#48](https://github.com/kigster/bashmatic/pull/48) ([kigster](https://github.com/kigster))

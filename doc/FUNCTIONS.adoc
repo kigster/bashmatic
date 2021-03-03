@@ -218,12 +218,41 @@ array.eval.in-groups-of ()
 ----
 array.from.command () 
 { 
-    local array_name=$1
+    local func="array.from.command.$(user.current-shell)"
+    is.a-function "${func}" || return 1
+    ${func} "$@"
+}
+
+----
+
+==== `array.from.command.bash`
+
+[source,bash]
+----
+array.from.command.bash () 
+{ 
+    local array_name="$1"
     shift
     local command="$*"
     local OFS="$IFS"
-    eval "IFS=\$'\\n' read -ra ${array_name} -d '' <<< \"\$(${command})\""
+    eval "IFS=\$'\\n'; read -r -d '' -a ${array_name}  < <( bash -c \"${command}\" || true && printf '\0' ); export ${array_name} || true"
     export IFS="$OFS"
+}
+
+----
+
+==== `array.from.command.zsh`
+
+[source,bash]
+----
+array.from.command.zsh () 
+{ 
+    local array_name="$1"
+    shift
+    local command="$*"
+    eval "declare -a ${array_name}"
+    eval "${array_name}=(\"\${(@f)\$(command)}\"); export ${array_name}; true"
+    return
 }
 
 ----
@@ -482,6 +511,17 @@ asciidoc.rouge-themes ()
 
 
 === Module `audio`
+
+==== `æ.mp3`
+
+[source,bash]
+----
+æ.mp3 () 
+{ 
+    audio.make.mp3 "$@"
+}
+
+----
 
 ==== `audio.dir.mp3-to-wav`
 
@@ -769,9 +809,9 @@ bashmatic.auto-update-error ()
 { 
     bashmatic.is-developer || return
     if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
-        cat "${__bashmatic_auto_update_help_file}"
+        cat "${__bashmatic_auto_update_help_file}" 1>&2
     else
-        box.black-on-yellow "Bashmatic — I detected locally modified changes..." "Auto-update is therefore disabled until its git state is clean." | tee -a "${__bashmatic_auto_update_help_file}" 1>&2
+        box.black-on-yellow "${bldwht}Bashmatic Warning" "Local modifications have been detected in BASHMATIC_HOME=${BASHMATIC_HOME} " "Auto-update is therefore disabled until its git state is clean." | tee -a "${__bashmatic_auto_update_help_file}" 1>&2
     fi
 }
 
@@ -1901,6 +1941,17 @@ db.actions.explain ()
 
 ----
 
+==== `db.actions.list-users`
+
+[source,bash]
+----
+db.actions.list-users () 
+{ 
+    db.psql.list-users "$@"
+}
+
+----
+
 ==== `db.actions.run`
 
 [source,bash]
@@ -2169,7 +2220,7 @@ db.psql.connect ()
     shift
     if [[ -z ${dbname} ]]; then
         h1 "USAGE: db.connect connection-name" "WHERE: connection-name is defined by your ${bldylw}${bashmatic_db_config}${clr} file." 1>&2
-        return 0``
+        return 0
     fi
     export __psql_stderr="$(file.temp)"
     cp /dev/null "${__psql_stderr}"
@@ -2194,7 +2245,6 @@ db.psql.connect ()
         eval "psql ${args[*]} --echo-errors $*"
         local code=$?
     fi
-    set -e
     return ${code}
 }
 
@@ -2285,6 +2335,19 @@ db.psql.db-settings ()
 
 ----
 
+==== `db.psql.list-users`
+
+[source,bash]
+----
+db.psql.list-users () 
+{ 
+    local dbname="$1"
+    shift
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\du' | sedx 's/\|.*$//g'
+}
+
+----
+
 ==== `db.psql.report-error`
 
 [source,bash]
@@ -2311,7 +2374,7 @@ db.psql.run ()
 { 
     local dbname="$1"
     shift
-    db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c "\q"
+    db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c '\\q'
 }
 
 ----
@@ -2346,6 +2409,28 @@ db.wait-until-db-online ()
     done
     ui.closer.ok:
     return 0
+}
+
+----
+
+==== `is-quiet`
+
+[source,bash]
+----
+is-quiet () 
+{ 
+    ((flag_quiet))
+}
+
+----
+
+==== `is-verbose`
+
+[source,bash]
+----
+is-verbose () 
+{ 
+    ((flag_verbose))
 }
 
 ----
@@ -8400,9 +8485,9 @@ ruby.stop ()
 ----
 ruby.top-versions () 
 { 
-    local platform="${1:-"2\."}"
+    local platform="${1:-"\[2-3\]\."}"
     local arg="$(.ruby.ruby-build.list-argument)"
-    rbenv install ${arg} | ${GrepCommand} "^${platform}" | ruby -e '
+    eval "rbenv install ${arg}" | ${GrepCommand} "^${platform}" | ruby -e '
       last_v = nil
       last_m = nil
       ARGF.each do |line|
@@ -8442,7 +8527,7 @@ ruby.validate-version ()
         run "cd ~/.rbenv/plugins/ruby-build && git reset --hard && git pull --rebase"
     }
     local arg="$(.ruby.ruby-build.list-argument)"
-    array.from.stdin ruby_versions "rbenv install ${arg} | sed -E \"s/\s+//g\""
+    array.from.command ruby_versions "rbenv install ${arg}"
     inf "Validating ruby version: ${version}"
     array.includes "${version}" "${ruby_versions[@]}" || { 
         not-ok:
@@ -10686,6 +10771,23 @@ util.ensure-gnu-sed ()
         ;
     esac
     echo -n "${sed_path}"
+}
+
+----
+
+==== `util.eval-function-body`
+
+[source,bash]
+----
+util.eval-function-body () 
+{ 
+    local name="$1"
+    shift
+    type ${name} | grep -qi function || { 
+        error "${name} is not a function."
+        return 1
+    }
+    eval "$(type ${name} | sedx '1,3d;$d')" "$@"
 }
 
 ----

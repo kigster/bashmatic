@@ -15,6 +15,7 @@
 * [array.min()](#arraymin)
 * [array.max()](#arraymax)
 * [array.uniq()](#arrayuniq)
+* [array.from.command()](#arrayfromcommand)
 
 ### `array.has-element()`
 
@@ -106,6 +107,19 @@ Sorts and uniqs the array and prints it to STDOUT
 ```bash
 declare -a unsorted=(hello hello hello goodbye)
 local uniqued="$(array.sort-numeric "${unsorted[@]}")"
+```
+
+### `array.from.command()`
+
+Creates an array variable, where each element is a line from a command output,
+which includes any spaces.
+
+#### Example
+
+```bash
+      array.from.command music_files "find . -type f -name '*.mp3'"
+      echo "You have ${#music[@]} music files."
+
 ```
 
 
