@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vim: ft=sh
+# vim: ft=bash
 #
 # @file util.sh
 # @description Miscellaneous utilities.
@@ -280,6 +280,17 @@ function sedx.cache-command() {
 sedx() {
   [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
   eval "${bashmatic__sed_command} \"$@\""
+}
+
+function util.eval-function-body() {
+  local name="$1"; shift
+
+  type ${name} | grep -qi function || { 
+    error "${name} is not a function."
+    return 1
+  }
+
+  eval "$(type ${name} | sedx '1,3d;$d')" "$@"
 }
 
 export LibUtil__WatchRefreshSeconds="0.5"

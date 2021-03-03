@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
 # vim: ft=bash
 
 # shellcheck disable=2046
@@ -13,6 +13,8 @@
 }
 
 source "${BASHMATIC_HOME}/init.sh"
+source "${BASHMATIC_HOME}/lib/util.sh"
+source "${BASHMATIC_HOME}/lib/is.sh"
 
 output.constrain-screen-width 100
 
@@ -74,23 +76,6 @@ export DevSetup__Version="0.4.0"
     warning "No Ruby Version was provided."
   fi
 }
-
-declare -a DevSetup__Errors=()
-declare -a DevSetup__BrewPackages=()
-declare -a DevSetup__BrewCasks=()
-declare -a DevSetup__BrewServices=()
-declare -a DevSetup__BrewFonts=()
-# TODO: replace this array with the callback auto-detection
-#       based on the function namaing convention. For instance,
-#       for a group gpg, if a function .dev-setup.callback.gpg exists
-#       then run it.
-declare -a DevSetup__Callbacks=()
-
-export DevSetup__BrewPackages
-export DevSetup__BrewCasks
-export DevSetup__BrewServices
-export DevSetup__BrewFonts
-export DevSetup__Callbacks
 
 .dev-setup.action.z() {
   local dir=/usr/local/src/z
@@ -480,14 +465,57 @@ _.dev-setup.action.grc() {
 #
 # 2) The rest of the execution
 
-declare -a components=($(util.functions-matching.diff ".dev-setup.action."))
-declare -a components_to_install=()
-export flag_verbose=0
-export flag_force=0
-export flag_show_header=1
-export flag_run_callbacks=1
-export flag_callbacks_only=0
-export flag_on_error_abort=0
+declare -a components
+declare -a components_to_install
+declare -a DevSetup__Errors
+declare -a DevSetup__BrewPackages
+declare -a DevSetup__BrewCasks
+declare -a DevSetup__BrewServices
+declare -a DevSetup__BrewFonts
+
+function dev-setup.initialize() {
+  export DevSetup__Initialized=${DevSetup__Initialized:-0}
+
+  ((DevSetup__Initialized)) && return 0
+
+  export DevSetup__Initialized=1
+
+  # TODO: replace this array with the callback auto-detection
+  #       on the function namaing convention. For instance,
+  #       for a group gpg, if a function .dev-setup.callback.gpg exists
+  #       then run it.
+  declare -a DevSetup__Callbacks
+
+  export DevSetup__BrewPackages=()
+  export DevSetup__BrewCasks=()
+  export DevSetup__BrewServices=()
+  export DevSetup__BrewFonts=()
+  export DevSetup__Callbacks=()
+
+  export components=($(util.functions-matching.diff ".dev-setup.action."))
+  export components_to_install=()
+
+  export flag_verbose=0
+  export flag_force=0
+  export flag_show_header=1
+  export flag_run_callbacks=1
+  export flag_callbacks_only=0
+  export flag_on_error_abort=0
+
+  return 0
+}
+
+dev-setup.print-components() {
+  local -a list="$@"
+  if [[ ${#list[@]} -eq 0 ]]; then
+    warning "Warning: empty component list."
+    return 1
+  else
+    info "Detected the following components:"
+    array.to.bullet-list "$@" | sedx 's/•/      • /g'
+  fi
+  return 0
+}
 
 dev-setup.parse-opts() {
   [[ -z "$1" ]] && {
@@ -501,6 +529,10 @@ dev-setup.parse-opts() {
   # Parse additional flags
   while :; do
     case $1 in
+    -l | --list)
+      shift
+      dev-setup.print-components "${components[@]}"
+     ;;
     -g | --groups)
       shift
       local arguments="$1"
@@ -702,18 +734,18 @@ dev-setup.header() {
 
 dev-setup.run-action() {
   local action_name="$1"
-  local action=".dev-setup.action.${action_name}"
   shift
-  is.a-function "${action}" || {
-    error "Invalid Dev Setup action ${action}"
+  local action=".dev-setup.action.${action_name}"
+  set +e
+
+  is.a-function ${action} || {
+    error "Invalid Dev Setup action ${action_name}" "function ${action} is not defined."
     return 1
   }
-  section "Evaluating Action -> ${action_name}"
-  ${action} "$@"
-}
+  section "Loading packages from -> ${action_name}"
+  cursor.up 2
 
-dev-setup.init() {
-  brew.install
+  eval "${action} $*"
 }
 
 dev-setup.install.packages() {
@@ -828,28 +860,41 @@ dev-setup.install() {
     warning \
       "Setup completed, but with some failures." \
       "Total of ${failures} failures out of ${total} commands were detected and skipped."
-    echo
-    h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
+        echo
+        h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
   fi
 }
 
-function dev-setup.run-actions() {
+function dev-setup.invoke-actions() {
   for c in "$@"; do
     dev-setup.run-action "${c}"
   done
+  cursor.down 3
+}
 
+function dev-setup.run-actions() {
+  if [[ ${FOSSA__OSNAME} == "darwin" ]]; then
+    brew.install
+  fi
+
+  dev-setup.invoke-actions "$@"
   dev-setup.install
 }
 
 function dev-setup.main() {
+  # dev-setup.initialize
   [[ "${flag_show_header}" == "1" ]] && dev-setup.header
+
   dev-setup.parse-opts "$@"
   ((flag_verbose)) && run.inspect-variables-that-are starting-with flag_
   dev.setup.print-versions
+
   [[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})
-  dev-setup.run-action "${components_to_install[@]}"
+  dev-setup.print-components "${components_to_install[@]}"
+  dev-setup.run-actions "${components_to_install[@]}"
 }
 
 if [[ $0 =~ 'dev-setup' ]]; then
+  util.eval-function-body "dev-setup.initialize"
   dev-setup.main "$@"
 fi
