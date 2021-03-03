@@ -197,12 +197,37 @@ array.to.piped-list() {
   array.join ' | ' false "$@"
 }
 
-array.from.command() {
-  local array_name=$1; shift
+# BASH implementation:
+# https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash/32931403
+array.from.command.bash() {
+  local array_name="$1"; shift
   local command="$*"
   local OFS="$IFS"
-  eval "IFS=\$'\\n' read -ra ${array_name} -d '' <<< \"\$(${command})\""
+  eval "IFS=\$'\\n'; read -r -d '' -a ${array_name}  < <( bash -c \"${command}\" || true && printf '\0' ); export ${array_name} || true"
   export IFS="$OFS"
+}
+
+# ZSH implementation:
+# https://unix.stackexchange.com/questions/29724/how-to-properly-collect-an-array-of-lines-in-zsh
+array.from.command.zsh() {
+  local array_name="$1"; shift
+  local command="$*" 
+  eval "declare -a ${array_name}"
+  eval "${array_name}=(\"\${(@f)\$(command)}\"); export ${array_name}; true"
+  return
+}
+
+# @description Creates an array variable, where each element is a line from a command output,
+#              which includes any spaces.
+#
+# @example Create an array of matching files:
+#       array.from.command music_files "find . -type f -name '*.mp3'"
+#       echo "You have ${#music[@]} music files."
+# 
+array.from.command() {
+  local func="array.from.command.$(user.current-shell)"
+  is.a-function "${func}" || return 1
+  ${func} "$@"
 }
 
 # usage: array.eval.in-groups-of <number> <bash function> <array of arguments to bash function>

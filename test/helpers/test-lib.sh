@@ -198,7 +198,7 @@ function specs.run-one-file() {
     test-group-ok "${ms}ms"
     return 0
   else
-    test-group-failed  "${duration}sec.${ms}ms"
+    test-group-failed  "${ms}ms"
     export Specs__FailedFileCount=$((Specs__FailedFileCount + 1))
     return "${exitcode}"
   fi

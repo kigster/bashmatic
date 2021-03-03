@@ -216,10 +216,11 @@ function bashmatic.auto-update() {
 function bashmatic.auto-update-error() {
   bashmatic.is-developer || return
   if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
-    cat "${__bashmatic_auto_update_help_file}"
+    cat "${__bashmatic_auto_update_help_file}" >&2
   else
     box.black-on-yellow \
-      "Bashmatic — I detected locally modified changes..." \
+      "${bldwht}Bashmatic Warning" \
+      "Local modifications have been detected in BASHMATIC_HOME=${BASHMATIC_HOME} " \
       "Auto-update is therefore disabled until its git state is clean." |
       tee -a "${__bashmatic_auto_update_help_file}" >&2      
   fi

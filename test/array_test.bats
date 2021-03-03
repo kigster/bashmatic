@@ -1,8 +1,24 @@
 #!/usr/bin/env bats
 
 load test_helper
+set -e 
 source lib/array.sh
 source lib/is.sh
+source lib/util.sh
+source lib/user.sh
+
+set +e
+
+@test "array.from.command" {
+  set -e
+  command="echo one; echo 'twenty two'; echo three; echo; echo four"
+  array.from.command my_array "${command}"
+  [[ ${#my_array[@]} -eq 4 ]] && 
+  [[ ${my_array[0]} == "one" ]] && 
+  [[ ${my_array[1]} == "twenty two" ]] && 
+  [[ ${my_array[2]} == "three" ]] && 
+  [[ ${my_array[3]} == "four" ]]
+}
 
 @test "array.min/max positive" {
   declare -a array=(1 495 -2 435 12 0 hello)
@@ -170,7 +186,7 @@ versions_array() {
   echo "${tmp}"
 
   result="$(cat "${tmp}")"
-  [[ ${lines} -eq 2                              ]]
-  [[ $(cat "${tmp}" | ${GrepCommand}  -c ' • kig') -eq 1  ]]
-  [[ $(cat "${tmp}" | ${GrepCommand}  -c ' • pig') -eq 1  ]]
+  [[ ${lines} -eq 2 ]] &&
+  [[ $(egrep ' • kig' -c ${tmp}) -eq 1 ]] &&
+  [[ $(egrep ' • pig' -c ${tmp}) -eq 1 ]]
 }

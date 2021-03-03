@@ -31,7 +31,6 @@ ruby.top-versions-as-yaml() {
     sed 's/^/ - /g'
 }
 
-# i
 .ruby.ruby-build-updated() {
   ruby.ensure-rbenv-or-complain || return 1
 
@@ -46,15 +45,16 @@ ruby.top-versions-as-yaml() {
   printf -- '%s' "${arg}"
 }
 
+# shellcheck disable=SC2120
 # Usage: ruby.top-versions [ platform ]
 #    eg: ruby.top-versions
 #    eg: ruby.top-versions jruby
 #    eg: ruby.top-versions rbx
 ruby.top-versions() {
-  local platform="${1:-"2\."}"
+  local platform="${1:-"\[2-3\]\."}"
   local arg="$(.ruby.ruby-build.list-argument)"
 
-  rbenv install ${arg} |
+  eval "rbenv install ${arg}" |
     ${GrepCommand} "^${platform}" |
     ruby -e '
       last_v = nil;
@@ -386,7 +386,7 @@ ruby.validate-version() {
   }
 
   local arg="$(.ruby.ruby-build.list-argument)"
-  array.from.stdin ruby_versions "rbenv install ${arg} | sed -E \"s/\s+//g\""
+  array.from.command ruby_versions "rbenv install ${arg}"
 
   inf "Validating ruby version: ${version}"
 
