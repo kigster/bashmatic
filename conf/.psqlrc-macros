@@ -1,0 +1,118 @@
+-- vim: ft=sql
+\set QUIET 1
+\timing 0
+\echo '┌───────────────────────────────────────────────────────────────────────────┐'
+\echo '│                       🔄  Loading shortcuts                               │'
+\echo '└───────────────────────────────────────────────────────────────────────────┘'
+\echo
+\pset border 0
+\set VERBOSITY verbose
+\pset tuples_only 1
+
+\echo 'Type :version            — to see the PostgreSQL version.'
+\set version 'SELECT version();'
+
+\echo 'Type :extensions         — to see the available extensions.'
+\set extensions 'select * from pg_available_extensions;'
+
+\echo 'Type :running            — to see all currently executing queries'
+\set running 'select pid,client_addr,client_port,wait_event_type,wait_event,state, to_char((now() - query_start)::time, ''HH24:MI:SS'') as duration, substring(regexp_replace(substring(query, 0, 200), E''[\\n\\r\\\\s]+'', '' '', ''g'' ), 0, 120) as sql from pg_stat_activity where state != ''idle'' order by query_start asc;'
+
+\echo 'Type :vacuums            — to see the currently running vacuums'
+\set vacuums 'select pid,client_addr,client_port,wait_event_type,wait_event,state, to_char(now()::time - query_start::time, ''HH24:MI:SS'') as duration, substring(regexp_replace(substring(query, 0, 200), E''[\\n\\r\\\\s]+'', '' '', ''g'' ), 0, 120) as sql from pg_stat_activity where state != ''idle'' and query like ''%vacuum%'' order by query_start asc;'
+
+\echo 'Type :vacuuming          — to see the progress of the currently running vacuums'
+\set vacuuming 'select pa.pid, pa.state, pv.phase, to_char(pv.heap_blks_scanned * 100.0 / pv.heap_blks_total, ''999999999.99'')as completed_pct, to_char((now() - query_start)::time, ''HH24:MI:SS'') as duration, max_dead_tuples - num_dead_tuples, substring(regexp_replace(substring(query, 0, 200), E''[\n\r\\s]+'', '' '', ''g''), 0, 120) as sql from pg_stat_activity pa, pg_stat_progress_vacuum pv where pv.pid = pa.pid and query ilike ''%vacuum%'' and state != ''idle'' and query_start is not null order by query_start asc;'
+
+\echo 'Type :locks              — to see all current database locks'
+\set locks 'select pid,client_addr,client_port,wait_event_type,wait_event,state, to_char(now()::time - query_start::time, ''HH24:MI:SS'') as duration, substring(regexp_replace(substring(query, 0, 200), E''[\\n\\r\\\\s]+'', '' '', ''g'' ), 0, 120) as sql from pg_stat_activity where state != ''idle'' and ( wait_event is not null or wait_event_type is not null) order by duration desc;'
+
+\echo '——————————————————————————————————————————————————————————————————————————'
+
+\echo 'Type :dbage              — to see frozen transaction ID age by database'
+\set dbage 'SELECT datname as database, age(datfrozenxid) as age, current_setting(''autovacuum_freeze_max_age'') as autovacuum_freeze_max_age FROM pg_database ORDER BY 2 DESC;'
+
+\echo 'Type :oldest LIMIT;'
+\echo '                         — see top LIMIT tables with the oldest TX wraparound XID'
+
+\set oldest 'SELECT c.oid::regclass, age(c.relfrozenxid), pg_size_pretty(pg_total_relation_size(c.oid)) FROM pg_class c JOIN pg_namespace n on c.relnamespace = n.oid WHERE relkind IN (''r'', ''t'', ''m'') AND n.nspname NOT IN (''pg_toast'') ORDER BY 2 DESC LIMIT '
+
+\echo '——————————————————————————————————————————————————————————————————————————'
+
+\echo 'Type :top20              — to see top 20 time-consuming queries (shortened)'
+\set top20 'select to_char(total_time / 1000.0, ''999,999,999'') total_secs,to_char(total_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g''), 0, 140) as sql from pg_stat_statements order by total_time desc limit 20;'
+
+\echo 'Type :top LIMIT;         — to see top LIMIT time-consuming queries (shortened)'
+\set top   'select to_char(total_time / 1000.0, ''999,999,999'') total_secs,to_char(total_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g''), 0, 140) as sql from pg_stat_statements order by total_time desc limit '
+
+\echo 'Type :top30full          — to see top 30 time-consuming queries (full)'
+\set top30full 'select to_char(total_time / 1000.0, ''999,999,999'') total_secs, to_char(total_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g'' ), 0, 1000) as sql from pg_stat_statements order by total_time desc limit 30;'
+
+\echo '——————————————————————————————————————————————————————————————————————————'
+
+\echo 'Type :st1                — to set statement timeout to 1 hour'
+\set st1 'set statement_timeout=''1h'';'
+
+\echo 'Type :st10               — to set statement timeout to 10 hours'
+\set st10 'set statement_timeout=''10h'';'
+
+\echo '——————————————————————————————————————————————————————————————————————————'
+
+\echo 'Type :unused             — to see unused indexes in this database'
+\set unused 'SELECT schemaname || ''.'' || relname AS table, indexrelname AS index, pg_size_pretty(pg_relation_size(i.indexrelid)) AS index_size, idx_scan as index_scans FROM pg_stat_user_indexes ui JOIN pg_index i ON ui.indexrelid = i.indexrelid WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192 ORDER BY pg_relation_size(i.indexrelid) / nullif(idx_scan, 0) DESC NULLS FIRST, pg_relation_size(i.indexrelid) DESC;'
+
+\echo 'Type :bigtables          — to see the biggest tables in this database'
+\set bigtables ' SELECT nspname || ''.'' || relname AS "relation", pg_size_pretty(pg_relation_size(C.oid)) AS "size" FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) WHERE nspname NOT IN (''pg_catalog'', ''information_schema'') and C.relkind in ( ''t'',  ''r'' )  and nspname not in (''pg_toast'') ORDER BY pg_relation_size(C.oid) DESC LIMIT 20;'
+
+\echo 'Type :bigindexes         — to see the biggest indexes in this database'
+\set bigindexes ' SELECT nspname || ''.'' || relname AS "relation", pg_size_pretty(pg_relation_size(C.oid)) AS "size" FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) WHERE nspname NOT IN (''pg_catalog'', ''information_schema'') and C.relkind = ''i'' ORDER BY pg_relation_size(C.oid) DESC LIMIT 20;'
+
+\echo 'Type :bigrels            — to see the largest tables including indexes'
+\set bigrels ' SELECT nspname || ''.'' || relname AS "relation", pg_size_pretty(pg_total_relation_size(C.oid)) AS "total_size" FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) WHERE nspname NOT IN (''pg_catalog'', ''information_schema'') AND C.relkind <> ''i'' AND nspname !~ ''^pg_toast'' ORDER BY pg_total_relation_size(C.oid) DESC LIMIT 20;'
+
+\echo 'Type :bigitems           — to see the biggest public tables in this database with indexes'
+\set bigitems 'SELECT nspname || ''.'' || relname AS "relation", pg_size_pretty(pg_relation_size(C.oid)) AS "size" FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) WHERE nspname IN (''public'') ORDER BY pg_relation_size(C.oid) DESC LIMIT 10;'
+
+\echo 'Type :dbsizes            — to see the sizes of the databases'
+\set dbsizes ' SELECT d.datname AS Name,  pg_catalog.pg_get_userbyid(d.datdba) AS Owner, CASE WHEN pg_catalog.has_database_privilege(d.datname, ''CONNECT'') THEN pg_catalog.pg_size_pretty(pg_catalog.pg_database_size(d.datname)) ELSE ''No Access'' END AS SIZE FROM pg_catalog.pg_database d ORDER BY CASE WHEN pg_catalog.has_database_privilege(d.datname, ''CONNECT'') THEN pg_catalog.pg_database_size(d.datname) ELSE NULL END DESC nulls first LIMIT 20;'
+
+\echo 'Type :hitrate            — to get your database cache hit rate ration'
+\set hitrate 'SELECT sum(idx_blks_read) as idx_read, sum(idx_blks_hit)  as idx_hit, (sum(idx_blks_hit) - sum(idx_blks_read)) / sum(idx_blks_hit) as ratio FROM pg_statio_user_indexes;'
+
+\echo '——————————————————————————————————————————————————————————————————————————'
+\echo 'Table and Index Stats'
+ 
+\echo 'Type :tt ''TABLE'';        — Run ":tt ''TABLE'';" to see table stats from pg_stat_user_tables'
+\set tt 'select * from pg_stat_user_tables where relname = '
+
+\echo 'Type :ti ''TABLE'';        — Run ":ti ''TABLE''"; to see table indexes from pg_stat_user_indexes'
+\set ti 'select * from pg_stat_user_indexes where relname = '
+
+\echo '——————————————————————————————————————————————————————————————————————————'
+\echo 'Prompt Management'
+\echo 'Type :p0                 - To return to the default prompt (requires Powerline Fonts)'
+\set p0 '\\set PROMPT1 ''%[%033[0;30;33m%]%[%033[0;43;30m%] %`date "+%H:%M:%S%p"`  %033[0;30;33m%]%033[0;43;37m%]%[%033[0;0;0m%]━%[%033[0;30;32m%]%033[0;42;30m%] %n@%M:%> %033[0;32m%%[%033[3;30;96m%]━%[%033[3;30;106m%]% %[%033[3;30;106m%]%/%x %033[0;96m%   %[%033[0m%]\n     ❯ '''
+\echo 'Type :p1                 - To switch to a simpler prompt theme #1'
+\set p1 '\\set PROMPT1 ''%[%033[0;90;47m%] %n@%M:%>->(%/) %[%033[0m%]\\n%# '''
+\echo 'Type :p2                 - To switch to a simpler prompt theme #2'
+\set p2 '\\set PROMPT1 ''%[%033[0;92;40m%]%n@%M:%>->(%/) %[%033[0;93;40m%] %`date "+%H:%M:%S %p"`\\n%x%[%033[0;0;0m%] ❯ '''
+\echo '——————————————————————————————————————————————————————————————————————————'
+
+\set pgss 'create extension pg_stat_statements;'
+\echo 'Type :pgss to create an extension for pg_stat_statements (assuming its available)'
+\echo 'Type \\q to exit. '
+\echo
+\echo '┌───────────────────────────────────────────────────────────────────────────┐'
+\echo '│                        ✅  Shortcuts Loaded.                              │'
+\echo '└───────────────────────────────────────────────────────────────────────────┘'
+\echo
+\pset border 3
+\pset columns 0
+\pset format aligned
+\pset linestyle unicode
+\pset null ''
+\pset pager 0
+\pset tuples_only 1
+\timing 1
+\pset tuples_only 0
+\set QUIET 0

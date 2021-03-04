@@ -359,6 +359,8 @@ export DevSetup__Version="0.4.0"
 .dev-setup.action.go() {
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
     go
+    golang-migrate
+    golangci-lint
   )
 }
 
@@ -419,8 +421,8 @@ export DevSetup__Version="0.4.0"
 
   [[ -f ~/.psqlrc ]] && mv ~/.psqlrc ~/.psqlrc.bak
   run "cp ${BASHMATIC_HOME}/conf/.psqlrc ${HOME}"
-  run "createuser -s postgres -U ${USER}"
-  run "createdb -E UTF8 -U ${USER} ${USER}"
+  run "createuser -s postgres -U ${USER} 2>/dev/null || true"
+  run "createdb -E UTF8 -U ${USER} postgres 2>/dev/null || true"
 }
 
 .dev-setup.action.mysql() {
