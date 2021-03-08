@@ -183,6 +183,15 @@ function git.repo-is-clean() {
 function git.remotes() {
   git remote -v | awk '{print $2}' | uniq
 }
+
+function git.remote() {
+  if git.remotes | grep -q "git@"; then
+    git.remotes | egrep "git@" | sort | head -1
+  else
+    git.remotes | sort | head -1
+  fi
+}
+
 function git.commits.last.sha() {
   git log --pretty=format:"%H" -1
 }
@@ -258,3 +267,85 @@ function git.upstream() {
   run.set-next show-output-on
   run "git branch --set-upstream-to=origin/${this_branch} ${this_branch}"
 }
+
+# @description Given a git URL splits it into 5 array elements:
+#    protocol, separator, hostname, user, repo
+# @example
+#    declare -a remote_elements
+#    export remote_elements=($(git.remote))
+#
+
+bashmatic.bash.version-four-or-later && {
+  declare -A git_remote_map
+  export git_remote_map=()
+}
+
+function git.parse-remote() {
+local url="${1:-$(git.remote)}"
+  local re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)(\.git)?$"
+
+  [[ $url =~ $re ]] || {
+    error "git remote [${url}] does not match regualar expression." >&2
+    return 1
+  }
+
+  local protocol="${BASH_REMATCH[1]}"
+  local separator="${BASH_REMATCH[2]}"
+  local hostname="${BASH_REMATCH[3]}"
+  local user="${BASH_REMATCH[4]}"
+  local repo="${BASH_REMATCH[5]}"
+
+  if bashmatic.bash.version-four-or-later ; then
+    declare -A git_remote_map=()
+    git_remote_map[protocol]="${protocol}"
+    git_remote_map[hostname]="${hostname}"
+    git_remote_map[user]="${user}"
+    git_remote_map[repo]="${repo}"
+    export git_remote_map
+  fi
+
+  printf "%s %s %s %s %s\n" "${protocol}" "${separator}" "${hostname}" "${user}" "${repo}"
+}
+
+function git.is-valid-repo() {
+  if [[ ! -d .git ]] ; then
+    error "Please run this script at the root of your project / git repo." >&2
+    return 1
+  fi
+}
+
+function git.generate-changelog() {
+  [[ -z  ${GITHUB_TOKEN} ]] && {
+    error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
+    return 1
+  }
+
+  git.is-valid-repo || return 2
+  gem.install github_changelog_generator
+
+  local -a remote_parts
+  remote_parts=($(git.parse-remote "$(git.remote)"))
+
+  local user=${remote_parts[3]}
+  local repo=${remote_parts[4]}
+  local host=${remote_parts[2]}
+  
+  [[ ${host} =~ github.com ]] || {
+    error "Can only generate changelog for Github Repos at the moment, sorry."
+    return 1
+  }
+
+  run "rm -f CHANGELOG.md"
+  run "github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${GITHUB_TOKEN} --no-verbose"
+
+  [[ -s "CHANGELOG.md" ]] || {
+    error  "CHANGELOG.md has not been generated."
+    return 1
+  }
+
+  success "CHANGELOG.md is ready."
+
+  return 0
+}
+
+

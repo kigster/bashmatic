@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# vim: ft=sh
+
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
+
+git.is-valid-repo || {
+  error "Current folder is not a git repo."
+  exit 1
+}
+
+usage() {
+  error "Please set env variable GITHUB_TOKEN, OR pass the token on the command line as the first argument."
+  printf "
+${bldylw}USAGE: ${clr}
+  $ ${bldgrn}GITHUB_TOKEN=.... $0${clr}
+  $ ${bldgrn}$0 <github-token>${clr}
+
+${bldylw}DESCRPTION:${clr}
+  Generate changelog for the current repo based on on 
+  Github tagging history.
+${clr}
+"
+  exit ${1:-1}
+}
+
+if [[ -z ${GITHUB_TOKEN} ]]; then
+  if [[ -n "$1" ]]; then
+    [[ "${#1}" -eq  40 ]] || {
+      error "Argument's length is expected to be 40, got ${#1}"
+      usage 2
+    }
+    export GITHUB_TOKEN="$1"
+  else
+   usage 3 
+  fi
+fi
+
+[[ -z ${GITHUB_TOKEN} ]] && usage
+
+git.generate-changelog
+

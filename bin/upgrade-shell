@@ -137,4 +137,4 @@ main() {
   bash.install.path.rc
 }
 
-main $*
+main "$@"
