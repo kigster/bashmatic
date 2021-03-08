@@ -8,6 +8,13 @@ source lib/util.sh
 
 set -e
 
+@test "time.with-duration()" {
+ time.with-duration.start
+ sleep 0.4
+ local duration=$(time.with-duration.end)
+ [[ "${duration}" =~ ^0\.4[0-9][0-9]\ sec$ ]]
+}
+
 @test "millis()" {
   set -e
   then=$(millis)

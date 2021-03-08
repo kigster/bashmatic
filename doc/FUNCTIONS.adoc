@@ -3855,6 +3855,39 @@ git.current-branch ()
 
 ----
 
+==== `git.generate-changelog`
+
+[source,bash]
+----
+git.generate-changelog () 
+{ 
+    [[ -z ${GITHUB_TOKEN} ]] && { 
+        error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
+        return 1
+    }
+    git.is-valid-repo || return 2
+    gem.install github_changelog_generator
+    local -a remote_parts
+    remote_parts=($(git.parse-remote "$(git.remote)"))
+    local user=${remote_parts[3]}
+    local repo=${remote_parts[4]}
+    local host=${remote_parts[2]}
+    [[ ${host} =~ github.com ]] || { 
+        error "Can only generate changelog for Github Repos at the moment, sorry."
+        return 1
+    }
+    run "rm -f CHANGELOG.md"
+    run "github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${GITHUB_TOKEN} --no-verbose"
+    [[ -s "CHANGELOG.md" ]] || { 
+        error "CHANGELOG.md has not been generated."
+        return 1
+    }
+    success "CHANGELOG.md is ready."
+    return 0
+}
+
+----
+
 ==== `git.is-it-time-to-update`
 
 [source,bash]
@@ -3865,6 +3898,20 @@ git.is-it-time-to-update ()
     local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
     local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
     [[ ${second_since_update} -gt ${update_period_seconds} ]]
+}
+
+----
+
+==== `git.is-valid-repo`
+
+[source,bash]
+----
+git.is-valid-repo () 
+{ 
+    if [[ ! -d .git ]]; then
+        error "Please run this script at the root of your project / git repo." 1>&2
+        return 1
+    fi
 }
 
 ----
@@ -3943,6 +3990,36 @@ git.open ()
 
 ----
 
+==== `git.parse-remote`
+
+[source,bash]
+----
+git.parse-remote () 
+{ 
+    local url="${1:-$(git.remote)}"
+    local re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)(\.git)?$"
+    [[ $url =~ $re ]] || { 
+        error "git remote [${url}] does not match regualar expression." 1>&2
+        return 1
+    }
+    local protocol="${BASH_REMATCH[1]}"
+    local separator="${BASH_REMATCH[2]}"
+    local hostname="${BASH_REMATCH[3]}"
+    local user="${BASH_REMATCH[4]}"
+    local repo="${BASH_REMATCH[5]}"
+    if bashmatic.bash.version-four-or-later; then
+        declare -A git_remote_map=()
+        git_remote_map[protocol]="${protocol}"
+        git_remote_map[hostname]="${hostname}"
+        git_remote_map[user]="${user}"
+        git_remote_map[repo]="${repo}"
+        export git_remote_map
+    fi
+    printf "%s %s %s %s %s\n" "${protocol}" "${separator}" "${hostname}" "${user}" "${repo}"
+}
+
+----
+
 ==== `git.quiet`
 
 [source,bash]
@@ -3950,6 +4027,21 @@ git.open ()
 git.quiet () 
 { 
     [[ -n ${LibGit__QuietUpdate} ]]
+}
+
+----
+
+==== `git.remote`
+
+[source,bash]
+----
+git.remote () 
+{ 
+    if git.remotes | grep -q "git@"; then
+        git.remotes | egrep "git@" | sort | head -1
+    else
+        git.remotes | sort | head -1
+    fi
 }
 
 ----
@@ -10024,6 +10116,44 @@ time.now.with-ms ()
         [[ -n $(command -v gdate) ]] && date_runnable='gdate'
     fi
     ${date_runnable} '+%T.%3N'
+}
+
+----
+
+==== `time.with-duration`
+
+[source,bash]
+----
+time.with-duration () 
+{ 
+    time.with-duration.end "$@"
+}
+
+----
+
+==== `time.with-duration.end`
+
+[source,bash]
+----
+time.with-duration.end () 
+{ 
+    [[ -z ${__bashmatic_with_duration_ms} ]] && return 1
+    local finished="$(millis)"
+    local duration=$(( finished -  __bashmatic_with_duration_ms ))
+    duration="$(time.duration.millis-to-secs "${duration}")"
+    printf -- "$*%s" "${duration} sec"
+    unset __bashmatic_with_duration_ms
+}
+
+----
+
+==== `time.with-duration.start`
+
+[source,bash]
+----
+time.with-duration.start () 
+{ 
+    export __bashmatic_with_duration_ms=$(millis)
 }
 
 ----

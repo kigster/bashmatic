@@ -60,12 +60,26 @@ HEADER
 
 generate-shdoc() {
   .install.kramdoc
-  bin/shdocument 
+  local usage="doc/USAGE.md"
+  run "rm -f ${usage}"
+  run "touch ${usage}"
+  
+  for file in $(find bin -name '[a-z]*' -type f); do
+    info "Extracting shdoc from ${bldylw}${file}..."
+    bin/shdoc ${file} >> ${usage} 
+  done
+  hr ; echo
+  info "shdoc generated, converting USAGE.md to asciiidoc..."
   run "kramdoc doc/USAGE.md"
+  hr; echo
+  info "shdoc generated, converting USAGE.adoc to PDF..."
+  run "bin/adoc2pdf doc/USAGE.adoc"
 }
 
 if [[ $0 == "${BASH_SOURCE[0]}" ]] ; then
-  
+  run.set-all abort-on-error
+  generate-shdoc  
+  generate-functions-index
 fi
 
 

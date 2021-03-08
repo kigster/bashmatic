@@ -16,3 +16,4 @@ shellcheck.log
 .fonts/
 *.pdf.reduced
 .bundle/
+doc/USAGE.adoc

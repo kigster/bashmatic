@@ -49,6 +49,24 @@ function date.now.with-time() {
 }
 
 
+function time.with-duration.start() {
+  export __bashmatic_with_duration_ms=$(millis)
+}
+
+function time.with-duration.end() {
+  [[ -z ${__bashmatic_with_duration_ms} ]] && return 1
+
+  local finished="$(millis)"
+  local duration=$(( finished -  __bashmatic_with_duration_ms ))
+
+  duration="$(time.duration.millis-to-secs "${duration}")"
+  printf -- "$*%s" "${duration} sec"
+  unset __bashmatic_with_duration_ms
+}
+
+function time.with-duration() {
+  time.with-duration.end "$@"
+}
 
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on linux vs OSX.
