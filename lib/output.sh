@@ -123,7 +123,7 @@ output.color.off() {
 
 .output.stty.field() {
   local field="$1"
-  stty -a | grep "${field}" | tr -d ';' | tr ' ' '\n' | grep -B 1 "${field}" | head -1
+  stty -a 2>/dev/null| grep "${field}" | tr -d ';' | tr ' ' '\n' | grep -B 1 "${field}" | head -1
 }
 
 .output.current-screen-width.unconstrained() {

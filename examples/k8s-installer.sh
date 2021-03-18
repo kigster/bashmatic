@@ -29,11 +29,13 @@ main() {
   binaries[kubectl]="https://storage.googleapis.com/kubernetes-release/release/${kubectl_version}/bin/darwin/amd64/kubectl"
   binaries[minikube]="https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64"
 
-  h2 "This script downloads and installs several executables, such as: ${!binaries[*]}" \
-    "Binaries are downloaded into the /tmp folder" \
-    "${bldylw}Press any key to continue, or Ctrl-C to abort."
+  output.has-stdin || {
+    h2 "This script downloads and installs several executables, such as: ${!binaries[*]}" \
+       "Binaries are downloaded into the /tmp folder" \
+       "${bldylw}Press any key to continue, or Ctrl-C to abort."
 
-  run.ui.press-any-key
+    run.ui.press-any-key
+  }
 
   # Print = lines...
 
