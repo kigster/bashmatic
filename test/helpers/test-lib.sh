@@ -206,6 +206,7 @@ function specs.run-one-file() {
 
 function specs.run-many-files() {
   local result=0
+  time.with-duration.start specs
 
   for file in "${test_files[@]}"; do
     specs.run-one-file "${file}"
@@ -219,11 +220,13 @@ function specs.run-many-files() {
       exit "${code}"
     }
   done
+
+  duration="$(time.with-duration.end specs "in " | sedx 's/\s+/ /g')"
   
   if [[ ${Specs__FailedFileCount} -gt 0 ]]; then
-    error "Total of ${Specs__FailedFileCount} out of ${Specs__FileCount} Test Suites had errors."
+    error "Total of ${Specs__FailedFileCount} out of ${Specs__FileCount} Test Suites had errors in ${bldylw}${duration}."
   else
-    success "All ${Specs__FileCount} Test Suites had passed."
+    success "All ${Specs__FileCount} Test Suites had passed ${bldylw}${duration}."
   fi 
 
   return "${result}"

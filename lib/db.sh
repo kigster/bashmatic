@@ -375,11 +375,19 @@ db.actions.pga() {
   local name="$1"
   command -v python3 >/dev/null    || brew.install.packages python3
   command -v pg_activity>/dev/null || run "python3 -m pip install pg_activity psycopg2-binary"
+  command -v pg_activity>/dev/null || {
+    local binary=$(find /usr/local/Cellar -type f -name 'pg_activity')
+    run "ln -nfs ${binary} /usr/local/bin/pg_activity"
+  }
+  command -v pg_activity>/dev/null || {
+    error "Can't find pg_activity even after install + symlink".
+    return 1
+  }
 
   local args=$(db.psql.args.config "${name}")
   db.psql.args.config "${name}">/dev/null
 
-  pg_activity ${args} --verbose-mode=1 --rds --no-app --no-database
+  pg_activity ${args} --verbose-mode=1 --rds --no-app --no-database --no-user
 }
 
 db.actions.table-settings-show() {

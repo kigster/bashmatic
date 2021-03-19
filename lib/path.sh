@@ -55,7 +55,7 @@ function path.append() {
             error "Argument ${__path} is not a valid directory, abort." >&2
             return 1
         }
-        path.dirs.uniq | grep -q -E "^${__path}$" && continue
+        path.dirs.uniq | grep -q -E "^${__path}\$" && continue
         new_path="${new_path}:${__path}"
     done
     echo "${new_path}"
@@ -72,7 +72,7 @@ function path.prepend() {
             error "Argument ${__path} is not a valid directory, abort.">&2
             return 1
         }
-        local p="$(path.dirs.uniq | grep -v -E "^${__path}$" | tr '\n' ':')"
+        local p="$(path.dirs.uniq | grep -v -E "^${__path}\$" | tr '\n' ':')"
         new_path="${__path}:${p}"
     done
     echo "${new_path}"

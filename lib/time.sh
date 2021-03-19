@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #——————————————————————————————————————————————————————————————————————————————
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
@@ -76,7 +75,7 @@ function time.with-duration.end() {
   local duration=$(( finished - started ))
 
   duration="$(time.duration.millis-to-secs "${duration}")"
-  printf -- "$*%s" "${duration} sec"
+  printf -- "$* %s\n" "${duration} sec"
 }
 
 function time.with-duration.clear() {
