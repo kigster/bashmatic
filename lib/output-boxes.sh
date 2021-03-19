@@ -62,10 +62,34 @@ attention() {
   .output.left-powerline blu 65 "${txtwht}${bakblu}  $*  "
 }
 
+# ———————————————————
+# Left Aligned Arrows
+#                    
+
+arrow-right() {
+.output.left-as-is "$@"
+}
+
+arrow.blk-on-ylw() { arrow-right "${bakylw}" "${txtblk}" "$@"; }
+arrow.blk-on-grn() { arrow-right "${bakgrn}" "${txtblk}" "$@"; }
+arrow.blk-on-wht() { arrow-right "${bakwht}" "${txtblk}" "$@"; }
+arrow.blk-on-blu() { arrow-right "${bakblu}" "${txtblk}" "$@"; }
+arrow.blk-on-cyn() { arrow-right "${bakcyn}" "${txtblk}" "$@"; }
+arrow.blk-on-pur() { arrow-right "${bakpur}" "${txtblk}" "$@"; }
+arrow.blk-on-red() { arrow-right "${bakred}" "${txtblk}" "$@"; }
+
+arrow.wht-on-ylw() { arrow-right "${bakylw}" "${txtwht}" "$@"; }
+arrow.wht-on-grn() { arrow-right "${bakgrn}" "${txtwht}" "$@"; }
+arrow.wht-on-blk() { arrow-right "${bakblk}" "${txtwht}" "$@"; }
+arrow.wht-on-blu() { arrow-right "${bakblu}" "${txtwht}" "$@"; }
+arrow.wht-on-cyn() { arrow-right "${bakcyn}" "${txtwht}" "$@"; }
+arrow.wht-on-pur() { arrow-right "${bakpur}" "${txtwht}" "$@"; }
+arrow.wht-on-red() { arrow-right "${bakred}" "${txtwht}" "$@"; }
+
+
 #————————————————————
 # Boxes
 #————————————————————
-
 
 box.white-on-blue() {
   .output.box "${bakblu}" "${bldwht}" "$@"
@@ -180,18 +204,21 @@ h.e() {
 }
 
 #————————————————————
-# Centered
+# Centered           
 #————————————————————
 h.orange-center() {
   center "${white_on_orange}" "$@"
 }
 
-h.orange() {
-  left "${white_on_orange}" "$@"
-}
-
 h.salmon-center() {
   center "${white_on_salmon}" "$@"
+}
+
+# ———————————————————
+# LEFT aligned       
+# ———————————————————
+h.orange() {
+  left "${white_on_orange}" "$@"
 }
 
 h.salmon() {
@@ -306,7 +333,7 @@ h1bg() {
 }
 
 h2bg() {
-  box.white-on-green "$@"
+  box.black-on-green "$@"
 }
 
 h3bg() {
@@ -314,7 +341,11 @@ h3bg() {
 }
 
 h4bg() {
-  box.white-on-red "$@"
+  box.white-on-blue "$@"
+}
+
+h5bg() {
+  box.yellow-on-green "$@"
 }
 
 # Aliases to the above

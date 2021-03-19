@@ -378,6 +378,35 @@ ascii-clean() {
   printf "%d" $((w  - 4))
 }
 
+.output.left-as-is() {
+  .output.left-as-is.black-text "$@"
+}
+
+.output.left-as-is.black-text() {
+  local bg="${1}"; shift  # bar  background
+  local tfg="${1}"; shift # text foreground
+  local text="$*"
+
+  local len=${#text}
+  len=$(( len + 5 ))
+  local tlen=$(( len - 5 ))
+  text="$(printf -- "%${tlen}.${tlen}s" "${text}")"
+
+  local fg="${txtblk}"
+
+  printf -- "\n${fg}${bg}"
+  if output.is-terminal; then
+    .output.repeat-char " " ${len}
+    printf -- "${inverse_on}${clr}${inverse_off}"
+    .output.cursor-left-by 1000
+    printf -- "${fg}${tfg}${bg}   ${text}"
+    cursor.down 1
+    printf -- "${clr}\n"
+  else
+    printf -- "${bg}${fg} ${text} ${inverse_on}${clr}\n\n"
+  fi
+}
+
 .output.left-justify() {
   local color="${1}"
   shift
