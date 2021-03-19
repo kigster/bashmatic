@@ -95,7 +95,6 @@ Despite the above points, it is also generally accepted that:
 
 IMPORTANT: _Bashmatic_'s goal is to make BASH programming both fun, consistent, and provide plenty of visible output to the user so that there is no mystery as to what is going on.
 
-
 == Installing Bashmatic
 
 Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script.
@@ -221,6 +220,17 @@ cd ~ >/dev/null
 === Reloading Bashmatic
 
 You can always reload _Bashmatic®_ with `bashmatic.reload` function.
+
+=== Loading Bashmatic at Startup
+
+When you install Bashmatic it automatically adds a hook to your `~/.bash_profile`, but if you are on ZSH you may need to add it manually (for now).
+
+Add the following to your `~/.zshrc` file:
+
+[source,zsh]
+[[ -f ~/.bashmatic/init.sh ]] && source ~/.bashmatic/init.sh
+
+The entire library takes less than 300ms to load on ZSH and a recent MacBook Pro.
 
 == Using the `Makefile`
 
@@ -439,6 +449,20 @@ You can configure the following settings for `db top`:
 
 1. You can change the location of the `database.yml` file with `db.config.set-file <filepath>`
 2. You can change the refresh rate of the `dbtop` with eg. `db.top.set-refresh 0.5` (in seconds, fractional values allowed). This sets the sleep time between the screen is fully refreshed.
+
+=== Other `db` Functions
+
+If you run `db` without any arguments, or with `-h` you will see the following:
+
+image::doc/img/db.png[db usage]
+
+As you might notice, there is an ever-growing list of "actions" — the sub-commands to the `db` script.
+
+For instance, a recent addition is the ability to invoke https://github.com/dalibo/pg_activity[pg_activity] Python-based DB "top", a much more advanced top query monitor for PostgreSQL.
+
+You can invoke `db pga <connection>` where the connection is taken from the database connection definitions shown above. This is what `pg_activity` looks like in action:
+
+image::doc/img/db-pga.png[pg_activity]
 
 == Usage
 

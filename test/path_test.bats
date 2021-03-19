@@ -43,12 +43,13 @@ set -e
   export PATH="/bin:/bin:/usr/local/bin:/usr/bin:/bin:"
   export TEST_PATH="${PATH}"
   path.mutate.append /sbin
-  [ "${PATH}" == "${TEST_PATH}:/sbin" ] && {
+  [[ "${PATH}" == "${TEST_PATH}:/sbin" ]] && {
     export PATH="${OLD_PATH}" || true
   }
 }
 
 @test "path.mutate.prepend" {
+  set -e
   export OLD_PATH="${PATH}"
   export PATH="/bin:/bin:/usr/local/bin:/usr/bin:/bin:"
   export TEST_PATH="${PATH}"

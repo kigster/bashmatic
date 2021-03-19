@@ -17,7 +17,7 @@ function source-if-exists() {
 __bashmatic_load_state=${__bashmatic_load_state:=0}
 
 function bashmatic.is-loaded() {
-  ((__bashmatic_load_state))
+  [[ $SHELL =~ bash ]] && ((__bashmatic_load_state))
 }
 
 function bashmatic.set-is-loaded() {
