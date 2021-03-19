@@ -393,18 +393,21 @@ ascii-clean() {
   text="$(printf -- "%${tlen}.${tlen}s" "${text}")"
 
   local fg="${txtblk}"
+  local prefix="${clr} "
 
-  printf -- "\n${fg}${bg}"
+  printf -- "\n${prefix}${fg}${bg}"
   if output.is-terminal; then
     .output.repeat-char " " ${len}
     printf -- "${inverse_on}${clr}${inverse_off}"
     .output.cursor-left-by 1000
-    printf -- "${fg}${tfg}${bg}   ${text}"
+    printf -- "${prefix}${fg}${tfg}${bg}   ${text}"
     cursor.down 1
     printf -- "${clr}\n"
   else
-    printf -- "${bg}${fg} ${text} ${inverse_on}${clr}\n\n"
+    printf -- "${prefix}${bg}${fg} ${text} ${inverse_on}${clr}\n\n"
   fi
+  printf -- "${prefix}"
+  hr; echo
 }
 
 .output.left-justify() {
