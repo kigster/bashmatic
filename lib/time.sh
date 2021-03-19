@@ -49,19 +49,39 @@ function date.now.with-time() {
 }
 
 
+# @description Starts a time for a given name space
+# @example 
+#       time.with-duration.start moofie
+#       # ... time passes
+#       time.with-duration.end   moofie 'Moofie is now this old: '
+#       # ... time passes
+#       time.with-duration.end   moofie 'Moofie is now very old: '
+#       time.with-duration.clear moofie
 function time.with-duration.start() {
-  export __bashmatic_with_duration_ms=$(millis)
+  local name="$1"
+  [[ -z ${name} ]] && name="_default"
+  eval "export __bashmatic_with_duration_ms${name}=$(millis)"
 }
 
 function time.with-duration.end() {
-  [[ -z ${__bashmatic_with_duration_ms} ]] && return 1
-
+  local name="$1"; shift
+  [[ -z ${name} ]] && name="_default"
+  local var="__bashmatic_with_duration_ms${name}"
+  local started=$(.subst ${var})
+  [[ -z ${started} ]] && {
+    error "No start time recorded for namespace ${name}."
+    return 1
+  }
   local finished="$(millis)"
-  local duration=$(( finished -  __bashmatic_with_duration_ms ))
+  local duration=$(( finished - started ))
 
   duration="$(time.duration.millis-to-secs "${duration}")"
   printf -- "$*%s" "${duration} sec"
-  unset __bashmatic_with_duration_ms
+}
+
+function time.with-duration.clear() {
+  local name="$1"
+  eval "unset __bashmatic_with_duration_ms${name}"
 }
 
 function time.with-duration() {

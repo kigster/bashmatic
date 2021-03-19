@@ -32,7 +32,7 @@ if [[ -n $CI ]] ; then
 else
 
   function test-group() {
-    h1bg "$@"
+    arrow.blk-on-ylw "$@"
     echo
   }
   function test-group-ok() {

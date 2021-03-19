@@ -6,6 +6,7 @@ load test_helper
 source lib/user.sh
 source lib/output.sh
 source lib/is.sh
+source lib/bashmatic.sh
 source lib/git.sh
 
 @test "git.repo-is-clean() when dirty" {

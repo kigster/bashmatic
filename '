@@ -7,18 +7,20 @@ source lib/time.sh
 source lib/util.sh
 source lib/user.sh
 
+set -e
+
 @test "time.with-duration()" {
  time.with-duration.start 
- sleep 0.1
+ sleep 0.4
  local duration=$(time.with-duration.end)
- [[ "${duration}" =~ ^0\.1[0-9][0-9]\ sec$ ]]
+ [[ "${duration}" =~ ^0\.4[0-9][0-9]\ sec$ ]]
 }
 
 @test "time.with-duration(namespace)" {
  time.with-duration.start moofie
- sleep 0.1
+ sleep 0.4
  local duration=$(time.with-duration.end moofie 'Moofie is ')
- [[ "${duration}" =~ "^Moofie is 0\.1[0-9][0-9]\ sec$" ]]
+ [[ "${duration}" =~ ^Moofie is 0\.4[0-9][0-9]\ sec$ ]]
 }
 
 @test "millis()" {
@@ -42,7 +44,6 @@ source lib/user.sh
   [ ${now} -gt 0 ] &&
   [ ${now} -gt ${then} ] &&
   [ $(( ${now} - ${then})) -gt 0 ] &&
-
   [ $(( ${now} - ${then})) -lt 3 ]
 }
 
