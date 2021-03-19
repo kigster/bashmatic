@@ -370,6 +370,18 @@ db.actions.data-dir() {
   db.psql.connect "$@" $(db.psql.args-data-only) -c 'show data_directory' | $(which grep) -E -v 'data_directory|row'
 }
 
+# @description Installs (if needed) pg_activity and starts it up against the connection
+db.actions.pga() {
+  local name="$1"
+  command -v python3 >/dev/null    || brew.install.packages python3
+  command -v pg_activity>/dev/null || run "python3 -m pip install pg_activity psycopg2-binary"
+
+  local args=$(db.psql.args.config "${name}")
+  db.psql.args.config "${name}">/dev/null
+
+  pg_activity ${args} --verbose-mode=1 --rds --no-app --no-database
+}
+
 db.actions.table-settings-show() {
   db.psql.connect.table-settings-show "$@"
 }
