@@ -43,7 +43,7 @@ base:
     family: Barlow
 code:
   font:
-    size: 10
+    size: 9
     line-height-length: 13
     family: Cascadia
     line-height: $base-line-height-length / $base-font-size
