@@ -406,8 +406,10 @@ ascii-clean() {
   else
     printf -- "${prefix}${bg}${fg} ${text} ${inverse_on}${clr}\n\n"
   fi
-  printf -- "${prefix}"
-  hr; echo
+  hr
+  .output.cursor-left-by 1000
+  printf -- "${prefix}\n"
+
 }
 
 .output.left-justify() {

@@ -67,7 +67,7 @@ attention() {
 #                    
 
 arrow-right() {
-.output.left-as-is "$@"
+  .output.left-as-is "$@"
 }
 
 arrow.blk-on-ylw() { arrow-right "${bakylw}" "${txtblk}" "$@"; }
