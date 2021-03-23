@@ -67,6 +67,7 @@ function time.with-duration.end() {
   [[ -z ${name} ]] && name="_default"
   local var="__bashmatic_with_duration_ms${name}"
   local started=$(.subst ${var})
+  [[ -z ${started} ]] && started=${!var}
   [[ -z ${started} ]] && {
     error "No start time recorded for namespace ${name}."
     return 1

@@ -17,3 +17,4 @@ shellcheck.log
 *.pdf.reduced
 .bundle/
 doc/USAGE.adoc
+.developer-warned

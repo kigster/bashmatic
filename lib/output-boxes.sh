@@ -313,6 +313,10 @@ h4() {
   section.blue "$@"
 }
 
+h5() {
+  section.green "$@"
+}
+
 h6() {
   section.yellow "$@"
 }

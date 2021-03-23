@@ -123,7 +123,7 @@ db.psql.report-error() {
 }
 
 print-cli() {
-  is-verbose || return  
+  is-verbose || return
   h1 "Running command line:" "${bldylw}$*"
 }
 
@@ -157,7 +157,7 @@ db.psql.connect() {
   [[ ${flag_quiet} -eq 0 ]] && {
     printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n" >&2
     printf "${txtylw}$(which psql) ${args[*]}${clr}\n" >&2
-    hr >&2
+    (hr; echo) >&2
   }
 
   set +e
@@ -189,12 +189,22 @@ db.psql.connect.just-data() {
 
 db.psql.run() {
   local dbname="$1"; shift
-  db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c '\\q'
+  db.psql.connect "${dbname}" -X --pset border=0 -c "$@"
 }
 
 db.psql.list-users() {
   local dbname="$1"; shift
-  db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\du' | sedx 's/\|.*$//g' # awk 'BEGIN{FS="|"}{print $0}'
+  db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\du' | awk 'BEGIN{FS="|"}{print $2}'
+}
+
+db.psql.list-tables() {
+  local dbname="$1"; shift
+  db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\dt' | awk 'BEGIN{FS="|"}{print $2}'
+}
+
+db.psql.list-indexes() {
+  local dbname="$1"; shift
+  db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\di' | awk 'BEGIN{FS="|"}{print $2}'
 }
 
 db.psql.connect.table-settings-show() {
@@ -350,7 +360,7 @@ db.actions.explain() {
   local flags
   local explain_sql="EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON)"
   local explain_json
-  
+
   if [[ -f "${query}" ]]; then
     local explain="${query}.explain"
     local explain_json="${query}.explain.json"
@@ -390,6 +400,10 @@ db.actions.pga() {
   pg_activity ${args} --verbose-mode=1 --rds --no-app --no-database --no-user
 }
 
+db.actions.list-tables() {
+  db.psql.connect "$@" $(db.psql.args-data-only) -c 'select relname from pg_stat_user_tables order by relname asc'
+}
+
 db.actions.table-settings-show() {
   db.psql.connect.table-settings-show "$@"
 }
@@ -405,6 +419,14 @@ db.actions.connections() {
 
 db.actions.list-users() {
   db.psql.list-users "$@"
+}
+
+db.actions.list-tables() {
+  db.psql.list-tables "$@"
+}
+
+db.actions.list-indexes() {
+  db.psql.list-indexes "$@"
 }
 
 db.actions.db-settings-pretty() {

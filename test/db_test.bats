@@ -2,21 +2,33 @@
 # vim: ft=bash
 
 load test_helper
-source "lib/db.sh"
+source "init.sh"
 
-setup() { 
-  set -e 
+setup() {
+  set -e
   rm -f /tmp/a
-  export bashmatic_db_config="${BATS_TMPDIR}/dbtop.yml"
-  [[ -f ${bashmatic_db_config} ]] || cp -n conf/dbtop.yml $BATS_TMPDIR
+  export bashmatic_db_config="${BATS_TMPDIR}/databases.yml"
+  [[ -f ${bashmatic_db_config} ]] || cp -n conf/databases.yml $BATS_TMPDIR
   set -e
 }
 
+
+@test "db run -q postgres 'select extract(epoch from now())' -A -t" {
+  result=$(bin/db run -q postgres 'select extract(epoch from now())' -A -t | tr -d '\n')
+  # ❯ db run  -q postgres 'select extract(epoch from now())' -A -t
+  # 1616525790.415217
+  seconds=$(( $(millis) / 1000 ))
+  # ❯ echo ${seconds:0:9}
+  # 161652579
+  [[ "${result}" =~ ${seconds:0:8} ]]
+}
+
+
 @test "db.config.parse" {
   declare -a result=($(db.config.parse development))
-  [[ "${result[0]}" == "dbhost" ]] && 
-  [[ "${result[1]}" == "dbname" ]] && 
-  [[ "${result[2]}" == "dbuser" ]] && 
+  [[ "${result[0]}" == "dbhost" ]] &&
+  [[ "${result[1]}" == "dbname" ]] &&
+  [[ "${result[2]}" == "dbuser" ]] &&
   [[ "${result[3]}" == "dbpass" ]]
 
 }
@@ -58,3 +70,6 @@ setup() {
   eval "db.psql.args development || true"
   [[ "${PGPASSWORD}" == "dbpass" ]]
 }
+
+
+
