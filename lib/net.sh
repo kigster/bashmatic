@@ -29,3 +29,24 @@ net.fast-scan() {
   bash ${colored}
   #rm -f ${colored}
 }
+
+# @description Uses pingless connection to check if a remote port is open
+#              Requires sudo for UDP
+# @arg1 host
+# @arg2 port
+# @arg3 [optional] protocol (defaults to "tcp", supports also "udp")
+#
+# @return 0 if connection is successful, 1 otherwise
+# 
+net.is-host-port-protocol-open() {
+  local host="$1"
+  local port="$2"
+  local protocol="${3:-"tcp"}"
+
+  local command="nmap"
+  [[ ${protocol} =~ udp ]] && command="sudo nmap -sU"
+
+  command -v nmap>/dev/null || brew.install.package nmap >&2
+  ${command} -Pn -p ${port} ${host} 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
+}
+
