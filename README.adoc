@@ -454,15 +454,36 @@ You can configure the following settings for `db top`:
 
 If you run `db` without any arguments, or with `-h` you will see the following:
 
-image::doc/img/db.png[db usage]
+image::doc/img/db.png[db usage,border=2,width=80%,align=center]
 
 As you might notice, there is an ever-growing list of "actions" — the sub-commands to the `db` script.
 
+==== Commands
+
+You can view the full list by passing `--commands` flag:
+
+image::doc/img/db-commands.png[db usage,border=2,width=80%,align=center]
+
+==== Examples
+
+Altgernatively, here is the `--examples` view:
+
+image::doc/img/db-examples.png[db examples,border=2,width=80%,align=center]
+
+==== An Example Action — `pg-activity`
+
 For instance, a recent addition is the ability to invoke https://github.com/dalibo/pg_activity[pg_activity] Python-based DB "top", a much more advanced top query monitor for PostgreSQL.
 
-You can invoke `db pga <connection>` where the connection is taken from the database connection definitions shown above. This is what `pg_activity` looks like in action:
+You can invoke `db pga <connection>` where the connection is taken from the database connection definitions shown above. This is what `pg-activity` looks like in action:
 
-image::doc/img/db-pga.png[pg_activity]
+image::doc/img/db-pga.png[pg_activity,border=2,width=80%,align=center]
+
+==== Connections
+
+You can get a list of all availabled db connections with `db --connections` command:
+
+image::doc/img/db-connections.png[db usage,border=2,width=80%,align=center]
+
 
 == Usage
 
