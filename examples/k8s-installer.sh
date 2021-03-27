@@ -68,7 +68,14 @@ main() {
       }
     fi
 
-    run "[[ -f ${install_dir}/${binary} ]] && mv ${install_dir}/${binary} ${install_dir}/${binary}.backup.$(time.now.db) || true"
+    if [[ -f ${install_dir}/${binary} ]] ; then
+      # NOTE: this version command is specific to kubectl and minikube
+      local version="$( ${install_dir}/${binary} version --short=true 2>/dev/null | head -1 | tr -d '\d' | cut -d: -f2 |  tr -d ' ')"
+      [[ -n ${version} ]] && info "Found previous version ${version}, moving to ${install_dir}/${binary}-${version}..."
+      [[ -z ${version} ]] && version="$(time.now.db)"
+      run "mv ${install_dir}/${binary} ${install_dir}/${binary}-${version} || true"
+    fi
+
     run "mv ${temp_binary} ${install_dir}/${binary}"
 
     # Let's validate they work

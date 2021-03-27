@@ -38,7 +38,7 @@ net.fast-scan() {
 #
 # @return 0 if connection is successful, 1 otherwise
 # 
-net.is-host-port-protocol-open() {
+function net.is-host-port-protocol-open() {
   local host="$1"
   local port="$2"
   local protocol="${3:-"tcp"}"
