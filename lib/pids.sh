@@ -7,10 +7,15 @@
 # Single PID operations
 
 # Check if the process is running
-pid.alive() {
+function pid.alive() {
   local pid="$1"
-  util.is-numeric || {
-    error "First argument to pid.alive must be numeric."
+  [[ -z ${pid} ]] && {
+    error "usage: pid.alive PID"
+    return 1
+  }
+
+  is.numeric ${pid} || {
+    error "The argument to pid.alive() must be a numeric Process ID"
     return 1
   }
 
@@ -32,12 +37,12 @@ USAGE:
     return 1
   }
 
-  util.is-numeric ${pid} || {
+  is.numeric ${pid} || {
     error "First argument to pid.sig must be numeric."
     return 1
   }
 
-  util.is-numeric ${signal} || sig.is-valid ${signal} || {
+  is.numeric ${signal} || sig.is-valid ${signal} || {
     error "First argument to pid.sig must be numeric."
     return 1
   }
@@ -258,6 +263,23 @@ EXAMPLES:
   done
 }
 
+pid.stop-if-listening() {
+  local port="$1"
+  local protocol="${2:-"tcp"}"
+
+  local -a pids
+  pids=($(lsof -i ${protocol}:${port} | grep -v PID | awk '{print $2}'))
+  local pids_string="${pids[*]}" 
+  if [[ ${#pids[@]} -eq 0 ]] ; then
+    return 0
+  else
+    info "Found ${#pids[@]} processes attached to port ${port}/${protocol}."
+    info "Process IDs attached to ${bldcyn}${port}/${protocol}: ${bldylw}${pids_string/ /, }"
+  fi
+
+  pids.stop "${pids[@]}"
+}
+
 #
 # Usage: pids.stop <pattern>
 #
@@ -269,6 +291,7 @@ DESCRIPTION:
 
 USAGE:
   ${bldgrn}pids.stop <pattern>${clr}
+  ${bldgrn}pids.stop pid pid ... >${clr}
 
 EXAMPLES:
   ${bldgrn}pids.stop puma${clr}
@@ -276,7 +299,13 @@ EXAMPLES:
     return 0
   fi
 
-  pids.for-each "${1}" "pid.stop"
+  for pid in $@; do
+    if is.numeric ${pid}; then
+      pid.stop ${pid}
+    else
+      pids.for-each "${pid}" "pid.stop"
+    fi
+  done
 }
 
 # An Alias
