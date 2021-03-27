@@ -281,7 +281,7 @@ bashmatic.bash.version-four-or-later && {
 }
 
 function git.parse-remote() {
-local url="${1:-$(git.remote)}"
+  local url="${1:-$(git.remote)}"
   local re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)(\.git)?$"
 
   [[ $url =~ $re ]] || {
