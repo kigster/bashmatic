@@ -7,8 +7,10 @@ source "init.sh"
 setup() {
   set -e
   rm -f /tmp/a
-  export bashmatic_db_config="${BATS_TMPDIR}/databases.yml"
-  [[ -f ${bashmatic_db_config} ]] || cp -n conf/databases.yml $BATS_TMPDIR
+  export ci=""
+  [[ -n ${CI} ]] && ci="-ci"
+  export bashmatic_db_config="${BATS_TMPDIR}/databases${ci}.yml"
+  [[ -f ${bashmatic_db_config} ]] || cp -n "conf/databases${ci}.yml" $BATS_TMPDIR
   set -e
 }
 

@@ -10,7 +10,7 @@ development:
 postgres:
   database: postgres
   username: postgres
-  host: localhost
-  password:
+  host: postgres
+  password: password
 
 
