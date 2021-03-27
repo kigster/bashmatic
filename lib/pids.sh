@@ -263,7 +263,22 @@ EXAMPLES:
   done
 }
 
-pid.stop-if-listening() {
+# @description Finds any PID listening on one of the provided ports and stop thems.
+# @example 
+#     pids.stop-by-listen-tcp-ports 4232 9578 "${PORT}"
+#
+pids.stop-by-listen-tcp-ports() {
+  for port in "$@"; do
+    pid.stop-if-listening-on-port ${port}
+  done
+}
+
+# @description Finds any PID listening the one port and an optional protocol (tcp/udp)
+# @example 
+#     pid.stop-if-listening-on-port 3000 tcp
+#     pid.stop-if-listening-on-port 8126 udp
+#
+pid.stop-if-listening-on-port() {
   local port="$1"
   local protocol="${2:-"tcp"}"
 
