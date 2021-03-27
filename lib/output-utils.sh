@@ -19,6 +19,11 @@ function success() {
   printf -- "\n\n" >&2
 }
 
+function skipping() {
+  printf -- "\n${bldwht}${bakcyn}  « SKIPPING »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
+  printf -- "\n\n" >&2
+}
+
 function abort() {
   echo
   printf -- "${LibOutput__LeftPrefix}${txtblk}${bakred}  « ABORT »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" >&2
