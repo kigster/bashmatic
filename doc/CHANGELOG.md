@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.11.0](https://github.com/kigster/bashmatic/tree/v1.11.0) (2021-03-19)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.10.0...v1.11.0)
+
+**Merged pull requests:**
+
+- Timing specs + more goodies [\#52](https://github.com/kigster/bashmatic/pull/52) ([kigster](https://github.com/kigster))
+
 ## [v1.10.0](https://github.com/kigster/bashmatic/tree/v1.10.0) (2021-03-03)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.9.3...v1.10.0)
