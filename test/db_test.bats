@@ -6,33 +6,43 @@ source "init.sh"
 
 setup() {
   set -e
-  rm -f /tmp/a
   export ci=""
   [[ -n ${CI} ]] && ci="-ci"
-  export bashmatic_db_config="${BATS_TMPDIR}/databases${ci}.yml"
-  [[ -f ${bashmatic_db_config} ]] || cp -n "conf/databases${ci}.yml" $BATS_TMPDIR
+  local config="databases${ci}.yml"
+  export bashmatic_db_config="${BATS_TMPDIR}/${config}"
+  [[ -f ${bashmatic_db_config} ]] || cp -vn "conf/${config}l" ${bashmatic_db_config}
+  db.config.set-file ${bashmatic_db_config}
+}
+
+
+@test "db.config.get_file" {
+  setup
   set -e
+  result="$(db.config.get-file)"
+  [ "${result}" == "${bashmatic_db_config}" ]
 }
-
-
-@test "db run -q postgres 'select extract(epoch from now())' -A -t" {
-  result=$(bin/db run -q postgres 'select extract(epoch from now())' -A -t | tr -d '\n')
-  # ❯ db run  -q postgres 'select extract(epoch from now())' -A -t
-  # 1616525790.415217
-  seconds=$(( $(millis) / 1000 ))
-  # ❯ echo ${seconds:0:9}
-  # 161652579
-  [[ "${result}" =~ ${seconds:0:8} ]]
-}
-
 
 @test "db.config.parse" {
+  setup
+  set -e
   declare -a result=($(db.config.parse development))
-  [[ "${result[0]}" == "dbhost" ]] &&
-  [[ "${result[1]}" == "dbname" ]] &&
-  [[ "${result[2]}" == "dbuser" ]] &&
-  [[ "${result[3]}" == "dbpass" ]]
+  [ "${result[0]}" == "dbhost" ] &&
+  [ "${result[1]}" == "dbname" ] &&
+  [ "${result[2]}" == "dbuser" ] &&
+  [ "${result[3]}" == "dbpass" ]
+}
 
+@test "db run -q postgres 'select extract(epoch from now())' -A -t" {
+  set -e
+  setup
+  result=$(db.actions.run -q postgres 'select extract(epoch from now())::integer' -A -t | tr -d '\n')
+  # ❯ db run  -q postgres 'select extract(epoch from now())' -A -t
+  # 1616525790.415217
+  local epoch=$(epoch)
+  # ❯ echo ${seconds:0:9}
+  # 161652579
+  local diff=$((epoch - result))
+  [ ${diff} -gt 2 ]
 }
 
 @test "db.config.parse non-existent file" {

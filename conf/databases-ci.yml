@@ -2,6 +2,7 @@ development:
   database: dbname
   username: dbuser
   host: dbhost
+  port: 5432
   password: dbpass
   encrypted_password:
     key: dbpass
@@ -12,5 +13,5 @@ postgres:
   username: postgres
   host: postgres
   password: password
-
+  port: 5432
 
