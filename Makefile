@@ -85,7 +85,6 @@ git-add:
 
 update: 			update-changelog update-functions update-usage update-readme fonts-clean git-add ## Runs all of the updates, add locally modiofied files to git.
 
-
 setup: 				## Run the comprehensive development setup on this machine
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Running developer setup script, this may take a while.$(clear)\n"
 				@$(BASHMATIC_HOME)/bin/dev-setup -r $(RUBY_VERSION) \
@@ -100,9 +99,18 @@ setup: 				## Run the comprehensive development setup on this machine
 					-g postgres    \
 					-g ruby
 			
-test: 				## Run the fully auto-g mated test suite
+test: 				## Run fully automated test suite based on Bats
 				@$(BASHMATIC_HOME)/bin/specs
 
+test-parallel: 			## Run the fully auto-g mated test suite
+				@command -v parallel >/dev/null || $(BASHMATIC_HOME)/bin/bashmatic package.install parallel
+				@/usr/bin/env bash -c "\
+				  	set +e; \
+				  	source $(BASHMATIC_HOME)/init.sh ; \
+				  	source test/helpers/test-lib.sh ; \
+ 					specs.init ; \
+					arrow.blk-on-ylw 'Running Bats with 16 parallel processes...'; \
+					.bats-prefix/bin/bats --pretty -T -j 16 $(BASHMATIC_HOME)/test ; "
 test-install-quiet:		
 				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -q"
 	

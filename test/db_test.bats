@@ -2,7 +2,19 @@
 # vim: ft=bash
 
 load test_helper
-source "init.sh"
+
+set -e
+source lib/array.sh
+source lib/file.sh
+source lib/time.sh
+source lib/is.sh
+source lib/user.sh
+source lib/output-utils.sh
+source lib/output-boxes.sh
+source lib/output-repeat-char.sh
+source lib/ruby.sh
+source lib/util.sh
+source lib/db.sh
 
 setup() {
   set -e
@@ -10,7 +22,7 @@ setup() {
   [[ -n ${CI} ]] && ci="-ci"
   local config="databases${ci}.yml"
   export bashmatic_db_config="${BATS_TMPDIR}/${config}"
-  [[ -f ${bashmatic_db_config} ]] || cp -vn "conf/${config}l" ${bashmatic_db_config}
+  [[ -f ${bashmatic_db_config} ]] || cp -vn "conf/${config}" ${bashmatic_db_config}
   db.config.set-file ${bashmatic_db_config}
 }
 

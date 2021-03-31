@@ -299,7 +299,7 @@ gem.install "sym" && brew.install.package "curl" && \
 
 Results in this detailed and, let's be honest, _gorgeous_ ASCII output:
 
-image::doc/img/bashmatic-example.png[example,width=100%]
+image::doc/img/bashmatic-example.png[example,width=80%,align=center]
 
 Tell me you are not at all excited to start writing complex installation flows in BASH right away?
 
@@ -317,7 +317,7 @@ We provided an example script in link:examples/k8s-installer.sh[`examples/k8s-in
 
 Here is the output of running this script:
 
-image::doc/img/k8installer.png[K8 Minicube Installer,width=100%]
+image::doc/img/k8installer.png[K8 Minicube Installer,width=80%,align=center]
 
 Why do we think this type of installer is pretty awesome, compared to a silent but deadly shell script that "Jim-in-the-corner" wrote and now nobody understands?
 
@@ -342,7 +342,7 @@ NOTE: the script relies on Homebrew behind the scenes, and therefore would not w
 
 It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
-image::doc/img/dev-setup.png[Developer Setup,width=100%]
+image::doc/img/dev-setup.png[Developer Setup,width=80%,align=center]
 
 In the example below we'll use `dev-setup` script to install the following:
  
@@ -371,7 +371,7 @@ This compact command line installs a ton of things, but don't take our word for 
 
 === Example (D): Installing GRC Colourify Tool
 
-This is a great tool that colorizes nearly any other tool's output.
+This is a great tool that colorizes nearly any other tool''s output.
 
 Run it like so:
 
@@ -383,20 +383,20 @@ You might need to enter your password for SUDO.
 Once it completes, run `source ~/.bashrc` (or whatever shell you use), and type something like `ls -al` or `netstat -rn` or `ping 1.1.1.1` and notice how all of the above is nicely colored.
 
 
-=== Example (E): Database Utilities & `dbtop`
+=== Example (E): `db` Shortcut for Database Utilities & `db top`
 
 If you are using PostgreSQL, you are in luck! Bashmatic includes numerous helpers for PostreSQL's CLI
 utility `psql`.
 
-Before you begin, we recommend that you install file `.psqlrc` from Bashmatic's `conf` directory into your home folder. While not required, this file sets up your prompt and various macros for PostgreSQL that will come very handy if you use `psql` with any regularity.
+NOTE: Before you begin, we recommend that you install file `.psqlrc` from Bashmatic's `conf` directory into your home folder. While not required, this file sets up your prompt and various macros for PostgreSQL that will come very handy if you use `psql` with any regularity.
 
-What is `dbtop` anyway?
+What is `db top` anyway?
 
 Just like with the regular `top` you can see the "top" resource-consuming processes running on your local system, with `dbtop` you can observe a self-refreshing report of the actively running queries on up to *three database servers* at the same time.
 
 Here is the pixelated screenshot of `dbtop` running against two live databases:
 
-image::doc/img/dbtop.png[DBTop Example,width=90%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
+image::doc/img/dbtop.png[DBTop Example,width=80%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
 
 In order for this to work, you must first define database connection parameters in a YAML file located at the following PATH: `~/.db/database.yml`.
 
@@ -421,18 +421,15 @@ production:
   password: "a098098safdaf0998ff79789a798a7sdf"
 ----
 
-Given the above file, you should be able to run:
+Given the above file, you should be able to run the following command to see all available (registered in the above YAML file) connections:
 
 [source,bash]
+----
 $ db connections
-
-And see the newline separated list:
-
-```
 development
 staging
 production
-```
+----
 
 Once that's working, you should be able run `dbtop`:
 
@@ -1089,23 +1086,6 @@ if [[ -f "${Bashmatic__Init}" ]]; then source "${Bashmatic__Init}"; else source 
 bashmatic.validate-sourced-in || exit 1
 ----
 
-
-=== How do I run unit tests for Bashmatic?
-
-The framework comes with a bunch of automated unit tests based on the fantastic framework https://github.com/sstephenson/bats.git[`bats`].
-
-To run all tests:
-
-[source,bash]
-----
-cd ${BASHMATIC_HOME}
-bin/specs
-----
-
-While not every single function is tested (far from it), we do try to add tests to the critical ones.
-
-Please see https://github.com/kigster/bashmatic/tree/master/test[existing tests] for the examples.
-
 === How can I change the underscan or overscan for an old monitor?
 
 If you are stuck working on a monitor that does not support switching digit input from TV to PC, NOR does OS-X show the "underscan" slider in the Display Preferences, you may be forced to change the underscan manually. The process is a bit tricky, but we have a helpful script to do that:
@@ -1122,13 +1102,62 @@ Do not forget to restart after the change.
 
 Acknowledgements: the script is an automation of the method offered on http://ishan.co/external-monitor-underscan[this blog post].
 
-=== Contributing
+== Contributing
 
-Submit a pull request!
+Please https://github.com/kigster/bashmatic/pulls/new[ submit a pull request] or at least an issue!
 
-## License
+=== Running Unit Tests
 
-This project is distributed under the MIT License.
+The framework comes with a bunch of automated unit tests based on the fantastic framework https://github.com/sstephenson/bats.git[`bats`].
+
+Bats is auto-installed by the `bin/specs` script.
+
+====  Run Tests Sequentially `bin/specs` script
+
+We use Bats framework for testing, however the convenient `bin/specs` script installs Bats and its dependencies so that we don't have to worry about installing it.
+
+The script can be run:
+1. Without any arguments to run all tests in the `test` folder, or 
+2. You can pass one or more existing test file paths as arguments, eg `bin/specs test/time_test.bats`
+3. Finally, you can pass an abbreviated test file name — eg "time" will resolve to `test/time_test.bats`
+
+[source,bash]
+----
+cd ${BASHMATIC_HOME}
+# Run the entire test suite
+bin/specs
+
+# run only test/db_test.bats, test/time_test.bats and test/utils_test.bats
+bin/specs db time utils
+----
+
+==== Run Tests Sequentially using the `Makefile`
+
+Alternatively, you can run the entire test suite via the Makefile, using one of two targets:
+
+[source,bash]
+----
+make test
+----
+
+==== Run Tests Parallel using the `Makefile`
+
+Note that you can run all tests in less than 15 seconds by using GNU parallel. Just run the following make target, and it will install any dependencies.
+
+[source,bash]
+----
+make test-parallel
+----
+
+While not every single function is tested (far from it), we do try to add tests to the critical ones.
+
+Please see https://github.com/kigster/bashmatic/tree/master/test[existing tests] for the examples.
+
+
+## Copyright &  License
+
+NOTE: © 2016-2021 Konstantin Gredeskoul +
+This project is distributed under the **MIT License.**
 
 
 

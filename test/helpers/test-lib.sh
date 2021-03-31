@@ -86,6 +86,8 @@ function specs.init() {
 
   .output.set-indent 1
   color.enable
+
+  return 0
 }
 
 function specs.find-project-root() {

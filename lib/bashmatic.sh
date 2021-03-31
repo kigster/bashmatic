@@ -53,17 +53,17 @@ bashmatic.functions-from() {
 
   export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
 
-  if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
+  if [[ -n $(echo ${pattern} | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
     pattern="${pattern}.sh"
   fi
 
-  ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} |
+  eval "${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern}" |
     sedx 's/^(lib\/)?.*\.sh://g' |
     sedx 's/^function //g' |
     sedx 's/\(\) *\{.*$//g' |
     tr -d '()' |
     sedx '/^ *$/d' |
-    ${GrepCommand} '^(_|\.)' -v |
+    eval  "${GrepCommand} '^(_|\.)' -v" |
     sort |
     uniq |
     columnize "$@"
@@ -110,7 +110,7 @@ bashmatic.source() {
       .err "Can't source file ${file} — fils is invalid."
       return 1
     }
-    [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
+    [[ -n ${SOURCE_DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
     source "${file}"
   done
   return 0

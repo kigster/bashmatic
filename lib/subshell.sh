@@ -68,3 +68,36 @@ bashmatic.validate-subshell() {
 
   return 0
 }
+
+function bashmatic.run-if-subshell() {
+  local current_shell=$(ps -p $$ -o comm | grep -v COMM | sed 's/-//g')
+
+  set +e
+
+  if [[ ${current_shell} == "bash" ]]; then
+    local len="${#BASH_SOURCE[@]}"
+    local last_index=$((len - 1))
+    local last_script="${BASH_SOURCE[${last_index}]}"
+    [[ ${last_index} -lt 0 ]] && last_index=0
+    is-dbg && dbg "Detected BASH, last script name is [${last_script}], sourcing in [$0], is it sourced in? "
+    if [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
+      is-dbg && dbg "YES"
+      return 0
+    else
+      is-dbg && dbg "NO"
+      eval "$*"
+    fi
+  elif [[ ${current_shell} == "zsh" ]]; then
+    is-dbg && dbg "Detected ZSH, ZSH_EVAL_CONTEXT = [${ZSH_EVAL_CONTEXT}], is it sourced in?"
+    if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :shfunc$ ]]; then
+      is-dbg && dbg "YES"
+      return 0
+    else
+      is-dbg && dbg "NO"
+      eval "$*"
+    fi
+  else
+    error "SHELL ${current_shell} is not supported."
+    return 1
+  fi
+}

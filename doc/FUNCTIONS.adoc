@@ -891,10 +891,10 @@ bashmatic.functions-from ()
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
     cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
     export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
-    if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
+    if [[ -n $(echo ${pattern} | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
         pattern="${pattern}.sh"
     fi
-    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^(_|\.)' -v | sort | uniq | columnize "$@"
+    eval "${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern}" | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | eval "${GrepCommand} '^(_|\.)' -v" | sort | uniq | columnize "$@"
     cd - > /dev/null || return 1
 }
 
@@ -1020,7 +1020,7 @@ bashmatic.source ()
             .err "Can't source file ${file} — fils is invalid."
             return 1
         }
-        [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
+        [[ -n ${SOURCE_DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
         source "${file}"
     done
     return 0
@@ -10021,6 +10021,77 @@ shell-set.show-stack ()
 
 === Module `ssh`
 
+==== `ssh.key.copy`
+
+[source,bash]
+----
+ssh.key.copy () 
+{ 
+    cat ~/.ssh/id_rsa.pub | pbcopy
+}
+
+----
+
+==== `ssh.key.filenames`
+
+[source,bash]
+----
+ssh.key.filenames () 
+{ 
+    local name="$1"
+    is.not-blank "${name}" && name="_${name}"
+    export __bm__private_key_path="${HOME}/.ssh/id_rsa${name}"
+    export __bm__public_key_path="${HOME}/.ssh/id_rsa${name}.pub"
+    export __bm__ssh_folder="${HOME}/.ssh"
+}
+
+----
+
+==== `ssh.keys.generate`
+
+[source,bash]
+----
+ssh.keys.generate () 
+{ 
+    local name="$1"
+    local code=0
+    local email
+    local date="$( time.now.db )"
+    ssh.key.filenames "$@"
+    if is.a-non-empty-file "${__bm__private_key_path}"; then
+        warning "Private key already exists at the path:" "${bldred}${__bm__private_key_path}"
+        is.blank "${name}" && info "NOTE You can pass an optional name argument to this function"
+        info "so that the key file will be unique."
+        ( run.ui.ask "Replace the existing key (previous key will be backed up)?" )
+        code=$?
+        ((code)) && return 1
+    fi
+    is.a-function user.gitconfig.email && email="$(user.gitconfig.email)"
+    is.blank "${email}" && run.ui.ask-user-value email "Please enter the email address for this key:"
+    if [[ -f "${__bm__private_key_path}" ]]; then
+        for file in "${__bm__private_key_path}" "${__bm__public_key_path}"
+        do
+            [[ -f ${file} ]] && run "mv ${file} ${file}.backup.${date}"
+        done
+    fi
+    run.set-next show-output-on
+    run "ssh-keygen -t rsa -b 4096 -C ${email}"
+}
+
+----
+
+==== `ssh.load-keys`
+
+[source,bash]
+----
+ssh.load-keys () 
+{ 
+    local pattern="$1"
+    find "${__bm__ssh_folder}" -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \
+}
+
+----
+
 
 === Module `subshell`
 
@@ -10047,6 +10118,46 @@ bashmatic.detect-subshell ()
         export BASH_IN_SUBSHELL=1
     fi
     return ${BASH_IN_SUBSHELL}
+}
+
+----
+
+==== `bashmatic.run-if-subshell`
+
+[source,bash]
+----
+bashmatic.run-if-subshell () 
+{ 
+    local current_shell=$(ps -p $$ -o comm | grep -v COMM | sed 's/-//g')
+    set +e
+    if [[ ${current_shell} == "bash" ]]; then
+        local len="${#BASH_SOURCE[@]}"
+        local last_index=$((len - 1))
+        local last_script="${BASH_SOURCE[${last_index}]}"
+        [[ ${last_index} -lt 0 ]] && last_index=0
+        is-dbg && dbg "Detected BASH, last script name is [${last_script}], sourcing in [$0], is it sourced in? "
+        if [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
+            is-dbg && dbg "YES"
+            return 0
+        else
+            is-dbg && dbg "NO"
+            eval "$*"
+        fi
+    else
+        if [[ ${current_shell} == "zsh" ]]; then
+            is-dbg && dbg "Detected ZSH, ZSH_EVAL_CONTEXT = [${ZSH_EVAL_CONTEXT}], is it sourced in?"
+            if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :shfunc$ ]]; then
+                is-dbg && dbg "YES"
+                return 0
+            else
+                is-dbg && dbg "NO"
+                eval "$*"
+            fi
+        else
+            error "SHELL ${current_shell} is not supported."
+            return 1
+        fi
+    fi
 }
 
 ----
@@ -11449,7 +11560,7 @@ util.functions-matching ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    set | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+    eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '"
 }
 
 ----
@@ -12004,6 +12115,59 @@ yaml.expand-aliases ()
 
 
 === Module `zsh`
+
+==== `zsh.install`
+
+[source,bash]
+----
+zsh.install () 
+{ 
+    zsh.install.plugins
+}
+
+----
+
+==== `zsh.install.oh-my-zsh`
+
+[source,bash]
+----
+zsh.install.oh-my-zsh () 
+{ 
+    if [[ -d ${HOME}/.oh-my-zsh/ ]]; then
+        info "oh-my-zsh is already installed, updating..."
+        run "cd ${HOME}/.oh-my-zsh"
+        run "git pull || true"
+    else
+        info "Installing oh-my-zsh..."
+        run "sh -c \"\$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+    fi
+    if [[ -f ${HOME}/.zshrc ]]; then
+        run "sed -E -i '' 's/robbyrussell/agnoster/g' ${HOME}/.zshrc"
+        run "sed -E -i '' 's/^plugins=.*$/plugins=(git wd golang osx aws brew zsh-completions)/g' ${HOME}/.zshrc"
+    fi
+}
+
+----
+
+==== `zsh.install.plugins`
+
+[source,bash]
+----
+zsh.install.plugins () 
+{ 
+    zsh.install.oh-my-zsh
+    local dest="${ZSH_CUSTOM:=${HOME}/.oh-my-zsh/custom}/plugins"
+    run "mkdir -p ${dest}"
+    [[ -d ${dest}/zsh-completions ]] || { 
+        run "git clone https://github.com/zsh-users/zsh-completions ${dest}/zsh-completions"
+    }
+    [[ -d ${dest}/brew ]] || { 
+        run "mkdir ${dest}/brew"
+        run "curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/brew/brew.plugin.zsh > ${dest}/brew/brew.plugin.zsh"
+    }
+}
+
+----
 
 
 
