@@ -19,6 +19,7 @@
 * xref:#module-caller[caller]
 * xref:#module-color[color]
 * xref:#module-db[db]
+* xref:#module-db_cli[db_cli]
 * xref:#module-db_rails[db_rails]
 * xref:#module-db_top[db_top]
 * xref:#module-deploy[deploy]
@@ -808,10 +809,13 @@ bashmatic.auto-update ()
 bashmatic.auto-update-error () 
 { 
     bashmatic.is-developer || return
+    file.exists-and-newer-than ${__bashmatic_warning_notification} 10 || return
+    touch ${__bashmatic_warning_notification}
     if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
         cat "${__bashmatic_auto_update_help_file}" 1>&2
     else
-        box.black-on-yellow "${bldwht}Bashmatic Warning" "Local modifications have been detected in BASHMATIC_HOME=${BASHMATIC_HOME} " "Auto-update is therefore disabled until its git state is clean." | tee -a "${__bashmatic_auto_update_help_file}" 1>&2
+        output.constrain-screen-width 60
+        box.black-on-yellow "${bldwht}Warning! BASHMATIC_HOME contains local modifications." "Automatic update is disabled until git state is clean again." | tee -a "${__bashmatic_auto_update_help_file}" 1>&2
     fi
 }
 
@@ -887,10 +891,10 @@ bashmatic.functions-from ()
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
     cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
     export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
-    if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
+    if [[ -n $(echo ${pattern} | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
         pattern="${pattern}.sh"
     fi
-    ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | ${GrepCommand} '^(_|\.)' -v | sort | uniq | columnize "$@"
+    eval "${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern}" | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | eval "${GrepCommand} '^(_|\.)' -v" | sort | uniq | columnize "$@"
     cd - > /dev/null || return 1
 }
 
@@ -1016,7 +1020,7 @@ bashmatic.source ()
             .err "Can't source file ${file} — fils is invalid."
             return 1
         }
-        [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
+        [[ -n ${SOURCE_DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
         source "${file}"
     done
     return 0
@@ -1941,6 +1945,28 @@ db.actions.explain ()
 
 ----
 
+==== `db.actions.list-indexes`
+
+[source,bash]
+----
+db.actions.list-indexes () 
+{ 
+    db.psql.list-indexes "$@"
+}
+
+----
+
+==== `db.actions.list-tables`
+
+[source,bash]
+----
+db.actions.list-tables () 
+{ 
+    db.psql.list-tables "$@"
+}
+
+----
+
 ==== `db.actions.list-users`
 
 [source,bash]
@@ -1948,6 +1974,30 @@ db.actions.explain ()
 db.actions.list-users () 
 { 
     db.psql.list-users "$@"
+}
+
+----
+
+==== `db.actions.pga`
+
+[source,bash]
+----
+db.actions.pga () 
+{ 
+    local name="$1"
+    command -v python3 > /dev/null || brew.install.packages python3
+    command -v pg_activity > /dev/null || run "python3 -m pip install pg_activity psycopg2-binary"
+    command -v pg_activity > /dev/null || { 
+        local binary=$(find /usr/local/Cellar -type f -name 'pg_activity')
+        run "ln -nfs ${binary} /usr/local/bin/pg_activity"
+    }
+    command -v pg_activity > /dev/null || { 
+        error "Can't find pg_activity even after install + symlink".
+        return 1
+    }
+    local args=$(db.psql.args.config "${name}")
+    db.psql.args.config "${name}" > /dev/null
+    pg_activity ${args} --verbose-mode=1 --rds --no-app --no-database --no-user
 }
 
 ----
@@ -2231,7 +2281,8 @@ db.psql.connect ()
     [[ ${flag_quiet} -eq 0 ]] && { 
         printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n" 1>&2
         printf "${txtylw}$(which psql) ${args[*]}${clr}\n" 1>&2
-        hr 1>&2
+        ( hr
+        echo ) 1>&2
     }
     set +e
     is-verbose && echo
@@ -2335,6 +2386,32 @@ db.psql.db-settings ()
 
 ----
 
+==== `db.psql.list-indexes`
+
+[source,bash]
+----
+db.psql.list-indexes () 
+{ 
+    local dbname="$1"
+    shift
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\di' | awk 'BEGIN{FS="|"}{print $2}'
+}
+
+----
+
+==== `db.psql.list-tables`
+
+[source,bash]
+----
+db.psql.list-tables () 
+{ 
+    local dbname="$1"
+    shift
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\dt' | awk 'BEGIN{FS="|"}{print $2}'
+}
+
+----
+
 ==== `db.psql.list-users`
 
 [source,bash]
@@ -2343,7 +2420,7 @@ db.psql.list-users ()
 { 
     local dbname="$1"
     shift
-    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\du' | sedx 's/\|.*$//g'
+    db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\du' | awk 'BEGIN{FS="|"}{print $2}'
 }
 
 ----
@@ -2374,7 +2451,7 @@ db.psql.run ()
 { 
     local dbname="$1"
     shift
-    db.psql.connect "${dbname}" -X --pset border=3 -c "$*" -c '\\q'
+    db.psql.connect "${dbname}" -X --pset border=0 -c "$@"
 }
 
 ----
@@ -2448,6 +2525,161 @@ print-cli ()
 ----
 
 
+=== Module `db_cli`
+
+==== `db.cli-setup`
+
+[source,bash]
+----
+db.cli-setup () 
+{ 
+    color.enable
+    output.constrain-screen-width 110
+    if [[ $(screen.width) -lt 110 ]]; then
+        error "Please resize your terminal to have at last 110 columns."
+        return 1
+    fi
+}
+
+----
+
+==== `db.commands-list`
+
+[source,bash]
+----
+db.commands-list () 
+{ 
+    h5 "Available Commands"
+    printf "${bldgrn}"
+    array.to.bullet-list ${db_actions[@]} | sed 's/^/     /g'
+    echo
+    hr
+    echo
+    exit 0
+}
+
+----
+
+==== `db.connections-list`
+
+[source,bash]
+----
+db.connections-list () 
+{ 
+    h4 "Available Database Connections"
+    local -a connections
+    connections=($(db.actions.connections))
+    printf "${bldblu}"
+    array.to.bullet-list ${connections[@]} | sed 's/^/     /g'
+    echo
+    hr
+    echo
+    exit 0
+}
+
+----
+
+==== `db.examples`
+
+[source,bash]
+----
+db.examples () 
+{ 
+    h2 EXAMPLES "${txtblu}${italic}# List available connection names" "${bldylw}db --connections" " " "${txtblu}${italic}# List available sub-commands" "${bldylw}db --commands" " " "${txtblu}${italic}# Connect to the database named 'staging.core' using psql" "${bldylw}db connect staging.core" " " "${txtblu}${italic}# Show 'db top' for up to 3 databases at once:" "${bldylw}db top prod.core prod.replica1 prod.replica2" " " "${txtblu}${italic}# Use 'pg_activity' to show db top for one connection:" "${bldylw}db pga prod.core" " " "${txtblu}${italic}# Show all settings currently active on production DB in TOML/ini format:" "${txtblu}${italic}# and suppress the header with -q:" "${bldylw}db db-settings-toml prod.core -q" " " "${txtblu}${italic}# Run a query with the default output" "${bldylw}db run -q prod.core 'select relname,n_live_tup from pg_stat_user_tables order by n_live_tup desc'" " " "${txtblu}${italic}# Run the same query, but this time output in a CSV format" "${txtblu}${italic}# NOTE: majority of the flags are passed to the ${bldgrn}psql${clr}${txtblu}${italic} to format the output," "${txtblu}${italic}#       except -q is consumed by the script and turns off the script header." "${txtblu}${italic}#       While -P flag is equivalent to \pset in psql session." "${bldylw}export query='select relname,n_live_tup from pg_stat_user_tables order by n_live_tup desc'" "${bldylw}db run staging.core \"\${query} limit 10\" -q -AX -P pager=0 -P fieldsep=, -P footer=off" " " "${txtblu}${italic}NOTE: read more about psql formatting options via \pset and --pset flags:" "${txtblu}${italic}      ${undgrn}https://bit.ly/psql-pset"
+}
+
+----
+
+==== `db.main`
+
+[source,bash]
+----
+db.main () 
+{ 
+    [[ -z "$*" ]] && { 
+        db.usage
+        return
+    }
+    while :; do
+        case $1 in 
+            --help)
+                shift
+                db.usage
+                return
+            ;
+            --examples)
+                shift
+                db.examples
+                return
+            ;
+            --commands)
+                shift
+                db.commands-list
+                return
+            ;
+            --connections)
+                shift
+                db.connections-list
+                return
+            ;
+            -q | --quiet)
+                shift
+                export flag_quiet=1
+            ;
+            -v | --verbose)
+                shift
+                export flag_verbose=1
+            ;
+            --commands)
+                shift
+                h3 "Valid actions are:" "${db_actions[@]}"
+                exit 0
+            ;
+            [a-z]*)
+                [[ -n ${action} ]] && break
+                export action="$1"
+                shift
+                array.includes "${action}" "${db_actions[@]}" || { 
+                    error "Invalid action: ${action}"
+                    info "Valid actions are: $(array.to.csv "${db_actions[@]}")"
+                    return 1
+                }
+                export func="db.actions.${action}"
+            ;
+            --)
+                shift
+                break
+            ;
+            *)
+                [[ -z "$1" ]] && break
+                error "Unknown flag $1 —— if it's intended for psql, please add -- before it."
+                return 2
+            ;
+        esac
+    done
+    is.a-function "${func}" || { 
+        error "Invalid action ${action}!"
+        db.usage
+        return 3
+    }
+    ${func} "$@"
+}
+
+----
+
+==== `db.usage`
+
+[source,bash]
+----
+db.usage () 
+{ 
+    local config="~/$(basename $(dirname ${bashmatic_db_config}))/$(basename  ${bashmatic_db_config})"
+    usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "--commands" "List all sub-commands to the db script" "--connectons" "List all available database connections" "--examples" "Show script usage examples" "--help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
+}
+
+----
+
+
 === Module `db_rails`
 
 ==== `db.rails.schema.checksum`
@@ -2511,6 +2743,7 @@ db.top ()
         echo
         return
     fi
+    output.unconstrain-screen-width
     if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
         error "Your screen is too small for db.top."
         info "Minimum required screen dimensions are ${width_min} columns, ${height_min} rows."
@@ -4984,6 +5217,23 @@ net.fast-scan ()
 
 ----
 
+==== `net.is-host-port-protocol-open`
+
+[source,bash]
+----
+net.is-host-port-protocol-open () 
+{ 
+    local host="$1"
+    local port="$2"
+    local protocol="${3:-"tcp"}"
+    local command="nmap"
+    [[ ${protocol} =~ udp ]] && command="sudo nmap -sU"
+    command -v nmap > /dev/null || brew.install.package nmap 1>&2
+    ${command} -Pn -p ${port} ${host} 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
+}
+
+----
+
 ==== `net.local-net`
 
 [source,bash]
@@ -5002,7 +5252,7 @@ net.local-net ()
 net.local-subnet () 
 { 
     local subnet="$(ifconfig -a |
-    grep inet | grep broadcast | 
+    grep inet | grep broadcast |
     grep -v 'inet 169' |
     grep -v 'inet 127' |
     awk '{print $2}' |
@@ -6008,6 +6258,171 @@ ui.closer.ok: ()
 
 === Module `output-boxes`
 
+==== `arrow-right`
+
+[source,bash]
+----
+arrow-right () 
+{ 
+    .output.left-as-is "$@"
+}
+
+----
+
+==== `arrow.blk-on-blu`
+
+[source,bash]
+----
+arrow.blk-on-blu () 
+{ 
+    arrow-right "${bakblu}" "${txtblk}" "$@"
+}
+
+----
+
+==== `arrow.blk-on-cyn`
+
+[source,bash]
+----
+arrow.blk-on-cyn () 
+{ 
+    arrow-right "${bakcyn}" "${txtblk}" "$@"
+}
+
+----
+
+==== `arrow.blk-on-grn`
+
+[source,bash]
+----
+arrow.blk-on-grn () 
+{ 
+    arrow-right "${bakgrn}" "${txtblk}" "$@"
+}
+
+----
+
+==== `arrow.blk-on-pur`
+
+[source,bash]
+----
+arrow.blk-on-pur () 
+{ 
+    arrow-right "${bakpur}" "${txtblk}" "$@"
+}
+
+----
+
+==== `arrow.blk-on-red`
+
+[source,bash]
+----
+arrow.blk-on-red () 
+{ 
+    arrow-right "${bakred}" "${txtblk}" "$@"
+}
+
+----
+
+==== `arrow.blk-on-wht`
+
+[source,bash]
+----
+arrow.blk-on-wht () 
+{ 
+    arrow-right "${bakwht}" "${txtblk}" "$@"
+}
+
+----
+
+==== `arrow.blk-on-ylw`
+
+[source,bash]
+----
+arrow.blk-on-ylw () 
+{ 
+    arrow-right "${bakylw}" "${txtblk}" "$@"
+}
+
+----
+
+==== `arrow.wht-on-blk`
+
+[source,bash]
+----
+arrow.wht-on-blk () 
+{ 
+    arrow-right "${bakblk}" "${txtwht}" "$@"
+}
+
+----
+
+==== `arrow.wht-on-blu`
+
+[source,bash]
+----
+arrow.wht-on-blu () 
+{ 
+    arrow-right "${bakblu}" "${txtwht}" "$@"
+}
+
+----
+
+==== `arrow.wht-on-cyn`
+
+[source,bash]
+----
+arrow.wht-on-cyn () 
+{ 
+    arrow-right "${bakcyn}" "${txtwht}" "$@"
+}
+
+----
+
+==== `arrow.wht-on-grn`
+
+[source,bash]
+----
+arrow.wht-on-grn () 
+{ 
+    arrow-right "${bakgrn}" "${txtwht}" "$@"
+}
+
+----
+
+==== `arrow.wht-on-pur`
+
+[source,bash]
+----
+arrow.wht-on-pur () 
+{ 
+    arrow-right "${bakpur}" "${txtwht}" "$@"
+}
+
+----
+
+==== `arrow.wht-on-red`
+
+[source,bash]
+----
+arrow.wht-on-red () 
+{ 
+    arrow-right "${bakred}" "${txtwht}" "$@"
+}
+
+----
+
+==== `arrow.wht-on-ylw`
+
+[source,bash]
+----
+arrow.wht-on-ylw () 
+{ 
+    arrow-right "${bakylw}" "${txtwht}" "$@"
+}
+
+----
+
 ==== `attention`
 
 [source,bash]
@@ -6498,7 +6913,7 @@ h2.green ()
 ----
 h2bg () 
 { 
-    box.white-on-green "$@"
+    box.black-on-green "$@"
 }
 
 ----
@@ -6564,7 +6979,29 @@ h4.red ()
 ----
 h4bg () 
 { 
-    box.white-on-red "$@"
+    box.white-on-blue "$@"
+}
+
+----
+
+==== `h5`
+
+[source,bash]
+----
+h5 () 
+{ 
+    section.green "$@"
+}
+
+----
+
+==== `h5bg`
+
+[source,bash]
+----
+h5bg () 
+{ 
+    box.yellow-on-green "$@"
 }
 
 ----
@@ -7139,6 +7576,18 @@ shutdown ()
 
 ----
 
+==== `skipping`
+
+[source,bash]
+----
+skipping () 
+{ 
+    printf -- "\n${bldwht}${bakcyn}  « SKIPPING »  ${clr} ${bldwht} ✔  ${bldgrn}$*${clr}" 1>&2
+    printf -- "\n\n" 1>&2
+}
+
+----
+
 ==== `success`
 
 [source,bash]
@@ -7255,7 +7704,7 @@ path.append ()
             error "Argument ${__path} is not a valid directory, abort." 1>&2
             return 1
         }
-        path.dirs.uniq | grep -q -E "^${__path}$" && continue
+        path.dirs.uniq | grep -q -E "^${__path}\$" && continue
         new_path="${new_path}:${__path}"
     done
     echo "${new_path}"
@@ -7348,7 +7797,7 @@ path.prepend ()
             error "Argument ${__path} is not a valid directory, abort." 1>&2
             return 1
         }
-        local p="$(path.dirs.uniq | grep -v -E "^${__path}$" | tr '\n' ':')"
+        local p="$(path.dirs.uniq | grep -v -E "^${__path}\$" | tr '\n' ':')"
         new_path="${__path}:${p}"
     done
     echo "${new_path}"
@@ -7482,8 +7931,12 @@ pall ()
 pid.alive () 
 { 
     local pid="$1"
-    util.is-numeric || { 
-        error "First argument to pid.alive must be numeric."
+    [[ -z ${pid} ]] && { 
+        error "usage: pid.alive PID"
+        return 1
+    }
+    is.numeric ${pid} || { 
+        error "The argument to pid.alive() must be a numeric Process ID"
         return 1
     }
     [[ -n "${pid}" && -n $(ps -p "${pid}" | grep -v TTY) ]]
@@ -7508,11 +7961,11 @@ USAGE:
 "
         return 1
     }
-    util.is-numeric ${pid} || { 
+    is.numeric ${pid} || { 
         error "First argument to pid.sig must be numeric."
         return 1
     }
-    util.is-numeric ${signal} || sig.is-valid ${signal} || { 
+    is.numeric ${signal} || sig.is-valid ${signal} || { 
         error "First argument to pid.sig must be numeric."
         return 1
     }
@@ -7578,6 +8031,28 @@ pid.stop-and-kill ()
         error "PID ${pid} is miraculously still alive..." 1>&2
         return 1
     }
+}
+
+----
+
+==== `pid.stop-if-listening-on-port`
+
+[source,bash]
+----
+pid.stop-if-listening-on-port () 
+{ 
+    local port="$1"
+    local protocol="${2:-"tcp"}"
+    local -a pids
+    pids=($(lsof -i ${protocol}:${port} | grep -v PID | awk '{print $2}'))
+    local pids_string="${pids[*]}"
+    if [[ ${#pids[@]} -eq 0 ]]; then
+        return 0
+    else
+        info "Found ${#pids[@]} processes attached to port ${port}/${protocol}."
+        info "Process IDs attached to ${bldcyn}${port}/${protocol}: ${bldylw}${pids_string/ /, }"
+    fi
+    pids.stop "${pids[@]}"
 }
 
 ----
@@ -7745,13 +8220,35 @@ DESCRIPTION:
 
 USAGE:
   ${bldgrn}pids.stop <pattern>${clr}
+  ${bldgrn}pids.stop pid pid ... >${clr}
 
 EXAMPLES:
   ${bldgrn}pids.stop puma${clr}
 "
         return 0
     fi
-    pids.for-each "${1}" "pid.stop"
+    for pid in $@
+    do
+        if is.numeric ${pid}; then
+            pid.stop ${pid}
+        else
+            pids.for-each "${pid}" "pid.stop"
+        fi
+    done
+}
+
+----
+
+==== `pids.stop-by-listen-tcp-ports`
+
+[source,bash]
+----
+pids.stop-by-listen-tcp-ports () 
+{ 
+    for port in "$@"
+    do
+        pid.stop-if-listening-on-port ${port}
+    done
 }
 
 ----
@@ -8671,8 +9168,8 @@ run.ui.ask ()
         hr
         echo
     else
-        info "${bldred}(Great idea!) Abort! Abandon ship!  🛳   "
-        hr
+        info "${bldred}(Great idea!) Abort! Abandon ship!  🛳   " 1>&2
+        hr 1>&2
         echo
         eval "${func} 1"
     fi
@@ -9524,6 +10021,77 @@ shell-set.show-stack ()
 
 === Module `ssh`
 
+==== `ssh.key.copy`
+
+[source,bash]
+----
+ssh.key.copy () 
+{ 
+    cat ~/.ssh/id_rsa.pub | pbcopy
+}
+
+----
+
+==== `ssh.key.filenames`
+
+[source,bash]
+----
+ssh.key.filenames () 
+{ 
+    local name="$1"
+    is.not-blank "${name}" && name="_${name}"
+    export __bm__private_key_path="${HOME}/.ssh/id_rsa${name}"
+    export __bm__public_key_path="${HOME}/.ssh/id_rsa${name}.pub"
+    export __bm__ssh_folder="${HOME}/.ssh"
+}
+
+----
+
+==== `ssh.keys.generate`
+
+[source,bash]
+----
+ssh.keys.generate () 
+{ 
+    local name="$1"
+    local code=0
+    local email
+    local date="$( time.now.db )"
+    ssh.key.filenames "$@"
+    if is.a-non-empty-file "${__bm__private_key_path}"; then
+        warning "Private key already exists at the path:" "${bldred}${__bm__private_key_path}"
+        is.blank "${name}" && info "NOTE You can pass an optional name argument to this function"
+        info "so that the key file will be unique."
+        ( run.ui.ask "Replace the existing key (previous key will be backed up)?" )
+        code=$?
+        ((code)) && return 1
+    fi
+    is.a-function user.gitconfig.email && email="$(user.gitconfig.email)"
+    is.blank "${email}" && run.ui.ask-user-value email "Please enter the email address for this key:"
+    if [[ -f "${__bm__private_key_path}" ]]; then
+        for file in "${__bm__private_key_path}" "${__bm__public_key_path}"
+        do
+            [[ -f ${file} ]] && run "mv ${file} ${file}.backup.${date}"
+        done
+    fi
+    run.set-next show-output-on
+    run "ssh-keygen -t rsa -b 4096 -C ${email}"
+}
+
+----
+
+==== `ssh.load-keys`
+
+[source,bash]
+----
+ssh.load-keys () 
+{ 
+    local pattern="$1"
+    find "${__bm__ssh_folder}" -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \
+}
+
+----
+
 
 === Module `subshell`
 
@@ -9550,6 +10118,46 @@ bashmatic.detect-subshell ()
         export BASH_IN_SUBSHELL=1
     fi
     return ${BASH_IN_SUBSHELL}
+}
+
+----
+
+==== `bashmatic.run-if-subshell`
+
+[source,bash]
+----
+bashmatic.run-if-subshell () 
+{ 
+    local current_shell=$(ps -p $$ -o comm | grep -v COMM | sed 's/-//g')
+    set +e
+    if [[ ${current_shell} == "bash" ]]; then
+        local len="${#BASH_SOURCE[@]}"
+        local last_index=$((len - 1))
+        local last_script="${BASH_SOURCE[${last_index}]}"
+        [[ ${last_index} -lt 0 ]] && last_index=0
+        is-dbg && dbg "Detected BASH, last script name is [${last_script}], sourcing in [$0], is it sourced in? "
+        if [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
+            is-dbg && dbg "YES"
+            return 0
+        else
+            is-dbg && dbg "NO"
+            eval "$*"
+        fi
+    else
+        if [[ ${current_shell} == "zsh" ]]; then
+            is-dbg && dbg "Detected ZSH, ZSH_EVAL_CONTEXT = [${ZSH_EVAL_CONTEXT}], is it sourced in?"
+            if [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :shfunc$ ]]; then
+                is-dbg && dbg "YES"
+                return 0
+            else
+                is-dbg && dbg "NO"
+                eval "$*"
+            fi
+        else
+            error "SHELL ${current_shell} is not supported."
+            return 1
+        fi
+    fi
 }
 
 ----
@@ -10131,18 +10739,38 @@ time.with-duration ()
 
 ----
 
+==== `time.with-duration.clear`
+
+[source,bash]
+----
+time.with-duration.clear () 
+{ 
+    local name="$1"
+    eval "unset __bashmatic_with_duration_ms${name}"
+}
+
+----
+
 ==== `time.with-duration.end`
 
 [source,bash]
 ----
 time.with-duration.end () 
 { 
-    [[ -z ${__bashmatic_with_duration_ms} ]] && return 1
+    local name="$1"
+    shift
+    [[ -z ${name} ]] && name="_default"
+    local var="__bashmatic_with_duration_ms${name}"
+    local started=$(.subst ${var})
+    [[ -z ${started} ]] && started=${!var}
+    [[ -z ${started} ]] && { 
+        error "No start time recorded for namespace ${name}."
+        return 1
+    }
     local finished="$(millis)"
-    local duration=$(( finished -  __bashmatic_with_duration_ms ))
+    local duration=$(( finished - started ))
     duration="$(time.duration.millis-to-secs "${duration}")"
-    printf -- "$*%s" "${duration} sec"
-    unset __bashmatic_with_duration_ms
+    printf -- "$* %s\n" "${duration} sec"
 }
 
 ----
@@ -10153,7 +10781,9 @@ time.with-duration.end ()
 ----
 time.with-duration.start () 
 { 
-    export __bashmatic_with_duration_ms=$(millis)
+    local name="$1"
+    [[ -z ${name} ]] && name="_default"
+    eval "export __bashmatic_with_duration_ms${name}=$(millis)"
 }
 
 ----
@@ -10930,7 +11560,7 @@ util.functions-matching ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    set | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '
+    eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '"
 }
 
 ----
@@ -11485,6 +12115,59 @@ yaml.expand-aliases ()
 
 
 === Module `zsh`
+
+==== `zsh.install`
+
+[source,bash]
+----
+zsh.install () 
+{ 
+    zsh.install.plugins
+}
+
+----
+
+==== `zsh.install.oh-my-zsh`
+
+[source,bash]
+----
+zsh.install.oh-my-zsh () 
+{ 
+    if [[ -d ${HOME}/.oh-my-zsh/ ]]; then
+        info "oh-my-zsh is already installed, updating..."
+        run "cd ${HOME}/.oh-my-zsh"
+        run "git pull || true"
+    else
+        info "Installing oh-my-zsh..."
+        run "sh -c \"\$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+    fi
+    if [[ -f ${HOME}/.zshrc ]]; then
+        run "sed -E -i '' 's/robbyrussell/agnoster/g' ${HOME}/.zshrc"
+        run "sed -E -i '' 's/^plugins=.*$/plugins=(git wd golang osx aws brew zsh-completions)/g' ${HOME}/.zshrc"
+    fi
+}
+
+----
+
+==== `zsh.install.plugins`
+
+[source,bash]
+----
+zsh.install.plugins () 
+{ 
+    zsh.install.oh-my-zsh
+    local dest="${ZSH_CUSTOM:=${HOME}/.oh-my-zsh/custom}/plugins"
+    run "mkdir -p ${dest}"
+    [[ -d ${dest}/zsh-completions ]] || { 
+        run "git clone https://github.com/zsh-users/zsh-completions ${dest}/zsh-completions"
+    }
+    [[ -d ${dest}/brew ]] || { 
+        run "mkdir ${dest}/brew"
+        run "curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/brew/brew.plugin.zsh > ${dest}/brew/brew.plugin.zsh"
+    }
+}
+
+----
 
 
 

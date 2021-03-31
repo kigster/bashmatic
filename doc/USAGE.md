@@ -3,6 +3,39 @@
 ---
 
 
+## File `lib/pids.sh`
+
+
+
+* [pids.stop-by-listen-tcp-ports()](#pidsstop-by-listen-tcp-ports)
+* [pid.stop-if-listening-on-port()](#pidstop-if-listening-on-port)
+
+### `pids.stop-by-listen-tcp-ports()`
+
+Finds any PID listening on one of the provided ports and stop thems.
+
+#### Example
+
+```bash
+pids.stop-by-listen-tcp-ports 4232 9578 "${PORT}"
+```
+
+### `pid.stop-if-listening-on-port()`
+
+Finds any PID listening the one port and an optional protocol (tcp/udp)
+
+#### Example
+
+```bash
+pid.stop-if-listening-on-port 3000 tcp
+pid.stop-if-listening-on-port 8126 udp
+```
+
+
+
+---
+
+
 ## File `lib/array.sh`
 
 
@@ -353,6 +386,7 @@ installed
 * [db.psql.db-settings()](#dbpsqldb-settings)
 * [db.psql.connect.db-settings-pretty()](#dbpsqlconnectdb-settings-pretty)
 * [db.psql.connect.db-settings-toml()](#dbpsqlconnectdb-settings-toml)
+* [db.actions.pga()](#dbactionspga)
 
 ### `db.config.parse()`
 
@@ -441,6 +475,10 @@ db.psql.connect.db-settings-toml primary > primary.ini
 #### Arguments
 
 * @arg1 dbname database entry name in ~/.db/database.yml
+
+### `db.actions.pga()`
+
+Installs (if needed) pg_activity and starts it up against the connection
 
 
 
@@ -531,6 +569,32 @@ fr
 ```bash
 In this example we skip installation if `gem` exists and in the PATH.
 Oherwise we install the package and retry, and return if not found
+```
+
+
+
+---
+
+
+## File `lib/time.sh`
+
+
+
+* [time.with-duration.start()](#timewith-durationstart)
+
+### `time.with-duration.start()`
+
+Starts a time for a given name space
+
+#### Example
+
+```bash
+time.with-duration.start moofie
+# ... time passes
+time.with-duration.end   moofie 'Moofie is now this old: '
+# ... time passes
+time.with-duration.end   moofie 'Moofie is now very old: '
+time.with-duration.clear moofie
 ```
 
 
@@ -674,6 +738,28 @@ Grab the version from `postgres` binary in the PATH and remove fractional sub-ve
 ### `dir.short-home()`
 
 Replaces the first part of the directory that matches ${HOME} with '~/'
+
+
+
+---
+
+
+## File `lib/net.sh`
+
+
+
+* [net.is-host-port-protocol-open()](#netis-host-port-protocol-open)
+
+### `net.is-host-port-protocol-open()`
+
+Uses pingless connection to check if a remote port is open
+Requires sudo for UDP
+
+#### Arguments
+
+* @arg1 host
+* @arg2 port
+* @arg3 [optional] protocol (defaults to "tcp", supports also "udp")
 
 
 

@@ -164,6 +164,8 @@ db.top() {
     return
   fi
 
+  output.unconstrain-screen-width
+
   if [[ ${width} -lt ${width_min} || ${height} -lt ${height_min} ]]; then
     error "Your screen is too small for db.top."
     info "Minimum required screen dimensions are ${width_min} columns, ${height_min} rows."

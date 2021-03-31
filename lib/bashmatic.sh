@@ -3,15 +3,17 @@
 #
 # Public Functions
 
-# True if .envrc.local file is present. We take it as a sign 
+# True if .envrc.local file is present. We take it as a sign
 # you may be developing bashmatic.
+
+__bashmatic_warning_notification=${HOME}/.bashmatic/.developer-warned
 
 bashmatic.cd-into() {
  [[ -d ${BASHMATIC_HOME} ]] || return 1
  cd "${BASHMATIC_HOME}"
 }
 
-# @descripion True if .envrc.local file is present. We take it as a sign 
+# @descripion True if .envrc.local file is present. We take it as a sign
 #             you may be developing bashmatic.
 bashmatic.is-developer() {
   [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
@@ -36,7 +38,7 @@ bashmatic.load-at-login() {
       echo '[[ -f ${BASHMATIC_HOME}/init.sh ]] && source ${BASHMATIC_HOME}/init.sh'
       echo 'export PATH="${PATH}:${BASHMATIC_HOME}/bin"'
     } >>"${file}"
-    
+
     source "${file}"
   }
 }
@@ -51,17 +53,17 @@ bashmatic.functions-from() {
 
   export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
 
-  if [[ ! ${pattern} =~ * && ! ${pattern} =~ .sh$ ]]; then
+  if [[ -n $(echo ${pattern} | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
     pattern="${pattern}.sh"
   fi
 
-  ${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern} |
+  eval "${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern}" |
     sedx 's/^(lib\/)?.*\.sh://g' |
     sedx 's/^function //g' |
     sedx 's/\(\) *\{.*$//g' |
     tr -d '()' |
     sedx '/^ *$/d' |
-    ${GrepCommand} '^(_|\.)' -v |
+    eval  "${GrepCommand} '^(_|\.)' -v" |
     sort |
     uniq |
     columnize "$@"
@@ -108,7 +110,7 @@ bashmatic.source() {
       .err "Can't source file ${file} — fils is invalid."
       return 1
     }
-    [[ -n ${DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
+    [[ -n ${SOURCE_DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
     source "${file}"
   done
   return 0
@@ -183,7 +185,7 @@ bashmatic.setup() {
   bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
 
-  output.unconstrain-screen-width 
+  output.unconstrain-screen-width
 
   [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
 
@@ -215,14 +217,17 @@ function bashmatic.auto-update() {
 
 function bashmatic.auto-update-error() {
   bashmatic.is-developer || return
+  file.exists-and-newer-than ${__bashmatic_warning_notification} 10 || return 
+  touch ${__bashmatic_warning_notification}
+
   if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
     cat "${__bashmatic_auto_update_help_file}" >&2
   else
+    output.constrain-screen-width 60
     box.black-on-yellow \
-      "${bldwht}Bashmatic Warning" \
-      "Local modifications have been detected in BASHMATIC_HOME=${BASHMATIC_HOME} " \
-      "Auto-update is therefore disabled until its git state is clean." |
-      tee -a "${__bashmatic_auto_update_help_file}" >&2      
+        "${bldwht}Warning! BASHMATIC_HOME contains local modifications." \
+        "Automatic update is disabled until git state is clean again." |
+        tee -a "${__bashmatic_auto_update_help_file}" >&2
   fi
 }
 

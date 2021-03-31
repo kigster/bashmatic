@@ -60,7 +60,8 @@ function .bashmatic.core() {
   # shellcheck disable=SC2155
   export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | head -1)"
   [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH="${PATH}:${BASHMATIC_HOME}/bin"
-  export GrepCommand="$(which grep) -E -e "
+  unalias grep 2>/dev/null || true
+  export GrepCommand="$(command -v grep) -E -e "
   export True=1
   export False=0
   export LoadedShown=${LoadedShown:-1}

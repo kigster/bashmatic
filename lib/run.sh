@@ -90,8 +90,8 @@ run.ui.ask() {
     hr
     echo
   else
-    info "${bldred}(Great idea!) Abort! Abandon ship!  🛳   "
-    hr
+    info "${bldred}(Great idea!) Abort! Abandon ship!  🛳   " >&2
+    hr >&2
     echo
     eval "${func} 1"
   fi

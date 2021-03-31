@@ -2,11 +2,11 @@
 
 net.local-net() {
   ifconfig -a | grep inet | grep broadcast | awk '{print $2}' | awk 'BEGIN{FS="."}{printf "%d.%d.%d.%s", $1, $2, $3, "0/24"}'
-} 
+}
 
 net.local-subnet() {
   local subnet="$(ifconfig -a |
-    grep inet | grep broadcast | 
+    grep inet | grep broadcast |
     grep -v 'inet 169' |
     grep -v 'inet 127' |
     awk '{print $2}' |
@@ -37,7 +37,6 @@ net.fast-scan() {
 # @arg3 [optional] protocol (defaults to "tcp", supports also "udp")
 #
 # @return 0 if connection is successful, 1 otherwise
-# 
 function net.is-host-port-protocol-open() {
   local host="$1"
   local port="$2"

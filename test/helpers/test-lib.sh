@@ -11,9 +11,9 @@
 export BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
 export BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
-if [[ -n $CI ]] ; then
+output.constrain-screen-width 70
 
-  output.constrain-screen-width 60
+if [[ -n $CI ]] ; then
   export __prefix="⮀ "
 
   function test-group() {
@@ -28,7 +28,7 @@ if [[ -n $CI ]] ; then
     echo "${__prefix}❌  Some tests failed in ${1}"
     hr; echo
   }
-  
+
 else
 
   function test-group() {
@@ -65,7 +65,7 @@ function specs.init() {
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
   dbg "BatsPrefix is ${BatsPrefix}"
-  
+
   export True=1
   export False=0
   export GrepCommand="$(which grep) -E -e "
@@ -84,13 +84,10 @@ function specs.init() {
   export Bashmatic__BatsInstallPrefixes=($(util.functions-matching.diff specs.install-bats.))
   export Bashmatic__BatsInstallMethods="$(array.to.csv "${Bashmatic__BatsInstallPrefixes[@]}")"
 
-  if [[ -n ${CI} ]]; then
-    .output.set-indent 1
-    #color.disable
-  else
-    .output.set-indent 1
-    color.enable
-  fi
+  .output.set-indent 1
+  color.enable
+
+  return 0
 }
 
 function specs.find-project-root() {
@@ -222,12 +219,12 @@ function specs.run-many-files() {
   done
 
   duration="$(time.with-duration.end specs "in " | sedx 's/\s+/ /g')"
-  
+
   if [[ ${Specs__FailedFileCount} -gt 0 ]]; then
     error "Total of ${Specs__FailedFileCount} out of ${Specs__FileCount} Test Suites had errors in ${bldylw}${duration}."
   else
     success "All ${Specs__FileCount} Test Suites had passed ${bldylw}${duration}."
-  fi 
+  fi
 
   return "${result}"
 }
@@ -351,7 +348,7 @@ function specs.run() {
   dbgf specs.install sources
   dbgf specs.validate-bats
   dbgf specs.add-all-files # Populates all_test_files[@] if not already populated
-  
+
   [[ -z ${test_files[*]} ]] && test_files=("${all_test_files[@]}")
 
   [[ ${#test_files} -gt 0 ]] && h3bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"

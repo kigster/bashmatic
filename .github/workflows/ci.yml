@@ -8,6 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13.1-alpine
+        env:
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a health check
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
     - uses: actions/checkout@v2
     - name: Run Bats Test Suite
@@ -25,7 +36,7 @@ jobs:
         cp -v "shellcheck-${scversion}/shellcheck"  ${HOME}/bin
         ${HOME}/bin/shellcheck --version
     - name: Run ShellCheck
-      run: 
+      run:
         ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) || true
         echo; echo; echo
         ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) |  egrep -c '^In ' || true

@@ -8,7 +8,7 @@ source lib/util.sh
 source lib/user.sh
 
 @test "time.with-duration()" {
- time.with-duration.start 
+ time.with-duration.start
  sleep 0.1
  local duration=$(time.with-duration.end)
  [[ "${duration}" =~ ^0\.1[0-9][0-9]\ sec$ ]]
