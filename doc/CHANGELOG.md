@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.11.0...HEAD)
+
+**Merged pull requests:**
+
+- Add unit tests for the db library [\#54](https://github.com/kigster/bashmatic/pull/54) ([kigster](https://github.com/kigster))
+
 ## [v1.11.0](https://github.com/kigster/bashmatic/tree/v1.11.0) (2021-03-19)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.10.0...v1.11.0)
