@@ -89,7 +89,7 @@ export DevSetup__Version="0.4.0"
     }
   done
 
-  source "${script}"
+  [[ -f ${script} ]] && source "${script}"
 }
 
 .dev-setup.action.fonts() {
