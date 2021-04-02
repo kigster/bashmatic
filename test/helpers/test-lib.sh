@@ -8,24 +8,27 @@
 # IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
 # shellcheck disable=2046
 
-export BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
-export BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
+readonly BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
+# readonly BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
-output.constrain-screen-width 70
+export DEFALT_MIN_WIDTH=92
+export UI_WIDTH=${UI_WIDTH:-${DEFALT_MIN_WIDTH}}
+
+output.constrain-screen-width "${UI_WIDTH}"
 
 if [[ -n $CI ]] ; then
-  export __prefix="⮀ "
+  prefix="⮀ "
 
   function test-group() {
-    echo "${__prefix}📦  $*"
+    echo "${prefix}📦  $*"
     hr; echo
   }
   function test-group-ok() {
-    echo "${__prefix}✅  Tests passed in ${1}"
+    echo "${prefix}✅  Tests passed in ${1}"
     hr; echo
   }
   function test-group-failed() {
-    echo "${__prefix}❌  Some tests failed in ${1}"
+    echo "${prefix}❌  Some tests failed in ${1}"
     hr; echo
   }
 
@@ -43,7 +46,6 @@ else
     status.failed "Some tests failed in ${1}"
     echo
   }
-
 fi
 
 # @description Initialize specs
@@ -51,7 +53,7 @@ function specs.init() {
   dbg "Script Source: ${BASH_SOURCE[0]}"
 
   export TERM=${TERM:-xterm-256color}
-  export MIN_WIDTH=${MIN_WIDTH:-"90"}
+  export MIN_WIDTH=${MIN_WIDTH:-"92"}
   output.constrain-screen-width "${MIN_WIDTH}"
 
   export ProjectRoot="$(specs.find-project-root)"
@@ -81,7 +83,7 @@ function specs.init() {
 
   export Bashmatic__BatsInstallMethod="sources"
   declare -a Bashmatic__BatsInstallPrefixes
-  export Bashmatic__BatsInstallPrefixes=($(util.functions-matching.diff specs.install-bats.))
+  export Bashmatic__BatsInstallPrefixes=($(util.functions-matching.diff specs.install.bats.))
   export Bashmatic__BatsInstallMethods="$(array.to.csv "${Bashmatic__BatsInstallPrefixes[@]}")"
 
   .output.set-indent 1
@@ -111,12 +113,12 @@ function specs.find-project-root() {
 
 #------------------------------------------------------------------
 # Bats Installation
-function specs.install-bats.brew() {
+function specs.install.bats.brew() {
   run "brew tap kaos/shell"
   brew.install.packages bats-core bats-assert bats-file
 }
 
-function specs.install-bats.sources() {
+function specs.install.bats.sources() {
   [[ -x ${BatsPrefix}/bin/bats ]] && return 0
 
   run.set-next show-output-off abort-on-error
@@ -145,7 +147,7 @@ function specs.install-bats.sources() {
 
 function specs.install() {
   local install_type="${1:-"${Bashmatic__BatsIntallMethod}"}"
-  local func="specs.install-bats.${install_type}"
+  local func="specs.install.bats.${install_type}"
 
   util.is-a-function "${func}" || {
     error "Install method ${install_type} is unsupported." \
@@ -174,7 +176,7 @@ function specs.validate-bats() {
 
 #------------------------------------------------------------------
 # Spec Runner
-function specs.run-one-file() {
+function specs.run.one-file() {
   local file="$1"
 
   is.not-blank "${file}" || return 1
@@ -183,10 +185,10 @@ function specs.run-one-file() {
   test-group "${file}"
   local start=$(millis)
   local bats=$(specs.find-bats)
-  export Specs__FileCount=$((Specs__FileCount + 1))
-  [[ ${Specs__BatsFlags} == "-t" ]] && printf "${txtgrn}"
+  export flag_file_count=$((flag_file_count + 1))
+  [[ ${flag_bats_args} == "-t" ]] && printf "${txtgrn}"
 
-  ${bats} "${Specs__BatsFlags}" "${file}"
+  ${bats} "${flag_bats_args}" "${file}"
   local exitcode=$?
   local end=$(millis)
   local ms=$(( end - start ))
@@ -196,23 +198,23 @@ function specs.run-one-file() {
     return 0
   else
     test-group-failed  "${ms}ms"
-    export Specs__FailedFileCount=$((Specs__FailedFileCount + 1))
+    export flag_file_count_failed=$((flag_file_count_failed + 1))
     return "${exitcode}"
   fi
 }
 
-function specs.run-many-files() {
+function specs.run.many-files() {
   local result=0
   time.with-duration.start specs
 
   for file in "${test_files[@]}"; do
-    specs.run-one-file "${file}"
+    specs.run.one-file "${file}"
     local code=$?
 
     ((code)) && {
       result="${code}"
       error "File ${file} had failing test(s)!"
-      ((Specs__ContinueAfterFailure)) && continue
+      ((flag_keep_going_on_error)) && continue
       info "To run all test files regardless of error status, pass -c | --continue flag.\n"
       exit "${code}"
     }
@@ -220,13 +222,38 @@ function specs.run-many-files() {
 
   duration="$(time.with-duration.end specs "in " | sedx 's/\s+/ /g')"
 
-  if [[ ${Specs__FailedFileCount} -gt 0 ]]; then
-    error "Total of ${Specs__FailedFileCount} out of ${Specs__FileCount} Test Suites had errors in ${bldylw}${duration}."
+  if [[ ${flag_file_count_failed} -gt 0 ]]; then
+    error "Total of ${flag_file_count_failed} out of ${flag_file_count} Test Suites had errors in ${bldylw}${duration}."
   else
-    success "All ${Specs__FileCount} Test Suites had passed ${bldylw}${duration}."
+    success "All ${flag_file_count} Test Suites had passed ${bldylw}${duration}."
   fi
 
   return "${result}"
+}
+
+function specs.utils.cpu-cores() {
+   command -v nproc >/dev/null || {
+     printf "%d" 4
+     return 
+   }
+
+   nproc --all | tr -d '\n'
+}
+
+function specs.run.all-in-parallel() {
+  specs.init
+  command -v parallel >/dev/null || package.install parallel
+  command -v parallel >/dev/null || {
+    warning "Can't find command [parallel] even after an attempted install."
+    info "Swithcing to serial test mode."
+    
+    dbgf specs.run.many-files "${test_files[@]}"
+    return $?
+  }
+
+  local cpu_cores=$(specs.utils.cpu-cores)
+  h5bg "Running Bats with ${cpu_cores} parallel processes..."
+  .bats-prefix/bin/bats --pretty -T -j "${cpu_cores}" "${test_files[@]}"
 }
 
 #------------------------------------------------------------------
@@ -240,7 +267,7 @@ function specs.add-all-files() {
 }
 
 # @description Based on a shortname attempt to determine the actual test file names
-function specs.determine-test-filename() {
+function specs.utils.get-filename() {
   local file="$1"
   for test_file in "${file}" "test/${file}" "test/${file}.bats" "test/${file}_test.bats"; do
     is.a-non-empty-file "${test_file}" && {
@@ -251,12 +278,13 @@ function specs.determine-test-filename() {
   return 1
 }
 
-function specs.parse-opts() {
-  export Specs__FileCount=0
-  export Specs__FailedFileCount=0
-  export Specs__ContinueAfterFailure=0
-  export Specs__BatsFlags="-p"
+export flag_file_count=0
+export flag_file_count_failed=0
+export flag_keep_going_on_error=0
+export flag_bats_args="-p"
+export flag_parallel_tests=0
 
+function specs.parse-opts() {
   trap 'printf "\n\n\n${bldred}Ctrl-C detected, aborting tests.${clr}\n\n"; exit 1' SIGINT
 
   # Parse additional flags
@@ -269,11 +297,15 @@ function specs.parse-opts() {
       ;;
     -c | --continue)
       shift
-      export Specs__ContinueAfterFailure=1
+      export flag_keep_going_on_error=1
+      ;;
+    -p | --parallel)
+      shift
+      export flag_parallel_tests=1
       ;;
     -t | --taps)
       shift
-      export Specs__BatsFlags="-t"
+      export flag_bats_args="-t"
       ;;
     -i | --install)
       shift
@@ -283,7 +315,7 @@ function specs.parse-opts() {
         error "--install requires an argument"
         exit 1
       }
-      local func="specs.install-bats.${method}"
+      local func="specs.install.bats.${method}"
       is.a-function "${func}" || {
         # shellcheck disable=SC2086
         error "Invalid installation method — ${method}. Supported methods: " "${Bashmatic__BatsInstallMethods}"
@@ -303,7 +335,7 @@ function specs.parse-opts() {
       ;;
     *) # Default case: If no more options then break out of the loop.
       is.blank "$1" && break
-      local file="$(specs.determine-test-filename "$1")"
+      local file="$(specs.utils.get-filename "$1")"
       unless "${file}" is.a-non-empty-file && {
         error "Can't determine proper test path for argument $1, got file ${file}"
         exit 2
@@ -315,19 +347,38 @@ function specs.parse-opts() {
   done
 }
 
-function specs.usage() {
+function specs.header() {
+  hr
   echo
-  printf "USAGE\n    ${bldgrn}specs [ test1 test2 ... ]${clr}\n\n"
-  printf "    ${txtblu}where test1 can be a full filename, or a partial, eg.\n"
-  printf "    ${txtblu}'test/util_tests.bats' or just 'util'.\n\n"
+  printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
+  printf "\e[48;5;11m\e[48;30;209m  BASHMATIC TEST RUNNER, VERSION ${black}$(bashmatic.version)                                                   ${clr}\n"
+  printf "\e[48;5;11m\e[48;30;209m  © 2016-2021 Konstantin Gredeskoul, All Rights Reserved,  MIT License.                   ${clr}\n"
+  printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
+  echo
+}
 
-  printf "DESCRIPTION\n    ${txtblu}Run BASH tests using Bats framework\n"
-  printf "    ${txtblu}Use to run the Bats Test Suite.\n"
-  printf "    ${txtblu}Auto-installs Bats if not already there.\n\n"
+function specs.usage() {
+  specs.header
 
-  printf "OPTIONS\n"
+  printf "${bldylw}USAGE\n    ${bldgrn}bin/specs [ options ] [ test1 test2 ... ]${clr}\n\n"
+  printf "    ${txtcyn}where test1 can be a full filename, or a partial, eg. ${txtcyn}'test/util_tests.bats'\n"
+  printf "    or just 'util'. Multiple arguments are also allowed.\n\n"
+
+  printf "${bldylw}DESCRIPTION\n    ${txtcyn}This script should be run from the project's root.\n"
+  printf "    It installs any dependencies it relies on (such as the Bats Testing Framework)\n"
+  printf "    seamlessly, and then runs the tests, typically in the test folder.\n"
+  printf "    \n"
+  printf "    NOTE: this script can be run not just inside Bashmatic Repo. It works\n"
+  printf "          very well when invoked from another project, as long as the bin directory\n"
+  printf "          is in the PATH. So make sure to set somewhere:\n" 
+  printf "          ${bldgrn}export PATH=\${BASHMATIC_HOME}/bin:\${PATH}\n\n"
+  hr
+  echo
+  printf "${bldylw}OPTIONS\n${txtpur}"
+  printf "    -p | --parallel         Runs all tests in parallel using ${bldylw}parallel${txtpur} dependency.\n"
+  printf "                            This may speed up your test suite by 2-3x\n\n"
   printf "    -i | --install METHOD   Install Bats using the provided methjod.\n"
-  printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtblu}\n"
+  printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtpur}\n\n"
   printf "    -c | --continue         Continue after a failing test file.\n"
   printf "    -t | --taps             Use taps bats formatter, instead of pretty.\n"
   printf "    -h | --help             Show help message\n\n"
@@ -351,10 +402,15 @@ function specs.run() {
 
   [[ -z ${test_files[*]} ]] && test_files=("${all_test_files[@]}")
 
-  [[ ${#test_files} -gt 0 ]] && h3bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
+  output.constrain-screen-width "${UI_WIDTH}"
 
-  dbgf specs.run-many-files "${test_files[@]}"
+  specs.header
+  [[ ${#test_files} -gt 0 ]] && h4bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
+
+  if [[ ${flag_parallel_tests}0 -eq 0 ]] ;  then 
+    dbgf specs.run.many-files "${test_files[@]}"
+  else
+    dbgf specs.run.all-in-parallel "${test_files[@]}"
+  fi
 }
-
-
 

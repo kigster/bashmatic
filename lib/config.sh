@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # vim :ft=bash
+#
+# @description THIS FILE IS STILL UNDER CONSTRUCTION.
+#
+# TODO: fix all the issues 
 
-export __config_format=${__config_format:-'YAML'}
-export __config_file=${__config_file:-"${TOOLS_PATH}/config.yml"}
 
-# Format
+#  @description Set default format — either YAML or JSON
 function config.set-format() {
   local format="${1^^}"
   if [[ "${format}" == "YAML" || "${format}" == "JSON" ]]; then
@@ -19,7 +21,7 @@ function config.get-format() {
   echo ${__config_format}
 }
 
-# File
+#  @description Set the default config file
 function config.set-file() {
   [[ -f $1 ]] || {
     error "File $1 does not exist in $(pwd -P). Can not change config."
@@ -82,7 +84,7 @@ function config.dig.pretty() {
 
   local format=$(config.get-format)
   config.set-format JSON
-  command -v jq>/dev/null || brew.install.packages jq
+  command -v jq>/dev/null || package.install.packages jq
   config.dig "${keys[@]}" | jq "${args[@]}"
   config.set-format ${format}
   return 0

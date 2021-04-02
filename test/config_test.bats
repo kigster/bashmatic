@@ -1,14 +1,23 @@
 #!/usr/bin/env bats
 
 load "test_helper"
-require 'lib/config.sh'
+load "lib/config.sh"
+load "lib/output.sh"
 
-set -e
+@setup() {
+  set -e
+  config.set-file "${TOOLS_PATH}/test/fixtures/config.yml"
+}
+
+@test "TOOLS_PATH" {
+  [[ -z ${TOOLS_PATH} ]] &&
+  [[ -d ${TOOLS_PATH} ]] && 
+  [[ -f ${TOOLS_PATH}/bin/setup ]] && 
+  [[ -f ${TOOLS_PATH}/bin/encrypt ]]
+}
 
 @test "set/get file" {
-  dev-tools.config.set-file "${TOOLS_PATH}/test/fixtures/config.yml"
-
-  [[ $(dev-tools.config.get-file) == "${TOOLS_PATH}/test/fixtures/config.yml" ]]
+  [ $(config.get-file) == "${TOOLS_PATH}/test/fixtures/config.yml" ]
 }
 
 

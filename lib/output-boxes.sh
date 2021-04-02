@@ -210,8 +210,16 @@ h.orange-center() {
   center "${white_on_orange}" "$@"
 }
 
-h.salmon-center() {
+h.salmon-center() { 
   center "${white_on_salmon}" "$@"
+}
+
+h.yellow-center-black() {
+  center "${black_on_yellow}" "$@"
+}
+
+h.salmon-center-black() {
+  center "${black_on_salmon}" "$@"
 }
 
 # ———————————————————

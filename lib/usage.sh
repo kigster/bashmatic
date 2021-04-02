@@ -98,7 +98,7 @@ function .usage.flags() {
 }
 
 function .usage-cache-file() {
-  local script_name="${BASH_SOURCE[-1]}"
+  local script_name="${BASH_SOURCE[0]}"
   local script_dir="$(dirname ${script_name})"
   local script_base="$(basename ${script_name})"
   local script_usage_cache="${script_dir}/.${script_base}"
