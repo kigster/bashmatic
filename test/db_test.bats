@@ -24,8 +24,9 @@ setup() {
   export bashmatic_db_config="${BATS_TMPDIR}/${config}"
   [[ -f ${bashmatic_db_config} ]] || cp -vn "conf/${config}" ${bashmatic_db_config}
   db.config.set-file ${bashmatic_db_config}
+  info "Setting the temp db config to: ${bldylw}${bashmatic_db_config}"
+  touch ${HOME}/boo
 }
-
 
 @test "db.config.get_file" {
   setup

@@ -65,8 +65,12 @@ function color.enable() {
     export default_bg='\e[49m'
     export default_fg='\e[39m'
 
+    export black_on_orange="\e[48;5;208m\e[48;30;208m"
+    export black_on_yellow="\e[48;5;11m\e[48;30;209m"
+
     export white_on_orange="\e[48;5;208m"
     export white_on_yellow="\e[48;5;214m"
+
     export white_on_red="\e[48;5;9m"
     export white_on_pink="\e[48;5;199m"
     export white_on_salmon="\e[48;5;196m"

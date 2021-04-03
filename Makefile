@@ -103,20 +103,13 @@ test: 				## Run fully automated test suite based on Bats
 				@$(BASHMATIC_HOME)/bin/specs
 
 test-parallel: 			## Run the fully auto-g mated test suite
-				@command -v parallel >/dev/null || $(BASHMATIC_HOME)/bin/bashmatic package.install parallel
-				@/usr/bin/env bash -c "\
-				  	set +e; \
-				  	source $(BASHMATIC_HOME)/init.sh ; \
-				  	source test/helpers/test-lib.sh ; \
- 					specs.init ; \
-					arrow.blk-on-ylw 'Running Bats with 16 parallel processes...'; \
-					.bats-prefix/bin/bats --pretty -T -j 16 $(BASHMATIC_HOME)/test ; "
+				@$(BASHMATIC_HOME)/bin/specs -p
+
 test-install-quiet:		
 				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -q"
 	
 test-install-verbose:		
 				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -v"
 
-
 				## Task invoked by VSCode when right-clicking the test directory
-test-integration: 		test
+test-integration: 		test-parallel

@@ -16,13 +16,13 @@ load test_helper
 
 @test "url.http-code() with a valid url" {
   source lib/url.sh
-  local code=$(url.http-code https://google.com)
+  local code=$(url.http-code https://kig.re)
   [[ ${code} == 200 ]]
 }
 
 @test "url.http-code() with a valid url but non-existant page" {
   source lib/url.sh
-  local code=$(url.http-code https://google.com/asdfasldkfjasldkjf)
+  local code=$(url.http-code https://kig.re/asdfasldkfjasldkjf)
   [[ ${code} == 404 ]]
 }
 

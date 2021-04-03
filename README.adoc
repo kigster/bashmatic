@@ -1,11 +1,12 @@
 :title: Bashmatic™ - BASH primitives for humans and for fun.
 :doctype: book
-:toc:
 :source-highlighter: rouge
 :rouge-style: base16.monokai
-:toclevels: 4
+:toclevels: 5
+:toc:
 :sectnums:
 :icons: font
+:license: MIT
 
 = Bashmatic™ - BASH primitives for humans and for fun.
 
@@ -170,7 +171,7 @@ Restart your shell, and make sure that when you type `bashmatic.version` in the 
 [source,bash]
 ----
 $ bashmatic.version
-1.9.1
+1.13.0
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.
@@ -205,7 +206,7 @@ Sometimes you may not be able to use `git` (I have seen issues ranging from loca
 
 [source,bash]
 ----
-export BASHMATIC_TAG="v1.7.1"
+export BASHMATIC_TAG="v1.13.0"
 set -e
 cd ${HOME}
 curl --insecure -fSsl \
@@ -219,7 +220,7 @@ cd ~ >/dev/null
 
 === Reloading Bashmatic
 
-You can always reload _Bashmatic®_ with `bashmatic.reload` function.
+You can always reload _Bashmatic®_ with `bashmatic.reload` function. This simply performs the sourcing of `${BASHMATIC_HOME}/init.sh`.
 
 === Loading Bashmatic at Startup
 
@@ -230,49 +231,88 @@ Add the following to your `~/.zshrc` file:
 [source,zsh]
 [[ -f ~/.bashmatic/init.sh ]] && source ~/.bashmatic/init.sh
 
-The entire library takes less than 300ms to load on ZSH and a recent MacBook Pro.
+NOTE: The entire library takes less than 300ms to load on ZSH and a recent MacBook Pro.
 
-== Using the `Makefile`
+== Discovering via the `Makefile`
 
-The top-level `Makefile` is mostly provided as a convenience around scripts that auto-generate documentation.
+The top-level `Makefile` is mostly provided as a convenience as it encapsulates some common tasks used in development by Bashmatic Author(s), as well as others useful to anyone exploring Bashmatic.
 
 You can run `make help` and read the available targets:
 
-image::doc/img/makefile.png[Makefile in Action,size=90%]
+[source,bash]
+----
+❯ make help
 
-=== What can the Makefile do?
+help                  Prints help message auto-generated from the comments.
 
-Makefile is provided as a convenience for running most common tasks and to simplify running some more complex tasks that require remembering many arguments, such as `make setup`, for example.
+docker-build          Builds the Docker image with the tooling inside
+docker-run-bash       Drops you into a BASH session with Bashmatic Loaded
+docker-run-fish       Drops you into a FISH session with Bashmatic Loaded
+docker-run-zsh        Drops you into a ZSH session with Bashmatic Loaded
+docker-run            Drops you into a BASH session
 
-You might want to use the Makefile for several reasons:
+install               install BashMatic Locally in ~/.bashmatic
 
-* To run your local computer setup for software development:
-+
-`make setup`
-+
-This runs `bin/dev-setup` script with the following actions: `dev, cpp, fonts, gnu, go, java, js, load-balancing, postgres, ruby`
-* To install Bashmatic with
-+
-`make install`
+setup                 Run the comprehensive development setup on this machine
 
-Or, if you plan on contributing to the framework:
- 
-* You can run the test suite with:
+test-parallel         Run the fully auto-g mated test suite
+test                  Run fully automated test suite based on Bats
+
+update-changelog      Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN env set)
+update-functions      Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/pdf
+update-readme         Re-generate the PDF version of the README
+update-usage          Auto-generate documentation of shell functions into USAGE.pdf
+update                Runs all of the updates, add locally modiofied files to git.
+open-readme           Open README.pdf in the system viewer
+----
+
+I've added whitespaces around a set of common tasks you might find useful. 
+
+Let's take a quick look at what's available here.
+
+=== Befriending the Makefile 
+
+Makefile is provided as a convenience for running most common tasks and to simplify running some more complex tasks that require remembering many arguments, such as `make setup`. You might want to use the Makefile for several reasons:
+
+1. `make open-readme`
 +
-`make test -B`
-* To update function index, re-generate the latest PDFs of README, USAGE or the CHANGELOG files:
+This tasks opens the PDF version of the README in your PDF system viewer.
+
+1. `make install`
 +
-`make update`
+This allows you to install the Bashmatic Framework locally. It simply runs `bin/bashmatic-install` script. At most this will add hooks to your shell init files so that Bashmatic is loaded at login.
+
+1. `make setup`
++
+This task invokes the `bin/dev-setup` script under the hood, so that you can setup your local computer developer setup for software development.
++
+
++
+Now, this script offers a very rich CLI interface, so you can either run the script directly and have a fine-grained control over what it's doing, or you can run it with default flags via this make  target.
++
+This particular make target runs `bin/dev-setup` script with the following actions: 
+
++
+`dev, cpp, fonts, gnu, go, java, js, load-balancing, postgres, ruby`
+
+1. `make test` and `make test-parallel`  are both meant for Bashmatic Developers and contributors. Please see the https://github.com/kigster/bashmatic#contributing[Contributing] section on how to run and what to expect from the UNIT tests.
+
+1. `make update` is the task that should be run by library contributors after they've made their their changes and want the auto-generated  documentation to reflect the  new functions added and so on and so force.  This tasks also generates the function index, re-generate the latest PDFs of `README`, `USAGE` or the `CHANGELOG` files.
 
 NOTE: Running `make update` is is required for submitting any pull request.
 
-=== Docker Support
+=== Docker Make Targets
 
-Bashmatic comes with a Dockerfile that can be used to run tests, validate functionality under linux, or to experiment.
+Bashmatic comes with a Dockerfile that can be used to run tests or jsut manually validate various functionality under linux, and possibly to experiment.
 
 Run `make docker-build` to create an docker image `bashmatic:latest`.
 
-Run `make docker-run-bash` (or `...-zsh` or `...-fish`) to start a container with your favorite shell.
+Run `make docker-run-bash` (or `...-zsh` or `...-fish`) to start a container with your favorite shell, and then validate if your functions work as expected.
+
+image::doc/img/docker-bash.png[Docker Build,width=80%,align=center]
+
+Note how this dropped me straight into the Linux environment prompt with Bashmatic already installed.
+
 
 == Bashmatic in Action - Practical Examples
 
@@ -781,7 +821,7 @@ success "installed Sym version $(gem.version sym)"
 
 When you run the above script, you shyould seee the following output:
 
-image::doc/img/bashmatic-example.png[example]
+image::doc/img/bashmatic-example.png[example,align=center,width=80%]
 
 ==== 4. Shortening URLs and Github Access
 
@@ -1012,7 +1052,7 @@ See the full function index with the function implementation body in the xref:do
 
 '''
 
-== How To...
+== How To Guide
 
 === Write new DSL in the _Bashmatic®_ Style
 
@@ -1112,24 +1152,20 @@ The framework comes with a bunch of automated unit tests based on the fantastic 
 
 Bats is auto-installed by the `bin/specs` script.
 
-====  Run Tests Sequentially `bin/specs` script
+==== Run Tests Using the Provided `bin/specs` script
 
-We use Bats framework for testing, however the convenient `bin/specs` script installs Bats and its dependencies so that we don't have to worry about installing it.
+We use Bats framework for testing, however we provided a convenient wrapper `bin/specs` which installs Bats and its dependencies so that we don't have to worry about installing it manually.
 
 The script can be run:
+
 1. Without any arguments to run all tests in the `test` folder, or 
 2. You can pass one or more existing test file paths as arguments, eg `bin/specs test/time_test.bats`
 3. Finally, you can pass an abbreviated test file name — eg "time" will resolve to `test/time_test.bats`
 
-[source,bash]
-----
-cd ${BASHMATIC_HOME}
-# Run the entire test suite
-bin/specs
+The script accepts a bunch of CLI arguments and flags shown below:
 
-# run only test/db_test.bats, test/time_test.bats and test/utils_test.bats
-bin/specs db time utils
-----
+image::doc/img/specs.png[example,align=center,width=60%]
+
 
 ==== Run Tests Sequentially using the `Makefile`
 
@@ -1137,8 +1173,25 @@ Alternatively, you can run the entire test suite via the Makefile, using one of 
 
 [source,bash]
 ----
+# Sequential 
 make test
+
+# Parallel
+make test-parallel
 ----
+
+
+==== Running Specs in Parallel with `bin/spec -p`
+
+One of the very useful flags to `bin/specs` script is the `-p/--parallel`. 
+
+If you invoke it with this flag, the script will install **GNU Parallel** utility, which is in itself worth reading about. We refer you to the following set of https://www.youtube.com/playlist?list=PL284C9FF2488BC6D1[YouTube Introductory Videos] on taking advantage of GNU Parallel projects and it's executable.
+
+Below is the screenshot of the tests running with the parallel flag. The script automatically detects that my machine has 16 CPU cores and uses this as a parallization factor.
+
+image::doc/img/specs-parallel.png[example,align=center,width=60%]
+
+
 
 ==== Run Tests Parallel using the `Makefile`
 
@@ -1149,15 +1202,18 @@ Note that you can run all tests in less than 15 seconds by using GNU parallel. J
 make test-parallel
 ----
 
+
+
 While not every single function is tested (far from it), we do try to add tests to the critical ones.
 
-Please see https://github.com/kigster/bashmatic/tree/master/test[existing tests] for the examples.
+Please see https://github.com/kigster/bashmatic/blob/master/test/array_test.bats[existing tests] for the examples.
 
 
 ## Copyright &  License
 
 NOTE: © 2016-2021 Konstantin Gredeskoul +
 This project is distributed under the **MIT License.**
+
 
 
 

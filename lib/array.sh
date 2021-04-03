@@ -78,12 +78,23 @@ array.includes-or-exit() {
 }
 
 # @description 
-#   Joins a given array with a custom character
+#   Joins a given array with a custom string.
+# @arg1 
+#   Separator to use 
+# @arg2 
+#   Print split one per line? (true/false), defaults to false.
+# @arg3 .
+#   array.
 #
-# @example
-#     $ declare -a array=(one two three)
-#     $ array.join "," "${array[@]}"
-#     one,two,three
+# @example Join an array with commas
+#   $ declare -a array=(one two three)
+#   $ array.join "," "${array[@]}"
+#
+# @example Join an array with arrows, and print one per line
+#   $ array.join " —> " true "${array[@]}"
+#   —> one
+#   —> two
+#   —> three
 array.join() {
   local sep="$1"; shift
   local lines="$1"

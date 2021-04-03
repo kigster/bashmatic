@@ -9,6 +9,28 @@ source lib/path.sh
 source lib/is.sh
 set -e
 
+@test "path.dirs from STDIN" {
+  local p1="/bin:/Users/kig/bin:/usr/bin:/bin:/sbin"
+  local p2="/bin:a:b:c"
+  local p3="/bin:/usr/local/bin"
+  for p in $p1 $p2 $p3; do
+    [ "$(echo $p | path.dirs | head -1)" == "/bin" ]
+  done
+}
+
+@test "path.dirs from ARG" {
+  local p1="/bin:/Users/kig/bin:/usr/bin:/bin:/sbin"
+  local p2="/bin:a:b:c"
+  local p3="/bin:/usr/local/bin"
+  for p in $p1 $p2 $p3; do
+    [ "$(path.dirs $p | head -1)" == "/bin" ]
+  done
+}
+
+@test "path.dirs from PATH" {
+  path.dirs ${PATH} | grep -q '^/usr/bin$'
+}
+
 @test "path.strip-slash" {
   local p1="/Users/kig/"
   local p2="/Users/kig"
@@ -46,6 +68,13 @@ set -e
   [[ "${PATH}" == "${TEST_PATH}:/sbin" ]] && {
     export PATH="${OLD_PATH}" || true
   }
+}
+
+@test "path.mutate.delete" {
+  export TEST_PATH="/bin:/usr/local/bin:/sbin:/usr/bin:/bin:/Users/kig/bin"
+  export TEST_PATH=$(path.dirs.delete "${TEST_PATH}" /Users/kig/bin /sbin)
+
+  [ "${TEST_PATH}" == "/bin:/usr/local/bin:/usr/bin:/bin" ]
 }
 
 @test "path.mutate.prepend" {
