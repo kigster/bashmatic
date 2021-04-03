@@ -269,7 +269,11 @@ function specs.add-all-files() {
 # @description Based on a shortname attempt to determine the actual test file names
 function specs.utils.get-filename() {
   local file="$1"
-  for test_file in "${file}" "test/${file}" "test/${file}.bats" "test/${file}_test.bats"; do
+  local -a candidates
+  candidates=("test/${file}" "test/${file}.bats" "test/${file}_test.bats")
+  [[ ${file} =~ / ]] && candidates+=("${file}")
+
+  for test_file in "${candidates[@]}" ; do
     is.a-non-empty-file "${test_file}" && {
       printf "%s" "${test_file}"
       return 0

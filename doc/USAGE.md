@@ -71,15 +71,24 @@ returns 0 if includes, 1 if not.
 
 ### `array.join()`
 
-Joins a given array with a custom character
+Joins a given array with a custom string.
 
 #### Example
 
 ```bash
 $ declare -a array=(one two three)
 $ array.join "," "${array[@]}"
-one,two,three
+$ array.join " —> " true "${array[@]}"
+—> one
+—> two
+—> three
 ```
+
+#### Arguments
+
+* @arg1 
+* @arg2 
+* @arg3 .
 
 ### `array.sort()`
 
@@ -260,10 +269,12 @@ Utilities for managing the $PATH variable
 * [path.dirs()](#pathdirs)
 * [path.dirs.size()](#pathdirssize)
 * [path.dirs.uniq()](#pathdirsuniq)
+* [path.dirs.delete()](#pathdirsdelete)
 * [path.uniq()](#pathuniq)
 * [path.append()](#pathappend)
 * [path.prepend()](#pathprepend)
 * [path.mutate.uniq()](#pathmutateuniq)
+* [path.mutate.delete()](#pathmutatedelete)
 * [path.mutate.append()](#pathmutateappend)
 * [path.mutate.prepend()](#pathmutateprepend)
 * [PATH_add()](#path_add)
@@ -282,7 +293,7 @@ Prints a new-line separated list of paths in PATH
 
 ### `path.dirs.size()`
 
-Prints the tatal number of paths in the path argument, 
+Prints the tatal number of paths in the path argument,
 which defaults to $PATH
 
 ### `path.dirs.uniq()`
@@ -290,9 +301,20 @@ which defaults to $PATH
 Prints all folders in $PATH, one per line, removing any duplicates,
 Does not mutate the $PATH
 
+### `path.dirs.delete()`
+
+Deletes any number of folders from the PATH passed as the first 
+string argument (defaults to $PATH). Does not mutate the $PATH, 
+just prints the result to STDOUT
+
+#### Arguments
+
+* @arg1 String representation of a PATH, eg "/bin:/usr/bin:/usr/local/bin"
+* @arg2 An array of paths to be removed from the PATH
+
 ### `path.uniq()`
 
-Removes duplicates from the $PATH (or argument) and prints the 
+Removes duplicates from the $PATH (or argument) and prints the
 results in the PATH format (column-joined). DOES NOT mutate the actual $PATH
 
 ### `path.append()`
@@ -309,6 +331,10 @@ DOES NOT mutate the actual $PATH
 ### `path.mutate.uniq()`
 
 Removes any duplicates from $PATH and exports it.
+
+### `path.mutate.delete()`
+
+Deletes paths from the PATH provided on the command line
 
 ### `path.mutate.append()`
 
@@ -738,6 +764,46 @@ Grab the version from `postgres` binary in the PATH and remove fractional sub-ve
 ### `dir.short-home()`
 
 Replaces the first part of the directory that matches ${HOME} with '~/'
+
+
+
+---
+
+
+## File `lib/config.sh`
+
+
+
+* [config.get-format()](#configget-format)
+* [config.set-file()](#configset-file)
+* [config.get-file()](#configget-file)
+* [config.dig()](#configdig)
+* [config.dig.pretty()](#configdigpretty)
+
+### `config.get-format()`
+
+Get current format
+
+### `config.set-file()`
+
+Set the default config file
+
+### `config.get-file()`
+
+Get the file name
+
+### `config.dig()`
+
+Reads the value from a two-level configuration hash
+
+#### Arguments
+
+* @arg1 hash key
+* @arg2 hash sub-key
+
+### `config.dig.pretty()`
+
+Uses `jq` utility to format JSON with color, supports partial
 
 
 
