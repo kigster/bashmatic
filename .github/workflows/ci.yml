@@ -6,7 +6,7 @@ on:
     branches: [ master ]
 
 jobs:
-  tests: &test
+  tests: 
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -20,8 +20,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Run Bats Test Suite
+    - name: Run Regular Test Suite
       run: MIN_WIDTH=100 bin/specs -t -c
+    - uses: ./
+      id: cpu-count
+    - name: Run Tests in Parallel 
+      run: |
+        export CPU_COUNT="$(cat /proc/cpuinfo | grep processor | wc -l)"
+        echo "running with CPU_COUNT of ${CPU_COUNT}"
+        MIN_WIDTH=100 .bats-prefix/bin/bats --pretty -T -j "${CPU_COUNT:-8}" $(find test -name '*_test.bats' -type f)
 
   shellcheck:
     runs-on: ubuntu-latest
@@ -40,16 +47,3 @@ jobs:
         echo; echo; echo
         ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) |  egrep -c '^In ' || true
 
-  parallel:
-    <<: *test
-    steps:
-    - uses: actions/checkout@v2
-    - uses: ./
-      id: cpu-count
-    - name: Tests in Parallel
-      run: |
-        export CPU_COUNT="$(cat /proc/cpuinfo | grep processor | wc -l)"
-        echo "running with CPU_COUNT of ${CPU_COUNT}"
-        MIN_WIDTH=100 .bats-prefix/bin/bats --pretty -T -j "${CPU_COUNT:-8}" $(find test -name '*_test.bats' -type f)
-      env:
-        POSTGRES_PASSWORD: password
