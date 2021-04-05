@@ -243,7 +243,7 @@ db.psql.connect.table-settings-set() {
 # @requires
 #    Local psql CLI client
 db.psql.db-settings() {
-  psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+  psql "$*" -X -q -c "\"show all\"" | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
 # @description Print out PostgreSQL settings for a named connection
@@ -252,7 +252,7 @@ db.psql.db-settings() {
 #    db.psql.connect.db-settings-pretty primary
 #
 db.psql.connect.db-settings-pretty() {
-  db.psql.connect "$@" -A -X -q -c 'show all' | \
+  db.psql.connect "$@" -A -X -q -c "\"show all\"" | \
     grep -v 'rows)' | \
     sort | \
     awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | \
@@ -269,7 +269,7 @@ db.psql.connect.db-settings-pretty() {
 #    db.psql.connect.db-settings-toml primary > primary.ini
 #
 db.psql.connect.db-settings-toml() {
-  db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
+  db.psql.connect.just-data "$1" -c "\"show all\"" | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
 }
 
 db.psql.args() {

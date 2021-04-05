@@ -10,6 +10,8 @@ export bashmatic_gems="${HOME}/.bundle/gems/bashmatic"
 
 function adoc-header() {
   local file="$1"
+
+
 cat <<EOF
 :pdf-fontsdir: ${BASHMATIC_HOME}./fonts;GEM_FONTS_DIR
 :pdf-theme: ${BASHMATIC_HOME}/.asciidoc-pdf-theme-titilium.yml
@@ -19,6 +21,14 @@ cat <<EOF
 :allow-uri-read:
 :icons: font
 EOF
+  local attrfile=".$1.attr"
+  if [[ -f "${attrfile}" ]]; then
+    attributes="$(cat "${attrfile}")"
+    info  "Adding attributes from local file ${bldylw}${attrfile}:">&2
+    cat ${attrfile}
+  else
+    info "No local attribute file was found: ${bldylw}${attrfile}." >&2
+  fi
 }
 
 function install-fonts() {
@@ -99,7 +109,7 @@ main() {
     info "Pre-pending PDF font configuration..."
     ( 
       sed -n '1p' "${file}"
-      adoc-header
+      adoc-header ${file}
       sed -n '2,$p' "${file}"
     ) >${temp}
   fi
