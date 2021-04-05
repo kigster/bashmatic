@@ -6,9 +6,8 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  tests: 
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:13.1-alpine
@@ -21,8 +20,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Run Bats Test Suite
+    - name: Run Regular Test Suite
       run: MIN_WIDTH=100 bin/specs -t -c
+    - uses: ./
+      id: cpu-count
+    - name: Run Tests in Parallel 
+      run: |
+        export CPU_COUNT="$(cat /proc/cpuinfo | grep processor | wc -l)"
+        echo "running with CPU_COUNT of ${CPU_COUNT}"
+        export TERM=xterm-256color
+        tput setab n; tput clear
+        export MIN_WIDTH=100 
+        echo .bats-prefix/bin/bats --pretty -T -j "${CPU_COUNT:-8}" $(find test -name '*_test.bats' -type f) 
+        .bats-prefix/bin/bats --pretty -T -j "${CPU_COUNT:-8}" $(find test -name '*_test.bats' -type f) || true 
 
   shellcheck:
     runs-on: ubuntu-latest
@@ -36,9 +46,8 @@ jobs:
         cp -v "shellcheck-${scversion}/shellcheck"  ${HOME}/bin
         ${HOME}/bin/shellcheck --version
     - name: Run ShellCheck
-      run:
+      run: |
         ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) || true
         echo; echo; echo
         ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) |  egrep -c '^In ' || true
-
 
