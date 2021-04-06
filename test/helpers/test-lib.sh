@@ -11,28 +11,30 @@
 readonly BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
 # readonly BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
-export DEFALT_MIN_WIDTH=92
+export DEFALT_MIN_WIDTH=80
 export UI_WIDTH=${UI_WIDTH:-${DEFALT_MIN_WIDTH}}
 
-output.constrain-screen-width "${UI_WIDTH}"
-
 if [[ -n $CI ]] ; then
-  prefix="⮀ "
+  export UI_WIDTH=55
+  readonly UI_WIDTH=55
+  output.constrain-screen-width ${UI_WIDTH}
+  prefix=" ⏱  "
 
   function test-group() {
-    echo "${prefix}📦  $*"
-    hr; echo
+    output.constrain-screen-width ${UI_WIDTH}
+    h3bg "$(echo "${prefix}$* " | tr '[:lower:]' '[:upper:]')"
   }
   function test-group-ok() {
-    echo "${prefix}✅  Tests passed in ${1}"
-    hr; echo
+    output.constrain-screen-width ${UI_WIDTH}
+    arrow.blk-on-grn "Tests passed in ${bakblu}${bldwht}${1} "
   }
   function test-group-failed() {
-    echo "${prefix}❌  Some tests failed in ${1}"
-    hr; echo
+    output.constrain-screen-width ${UI_WIDTH}
+    arrow.blk-on-red "Some tests failed in ${bakpur}${bldwht}${1} "
   }
 
 else
+  output.constrain-screen-width ${UI_WIDTH}
 
   function test-group() {
     arrow.blk-on-ylw "$@"
@@ -355,7 +357,7 @@ function specs.header() {
   hr
   echo
   printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
-  printf "\e[48;5;11m\e[48;30;209m  BASHMATIC TEST RUNNER, VERSION ${black}$(bashmatic.version)                                                   ${clr}\n"
+  printf "\e[48;5;11m\e[48;31;207m  BASHMATIC TEST RUNNER, VERSION ${black}$(bashmatic.version)                                              ${clr}\n"
   printf "\e[48;5;11m\e[48;30;209m  © 2016-2021 Konstantin Gredeskoul, All Rights Reserved,  MIT License.                   ${clr}\n"
   printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
   echo

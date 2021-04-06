@@ -5,7 +5,7 @@ export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
 function file.temp() {
   local host="${HOST:-${HOSTNAME:-$(hostname)}}"
   local user="${USER:-"$(whoami)"}"
-  local temp_file_pattern=".bashmatic.${host}.${user}."
+  local temp_file_pattern=".bashmatic.${host}.${user}.${*/ /}"
   local n="$(epoch)"
   local t=$((n % 99991))
   local file="/tmp/${temp_file_pattern}${n}$$${t}${RANDOM}${RANDOM}"
@@ -16,6 +16,19 @@ function file.temp() {
     -mtime +1 \
     -delete >/dev/null 2>&1
   echo "${file}"
+}
+
+function dir.temp() {
+  local dir="$(file.temp)/$$/${RANDOM/284/_-=}"
+  mkdir -p "${dir}" 2>/dev/null
+  [[ -n $DEBUG ]] && {
+    info "temporary folder is: ${dir}"
+    inf "it exists?  "
+    [[ -d ${dir}  ]] && ok:
+    [[ -d ${dir}  ]] || not-ok:
+  }
+  printf "%s" "${dir}"
+  trap "rm -rf ${dir}" EXIT
 }
 
 # Makes a file executable but only if it already contains

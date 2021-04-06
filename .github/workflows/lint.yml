@@ -1,0 +1,25 @@
+name: Lint
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install ShellCheck
+      run: |
+        scversion="stable" # or "v0.4.7", or "latest"
+        wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${scversion?}/shellcheck-${scversion?}.linux.x86_64.tar.xz" | tar -xJv
+        mkdir -p ${HOME}/bin
+        cp -v "shellcheck-${scversion}/shellcheck"  ${HOME}/bin
+        ${HOME}/bin/shellcheck --version
+    - name: ShellCheck
+      run: |
+        ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) || true
+        echo; echo; echo
+        ${HOME}/bin/shellcheck -a $(find {bin,lib} -type f) |  egrep -c '^In ' || true
+

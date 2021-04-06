@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # @brief Functions in this file manage git repos, including this one.
 
+function git.repo.latest-remote-tag() {
+  local  repo_url="$1"
+  git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}'| tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+}
+
 function git.configure-auto-updates() {
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
   export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"

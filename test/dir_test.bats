@@ -2,13 +2,19 @@
 load test_helper
 
 source lib/dir.sh
+source lib/file.sh
 
 export HOME_DIR=${HOME/\/$(whoami)/}
 
 set -e
 
+setup() {
+  export TEMP_DIR=$(file.temp -d)
+}
+
 @test "dir.short-home ${HOME}/workspace/project" {
   export HOME
+  export 
   local dir="$(dir.short-home "${HOME}/workspace/project")"
   echo "${dir}" > /tmp/a
   [[ "${dir}" == '~/workspace/project' ]]

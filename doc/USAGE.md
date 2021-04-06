@@ -989,6 +989,21 @@ Regenerates USAGE.adoc && USAGE.pdf
 
 shrinkgs PDF
 
+
+
+---
+
+
+## File `bin/scheck`
+
+
+
+* [manual-install()](#manual-install)
+
+### `manual-install()`
+
+Manually Download and Install ShellCheck
+
 ## Copyright & License
 
  * Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved.

@@ -3,7 +3,7 @@
 # vim: noexpandtab
 
 # grep '^[a-z\-]*:' Makefile | cut -d: -f 1 | tr '\n' ' '
-.PHONY:	 help install fonts-setup fonts-clean update-changelog update-functions update-usage update-readme regenerate-readme reduce-size-readme open-readme git-add update setup test 
+.PHONY:	 help install fonts-setup fonts-clean update-changelog update-functions update-usage update-readme regenerate-readme reduce-size-readme open-readme git-add update setup test docker-build docker-run docker-run-bash docker-run-zsh docker-run-fish file-stats-git file-stats-local shell-files
 
 red             		:= \033[0;31m
 bold             		:= \033[1;45m
@@ -49,6 +49,29 @@ fonts-setup:
 
 fonts-clean:			
 				@bash -c 'rm -rf .fonts'
+			
+
+file-stats-local:		## Print all non-test files and run `file` utility on them.
+				@find . -type f \! -ipath '*\.git*' -and  ! -ipath '*\.bundle*' -and ! -ipath '*\.bats*' | sed  's/^\.\///g' | xargs file
+
+shell-files:			## Lists every single checked in SHELL file in this repo
+				@find . -type f \! -ipath '*\.git*' -and  ! -ipath '*\.bundle*' -and ! -ipath '*\.bats*' | sed  's/^\.\///g' | xargs file | grep  Bourne | awk '{print $1}'
+
+make-utf8:			## Convert all text SHELL script  files from ASCII to UTF8 format
+				@bash -c "
+					function to-utf8() {
+						FROM_ENCODING="$1"
+					TO_ENCODING="UTF-8"
+					CONVERT="iconv  -f  $FROM_ENCODING  -t  $TO_ENCODING"
+				#loop to convert multiple files 
+				for  file  in  *.txt; do
+				     $CONVERT   "$file"   -o  "${file%.txt}.utf8.converted"
+				done
+				exit 0
+
+file-stats-git:			## Print all  files  known to `git ls-files` command
+				@git ls-files | xargs files
+
 
 update-changelog: 		## Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN env var set)
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Regenerating CHANGELOG....$(clear)\n"

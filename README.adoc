@@ -1,24 +1,30 @@
-:title: Bashmatic™ - BASH primitives for humans and for fun.
+= icon:terminal[1x, link="https://github.com/kigster/bashmatic"] Bashmatic™: BASH/ZSH primitives for Humans and for Fun.
+:title: Bashmatic™: BASH/ZSH primitives for Humans and for Fun.
+:subtitle: BASH primitives for humans and for fun.
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
 :toclevels: 5
 :toc:
-:sectnums:
+:sectnums: 9
 :icons: font
 :license: MIT
 
-= Bashmatic™ - BASH primitives for humans and for fun.
+== CI Matrix
 
-image:https://github.com/kigster/bashmatic/workflows/CI/badge.svg[CI Status,link="https://github.com/kigster/bashmatic/actions?query=workflow%3ACI"]
-image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield]
-image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+.CI Matrix
+[width="80%",cols=">.^s,<.^m,^.^s",frame="topbot",options="header,footer"]
+|==========================
+|                    | Badges  |  FOSSA Scanning
+| FOSSSA             | image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield] .7+<.>| image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large] 
+| CI Tests Parallel  | image:https://github.com/kigster/bashmatic/actions/workflows/parallel.yml/badge.svg[Parallel,link=https://github.com/kigster/bashmatic/actions/workflows/parallel.yml]     
+| CI Tests Serial    | image:https://github.com/kigster/bashmatic/actions/workflows/tests.yml/badge.svg[Test,link=https://github.com/kigster/bashmatic/actions/workflows/tests.yml]                 
+| ShellCheck         | image:https://github.com/kigster/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/kigster/bashmatic/actions/workflows/lint.yml]                 
+| Gitter             | image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+|==========================
 
-image::https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large]
 
-icon:terminal[5x, link="https://github.com/kigster/bashmatic", window="_blank"] 
-
-## Introduction 
+== Introduction 
 
 _Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (500+ of them) that, we hope, make BASH programming easier, more enjoyable, and more importantly, usable due to the focus on providing constant feedback to the user about what is happening, as a script that uses Bashmatic is running.
 
@@ -189,7 +195,7 @@ $ bashmatic.functions 3
 To install Bashmatic manually, follow these steps (feel free to change `BASHMATIC_HOME` if you like):
   
 
-==== 1. Using Git
+=== Using Git
 
 [source,bash]
 ----
@@ -200,7 +206,7 @@ cd "${BASHMATIC_HOME}" && ./bin/bashmatic-install -v
 cd ->/dev/null
 ----
 
-==== 2. Using Curl
+=== Using Curl
 
 Sometimes you may not be able to use `git` (I have seen issues ranging from local certificate mismatch to old versions of git, and more), but maybe able to download with `curl`. In that case, you can lookup the https://github.com/kigster/bashmatic/tags[latest tag] (substitute "v1.6.0" below with that tag), and then issue this command:
 
@@ -314,13 +320,13 @@ image::doc/img/docker-bash.png[Docker Build,width=80%,align=center]
 Note how this dropped me straight into the Linux environment prompt with Bashmatic already installed.
 
 
-== Bashmatic in Action - Practical Examples
+== Examples of Bashmatic in Action  
 
 **Why do we need another BASH framework?**
 
 BASH is know to be too verbose and unreliable. We beg to differ. This is why we wanted to start this README with a couple of examples.
 
-=== Example (A): Install Gems via Homebrew
+=== Example I. Install Gems via Homebrew 
 
 Just look at this tiny, five-line script:
 
@@ -349,7 +355,7 @@ Still not convinced?
 
 Take a look at a more comprehensive example next.
 
-=== Example (B): Download and install binaries.
+=== Example II: Download and install binaries.
 
 In this example, we'll download and install binaries `kubectl` and `minikube` binaries into `/usr/local/bin`
 
@@ -374,7 +380,7 @@ NOTE: If you need to create a BASH installer, _Bashmatic®_ offers some incredib
 Let's get back to the Earth, and talk about how to install Bashmatic, and how to use it in more detail right after.
 
 
-=== Example ++(C)++: Developer Environment Bootstrap Script
+=== Example III: Developer Environment Bootstrap Script
 
 This final and most feature-rich example is not just an example – **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
 
@@ -409,7 +415,7 @@ ${BASHMATIC_HOME}/bin/dev-setup \
 This compact command line installs a ton of things, but don't take our word for it - run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
 
 
-=== Example (D): Installing GRC Colourify Tool
+=== Example IV: Installing GRC Colourify Tool
 
 This is a great tool that colorizes nearly any other tool''s output.
 
@@ -423,7 +429,7 @@ You might need to enter your password for SUDO.
 Once it completes, run `source ~/.bashrc` (or whatever shell you use), and type something like `ls -al` or `netstat -rn` or `ping 1.1.1.1` and notice how all of the above is nicely colored.
 
 
-=== Example (E): `db` Shortcut for Database Utilities & `db top`
+=== Example V: `db` Shortcut for Database Utilities & `db top`
 
 If you are using PostgreSQL, you are in luck! Bashmatic includes numerous helpers for PostreSQL's CLI
 utility `psql`.
@@ -495,19 +501,32 @@ image::doc/img/db.png[db usage,border=2,width=80%,align=center]
 
 As you might notice, there is an ever-growing list of "actions" — the sub-commands to the `db` script.
 
-==== Commands
+=== Sub-Commands of `db` 
 
 You can view the full list by passing `--commands` flag:
 
 image::doc/img/db-commands.png[db usage,border=2,width=80%,align=center]
 
-==== Examples
 
 Altgernatively, here is the `--examples` view:
 
 image::doc/img/db-examples.png[db examples,border=2,width=80%,align=center]
 
-==== An Example Action — `pg-activity`
+==== Sub-Command `db connections`
+
+You can get a list of all availabled db connections with either
+
+
+[source,bash]
+----
+db connections
+# OR 
+db --connections
+----
+
+image::doc/img/db-connections.png[db usage,border=2,width=80%,align=center]
+
+==== Sub-Command `db pga` (eg. `pg_activity`)
 
 For instance, a recent addition is the ability to invoke https://github.com/dalibo/pg_activity[pg_activity] Python-based DB "top", a much more advanced top query monitor for PostgreSQL.
 
@@ -515,12 +534,35 @@ You can invoke `db pga <connection>` where the connection is taken from the data
 
 image::doc/img/db-pga.png[pg_activity,border=2,width=80%,align=center]
 
-==== Connections
+==== Other Sub-Commands
 
-You can get a list of all availabled db connections with `db --connections` command:
+Once you know what database you are connecting to, you can then run one of the commands: 
 
-image::doc/img/db-connections.png[db usage,border=2,width=80%,align=center]
+db connect <connection>::
+opens psql session to the given connection
 
+db db-settings-toml <connection>::
+prints all PostgreSQL settings (obtained with `show all`) as a sorted TOML-formatted file.
+
+db -q list-tables <connection>::
+print a  list of all tables in the given database, -q (or --quiet) skips  printing the header so that only the table listing is printed.
+
+db csv <connection> <query>::
+export the result of the query as a CSV to STDOUT, eg 
+
+[source,bash]
+----
+$ db csv filestore "select * from files limit 2"
+----
+
+Results in the following output
+
+[source,CSV]
+----
+component_id,file_path,fingerprint_sha_256,fingerprint_comment_stripped_sha_256,license_info
+6121f5b3-d68d-479d-9b83-77e9ca07dd2b,weiboSDK/src/main/java/com/sina/weibo/sdk/openapi/models/Tag.java,
+6121f5b3-d68d-479d-9b83-77e9ca07dd2b,weiboSDK/src/main/java/com/sina/weibo/sdk/openapi/models/Comment.java,
+----
 
 == Usage
 

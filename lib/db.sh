@@ -189,7 +189,7 @@ db.psql.connect.just-data() {
 
 db.psql.run() {
   local dbname="$1"; shift
-  db.psql.connect "${dbname}" -X --pset border=0 -c "$@"
+  db.psql.connect "${dbname}" -X --pset border=0 -c "\"$@\""
 }
 
 db.psql.list-users() {
@@ -350,8 +350,10 @@ db.actions.run() {
 }
 
 db.actions.csv() {
+  local dbname=${1};  shift
+  [[ -z ${dbname} ]] && return 1
   export flag_quiet=1
-  db.psql.run "$@" --csv -A -P pager=off -P footer=off
+  db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$@\""
 }
 
 db.actions.explain() {
