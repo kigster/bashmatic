@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.0.0...HEAD)
+
+**Closed issues:**
+
+- I see "path.mutate" in the commits [\#44](https://github.com/kigster/bashmatic/issues/44)
+
+**Merged pull requests:**
+
+- \[Snyk\] Security upgrade ubuntu from latest to groovy-20210325 [\#56](https://github.com/kigster/bashmatic/pull/56) ([snyk-bot](https://github.com/snyk-bot))
+- Config reading,  paths mutation tests,  db tests, v2.0.0 [\#55](https://github.com/kigster/bashmatic/pull/55) ([kigster](https://github.com/kigster))
+- Adding ability to read from a YAML/JSON configuration file — updating documentation [\#53](https://github.com/kigster/bashmatic/pull/53) ([kigster](https://github.com/kigster))
+
+## [v2.0.0](https://github.com/kigster/bashmatic/tree/v2.0.0) (2021-04-03)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.13.0...v2.0.0)
+
 ## [v1.13.0](https://github.com/kigster/bashmatic/tree/v1.13.0) (2021-03-31)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.11.0...v1.13.0)
@@ -71,11 +89,14 @@
 - Adding ZSH installation + refactor init.sh [\#32](https://github.com/kigster/bashmatic/pull/32) ([kigster](https://github.com/kigster))
 - Synology [\#31](https://github.com/kigster/bashmatic/pull/31) ([kigster](https://github.com/kigster))
 - Fixing k8s-example; bin/scheck and a few more [\#30](https://github.com/kigster/bashmatic/pull/30) ([kigster](https://github.com/kigster))
-- Adding `db explain` and --verbose flag. [\#29](https://github.com/kigster/bashmatic/pull/29) ([kigster](https://github.com/kigster))
 
 ## [v1.7.2](https://github.com/kigster/bashmatic/tree/v1.7.2) (2020-12-26)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.7.1...v1.7.2)
+
+**Merged pull requests:**
+
+- Adding `db explain` and --verbose flag. [\#29](https://github.com/kigster/bashmatic/pull/29) ([kigster](https://github.com/kigster))
 
 ## [v1.7.1](https://github.com/kigster/bashmatic/tree/v1.7.1) (2020-12-22)
 
@@ -135,14 +156,17 @@
 **Merged pull requests:**
 
 - Adding array.sort, array.uniq and array.sort-numeric [\#14](https://github.com/kigster/bashmatic/pull/14) ([kigster](https://github.com/kigster))
-- Adding documentation for dbtop + PDF generator [\#13](https://github.com/kigster/bashmatic/pull/13) ([kigster](https://github.com/kigster))
-- Fixing dbtop [\#11](https://github.com/kigster/bashmatic/pull/11) ([kigster](https://github.com/kigster))
-- Add license scan report and status [\#10](https://github.com/kigster/bashmatic/pull/10) ([fossabot](https://github.com/fossabot))
-- Adding bin/pdf-reduce and other tweaks [\#9](https://github.com/kigster/bashmatic/pull/9) ([kigster](https://github.com/kigster))
 
 ## [v1.3.0](https://github.com/kigster/bashmatic/tree/v1.3.0) (2020-09-22)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0)
+
+**Merged pull requests:**
+
+- Adding documentation for dbtop + PDF generator [\#13](https://github.com/kigster/bashmatic/pull/13) ([kigster](https://github.com/kigster))
+- Fixing dbtop [\#11](https://github.com/kigster/bashmatic/pull/11) ([kigster](https://github.com/kigster))
+- Add license scan report and status [\#10](https://github.com/kigster/bashmatic/pull/10) ([fossabot](https://github.com/fossabot))
+- Adding bin/pdf-reduce and other tweaks [\#9](https://github.com/kigster/bashmatic/pull/9) ([kigster](https://github.com/kigster))
 
 ## [v1.2.1](https://github.com/kigster/bashmatic/tree/v1.2.1) (2020-06-26)
 
@@ -171,13 +195,16 @@
 **Merged pull requests:**
 
 - Kig/cherry pick bashmatic setup [\#6](https://github.com/kigster/bashmatic/pull/6) ([kigster](https://github.com/kigster))
-- Minor revision to the runtime UI [\#4](https://github.com/kigster/bashmatic/pull/4) ([kigster](https://github.com/kigster))
-- \[feature\] Introducing new runtime option show-command-on/off [\#3](https://github.com/kigster/bashmatic/pull/3) ([kigster](https://github.com/kigster))
-- Kig/gem related fixes and installer [\#2](https://github.com/kigster/bashmatic/pull/2) ([kigster](https://github.com/kigster))
 
 ## [v0.2.0](https://github.com/kigster/bashmatic/tree/v0.2.0) (2019-12-24)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/875b23408925e8908fc1f23f5f0c1470fe43dc03...v0.2.0)
+
+**Merged pull requests:**
+
+- Minor revision to the runtime UI [\#4](https://github.com/kigster/bashmatic/pull/4) ([kigster](https://github.com/kigster))
+- \[feature\] Introducing new runtime option show-command-on/off [\#3](https://github.com/kigster/bashmatic/pull/3) ([kigster](https://github.com/kigster))
+- Kig/gem related fixes and installer [\#2](https://github.com/kigster/bashmatic/pull/2) ([kigster](https://github.com/kigster))
 
 
 

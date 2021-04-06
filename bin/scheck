@@ -1,35 +1,229 @@
 #!/usr/bin/env bash
 
-source ${BASHMATIC_HOME}/init.sh
+source "${BASHMATIC_HOME}"/init.sh
 
-set -e
-export check_output="/tmp/.bashmatic.${USER}.shcheck"
-rm -f ${check_output} &&  touch ${check_output}
+export ROOT=$(pwd -P)
+current_dir=${ROOT}
+export TEMP_DIR="$(dir.temp)"
+
+export stdout_output="${TEMP_DIR}/${current_dir}.stdout"
+export stderr_output="${TEMP_DIR}/${current_dir}.stderr"
+
+mkdir -p "$(dirname "${stdout_output}")" || {
+  abort "Can't create direcory ${stdout_output}"
+  exit 1
+}
+
+touch "${stdout_output}"
+trap "rm -f ${stdout_output} ${stderr_output}" EXIT
 set +e
 
-failures=0
+error "fuck"
+
+export ROOT="${PWD}"
+export SHELLCHECK_REPO="https://github.com/koalaman/shellcheck"
+
+export failures=0
+export sucesses=0
+export flag_patch_mode=0
+declare -a test_files=
+
+export OKAY="✅ (checkcheck OK)"
+export FAIL="🆘 (shellcheck failed)"
+export NOT_SHELL="🥥 (not a shell scrip)"
+export INVALID="💩 (file or folder is missing)"
+
 run.set-all continue-on-error
-h3 "Running shellcheck on all git-committed files that look like shell scripts..."
 
-command -v shellcheck >/dev/null || brew.install.package shellcheck
+h2 "ShellCheck Starting in ${PWD}."
 
-for file in $(git ls-files); do
-    [[ -s "${file}" && ! -d "${file}" ]] || continue
-    head -1 ${file} | grep -E -q '#\!(/usr/bin/env bash|/bin/bash|/usr/bin/bash|/usr/bin/env zsh|/bin/zsh)' || continue
-    printf "\n—————————————————————————————————————————————————————————————————————\nFILE: ${file}\n\n" >>${check_output}
-    run "shellcheck '${file}' >>${check_output}"
-    code=${LibRun__LastExitCode}
-    [[ ${code} -ne 0 ]] && failures=$(( failures + 1 ))
-    [[ ${code} -eq 0 ]] && echo "STATUS: SUCCESS">>${check_output}
-done
+function is.a-shell-file() {
+  local file="$1"
+  head -1 "${file}" |
+  grep -E -q '#\!(/usr/bin/env bash|/bin/bash|/usr/bin/bash|/usr/bin/env zsh|/bin/zsh)'
+}
 
-if [[ ${failures} -eq 0 ]] ; then
-    success "All files passed shellcheck, congratulations!"
-    info "NOTE: the following shellcheck instructions are being ignored:"
-    info "$(cat .shellcheckrc | tr -d '\n')"
-else
-    warning  "${failures} files had issues."
-    info "NOTE: you can find the detailed output of shellcheck in the"
-    info "following file: ${bldred}${check_output}"
-    exit 1
+function is.interactive() {
+  array.includes "-i" "$@" || \
+  array.includes "--interactive" "$@"
+}
+
+function is.patch-mode() {
+  ((flag_patch_mode))
+}
+
+function shellcheck-version() {
+  local file=${1:-"shellcheck"}
+  printf "v$(shellcheck -V 2>/dev/null | grep version: | sedx 's/^version: //g')"
+}
+
+export LOCAL_SHELLCHECK_VERSION=
+if command -v shellcheck >/dev/null; then
+  export LOCAL_SHELLCHECK_VERSION=$(shellcheck-version)
 fi
+
+function is.shellcheck-current() {
+  local latest=$(git.repo.latest-remote-tag ${SHELLCHECK_REPO})
+
+  [[ ${latest} -ne ${LOCAL_SHELLCHECK_VERSION} ]]
+}
+
+# ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# @description Manually Download and Install ShellCheck
+function manual-install() {
+  local temp="${TEMP_DIR}"
+  cd "${temp}" >/dev/null
+  local os=$(uname -s | tr '[:upper:]' '[:lower:]')
+  curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.${os}.x86_64.tar.xz" -O
+  is.a-command 7z || package.install p7zip
+  run "7z x *.xz"
+  run "7z x *.tar"
+  arrow.blk-on-ylw "PWD: ${PWD}"
+  cd "shellcheck-v0.7.1"
+  
+  [[ -x /usr/local/bin/shellcheck ]] && run "rm -f /usr/local/bin/shellcheck || sudo rm -f /usr/local/bin/shellcheck || true"
+  
+  run "cp -vf shellcheck /usr/local/bin/shellcheck || sudo cp -vf shellcheck /usr/local/bin/shellcheck"
+  run "chown ${USER} /usr/local/bin/shellcheck || chown ${USER} /usr/local/bin/shellcheck"
+  run "chmod 755 /usr/local/bin/shellcheck     || chmod 755 /usr/local/bin/shellcheck"
+  
+  arrow.wht-on-grn "ShellCheck Version is : ${bldylw}$(shellcheck-version)${clr}"
+  
+  cd "${ROOT}" || exit 1
+  return 0
+}
+
+function install-shellcheck() {
+  arrow.blk-on-ylw "Installing ShellCheck..."
+  if [[ $(command -v shellcheck) != /usr/local/bin/shellcheck ]]; then
+    is.interactive "$@" && {
+      run.ui.ask \
+      "Replaces your currently installed shellcheck $(shellcheck-version $(command -v shellcheck))"
+      info "Great, removing it."
+    }
+    run "rm -f $(command -v shellcheck)"
+    run "rm -f /usr/local/bin/shellcheck"
+  fi
+  
+  manual-install && success "ShellCheck Installed $(command -v shellcheck)" "${message}"
+  sleep 1 && clear  
+  return 0
+}
+
+function install-manager() {
+  is.shellcheck-current && install-shellcheck "$@"
+}
+
+function print-report() {
+  echo
+  hr
+  echo
+  
+  h3 "Please note that the following shellcheck instructions are being ignored:" \
+     "$(cat .shellcheckrc | tr -d '\n')"
+  
+  if [[ ${failures} -eq 0 ]]; then
+    success "All files passed shellcheck, congratulations!"
+  else
+    warning "Discovered ${failures} test issues."
+    info "NOTE: you can find the detailed output of shellcheck in the"
+    info "following two files: "
+    info "    STDERR: -> ${bldred}${stderr_output}"
+    info "    STDOUT: -> ${bldgrn}${stdout_output}"
+  fi
+}
+
+function validate-a-file() {
+  file="$1"
+  is-dbg && note "Verifying file ${bldylw}${file}"
+
+  [[ ! -s "${file}" || -d "${file}" ]] || {
+    printf "${INVALID} %s: \n" "${file}"
+    return
+  }
+  
+  is.a-shell-file "${file}" || {
+    printf "${NOT_SHELL} %s \n" "${file}"
+  }
+  
+  run "eval \"/usr/local/bin/shellcheck ${flags[*]} ${file}\" >>\"${stdout_output}\" 2>\"${stderr_output}\""
+  #eval "/usr/local/bin/shellcheck ${flags[*]} ${file}" >>"${stdout_output}" 2>"${stderr_output}"
+  code=${code}
+  if [[ ${code} -ne 0 ]] ; then
+    failures=$((failures + 1))
+    printf "${FAIL} ${bldred}%s ${clr}(Poopmageddon)\n" "${file}"
+    #printf -- "${OKAY}"
+  else
+    successes=$((successes + 1))
+    printf "${OKEY}s ${bldgrn}%s ${clr}(Mazel Tov!)\n" "${file}"
+  fi
+}
+
+function shell-files() {
+  find {bin,lib} -type f \( -name  '*.sh' -or -name '*.bash' -or -name '*' \) -and  ! -name '\.*'
+}
+
+# ——————————————————————————————————————————————————————————————————————————————————
+function execute() {
+  command -v shellcheck >/dev/null || {
+    install-manager "$@"
+    command -v shellcheck >/dev/null && {
+      error "Cant not find shell check, shoul've been installed."
+      return 1
+    }
+  }
+  
+  local flags
+  
+  if [[ -z ${arg[*]} ]]; then
+    test_files=($(shell-files))
+  else
+    for arg in "$@"; do
+      if [[ ${arg} =~ \- ]]; then
+        if [[ ${arg} == "-p" || ${arg} == "--patch" ]]; then
+          stdout_output="${stdout_output}.patch"
+          flag_patch_mode=1
+          flags="${flags} -F diff "!
+        fi
+      else
+        is.a-shell-file ${arg} && test_files+=( "${arg}" )
+      fi
+    done
+  fi
+  
+  h1 "CLI SCHECK ARGS: ${flags[*]} | FLAGS: ${args[*]} | TOTAL ${#total_files[@]} FILES"
+  
+  h3bg STATUS
+  cursor.up 3
+  cursor.right 2
+  
+  for file in "${test_files[@]}"; do
+    #arrow.wht-on-blu "${file}"
+    validate-a-file "${file}"
+  done
+  
+  cursor.down 3
+  cursor.left -100
+}
+
+
+function main() {
+  error "FUCK"
+  install-manager "$@"
+
+  if [[ -n $1 ]]; then
+    for file in "$@"; do
+      validate-a-file "${file}" || true
+    done    
+  else
+    execute "$@"
+  fi
+  
+  print-report
+  
+}
+
+bashmatic.detect-subshell || main "$@"
+
+
+

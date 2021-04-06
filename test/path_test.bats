@@ -7,7 +7,16 @@ source lib/array.sh
 source lib/output.sh
 source lib/path.sh
 source lib/is.sh
+source lib/file.sh
+source lib/time.sh
 set -e
+
+
+@test "path.temp" {
+  file=$(file.temp) 
+  touch ${file}
+  [[ -f ${file} ]]
+}
 
 @test "path.dirs from STDIN" {
   local p1="/bin:/Users/kig/bin:/usr/bin:/bin:/sbin"

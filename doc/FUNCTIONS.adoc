@@ -2002,8 +2002,11 @@ db.actions.connections ()
 ----
 db.actions.csv () 
 { 
+    local dbname=${1}
+    shift
+    [[ -z ${dbname} ]] && return 1
     export flag_quiet=1
-    db.psql.run "$@" --csv -A -P pager=off -P footer=off
+    db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$@\""
 }
 
 ----
@@ -2432,7 +2435,7 @@ db.psql.connect ()
 ----
 db.psql.connect.db-settings-pretty () 
 { 
-    db.psql.connect "$@" -A -X -q -c 'show all' | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
+    db.psql.connect "$@" -A -X -q -c "\"show all\"" | grep -v 'rows)' | sort | awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | sedx '/##\s*$/d' | GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
 }
 
 ----
@@ -2443,7 +2446,7 @@ db.psql.connect.db-settings-pretty ()
 ----
 db.psql.connect.db-settings-toml () 
 { 
-    db.psql.connect.just-data "$1" -c 'show all' | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
+    db.psql.connect.just-data "$1" -c "\"show all\"" | awk 'BEGIN{FS="|"}{printf "%s=%s\n", $1, $2}' | sort
 }
 
 ----
@@ -2506,7 +2509,7 @@ db.psql.connect.table-settings-show ()
 ----
 db.psql.db-settings () 
 { 
-    psql "$*" -X -q -c 'show all' | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
+    psql "$*" -X -q -c "\"show all\"" | sort | awk '{ printf("%s=%s\n", $1, $3) }' | sed -E 's/[()\-]//g;/name=setting/d;/^[-+=]*$/d;/^[0-9]*=$/d'
 }
 
 ----
@@ -2576,7 +2579,7 @@ db.psql.run ()
 { 
     local dbname="$1"
     shift
-    db.psql.connect "${dbname}" -X --pset border=0 -c "$@"
+    db.psql.connect "${dbname}" -X --pset border=0 -c "\"$@\""
 }
 
 ----
@@ -3370,6 +3373,26 @@ dir.find ()
 
 ----
 
+==== `dir.temp`
+
+[source,bash]
+----
+dir.temp () 
+{ 
+    local dir="$(file.temp)/$$/${RANDOM/284/_-=}"
+    mkdir -p "${dir}" 2> /dev/null
+    [[ -n $DEBUG ]] && { 
+        info "temporary folder is: ${dir}"
+        inf "it exists?  "
+        [[ -d ${dir} ]] && ok:
+        [[ -d ${dir} ]] || not-ok:
+    }
+    printf "%s" "${dir}"
+    trap "rm -rf ${dir}" EXIT
+}
+
+----
+
 ==== `file.ask.if-exists`
 
 [source,bash]
@@ -3673,7 +3696,7 @@ file.temp ()
 { 
     local host="${HOST:-${HOSTNAME:-$(hostname)}}"
     local user="${USER:-"$(whoami)"}"
-    local temp_file_pattern=".bashmatic.${host}.${user}."
+    local temp_file_pattern=".bashmatic.${host}.${user}.${*/ /}"
     local n="$(epoch)"
     local t=$((n % 99991))
     local file="/tmp/${temp_file_pattern}${n}$$${t}${RANDOM}${RANDOM}"
@@ -4430,6 +4453,18 @@ git.repo-is-clean ()
         cd - > /dev/null
         return 1
     fi
+}
+
+----
+
+==== `git.repo.latest-remote-tag`
+
+[source,bash]
+----
+git.repo.latest-remote-tag () 
+{ 
+    local repo_url="$1"
+    git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}' | tail -1 | awk 'BEGIN{FS="/"}{print $3}'
 }
 
 ----

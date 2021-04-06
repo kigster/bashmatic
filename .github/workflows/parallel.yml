@@ -1,0 +1,43 @@
+name: Parallel
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  tests: 
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13.1-alpine
+        env:
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a health check
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./
+      id: cpu-count
+    - name: Run Tests in Parallel 
+      env:
+        TERM: xterm-256color
+        MIN_WIDTH: 80
+      run: |
+        export CPU_COUNT="$(cat /proc/cpuinfo | grep processor | wc -l)"
+        tput setab n; tput clear
+        source init.sh
+        output.constrain-screen-width ${MIN_WIDTH}
+        note "Running specs with CPU_COUNT=${CPU_COUNT}"
+        h1 ".bats-prefix/bin/bats --pretty -T -j ${CPU_COUNT:-8}" $(find test -name '*_test.bats' -type f) 
+        .bats-prefix/bin/bats --pretty -T -j "${CPU_COUNT:-8}" $(find test -name '*_test.bats' -type f) || {
+          code=$? 
+          error "Parallel Tests failed with exit code ${code}"
+          warning "Ignoring parallel test failure...."
+        }
+        true
+      
+

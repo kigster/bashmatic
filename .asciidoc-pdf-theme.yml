@@ -1,6 +1,94 @@
+extends: default
+base:
+  border-color: 303030
+  font:
+    size: 11
+    color: 222222
+    family: Barlow
+  line-height-length: 13
+  line-height: $base-line-height-length / $base-font-size
+vertical-spacing: $base-line-height-length
+code:
+  background-color: 191919
+  font-color: $base-font-color
+  border-color: 303030
+  line-height-length: 12
+  line-height: $code-line-height-length / $code-font-size
+  font:  
+    size: 9
+    family: Cascadia
+heading:
+  line-height-length: 20
+  line-height: $heading-line-height-length / $heading-font-size
+  font:
+    color: BF5F10
+    family: Cairo
+    style: bold
+    size: 15
+image:
+  border-radius: 15
+admonition:
+  column-rule-color: $base-border-color
+  icon:
+    caution:
+      stroke-color: D6A623
+    note:
+      stroke-color: 1040A3
+    tip:
+      stroke-color: 609000
+    warning:
+      stroke-color: E6A623
+link:
+  font-color: 2353FF
+literal:
+  font-color: 102840
+mark:
+  background-color: 0030A0
+key:
+  background-color: F0F0FF
+  border-color: A0A0A0
+heading:
+  font-color: $base-font-color
+title_page:
+  title:
+    font-color: E09000
+  authors:
+    font-color: B06000
+abstract:
+  font-color: 
+blockquote:
+  border-color: $base-border-color
+  cite:
+    font-color: 503004
+    background-color: 9F7987
+verse:
+  border-color: $blockquote-border-color
+  cite:
+    font-color: $blockquote-cite-font-color
+conum:
+  font-color: $literal-font-color
+example:
+  background-color: $page-background-color
+  border-color: $base-border-color
+sidebar:
+  background-color: 111111
+  border-color: 1A1A1A
+  title:
+    font-color: $heading-font-color
+thematic-break:
+  border-color: $base-border-color
+table:
+  background-color: $page-background-color
+  border-color: 222222
+  foot:
+    background-color: $table-background-color
+header:
+  font-color: 666666
+footer:
+  border-color: 222222
 font:
   catalog:
-    merge: true # set value to true to merge catalog with theme you're extending
+    merge: true  set value to true to merge catalog with theme you're extending
     Barlow:
       bold: barlowcondensed-semibold.ttf
       bold_italic: barlowcondensed-semibolditalic.ttf
@@ -26,30 +114,14 @@ font:
       italic: arvo-italic.ttf
       normal: arvo-regular.ttf
     Cascadia:
-      normal: cascadiamono-regular.ttf
-      bold: cascadiamono-bold.ttf
+      normal: cascadiamono-light.ttf
+      bold: cascadiamono-semibold.ttf
       bold_italic: cascadiamono-semibold.ttf
       italic: cascadiamono-semilight.ttf
-extends: default
+      semibold: cascadiamono-regular.ttf
 page:
+  background-color: FFFFFF
   layout: portrait
   margin: [0.75in, 1in, 0.75in, 1in]
   size: Letter
-base:
-  font:
-    size: 12
-    line-height-length: 15
-    line-height: $base-line-height-length / $base-font-size
-    family: Barlow
-code:
-  font:
-    size: 9
-    line-height-length: 13
-    family: Cascadia
-    line-height: $base-line-height-length / $base-font-size
-heading:
-  font:
-    family: AdventPro
-    style: bold
-image:
-  border-radius: 15
+

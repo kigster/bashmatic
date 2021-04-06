@@ -1,0 +1,3 @@
+image:https://github.com/kigster/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/kigster/bashmatic/actions/workflows/lint.yml]
+image:https://github.com/kigster/bashmatic/actions/workflows/parallel.yml/badge.svg[Parallel,link=https://github.com/kigster/bashmatic/actions/workflows/parallel.yml]
+image:https://github.com/kigster/bashmatic/actions/workflows/tests.yml/badge.svg[Test,link=https://github.com/kigster/bashmatic/actions/workflows/tests.yml]
