@@ -16,10 +16,16 @@ RUBY_VERSION    		:= $(cat .ruby-version)
 OS	 		 	:= $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
 # see: https://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile/18137056#18137056
+SCREEN_WIDTH			:= 100
 MAKEFILE_PATH 			:= $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIR 			:= $(notdir $(patsubst %/,%,$(dir $(MAKEFILE_PATH))))
+
+# BASHMATIC VARIABLES
 BASHMATIC_HOME			:= $(shell dirname $(MAKEFILE_PATH))
-SCREEN_WIDTH			:= 100
+BASHMATIC_VERSION		:= $(shell cat .version)
+BASHMATIC_TAG			:= "v$(BASHMATIC_VERSION)"
+BASHMATIC_RELEASE		:= "Release for Tag $(BASHMATIC_TAG)"
+
 
 help:	   			## Prints help message auto-generated from the comments.
 				@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -136,3 +142,11 @@ test-install-verbose:
 
 				## Task invoked by VSCode when right-clicking the test directory
 test-integration: 		test-parallel
+
+tag:				## Tag this commit with .version and push to remote
+				@git tag $(BASHMATIC_TAG) -f
+				@git push --tags -f
+
+release: tag 			## Make a new release named after the latest tag
+				@command -v gh>/dev/null || brew install gh
+				@gh release create $(BASHMATIC_TAG) . --title "$(BASHMATIC_RELEASE)"
