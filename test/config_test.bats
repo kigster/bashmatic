@@ -1,10 +1,11 @@
 #!/usr/bin/env bats
 
 load "test_helper"
-load "lib/config.sh"
-load "lib/output.sh"
-load "lib/ruby.sh"
-load "lib/gem.sh"
+
+source "lib/config.sh"
+source "lib/output.sh"
+source "lib/ruby.sh"
+source "lib/gem.sh"
 
 set -e
 

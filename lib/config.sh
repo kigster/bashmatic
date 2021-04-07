@@ -23,10 +23,13 @@ function config.get-format() {
 # @description Set the default config file
 function config.set-file() {
   export bashmatic__config_file="$1"
-  if [[ ${bashmatic__config_file} =~ .yml$ || ${bashmatic__config_file} =~ .yaml$ ]]; then
+  if [[ ${bashmatic__config_file} =~ \.yml$ || ${bashmatic__config_file} =~ \.yaml$ || \
+        ${bashmatic__config_file} =~ \.YML$ || ${bashmatic__config_file} =~ \.YAML$  ]];  then
     config.set-format yaml
-  elif [[ ${bashmatic__config_file} =~ .json$ ]]; then
+  elif [[ ${bashmatic__config_file} =~ \.json$ || ${bashmatic__config_file} =~ \.JSON$ ]]; then
     config.set-format json
+  else
+    warning "File extension is not recognized." "Use config.set-format [json|yaml]" >&2
   fi
 }
 

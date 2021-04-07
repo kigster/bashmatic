@@ -15,8 +15,7 @@ export DEFALT_MIN_WIDTH=80
 export UI_WIDTH=${UI_WIDTH:-${DEFALT_MIN_WIDTH}}
 
 if [[ -n $CI ]] ; then
-  export UI_WIDTH=55
-  readonly UI_WIDTH=55
+  export UI_WIDTH=100
   output.constrain-screen-width ${UI_WIDTH}
   prefix=" ⏱  "
 
@@ -68,6 +67,8 @@ function specs.init() {
   export BatsSource="${ProjectRoot}/.bats-sources"
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
+  run "rm -rf \"${BatsPrefix}\" \"${BatsSource}\" \"${BatsRoot}\""
+
   dbg "BatsPrefix is ${BatsPrefix}"
 
   export True=1
@@ -116,12 +117,15 @@ function specs.find-project-root() {
 #------------------------------------------------------------------
 # Bats Installation
 function specs.install.bats.brew() {
+  hl.subtle "Installing Bats from HomeBrew..."
   run "brew tap kaos/shell"
   brew.install.packages bats-core bats-assert bats-file
 }
 
 function specs.install.bats.sources() {
+  hl.subtle "Installing Bats from sources..."
   [[ -x ${BatsPrefix}/bin/bats ]] && return 0
+  run "cd ${ProjectRoot}"
 
   run.set-next show-output-off abort-on-error
 
@@ -136,10 +140,14 @@ function specs.install.bats.sources() {
     exit 1
   }
 
+  specs.set-width
   # Let's update Bats if needed, and run its installer.
   run "cd ${BatsSource} && git reset --hard && git pull --rebase 2>/dev/null || true"
   local prefix="$(cd "${BatsPrefix}" && pwd -P)"
-  run "./install.sh ${prefix}"
+
+  specs.set-width
+
+  run "./install.sh ${prefix}" >/dev/null 2>&1  
   run "cd ${ProjectRoot}"
   run 'hash -r'
 
@@ -148,7 +156,7 @@ function specs.install.bats.sources() {
 }
 
 function specs.install() {
-  local install_type="${1:-"${Bashmatic__BatsIntallMethod}"}"
+  local install_type="${1:-"${Bashmatic__BatsInstallMethod}"}"
   local func="specs.install.bats.${install_type}"
 
   util.is-a-function "${func}" || {
@@ -242,9 +250,18 @@ function specs.utils.cpu-cores() {
    nproc --all | tr -d '\n'
 }
 
+function specs.install-parallel.linux() {
+  run "sudo apt-get update -yqq && sudo apt-get install parallel -yqq"
+}
+
+function specs.install-parallel.darwin() {
+  brew.install.package parallel
+}
+
 function specs.run.all-in-parallel() {
-  specs.init
-  command -v parallel >/dev/null || package.install parallel
+  local func="specs.install-parallel.${BASHMATIC_OS}"
+
+  command -v parallel >/dev/null || ${func}
   command -v parallel >/dev/null || {
     warning "Can't find command [parallel] even after an attempted install."
     info "Swithcing to serial test mode."
@@ -254,7 +271,7 @@ function specs.run.all-in-parallel() {
   }
 
   local cpu_cores=$(specs.utils.cpu-cores)
-  h5bg "Running Bats with ${cpu_cores} parallel processes..."
+  h2bg "Running Bats with ${cpu_cores} parallel processes..."
   .bats-prefix/bin/bats --pretty -T -j "${cpu_cores}" "${test_files[@]}"
 }
 
@@ -308,6 +325,7 @@ function specs.parse-opts() {
     -p | --parallel)
       shift
       export flag_parallel_tests=1
+      export flag_bats_args="-p"
       ;;
     -t | --taps)
       shift
@@ -327,8 +345,7 @@ function specs.parse-opts() {
         error "Invalid installation method — ${method}. Supported methods: " "${Bashmatic__BatsInstallMethods}"
         exit 1
       }
-      ${func}
-      exit $?
+      export Bashmatic__BatsInstallMethod="${method}"
       ;;
     --) # End of all options; anything after will be passed to the action function
       shift
@@ -357,7 +374,7 @@ function specs.header() {
   hr
   echo
   printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
-  printf "\e[48;5;11m\e[48;31;207m  BASHMATIC TEST RUNNER, VERSION ${black}$(bashmatic.version)                                              ${clr}\n"
+  printf "\e[48;5;11m\e[48;31;207m  BASHMATIC TEST RUNNER, VERSION ${black}$(bashmatic.version)                                                    ${clr}\n"
   printf "\e[48;5;11m\e[48;30;209m  © 2016-2021 Konstantin Gredeskoul, All Rights Reserved,  MIT License.                   ${clr}\n"
   printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
   echo
@@ -392,9 +409,16 @@ function specs.usage() {
   exit 0
 }
 
+function specs.set-width() {
+  output.constrain-screen-width "${w}"
+}
+
 function specs.run() {
   declare -a test_files
   declare -a all_test_files
+
+  specs.set-width
+  specs.header
 
   export test_files=()
   export all_test_files=()
@@ -402,15 +426,12 @@ function specs.run() {
   dbgf specs.init "$@"
   dbgf specs.parse-opts "$@"
 
-  dbgf specs.install sources
+  dbgf specs.install "${Bashmatic__BatsInstallMethod}"
   dbgf specs.validate-bats
   dbgf specs.add-all-files # Populates all_test_files[@] if not already populated
 
   [[ -z ${test_files[*]} ]] && test_files=("${all_test_files[@]}")
 
-  output.constrain-screen-width "${UI_WIDTH}"
-
-  specs.header
   [[ ${#test_files} -gt 0 ]] && h4bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
 
   if [[ ${flag_parallel_tests}0 -eq 0 ]] ;  then 
