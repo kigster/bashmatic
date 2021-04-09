@@ -2,8 +2,18 @@
 # @brief Functions in this file manage git repos, including this one.
 
 function git.repo.latest-remote-tag() {
-  local  repo_url="$1"
+  local repo_url="$1"
   git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}'| tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+}
+
+function git.repo.latest-local-tag() {
+  git tag -l | sort | tail -1
+}
+
+function git.repo.next-local-tag() {
+  local tag=$(git.repo.latest-local-tag)
+  [[ -z ${tag} ]] && tag="0.0.0"
+  ruby -e "prefix='${tag}'.gsub(/^([^\d]+).*/, '\1'); version='${tag}'.gsub(/[^\d.]/, '').split(/\./).map(&:to_i); version[2]+=1; puts \"#{prefix}#{version.join('.')}\""
 }
 
 function git.configure-auto-updates() {
