@@ -136,7 +136,6 @@
 **Merged pull requests:**
 
 - This PR fixes auto-detection of BASHMATIC\_HOME [\#23](https://github.com/kigster/bashmatic/pull/23) ([kigster](https://github.com/kigster))
-- Better bootstrap process [\#22](https://github.com/kigster/bashmatic/pull/22) ([kigster](https://github.com/kigster))
 - Add a Gitter chat badge to README.adoc [\#21](https://github.com/kigster/bashmatic/pull/21) ([gitter-badger](https://github.com/gitter-badger))
 - Fixed Typo in init.sh for dependencies line\#55 [\#19](https://github.com/kigster/bashmatic/pull/19) ([inderpreet](https://github.com/inderpreet))
 - An attempt to remove constructs that were breaking when invoked from ZSH [\#18](https://github.com/kigster/bashmatic/pull/18) ([kigster](https://github.com/kigster))
@@ -156,6 +155,7 @@
 
 **Merged pull requests:**
 
+- Better bootstrap process [\#22](https://github.com/kigster/bashmatic/pull/22) ([kigster](https://github.com/kigster))
 - Adding array.sort, array.uniq and array.sort-numeric [\#14](https://github.com/kigster/bashmatic/pull/14) ([kigster](https://github.com/kigster))
 
 ## [v1.3.0](https://github.com/kigster/bashmatic/tree/v1.3.0) (2020-09-22)

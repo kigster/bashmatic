@@ -4457,6 +4457,17 @@ git.repo-is-clean ()
 
 ----
 
+==== `git.repo.latest-local-tag`
+
+[source,bash]
+----
+git.repo.latest-local-tag () 
+{ 
+    git tag -l | sort | tail -1
+}
+
+----
+
 ==== `git.repo.latest-remote-tag`
 
 [source,bash]
@@ -4465,6 +4476,19 @@ git.repo.latest-remote-tag ()
 { 
     local repo_url="$1"
     git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}' | tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+}
+
+----
+
+==== `git.repo.next-local-tag`
+
+[source,bash]
+----
+git.repo.next-local-tag () 
+{ 
+    local tag=$(git.repo.latest-local-tag)
+    [[ -z ${tag} ]] && tag="0.0.0"
+    ruby -e "prefix='${tag}'.gsub(/^([^\d]+).*/, '\1'); version='${tag}'.gsub(/[^\d.]/, '').split(/\./).map(&:to_i); version[2]+=1; puts \"#{prefix}#{version.join('.')}\""
 }
 
 ----
