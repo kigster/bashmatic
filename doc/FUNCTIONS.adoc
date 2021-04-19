@@ -9,6 +9,7 @@
 
 == Bashmatic Modules
 
+* xref:#module-.audio[.audio]
 * xref:#module-7z[7z]
 * xref:#module-array[array]
 * xref:#module-asciidoc[asciidoc]
@@ -27,6 +28,7 @@
 * xref:#module-dir[dir]
 * xref:#module-docker[docker]
 * xref:#module-file[file]
+* xref:#module-files[files]
 * xref:#module-ftrace[ftrace]
 * xref:#module-gem[gem]
 * xref:#module-git[git]
@@ -36,6 +38,7 @@
 * xref:#module-json[json]
 * xref:#module-maths[maths]
 * xref:#module-net[net]
+* xref:#module-nginx[nginx]
 * xref:#module-openssl[openssl]
 * xref:#module-osx[osx]
 * xref:#module-output[output]
@@ -75,6 +78,9 @@
 * xref:#module-zsh[zsh]
 
 == List of Bashmatic Functions
+
+
+=== Module `.audio`
 
 
 === Module `7z`
@@ -1942,11 +1948,13 @@ config.get-format ()
 config.set-file () 
 { 
     export bashmatic__config_file="$1"
-    if [[ ${bashmatic__config_file} =~ .yml$ || ${bashmatic__config_file} =~ .yaml$ ]]; then
+    if [[ ${bashmatic__config_file} =~ \.yml$ || ${bashmatic__config_file} =~ \.yaml$ || ${bashmatic__config_file} =~ \.YML$ || ${bashmatic__config_file} =~ \.YAML$ ]]; then
         config.set-format yaml
     else
-        if [[ ${bashmatic__config_file} =~ .json$ ]]; then
+        if [[ ${bashmatic__config_file} =~ \.json$ || ${bashmatic__config_file} =~ \.JSON$ ]]; then
             config.set-format json
+        else
+            warning "File extension is not recognized." "Use config.set-format [json|yaml]" 1>&2
         fi
     fi
 }
@@ -3601,12 +3609,7 @@ file.list.filter-non-empty ()
 ----
 file.size () 
 { 
-    util.os
-    if [[ ${AppCurrentOS} =~ linux ]]; then
-        stat -c %s "$1"
-    else
-        file.stat "$1" st_size
-    fi
+    ls -al $* | awk '{print $5}'
 }
 
 ----
@@ -3757,6 +3760,589 @@ files.map ()
 files.map.shell-scripts () 
 { 
     files.map "$1" '*.sh' "$2"
+}
+
+----
+
+
+=== Module `files`
+
+==== `addup`
+
+[source,bash]
+----
+addup () 
+{ 
+    local addup_debug=0
+    while :; do
+        case $1 in 
+            -h | -\? | --help)
+                shift
+                local addup__help=1
+            ;
+            -d | --debug)
+                shift
+                addup__debug=1
+            ;
+            -u | --units)
+                shift
+                if [[ -n "$1" ]]; then
+                    local addup__units=$1
+                    shift
+                else
+                    printf 'ERROR: "--units" requires a non-empty option argument.\n' 1>&2
+                    return 1
+                fi
+            ;
+            -n | --denominator)
+                shift
+                if [ -n "$1" ]; then
+                    local addup__denominator=$1
+                    shift
+                else
+                    printf 'ERROR: "--denominator" requires a non-empty option argument.\n' 1>&2
+                    exit 1
+                fi
+            ;
+            -m | --multiplier)
+                shift
+                if [ -n "$1" ]; then
+                    local addup__multiplier=$1
+                    shift
+                else
+                    printf 'ERROR: "--multiplier" requires a non-empty option argument.\n' 1>&2
+                    exit 1
+                fi
+            ;
+            --)
+                shift
+                break
+            ;
+            -?*)
+                printf 'WARN: Unknown option (ignored): %s\n' "$1" 1>&2
+                exit 127
+                shift
+            ;
+            *)
+                break
+                shift
+            ;
+        esac
+    done
+    [[ -n $addup_help ]] && { 
+        printf "${bldylw}usage:   ${bldgrn}addup [ options ] col1 col2 ....${txtrst}\n"
+        printf "${bldylw}options:${txtrst} \n"
+        printf "    -h/--help                   print help\n"
+        printf "    -d/--debug                  print debugging info in awk\n"
+        printf "    -u/--units             str  set units to display next to the numbers\n"
+        printf "    -m/--multiplier          M  specifies multiplier coefficient for each column's sum\n"
+        printf "    -n/--denominator         N  specifies denominator for each addup__cols's sum\n"
+        echo
+        printf "${bldylw}example:${txtrst} \n"
+        printf "    ps -orss,vsz,args | addup --units Gb -n \$((1024*1024)) 1 2\n\n"
+        return
+    }
+    local addup__cols=$@
+    is-dbg && printf "addup__cols argument: ${addup__cols[*]}\n"
+    for col in ${addup__cols[@]}
+    do
+        [[ $col =~ ^[0-9]+$ ]] || { 
+            printf "usage: ${bldgrn}some command | ${bldblu}addup ${bldylw}<column number> [, <column number>, ... ]${txtrst}\n"
+            printf "   eg: ps -orss,vsz,args | grep ruby | addup -u Mb -m 1024 1 2\n"
+            exit
+        }
+    done
+    awk -v columns="${addup__cols[*]}" -v denominator="${addup__denominator}" -v multiplier="${addup__multiplier}" -v units="${addup__units}" -v debug="${addup__debug}" -f ~/.pu_addup.awk 0<&0
+}
+
+----
+
+==== `byword`
+
+[source,bash]
+----
+byword () 
+{ 
+    [[ -n "${byword_app}" ]] || byword_app="/Applications/Byword.app"
+    if [[ -d ${byword_app} ]]; then
+        open $byword_app $*
+    else
+        [[ -n "$(which mate)" && -n $(mate "$*") ]] || vim "$*"
+    fi
+}
+
+----
+
+==== `file.search.usage`
+
+[source,bash]
+----
+file.search.usage () 
+{ 
+    printf "1
+    ${bldylw}DESCRIPTION${clr}
+      This is a streamlined interface to the UNIX  utility ${bldgrn}find${clr}.
+
+    ${bldylw}USAGE
+      ${bldgrn}files.search '*.mp3' [ ${txtpur}global flags to find${bldgrn} ] [ ${txtcyn}end flags to find ${bldgrn}]
+      ${bldgrn}files.search '*.mp3' ${txtpur}'-maxdepth 1' ${txtcyn}'-exec cp -rp {} ~/Music/'${clr}
+
+    " | sed 's/^  //g'
+}
+
+----
+
+==== `file.size`
+
+[source,bash]
+----
+file.size () 
+{ 
+    ls -al $* | awk '{print $5}'
+}
+
+----
+
+==== `files.search`
+
+[source,bash]
+----
+files.search () 
+{ 
+    [[ -z $* ]] && { 
+        file.search.usage
+        return 0
+    }
+    local pattern="$1"
+    shift
+    local flags_before="$1"
+    shift
+    local flags_after="$1"
+    shift
+    [[ -z "${pattern}" ]] && return
+    local cmd="find . ${flags_before} -type f -iname '${pattern}' ${flags_after} -print0"
+    h1bg "${bldbl}${cmd}" 1>&2
+    local stderr=$(file.temp)
+    while IFS= read -d '' -r file; do
+        echo "${file}"
+    done < <(eval "${cmd}" 2>"${stderr}")
+    [[ -s ${stderr} ]] && { 
+        error "$(cat "${stderr}")"
+        return 1
+    }
+}
+
+----
+
+==== `files.search.mp3`
+
+[source,bash]
+----
+files.search.mp3 () 
+{ 
+    file.search '*.mp3'
+}
+
+----
+
+==== `jpg.bmp`
+
+[source,bash]
+----
+jpg.bmp () 
+{ 
+    dir=
+    if [ ! -z "$1" ]; then
+        dir="$1/"
+    fi
+    for file in $(ls -1 *.JPG *.jpg)
+    do
+        echo converting $file...
+        name=$(openssl rand -hex 4 | tr 'a-z' 'A-Z')
+        convert $file ${dir}${name}.BMP
+    done
+}
+
+----
+
+==== `md.edit`
+
+[source,bash]
+----
+md.edit () 
+{ 
+    [[ -n "${mkd_editors}" ]] || declare -a mkd_editors=("byword" "mate" "atom" "vim")
+    for editor in "${mkd_editors[@]}"
+    do
+        if [[ -n "$(type $editor | grep function)" || -n "$(which $editor)" ]]; then
+            $editor $*
+            break
+        fi
+    done
+}
+
+----
+
+==== `mem`
+
+[source,bash]
+----
+mem () 
+{ 
+    local pattern=
+    if [[ ${1:0:1} != '-' ]]; then
+        pattern=$1
+        shift
+    fi
+    local scope='-e'
+    [[ -n ${1} && ${1:0:1} == '-' ]] && { 
+        scope=$*
+    }
+    local filter=
+    if [[ -n ${pattern} ]]; then
+        ps -orss,vsz,args ${scope} | egrep "RSS|${pattern}" | grep -v grep | addup --units Mb -n 1024 1 2
+    else
+        ps -orss,vsz,args ${scope} | grep -v grep | addup --units Mb -n 1024 1 2
+    fi
+}
+
+----
+
+==== `now`
+
+[source,bash]
+----
+now () 
+{ 
+    date '+%Y-%m-%d.%H:%M:%S'
+}
+
+----
+
+==== `observe`
+
+[source,bash]
+----
+observe () 
+{ 
+    local refresh=1
+    [[ "$1" =~ [0-9] ]] && refresh=$1 && shift
+    cmd=$@
+    while true; do
+        printf "${bakblk}${bldblu}$(date) | ${bldwht}command: ${bldgrn}${cmd[@]}"
+        printf "\033[K"
+        printf "${txtrst}\n\n"
+        time ${cmd[@]} sleep $refresh
+        clear
+    done
+}
+
+----
+
+==== `osx.hostname`
+
+[source,bash]
+----
+osx.hostname () 
+{ 
+    local host=$*
+    [[ -z $host ]] && { 
+        echo "usage: osx.hostname desired-host-name"
+        return
+    }
+    echo setting ComputerName to $host...
+    sudo scutil --set ComputerName $host
+    localhost=$(echo $host | sed -E 's/\..*$//g')
+    echo setting LocalHostName to $localhost...
+    sudo scutil --set LocalHostName ${localhost}
+    echo setting HostName to $host...
+    sudo scutil --set HostName $host
+}
+
+----
+
+==== `pu.convert`
+
+[source,bash]
+----
+pu.convert () 
+{ 
+    local from_ext=$1
+    shift
+    local to_ext=$1
+    shift
+    if [[ "$*" =~ "--" ]]; then
+        error "Whoops!${txtrst} Did you specify arguments to convert via --option? \n"
+        printf "All arguments to convert ${bldblu}must have a single dash!.${txtrst}\n"
+        return
+    fi
+    if [[ -z "${from_ext}" || -z ""${to_ext}"" ]]; then
+        printf "usage: ${bldgrn}pu.img.convert from-extension to-extension [options-to-convert]${txtrst}\n"
+        printf "       Works only in the current directory, and is non-recursive, case-sensitive.\n\n"
+        printf "   eg: ${bldblu}img.convert png jpg --quality 100${txtrst}\n"
+        return
+    fi
+    for f in $(find . -type f -name "*.${from_ext}" -depth 1 -print)
+    do
+        local to_file=$(printf "${f}" | sed -E "s/(.*)\.${from_ext}/\1.${to_ext}/g")
+        [[ -z ${to_file} ]] && { 
+            echo "to_file is nil, can not convert from $f"
+            return
+        }
+        [[ -z ${f} ]] && { 
+            echo "file is nil, can not convert"
+            return
+        }
+        if [[ -s ${to_file} ]]; then
+            printf "${bldylw}Found existing file ${to_file}, aborting.\n"
+            return
+        fi
+        convert $* $f $to_file
+        result=$?
+        if [[ $result != 0 ]]; then
+            error "convert exited with status $result, aborting...${txtrst}\n"
+            return
+        fi
+        fsize=$(pu.fsize $f)
+        tsize=$(pu.fsize $to_file)
+        ratio=$(ruby -e "printf '%7.2f', 100.0 * ${tsize} / ${fsize}")
+        if [[ $fsize -gt $tsize ]]; then
+            action=" decrease"
+        else
+            if [[ $fsize -lt $tsize ]]; then
+                action=" increase"
+            else
+                action="no change"
+            fi
+        fi
+        printf "${bldylw} [size $ratio%% ${action}] converted ${bldblu}$f ${bldgrn}$to_file ${bldpur}$*  ${txtrst}\n"
+    done
+}
+
+----
+
+==== `rename`
+
+[source,bash]
+----
+rename () 
+{ 
+    local flag_dry_run=0
+    if [[ "$1" == "--dry-run" ]]; then
+        flag_dry_run=1
+        shift
+    fi
+    local pattern="$1"
+    local match="$2"
+    local replace="$3"
+    local flags=${4:-"g"}
+    local newname
+    local -a file_array
+    readarray -t file_array <<< "$(files.search "${pattern}")"
+    h2bg "✅  ${bldblk} Discovered ${#file_array[@]} files matching ${bldblu}/${pattern}/"
+    if is.a-function "${match}"; then
+        for file in "${file_array[@]}"
+        do
+            eval rename.mv "${file}" "$(${match} "${file}")"
+        done
+    else
+        if [[ -n "${match}" && -n "${replace}" ]]; then
+            for file in "${file_array[@]}"
+            do
+                newname=$(echo "${file}" | sed -E "s#${match}#${replace}#${flags}")
+                rename.mv "${file}" "${newname}"
+            done
+        else
+            error "Invalid usage.${clr}
+
+${bldpur}USAGE:${clr}    
+ 
+    ${bldgrn}rename 'pattern' 'replace-argument-bash-function'
+    ${bldgrn}rename 'pattern' 'find regex' 'replace regex' [ 'sed flags' ]
+
+${bldpur}DESCRIPTION:${clr}    
+    There are two ways to use this function:
+  
+    1. Using a BASH function that receives a single file name, and must 
+       output the expected renamed version. 
+
+    2. By passing three arguments: file search pattern that's passed to 
+       'find', regular expression defining what we are replacing, and 
+       finally the replace part. If you have 'gsed' in the PATH, it will 
+       be used the by default. Otherwise, regular 'sed' is used with -E flag. 
+       In this mode, any fourth argument (if provided) replaces the default
+       flag 'g' used in, eg. ${bldylw}sed -E 's/bash/zsh/${bldgrn}g'${clr}.
+
+${bldpur}EXAMPLES:${clr}    
+
+    ${bldylw}1. BASH Function Example
+    ${bldblk}# first define a function that insert '_test' into the argument
+    passed to it, but only if it ends with '.rb'.
+
+        \$ ${bldgrn}append_test() { echo \$1 | sed 's/\.rb/_test.rb/g';  }
+
+    ${bldylw}Next, we call rename and pass both the file search pattern and
+    the bash function neme.
+
+        \$ ${bldgrn}rename '*.rb' append_test
+
+    ${bldylw}2. SED expression 
+    ${bldblk}# Similar to the above, the following will append '-cd1' to 
+    every mp3 file in the current directory, recursively.
+    
+        \$ ${bldgrn}rename '*.mp3' '\.mp3' '-cd1.mp3'
+
+
+${bldpur}LICENSE:${clr}    
+    MIT 
+
+"
+        fi
+    fi
+}
+
+----
+
+==== `rename.do`
+
+[source,bash]
+----
+rename.do () 
+{ 
+    is-dbg && rename.print "${1}" "${2}"
+    is-dbg || rename.mv "${1}" "${2}"
+}
+
+----
+
+==== `rename.error`
+
+[source,bash]
+----
+rename.error () 
+{ 
+    local from="$1"
+    local to="$2"
+    error "An error occurred while attempting to move files:" "${bldylw}${from} ———→ ${bldpur}${to}"
+    return 1
+}
+
+----
+
+==== `rename.kit.add-spec`
+
+[source,bash]
+----
+rename.kit.add-spec () 
+{ 
+    rename "$1" "__rename.kit.add-spec.func"
+}
+
+----
+
+==== `rename.kit.add-test`
+
+[source,bash]
+----
+rename.kit.add-test () 
+{ 
+    rename "$1" "__rename.kit.add-test.func"
+}
+
+----
+
+==== `rename.mv`
+
+[source,bash]
+----
+rename.mv () 
+{ 
+    local from="$1"
+    local to="$2"
+    [[ ! -f "${from}" ]] && { 
+        error "Source file ${from} does not exists.\n"
+        return 1
+    }
+    [[ -f "${to}" ]] && { 
+        error "Destination file ${to} already exists.\n"
+        return 2
+    }
+    [[ -z "${to}" ]] && { 
+        error "Destination file appears to be blank.\n"
+        return 3
+    }
+    run.set-next abort-on-error
+    run "mv \"${from}\" \"${to}\""
+    return 0
+}
+
+----
+
+==== `rename.print`
+
+[source,bash]
+----
+rename.print () 
+{ 
+    info "moving ${bldblu}%-70.70s\n     ➜ ${bldylw}%-70.70s${clr}\n" "${1}" "${2}"
+}
+
+----
+
+==== `repld`
+
+[source,bash]
+----
+repld () 
+{ 
+    local regex=${1}
+    local dir=${2:-"."}
+    echo find ${dir} -type f -exec sed -i -e "'${regex}'" {} \; -print
+    find ${dir} -type f -exec sed -i -e "${regex}" {} \; -print
+}
+
+----
+
+==== `replf`
+
+[source,bash]
+----
+replf () 
+{ 
+    local file=$1
+    local regex=$2
+    sed -i -e "${regex}" $file
+}
+
+----
+
+==== `see`
+
+[source,bash]
+----
+see () 
+{ 
+    local file="$1"
+    is.a-non-empty-file ${file} || { 
+        error "File ${file} is misssing"
+        return 1
+    }
+    is.a-command qlmanage || { 
+        error "Can't find qlmanage"
+        return 2
+    }
+    qlmanage -p 2> /dev/null
+}
+
+----
+
+==== `today`
+
+[source,bash]
+----
+today () 
+{ 
+    date +'%Y-%m-%d'
 }
 
 ----
@@ -4219,8 +4805,8 @@ git.config.kigster ()
 git.configure-auto-updates () 
 { 
     export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
-    mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
+    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo "${USER}" | shasum.sha-only-stdin)"
+    mkdir -p "$(dirname "${LibGit__LastUpdateTimestampFile}")"
 }
 
 ----
@@ -4276,7 +4862,7 @@ git.generate-changelog ()
 git.is-it-time-to-update () 
 { 
     local last_update_at=$(git.last-update-at)
-    local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
+    local second_since_update=$(git.seconds-since-last-pull "${last_update_at}")
     local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
     [[ ${second_since_update} -gt ${update_period_seconds} ]]
 }
@@ -4304,14 +4890,14 @@ git.is-valid-repo ()
 git.last-update-at () 
 { 
     git.configure-auto-updates
-    local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
+    local file="${LibGit__LastUpdateTimestampFile}"
     local last_update=0
     if [[ ${LibGit__ForceUpdate} -eq 0 && -f ${file} ]]; then
-        last_update="$(cat $file | tr -d '\n')"
+        last_update="$(tr "${file}" -d '\n')"
     else
         last_update=0
     fi
-    printf "%d" ${last_update}
+    printf "%d" "${last_update}"
 }
 
 ----
@@ -4457,6 +5043,46 @@ git.repo-is-clean ()
 
 ----
 
+==== `git.repo.ask-to-auto-update`
+
+[source,bash]
+----
+git.repo.ask-to-auto-update () 
+{ 
+    local answer=default
+    unset user_input
+    while true; do
+        info "Your local Bashmatic is out of date — local version is ${bldylw}$(bashmatic.version)" 1>&2
+        info "one of the following options depending on your security posture." 1>&2
+        run.ui.ask-user-value user_input "$(txt-info)Auto-update Bashmatic? ${bldylw}(a,always | y,yes | n,no | x,never)" 1>&2
+        user_input=$(echo "${user_input}" | tr '[:upper:]' '[:lower:]' | tr -d ' ')
+        case ${user_input} in 
+            a | always)
+                answer=always
+                break
+            ;
+            y | yes | sure)
+                answer=yes
+                break
+            ;
+            n | no | stop)
+                answer=no
+                break
+            ;
+            x | never)
+                answer=never
+                break
+            ;
+            *)
+                err "Invalid response: ${bldred}${user_input}\n" 1>&2
+            ;
+        esac
+    done
+    printf "%s" "${answer}"
+}
+
+----
+
 ==== `git.repo.latest-local-tag`
 
 [source,bash]
@@ -4475,7 +5101,18 @@ git.repo.latest-local-tag ()
 git.repo.latest-remote-tag () 
 { 
     local repo_url="$1"
-    git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}' | tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+    git ls-remote --tags --sort="v:refname" "${repo_url}" | grep -E \-v '(latest|stable)' | grep -E -v '\^{}' | tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+}
+
+----
+
+==== `git.repo.name`
+
+[source,bash]
+----
+git.repo.name () 
+{ 
+    git.remote | sedx 's#(git@.*:|https://.*com/)##g'
 }
 
 ----
@@ -4527,7 +5164,7 @@ git.repo.remote-to-git@ ()
 ----
 git.save-last-update-at () 
 { 
-    echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
+    echo "$(epoch)" > "${LibGit__LastUpdateTimestampFile}"
 }
 
 ----
@@ -4656,6 +5293,32 @@ git.upstream ()
     this_branch=${this_branch:-master}
     run.set-next show-output-on
     run "git branch --set-upstream-to=origin/${this_branch} ${this_branch}"
+}
+
+----
+
+==== `git.user-wants-to-update`
+
+[source,bash]
+----
+git.user-wants-to-update () 
+{ 
+    local strategy="${LibGit__AutoUpdateStrategy:-"ask"}"
+    case ${strategy} in 
+        ask)
+            strategy=$(git.repo.ask-to-auto-update)
+        ;
+        never)
+            return 1
+        ;
+        always)
+            return 0
+        ;
+        *)
+            error "Invalid auto-update strategy ${strategy}"
+            return 1
+        ;
+    esac
 }
 
 ----
@@ -5445,6 +6108,27 @@ net.local-subnet ()
     uniq |
     head -1).0/24"
     printf '%s' ${subnet}
+}
+
+----
+
+
+=== Module `nginx`
+
+==== `nginx.csr.create`
+
+[source,bash]
+----
+nginx.csr.create () 
+{ 
+    if [[ -z "$*" ]]; then
+        info "USAGE: ${bldylw}nginx.csr.create domain [ domain2 [ domain ] ]"
+        return 0
+    fi
+    for domain in "$@"
+    do
+        run "openssl req -new -newkey rsa:4096 -nodes -keyout $domain.key -out $domain.csr"
+    done
 }
 
 ----
@@ -9463,15 +10147,14 @@ run.ui.ask-user-value ()
     local variable="$1"
     shift
     local text="$*"
-    local user_input
-    trap 'echo; echo Aborting at user request... ; echo; abort; return' int
+    local _user_input
     ask "${text}"
-    read user_input
-    if [[ -z "${user_input}" ]]; then
+    read _user_input
+    if [[ -z "${_user_input}" ]]; then
         error "Sorry, I didn't get that. Please try again or press Ctrl-C to abort."
         return 1
     else
-        eval "export ${variable}=\"${user_input}\""
+        eval "export ${variable}=\"${_user_input}\""
         return 0
     fi
 }
@@ -11198,6 +11881,33 @@ url.is-valid ()
 
 ----
 
+==== `url.open`
+
+[source,bash]
+----
+url.open () 
+{ 
+    local url="$1"
+    local delay="${2:-"0.1"}"
+    [[ ${url} =~ ^(https?|ftp|scp|ssh|rss):// ]] || url="https://${url}"
+    if command -v open > /dev/null; then
+        ( bash -c "sleep ${delay}; open -g \"${url}\" >/dev/null" & ) > /dev/null 2>&1
+        return 0
+    else
+        if command -v xdg-open > /dev/null; then
+            ( bash -c "sleep ${delay}; xdg-open \"${url}\" >/dev/null" & ) > /dev/null 2>&1
+            return 0
+        else
+            if [[ $(uname -s) =~ Linux ]]; then
+                error "To auto-open URLs on Linux, please install xdg-utils or flatpak-xdg-utils packages." 1>&2
+            fi
+        fi
+    fi
+    return 1
+}
+
+----
+
 ==== `url.shorten`
 
 [source,bash]
@@ -11604,6 +12314,25 @@ user.pairs.username ()
 { 
     [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
     grep -i "$1" "${bashmatic_git_pairs}" | head -1 | awk '{print $4}' | tr -d ';'
+}
+
+----
+
+==== `user.real-name`
+
+[source,bash]
+----
+user.real-name () 
+{ 
+    local name="$(
+    if is.a-command finger; then
+      finger "$(whoami)" | grep -E -o 'Name: [a-zA-Z0-9 ]{1,}' | cut -d ':' -f 2 | xargs echo
+    else
+      id -F 2>/dev/null
+    fi
+  )"
+    name="${name:-${USER}}"
+    printf "%s" "${name}"
 }
 
 ----
@@ -12205,13 +12934,14 @@ video.convert.compress ()
     local file="$1"
     shift
     local output=${file/\.*/.mkv}
-    local ratio="${2:-"1"}"
+    local algo="${2:-"1"}"
     [[ "${file}" == "${output}" ]] && output="${output/\.mkv/-smaller-${ratio}.mkv}"
-    h2 "Starting ffmpeg conversion from ${file} to ${output}" "Source file size is $(file.size.mb ${file})"
+    h2 "Starting ffmpeg conversion from ${file} to ${output}, with algorithm #${ratio}" "Source file size is $(file.size.mb ${file})"
     run.set-next show-output-on
-    run "ffmpeg -stats -y -i ${file} -preset:v veryfast -loglevel error -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/3:ih/3' ${output}"
-    local before=$(file.size ${file})
-    local after=$(file.size ${output})
+    local func=".video.convert.compress-${algo}"
+    run "${func} \"${file}\" \"${output}\""
+    local before="$(file.size "${file}")"
+    local after="$(file.size "${output}")"
     local reduction=$(( 100 * ( before - after ) / before ))
     success "File ${output} was prodiced with ${reduction}% size savings."
 }

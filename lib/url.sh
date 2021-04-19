@@ -140,3 +140,22 @@ url.http-code() {
     [[ -n "${result}" ]] && printf ${result} || printf "404"
   fi
 }
+
+function url.open() {
+  local url="$1"
+  local delay="${2:-"0.1"}"
+
+  [[ ${url} =~ ^(https?|ftp|scp|ssh|rss):// ]] || url="https://${url}"
+  if command -v open>/dev/null; then
+    ( bash -c "sleep ${delay}; open -g \"${url}\" >/dev/null" & ) >/dev/null 2>&1
+    return 0
+  elif command -v xdg-open>/dev/null; then
+    ( bash -c "sleep ${delay}; xdg-open \"${url}\" >/dev/null" & ) >/dev/null 2>&1
+    return 0
+  elif [[ $(uname -s) =~ Linux ]] ; then
+    error "To auto-open URLs on Linux, please install xdg-utils or flatpak-xdg-utils packages." >&2
+  fi
+  return 1
+}
+
+

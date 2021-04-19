@@ -1,5 +1,9 @@
-●#!/usr/bin/env bash
-source ~/.bashmatic/init.sh
+#!/usr/bin/env bash
+# vim: ft=bash
+
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh" >/dev/null
 
 output="${1:-"files-non-utf8-encoded.csv"}"
 
@@ -9,9 +13,9 @@ printf "%s,%s,%s\n" file_name current_encoding command_to_make_unicode >"${outpu
 
 h1 "Detecting encoding of text files in $(pwd -P)..." "Total of $(find . -type f | wc -l | tr -d ' ') files found."
 
-h2 "Legend:" \
+h2 "Legend:" \ 
   "🦄         : ${bldgrn}Already UTF8" " " \
-  "🗑          : ${bldylw}binary file, can't be converted, skipping" " " \
+  "🗑         : ${bldylw}binary file, can't be converted, skipping" " " \
   "🥳         : ${bldpur}ASCII file, can be converted "
 
 for f in $(find . -type f); do

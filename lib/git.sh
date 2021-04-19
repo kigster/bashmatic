@@ -1,9 +1,51 @@
 #!/usr/bin/env bash
 # @brief Functions in this file manage git repos, including this one.
 
+export LibGit__AutoUpdateEnabledFile="${HOME}/.config/bashmatic/autoupdate-strategy"
+export LibGit__AutoUpdateStrategy=ask # default
+[[ -f ${LibGit__AutoUpdateEnabledFile} ]] && export LibGit__AutoUpdateStrategy="$(cat ${LibGit__AutoUpdateEnabledFile})"
+
+function git.repo.ask-to-auto-update() {
+  local answer=default
+  unset user_input
+  while true; do
+    info "Your local Bashmatic is out of date — local version is ${bldylw}$(bashmatic.version)">&2
+    info "one of the following options depending on your security posture.">&2
+    run.ui.ask-user-value user_input "$(txt-info)Auto-update Bashmatic? ${bldylw}(a,always | y,yes | n,no | x,never)">&2
+    user_input=$(echo "${user_input}" | tr '[:upper:]' '[:lower:]' | tr -d ' ')
+    case ${user_input} in
+    a|always)
+      answer=always
+      break
+      ;;
+    y|yes|sure)
+      answer=yes
+      break
+      ;;
+    n|no|stop)
+      answer=no
+      break
+      ;;
+    x|never)
+      answer=never
+      break
+      ;;
+    *)
+      err "Invalid response: ${bldred}${user_input}\n">&2
+      ;;
+    esac
+  done
+
+  printf "%s" "${answer}"
+}
+
 function git.repo.latest-remote-tag() {
   local repo_url="$1"
-  git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}'| tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+  git ls-remote --tags --sort="v:refname" "${repo_url}" | grep -E \-v '(latest|stable)' | grep -E -v '\^{}'| tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+}
+
+function git.repo.latest-local-tag() {
+  git tag -l | tail -1
 }
 
 function git.repo.latest-local-tag() {
@@ -18,8 +60,8 @@ function git.repo.next-local-tag() {
 
 function git.configure-auto-updates() {
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-  export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
-  mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
+  export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo "${USER}" | shasum.sha-only-stdin)"
+  mkdir -p "$(dirname "${LibGit__LastUpdateTimestampFile}")"
 }
 
 # @description Sets or gets user values from global gitconfig.
@@ -92,14 +134,15 @@ function git.sync-dirs() {
 function git.last-update-at() {
   git.configure-auto-updates
 
-  local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
+  local file="${LibGit__LastUpdateTimestampFile}"
   local last_update=0
   if [[ ${LibGit__ForceUpdate} -eq 0 && -f ${file} ]]; then
-    last_update="$(cat $file | tr -d '\n')"
+    last_update="$(tr "${file}" -d '\n')"
   else
     last_update=0
   fi
-  printf "%d" ${last_update}
+
+  printf "%d" "${last_update}"
 }
 
 function git.seconds-since-last-pull() {
@@ -110,9 +153,28 @@ function git.seconds-since-last-pull() {
 
 function git.is-it-time-to-update() {
   local last_update_at=$(git.last-update-at)
-  local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
+  local second_since_update=$(git.seconds-since-last-pull "${last_update_at}")
   local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
   [[ ${second_since_update} -gt ${update_period_seconds} ]]
+}
+
+function git.user-wants-to-update() {
+  local strategy="${LibGit__AutoUpdateStrategy:-"ask"}"
+  case ${strategy} in
+  ask)
+    strategy=$(git.repo.ask-to-auto-update)
+
+    ;;
+  never)
+    return 1
+    ;;
+  always)
+    return 0
+    ;;
+  *)
+    error "Invalid auto-update strategy ${strategy}"
+    return 1
+  esac
 }
 
 function git.update-repo-if-needed() {
@@ -120,7 +182,7 @@ function git.update-repo-if-needed() {
 }
 
 function git.save-last-update-at() {
-  echo $(epoch) >${LibGit__LastUpdateTimestampFile}
+  echo "$(epoch)" >"${LibGit__LastUpdateTimestampFile}"
 }
 
 function git.sync-remote() {
@@ -344,7 +406,7 @@ function git.generate-changelog() {
   local user=${remote_parts[3]}
   local repo=${remote_parts[4]}
   local host=${remote_parts[2]}
-  
+
   [[ ${host} =~ github.com ]] || {
     error "Can only generate changelog for Github Repos at the moment, sorry."
     return 1
@@ -363,4 +425,6 @@ function git.generate-changelog() {
   return 0
 }
 
-
+function git.repo.name() {
+  git.remote | sedx 's#(git@.*:|https://.*com/)##g'
+}

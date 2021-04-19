@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 # © 2014-2021 Konstantin Gredeskoul
-# 
+#
 user.gitconfig.email() {
   if [[ -s ${HOME}/.gitconfig ]]; then
     grep email "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
@@ -36,17 +36,17 @@ user() {
 # https://github.com/pivotal-legacy/git_scripts
 #
 #———————————————————————————————————————————————————————————————————————————————————————————————————
-# 
+#
 # Please NOTE: these functions only support names in the format "Firstname Lastname".
 # It does NOT support punctuation, middle names, etc.
 export bashmatic_git_pairs="${HOME}/.pairs"
 
 user.pairs.set-file() {
-  [[ -s "$1" ]] || { 
+  [[ -s "$1" ]] || {
     error "Please pass a valid path to the .pairs file, typically in your home. You passed: [$1]"
     return 1
   }
-
+  
   export bashmatic_git_pairs="$1"
 }
 
@@ -69,7 +69,7 @@ user.pairs.email() {
   [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
   local username="$(user.pairs.username "$1")"
   local domain="$(grep domain "${bashmatic_git_pairs}" | sed 's/.*domain://g' | tr -d ' ')"
-  [[ -n ${username} && -n "${domain}"  ]] || {
+  [[ -n ${username} && -n "${domain}" ]] || {
     error "Couldn't determine username or domain from ${bashmatic_git_pairs} file for input ${bldwht}$*"
     return 1
   }
@@ -106,7 +106,7 @@ user.login-shell() {
 user.login-shell-path() {
   if [[ -n $(command -v finger 2>/dev/null) ]]; then
     finger "${USER}" | grep Shell: | sed 's/^.*Shell: //g'
-  elif grep -q "${USER}" /etc/passwd 2>/dev/null ; then
+    elif grep -q "${USER}" /etc/passwd 2>/dev/null; then
     grep "${USER}" /etc/passwd | sed 's/.*://g'
   else
     command -v "$(user.current-shell)"
@@ -114,9 +114,9 @@ user.login-shell-path() {
 }
 
 # @description
-#    Determines the current session shell by looking at the 
+#    Determines the current session shell by looking at the
 #    command running under the current PID $$.
-#  
+#
 #    Prints current shell without the path, eg 'bash'
 #
 user.current-shell() {
@@ -145,4 +145,17 @@ user.current-shell-init-file() {
   [[ -z ${init_file} ]] && init_file="$0"
   touch "${init_file}"
   echo "${init_file}"
-}  
+}
+
+function user.real-name() {
+  local name="$(
+    if is.a-command finger; then
+      finger "$(whoami)" | grep -E -o 'Name: [a-zA-Z0-9 ]{1,}' | cut -d ':' -f 2 | xargs echo
+    else
+      id -F 2>/dev/null
+    fi
+  )"
+  # default to the username
+  name="${name:-${USER}}"
+  printf "%s" "${name}"
+}

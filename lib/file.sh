@@ -306,3 +306,4 @@ file.find() {
 dir.find() {
   find . -name "*$1*" -type d -print
 }
+

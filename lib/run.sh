@@ -30,19 +30,17 @@ run.ui.ask-user-value() {
   local variable="$1"
   shift
   local text="$*"
-  local user_input
-
-  trap 'echo; echo Aborting at user request... ; echo; abort; return' int
+  local _user_input
 
   ask "${text}"
   # create a variable to hold the input
-  read user_input
+  read _user_input
   # Check if string is empty using -z. For more 'help test'
-  if [[ -z "${user_input}" ]]; then
+  if [[ -z "${_user_input}" ]]; then
     error "Sorry, I didn't get that. Please try again or press Ctrl-C to abort."
     return 1
   else
-    eval "export ${variable}=\"${user_input}\""
+    eval "export ${variable}=\"${_user_input}\""
     return 0
   fi
 }
