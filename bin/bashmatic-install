@@ -55,12 +55,20 @@ ts() {
 }
 
 puts() {
-  printf "${bldblu} INFO  ${txtpur}〈$(ts)〉 ${txtcyn}${*}${clr}\n"
+  for str in "$@"; do
+  printf "${clr}${bldwht}${bakblu} INFORMATION ➜ ${clr}  ${txtblu}${str}${clr}\n"
+  done
 }
 
 err() {
   for str in "$@"; do
-    printf "${bldred} ERROR ${txtpur}〈$(ts)〉 ${bldred}${str}\n"
+  printf "${clr}${bldwht}${bakred} ERROR       ➜ ${clr}  ${bldred}${str}${clr}\n"
+  done
+}
+
+wrn() {
+  for str in "$@"; do
+  printf "${clr}${txtblk}${bakylw} WARNING     ➜ ${clr}  ${bldylw}${str}${clr}\n"
   done
 }
 
@@ -179,16 +187,18 @@ git-sync() {
   [[ -d ".git" ]] || return
 
   if [[ -n $(git status -s) ]]; then
-    echo
-    err "Previous installation folder has locally modified files." \
-      "Commit, stash or remove those files, and try again."
+    wrn "It appears you already installed Bashmatic into ${BASHMATIC_HOME}." \
+        "Normally we would pull the latest changes during this operation," \
+        "but we detected locally modified files under ${bldwht}${BASHMATIC_HOME}."
 
+    puts "Please commit, stash or remove those files, and try again."
+    puts "For your information, here are the modifications:"      
     echo
     git status -s || true
     echo
     return 1
   else
-    git checkout -q master && git pull -q --rebase
+    git checkout -q master && git pull -q --rebase >/dev/null
   fi
 
   cd - >/dev/null
@@ -315,6 +325,7 @@ export bootstrap__skip_git_check=0
 export bootstrap__skip_install=0
 export bootstrap__verbose=0
 export bootstrap__quiet=0
+export bootstrap__skip_on_login=0
 export bootstrap__bashmatic_home=${HOME}/.bashmatic
 export bootstrap__bash_version="5.1-rc2"
 export bootstrap__bash_prefix="/usr/local"
@@ -345,8 +356,22 @@ ${bldylw}FLAGS:${clr}
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
   -P, --bash-prefix PATH        Install BASH into PATH (default: ${bootstrap__bash_prefix})
+
+  -l, --skip-on-login           Do not install Bashmatic Hook into your dotfiles, which
+                                it does by the default. If you skip it, you can always
+                                change your mind later and add it to your shell dot files
+                                by running the following on the command line:
+
+                                You can always do so later with the following:
+                                ${bldgrn}$ ~/.bashmatic/bin/bashmatic load-at-login ${clr}
+
+                                This above will install the Bashmatic hook into your shell 
+                                dotfile, eg ${txtcyn}~/.bash_profile.${clr} if you are on BASH,
+                                or ${txtcyn}~/.zshrc${clr} if you are on ZSH..
+
   -g, --skip-git                Do not abort if the destination has local changes
   -i, --skip-install            Only install/verify prerequisites, skip install.
+
   -v, --verbose                 See additional output as bootstrap is running.
   -q, --quiet                   See only error output.
   -d, --debug                   Turn on 'set -x' to see all commands running.
@@ -400,6 +425,10 @@ parse-opts() {
       shift
       export bootstrap__skip_install=1
       ;;
+    -l | --skip-on-login)
+      shift
+      export bootstrap__skip_on_login=1
+      ;;
     -h | -\? | --help)
       shift
       usage
@@ -429,7 +458,7 @@ bashmatic-download-and-install() {
   if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
     git-sync || return 1
   else
-    git clone -q ${BASHMATIC_URL} "${BASHMATIC_HOME}"
+    git clone -q ${BASHMATIC_URL} "${BASHMATIC_HOME}" >/dev/null
     code=$? 
   fi
 
@@ -445,7 +474,7 @@ bashmatic-download-and-install() {
      }
     # shellcheck disable=SC1090
     source "${BASHMATIC_INIT}"
-    bashmatic.load-at-login
+    ((bootstrap__skip_on_login)) || bashmatic.load-at-login
     is-quiet || success "Your BashMatic has been successfully installed."
     return 0
   fi

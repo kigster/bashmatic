@@ -129,7 +129,7 @@ user.login-shell-init-file() {
 }
 
 user.current-shell-init-file() {
-  declare -a shell_files=($(util.shell-init-files user.current-shell))
+  declare -a shell_files=($(util.shell-init-files "$(user.current-shell)"))
   .user.pick-shell-init-file "${shell_files[@]}"
 }
 
