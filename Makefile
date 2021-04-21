@@ -78,6 +78,9 @@ make-utf8:			## Convert all text SHELL script  files from ASCII to UTF8 format
 file-stats-git:			## Print all  files  known to `git ls-files` command
 				@git ls-files | xargs files
 
+#—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+update: 			update-changelog update-functions update-usage update-readme fonts-clean git-add ## Runs all of the updates, add locally modiofied files to git.
 
 update-changelog: 		## Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN env var set)
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Regenerating CHANGELOG....$(clear)\n"
@@ -106,13 +109,13 @@ reduce-size-readme:
 open-readme:			## Open README.pdf in the system viewer
 				@[[ -s README.pdf ]] && open -n README.pdf
 
+#—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 git-add:
 				@printf "\n$(bold)  👉  $(yellow)Git status after the update:$(clear)\n"
 				@git add .
 				@printf "\n$(bold)  👉  $(blue)Git status after the update:$(clear)\n"
 				@git status
 
-update: 			update-changelog update-functions update-usage update-readme fonts-clean git-add ## Runs all of the updates, add locally modiofied files to git.
 
 setup: 				## Run the comprehensive development setup on this machine
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Running developer setup script, this may take a while.$(clear)\n"
