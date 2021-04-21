@@ -9,6 +9,7 @@
 
 == Bashmatic Modules
 
+* xref:#module-.audio[.audio]
 * xref:#module-7z[7z]
 * xref:#module-array[array]
 * xref:#module-asciidoc[asciidoc]
@@ -75,6 +76,9 @@
 * xref:#module-zsh[zsh]
 
 == List of Bashmatic Functions
+
+
+=== Module `.audio`
 
 
 === Module `7z`
@@ -1942,11 +1946,13 @@ config.get-format ()
 config.set-file () 
 { 
     export bashmatic__config_file="$1"
-    if [[ ${bashmatic__config_file} =~ .yml$ || ${bashmatic__config_file} =~ .yaml$ ]]; then
+    if [[ ${bashmatic__config_file} =~ \.yml$ || ${bashmatic__config_file} =~ \.yaml$ || ${bashmatic__config_file} =~ \.YML$ || ${bashmatic__config_file} =~ \.YAML$ ]]; then
         config.set-format yaml
     else
-        if [[ ${bashmatic__config_file} =~ .json$ ]]; then
+        if [[ ${bashmatic__config_file} =~ \.json$ || ${bashmatic__config_file} =~ \.JSON$ ]]; then
             config.set-format json
+        else
+            warning "File extension is not recognized." "Use config.set-format [json|yaml]" 1>&2
         fi
     fi
 }
@@ -11407,7 +11413,7 @@ user.current-shell ()
 ----
 user.current-shell-init-file () 
 { 
-    declare -a shell_files=($(util.shell-init-files user.current-shell))
+    declare -a shell_files=($(util.shell-init-files "$(user.current-shell)"))
     .user.pick-shell-init-file "${shell_files[@]}"
 }
 
@@ -12205,13 +12211,14 @@ video.convert.compress ()
     local file="$1"
     shift
     local output=${file/\.*/.mkv}
-    local ratio="${2:-"1"}"
+    local algo="${2:-"1"}"
     [[ "${file}" == "${output}" ]] && output="${output/\.mkv/-smaller-${ratio}.mkv}"
-    h2 "Starting ffmpeg conversion from ${file} to ${output}" "Source file size is $(file.size.mb ${file})"
+    h2 "Starting ffmpeg conversion from ${file} to ${output}, with algorithm #${ratio}" "Source file size is $(file.size.mb ${file})"
     run.set-next show-output-on
-    run "ffmpeg -stats -y -i ${file} -preset:v veryfast -loglevel error -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/3:ih/3' ${output}"
-    local before=$(file.size ${file})
-    local after=$(file.size ${output})
+    local func=".video.convert.compress-${algo}"
+    run "${func} \"${file}\" \"${output}\""
+    local before="$(file.size "${file}")"
+    local after="$(file.size "${output}")"
     local reduction=$(( 100 * ( before - after ) / before ))
     success "File ${output} was prodiced with ${reduction}% size savings."
 }

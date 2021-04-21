@@ -1,12 +1,32 @@
 # Changelog
 
-## [v2.1.0](https://github.com/kigster/bashmatic/tree/v2.1.0) (2021-04-06)
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.0.0...v2.1.0)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.1...HEAD)
+
+**Fixed bugs:**
+
+- Hoping to fix parallel specs on linux [\#58](https://github.com/kigster/bashmatic/pull/58) ([kigster](https://github.com/kigster))
+
+**Closed issues:**
+
+- Skip load-at-login when install [\#59](https://github.com/kigster/bashmatic/issues/59)
+
+**Merged pull requests:**
+
+- Fixes \#59 — option to not load bashmatic at login [\#60](https://github.com/kigster/bashmatic/pull/60) ([kigster](https://github.com/kigster))
+
+## [v2.1.1](https://github.com/kigster/bashmatic/tree/v2.1.1) (2021-04-09)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.0.0...v2.1.1)
 
 ## [v2.0.0](https://github.com/kigster/bashmatic/tree/v2.0.0) (2021-04-06)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.13.0...v2.0.0)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.0...v2.0.0)
+
+## [v2.1.0](https://github.com/kigster/bashmatic/tree/v2.1.0) (2021-04-06)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.13.0...v2.1.0)
 
 **Closed issues:**
 
@@ -90,14 +110,11 @@
 - Adding ZSH installation + refactor init.sh [\#32](https://github.com/kigster/bashmatic/pull/32) ([kigster](https://github.com/kigster))
 - Synology [\#31](https://github.com/kigster/bashmatic/pull/31) ([kigster](https://github.com/kigster))
 - Fixing k8s-example; bin/scheck and a few more [\#30](https://github.com/kigster/bashmatic/pull/30) ([kigster](https://github.com/kigster))
+- Adding `db explain` and --verbose flag. [\#29](https://github.com/kigster/bashmatic/pull/29) ([kigster](https://github.com/kigster))
 
 ## [v1.7.2](https://github.com/kigster/bashmatic/tree/v1.7.2) (2020-12-26)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v1.7.1...v1.7.2)
-
-**Merged pull requests:**
-
-- Adding `db explain` and --verbose flag. [\#29](https://github.com/kigster/bashmatic/pull/29) ([kigster](https://github.com/kigster))
 
 ## [v1.7.1](https://github.com/kigster/bashmatic/tree/v1.7.1) (2020-12-22)
 
@@ -136,6 +153,7 @@
 **Merged pull requests:**
 
 - This PR fixes auto-detection of BASHMATIC\_HOME [\#23](https://github.com/kigster/bashmatic/pull/23) ([kigster](https://github.com/kigster))
+- Better bootstrap process [\#22](https://github.com/kigster/bashmatic/pull/22) ([kigster](https://github.com/kigster))
 - Add a Gitter chat badge to README.adoc [\#21](https://github.com/kigster/bashmatic/pull/21) ([gitter-badger](https://github.com/gitter-badger))
 - Fixed Typo in init.sh for dependencies line\#55 [\#19](https://github.com/kigster/bashmatic/pull/19) ([inderpreet](https://github.com/inderpreet))
 - An attempt to remove constructs that were breaking when invoked from ZSH [\#18](https://github.com/kigster/bashmatic/pull/18) ([kigster](https://github.com/kigster))
@@ -155,19 +173,15 @@
 
 **Merged pull requests:**
 
-- Better bootstrap process [\#22](https://github.com/kigster/bashmatic/pull/22) ([kigster](https://github.com/kigster))
 - Adding array.sort, array.uniq and array.sort-numeric [\#14](https://github.com/kigster/bashmatic/pull/14) ([kigster](https://github.com/kigster))
-
-## [v1.3.0](https://github.com/kigster/bashmatic/tree/v1.3.0) (2020-09-22)
-
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0)
-
-**Merged pull requests:**
-
 - Adding documentation for dbtop + PDF generator [\#13](https://github.com/kigster/bashmatic/pull/13) ([kigster](https://github.com/kigster))
 - Fixing dbtop [\#11](https://github.com/kigster/bashmatic/pull/11) ([kigster](https://github.com/kigster))
 - Add license scan report and status [\#10](https://github.com/kigster/bashmatic/pull/10) ([fossabot](https://github.com/fossabot))
 - Adding bin/pdf-reduce and other tweaks [\#9](https://github.com/kigster/bashmatic/pull/9) ([kigster](https://github.com/kigster))
+
+## [v1.3.0](https://github.com/kigster/bashmatic/tree/v1.3.0) (2020-09-22)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.2.1...v1.3.0)
 
 ## [v1.2.1](https://github.com/kigster/bashmatic/tree/v1.2.1) (2020-06-26)
 
@@ -196,16 +210,13 @@
 **Merged pull requests:**
 
 - Kig/cherry pick bashmatic setup [\#6](https://github.com/kigster/bashmatic/pull/6) ([kigster](https://github.com/kigster))
+- Minor revision to the runtime UI [\#4](https://github.com/kigster/bashmatic/pull/4) ([kigster](https://github.com/kigster))
+- \[feature\] Introducing new runtime option show-command-on/off [\#3](https://github.com/kigster/bashmatic/pull/3) ([kigster](https://github.com/kigster))
+- Kig/gem related fixes and installer [\#2](https://github.com/kigster/bashmatic/pull/2) ([kigster](https://github.com/kigster))
 
 ## [v0.2.0](https://github.com/kigster/bashmatic/tree/v0.2.0) (2019-12-24)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/875b23408925e8908fc1f23f5f0c1470fe43dc03...v0.2.0)
-
-**Merged pull requests:**
-
-- Minor revision to the runtime UI [\#4](https://github.com/kigster/bashmatic/pull/4) ([kigster](https://github.com/kigster))
-- \[feature\] Introducing new runtime option show-command-on/off [\#3](https://github.com/kigster/bashmatic/pull/3) ([kigster](https://github.com/kigster))
-- Kig/gem related fixes and installer [\#2](https://github.com/kigster/bashmatic/pull/2) ([kigster](https://github.com/kigster))
 
 
 
