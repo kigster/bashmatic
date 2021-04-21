@@ -120,10 +120,11 @@ bash -c "$(curl -fsSL https://bashmatic.re1.re); \
 ----
 
 You can pass additional flags to the `bashmatic-install` function, including:
-* `-v` or `--verbose` for displaying additional output, or the opposite: 
-* `-q` or `--quiet` for no output
-* `-l` or `--skip-on-login` to NOT install the hook that loads Bashmatic on login.
-* If you prefer to install Bashmatic in a non-standard location (the default is `~/.bashmatic`),  you can use the `-H PATH` flag
+
+- `-v` or `--verbose` for displaying additional output, or the opposite: 
+- `-q` or `--quiet` for no output
+- `-l` or `--skip-on-login` to NOT install the hook that loads Bashmatic on login.
+- If you prefer to install Bashmatic in a non-standard location (the default is `~/.bashmatic`),  you can use the `-H PATH` flag
 
 For instance, here is a verbose installation with a custom destination:
 

@@ -12,10 +12,10 @@ code:
   background-color: 191919
   font-color: $base-font-color
   border-color: 303030
-  line-height-length: 12
+  line-height-length: 11
   line-height: $code-line-height-length / $code-font-size
   font:  
-    size: 9
+    size: 7
     family: Cascadia
 heading:
   line-height-length: 20
@@ -114,11 +114,11 @@ font:
       italic: arvo-italic.ttf
       normal: arvo-regular.ttf
     Cascadia:
-      normal: cascadiamono-light.ttf
-      bold: cascadiamono-semibold.ttf
+      normal: fonts/cascadiamono-regular.ttf
+      bold: cascadiamono-bold.ttf
       bold_italic: cascadiamono-semibold.ttf
       italic: cascadiamono-semilight.ttf
-      semibold: cascadiamono-regular.ttf
+      semibold: cascadiamono-semibold.ttf
 page:
   background-color: FFFFFF
   layout: portrait
