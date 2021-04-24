@@ -17,7 +17,7 @@
 #    $ encrypt word
 #    
 
-FROM ubuntu:groovy-20210325
+FROM ubuntu:20.10
 
 RUN apt-get update -y && \
     apt-get install -yqq \
