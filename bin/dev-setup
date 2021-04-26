@@ -67,6 +67,7 @@ export DevSetup__Version="0.4.0"
   [[ -z ${ruby_version} ]] && export ruby_version=${DEFAULT_RUBY_VERSION}
 }
 
+
 .dev-setup.ruby() {
   if [[ -n ${ruby_version} ]]; then
     h1 "Installing Ruby ${ruby_version}"
@@ -75,6 +76,11 @@ export DevSetup__Version="0.4.0"
   else
     warning "No Ruby Version was provided."
   fi
+}
+
+.dev-setup.action.bash-it() {
+  h1 "Installing Bash-It and Powerline Prompts..."
+  bashit-activate dark developer
 }
 
 .dev-setup.action.z() {
