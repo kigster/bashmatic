@@ -36,6 +36,49 @@ pid.stop-if-listening-on-port 8126 udp
 ---
 
 
+## File `lib/bashit.sh`
+
+
+
+* [bashit-prompt-terraform()](#bashit-prompt-terraform)
+* [bashit-install()](#bashit-install)
+
+### `bashit-prompt-terraform()`
+
+Possible Bash It Powerline Prompt Modules
+
+aws_profile
+battery
+clock
+command_number
+cwd
+dirstack
+gcloud
+go
+history_number
+hostname
+in_toolbox
+in_vim
+k8s_context
+last_status
+node
+python_venv
+ruby
+scm
+shlvl
+terraform
+user_info
+wd
+
+### `bashit-install()`
+
+Installs Bash-It Framework
+
+
+
+---
+
+
 ## File `lib/array.sh`
 
 

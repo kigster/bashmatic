@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+## [v2.1.2](https://github.com/kigster/bashmatic/tree/v2.1.2) (2021-04-21)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.1...HEAD)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.1...v2.1.2)
 
 **Fixed bugs:**
 
@@ -18,15 +18,11 @@
 
 ## [v2.1.1](https://github.com/kigster/bashmatic/tree/v2.1.1) (2021-04-09)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.0.0...v2.1.1)
-
-## [v2.0.0](https://github.com/kigster/bashmatic/tree/v2.0.0) (2021-04-06)
-
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.0...v2.0.0)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.0...v2.1.1)
 
 ## [v2.1.0](https://github.com/kigster/bashmatic/tree/v2.1.0) (2021-04-06)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.13.0...v2.1.0)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.0.0...v2.1.0)
 
 **Closed issues:**
 
@@ -38,6 +34,10 @@
 - \[Snyk\] Security upgrade ubuntu from latest to groovy-20210325 [\#56](https://github.com/kigster/bashmatic/pull/56) ([snyk-bot](https://github.com/snyk-bot))
 - Config reading,  paths mutation tests,  db tests, v2.0.0 [\#55](https://github.com/kigster/bashmatic/pull/55) ([kigster](https://github.com/kigster))
 - Adding ability to read from a YAML/JSON configuration file — updating documentation [\#53](https://github.com/kigster/bashmatic/pull/53) ([kigster](https://github.com/kigster))
+
+## [v2.0.0](https://github.com/kigster/bashmatic/tree/v2.0.0) (2021-04-03)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v1.13.0...v2.0.0)
 
 ## [v1.13.0](https://github.com/kigster/bashmatic/tree/v1.13.0) (2021-03-31)
 
