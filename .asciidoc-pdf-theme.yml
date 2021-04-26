@@ -114,7 +114,7 @@ font:
       italic: arvo-italic.ttf
       normal: arvo-regular.ttf
     Cascadia:
-      normal: fonts/cascadiamono-regular.ttf
+      normal: cascadiamono-regular.ttf
       bold: cascadiamono-bold.ttf
       bold_italic: cascadiamono-semibold.ttf
       italic: cascadiamono-semilight.ttf
@@ -124,4 +124,5 @@ page:
   layout: portrait
   margin: [0.75in, 1in, 0.75in, 1in]
   size: Letter
-
+toc:
+  :toclevels: 5

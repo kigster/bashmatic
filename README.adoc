@@ -1,4 +1,5 @@
-= icon:terminal[1x, link="https://github.com/kigster/bashmatic"] Bashmatic™: BASH/ZSH primitives for Humans and for Fun.
+= Bashmatic™: BASH/ZSH primitives for Humans and for Fun.
+
 :title: Bashmatic™: BASH/ZSH primitives for Humans and for Fun.
 :subtitle: BASH primitives for humans and for fun.
 :doctype: book
@@ -30,7 +31,7 @@ _Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (5
 
 _Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the https://github.com/kigster/bashmatic/blob/master/lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
 
-icon:arrow-down[3x, color="green"]
+icon:arrow-down[2x]
 
 [source,bash]
 ----
@@ -38,7 +39,7 @@ function bashmatic.auto-update() {
   local dir
   dir=${1:-${BASHMATIC_HOME}}
   is.a-directory "${dir}" && {
-    file.exists-and-newer-than ${dir}/.last-update 30 && return 0
+    file.exists-and-newer-than "${dir}/.last-update" 30 && return 0
 
     ( cd ${BASHMATIC_HOME} && \
       git.is-it-time-to-update && \
@@ -56,7 +57,7 @@ Final note, - once Bashmatic is installed and loaded by your shell init files, y
 
 _Bashmatic®_ offers a huge range of ever-growing helper functions for running commands, auto-retrying, repeatable, runtime-measuring execution framework with the key function `run`. There are helpers for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, installing packages, and much more.
 
-WARNING: Some portion of helperse within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specifc functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
+WARNING: A good portion of the helpers within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specifc functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
 
 Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[functions index page].
 
@@ -140,7 +141,7 @@ Here is the complete list of options accepted by the installer:
 ----
 ❯ bin/bashmatic-install --help
 
-USAGE:
+USAGE: 
   bin/bashmatic-install [ flags ]
 
 DESCRIPTION:
@@ -158,9 +159,9 @@ FLAGS:
                                 by running the following on the command line:
 
                                 You can always do so later with the following:
-                                $ ~/.bashmatic/bin/bashmatic load-at-login
+                                $ ~/.bashmatic/bin/bashmatic load-at-login 
 
-                                This above will install the Bashmatic hook into your shell
+                                This above will install the Bashmatic hook into your shell 
                                 dotfile, eg ~/.bash_profile. if you are on BASH,
                                 or ~/.zshrc if you are on ZSH..
 
@@ -173,7 +174,7 @@ FLAGS:
   -h, --help                    Show this help message.
 ----
 
-=== What Installer Does
+=== Understanding what the Installer Does
 
 When you run `bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"`, the following typically happens:
 
@@ -185,24 +186,104 @@ When you run `bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install
 * On OS-X the script will install Homebrew on OS-X, if not already there.
 ** Once Brew is installed, brew packages `coreutils` and `gnu-sed` are installed, as both are required and are relied upon by Bashmatic.
 * The script will then attempt to `git clone` the bashmatic repo into the Bashmatic home folder, or - if it already exists - it will `git pull` latest changes.
-* Finally, the script will check your bash dot files, and will add the hook to load Bashmatic from either `~/.bashrc` or `~/.bash_profile`.
+* Finally, unless you specify `-l` or `--skip-on-login` the script will check your bash dot files, and will add the hook to load Bashmatic from either `~/.bashrc` or `~/.bash_profile`.
 
-Restart your shell, and make sure that when you type `bashmatic.version` in the command line (and press Enter) you see the version number printed like so:
+The last part my require some explanation.
+
+==== To load Bashmatic at Login, or Not?
+
+Now, you may or may not want to load Bashmatic on login. 
+
+===== If you load Bashmatic on login (the default installer mode):
+
+In other words, you have something like this in your `~/.bashrc`:
 
 [source,bash]
 ----
+# Let's see if ~/.bashrc mentions Bashmatic:
+$ grep bashmatic ~/.bashrc 
+[[ -f ~/.bashmatic/init.sh ]] && source ~/.bashmatic/init.sh
+----
+
+Then you will have insta-access to all of the convenience functions Bashmtic offers (all 700+ of them).
+
+And while loading the `init.sh` file adds time to your login initialzation, and may auto-update the Bashmatic library, there may be good reasons when you prefer NOT to automatically load it on login.
+
+If the above command shows the output you see above, when you grep your `bashrc` or `zshrc`, then all Bashmatic Functions will be loaded into your shell. This could be very convenient, for instance, 
+
+* you could invoke `ruby.install-ruby-with-readline-and-openssl 3.0.1` to get Ruby installed. 
+
+* You could invoke `gem.remote.version sym` to see that the last published verison of `sym` is `3.0.1`.
+
+* You could join an array of values with with `array.join ", " apple pear orange`
+
+NOTICE: Bashmatic takes no more than 200-300ms to load typically. That said, you might not want to have this many shell functions in your environment, so in that case you can skip login hook by passing `-l` or `--skip-on-login`.
+
+===== If you do not want to load Bashnmatic on login
+
+Install it with:
+
+[source,bash]
+----
+bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -l"
+----
+
+In this case we suggest that you simply add the Bashmatic's `bin` folder to the `$PATH`. 
+
+For instance:
+
+[source,bash]
+----
+# ~/.bashrc
+export BASHMATIC_HOME="${HOME}/.bashmatic"
+export PATH="${BASHMATIC_HOME}/bin:${PATH}"
+----
+
+Then you will have access to the executable script `bashmatic` which can be used **as a "gateway" to all bashmatic functions:*
+
+You use it like so: `bashmatic <function> <args>`:
+
+IMPORTANT: Examples below assume you've set the `PATH` to include `${HOME}/.bashmatic/bin`
+
+
+[source,bash]
+----
+# Eg, if as in the previous example you sourced in Bashmatic:
 $ bashmatic.version
-1.13.0
+2.1.2
+
+# If you have not, you can still invoke 'bashmatic.version':
+$ bashmatic version
+
+# Or another function, 'array.join' — if you sourced in init.sh:
+$ array.join '|' hello goodbye
+hello|goodbye
+
+# Or using the script:
+$ bashmatic array.join '|' hello goodbye
+hello|goodbye
+
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.
 
-Next, to discover the breadth of available functions, type the following command to see all imported shell functions:
+==== Discovering Available Functions
+
+To discover the breadth of available functions, type the following command to see all imported shell functions:
 
 [source,bash]
 ----
-# Numeric argument specifies the number of columns to use for output
-$ bashmatic.functions 3 
+# List all functions using 4-column mode; print top 5 lines.  
+❯ bashmatic functions 4 | head -5
+7z.a                   db.psql.connect.db-set hl.yellow-on-gray      run.inspect-variables
+7z.install             db.psql.connect.db-set hr                     run.inspect-variables-
+7z.unzip               db.psql.connect.just-d hr.colored             run.inspect.set-skip-f
+7z.x                   db.psql.connect.table- http.servers           run.on-error.ask-is-en
+7z.zip                 db.psql.connect.table- https.servers          run.print-command
+
+# or, to get the count of all functions, use 1 column output:
+$ bashmatic functions 1 | wc -l
+773 
 ----
 
 === Manual Installation
@@ -264,27 +345,28 @@ You can run `make help` and read the available targets:
 ----
 ❯ make help
 
-help                  Prints help message auto-generated from the comments.
+docker-build       Builds the Docker image with the tooling inside
+docker-run-bash    Drops you into a BASH session with Bashmatic Loaded
+docker-run-fish    Drops you into a FISH session with Bashmatic Loaded
+docker-run-zsh     Drops you into a ZSH session with Bashmatic Loaded
+docker-run         Drops you into a BASH session
+file-stats-git     Print all  files  known to `git ls-files` command
+file-stats-local   Print all non-test files and run `file` utility on them.
+help               Prints help message auto-generated from the comments.
+install            install BashMatic Locally in ~/.bashmatic
+open-readme        Open README.pdf in the system viewer
+release            Make a new release named after the latest tag
+setup              Run the comprehensive development setup on this machine
+shell-files        Lists every single checked in SHELL file in this repo
+tag                Tag this commit with .version and push to remote
+test-parallel      Run the fully auto-g mated test suite
+test               Run fully automated test suite based on Bats
+update-changelog   Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN env var set)
+update-functions   Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/pdf
+update-readme      Re-generate the PDF version of the README
+update-usage       Auto-generate doc/USAGE documentation from lib shell files, to doc/USAGE.adoc/pdf
+update             Runs all of the updates, add locally modiofied files to git.
 
-docker-build          Builds the Docker image with the tooling inside
-docker-run-bash       Drops you into a BASH session with Bashmatic Loaded
-docker-run-fish       Drops you into a FISH session with Bashmatic Loaded
-docker-run-zsh        Drops you into a ZSH session with Bashmatic Loaded
-docker-run            Drops you into a BASH session
-
-install               install BashMatic Locally in ~/.bashmatic
-
-setup                 Run the comprehensive development setup on this machine
-
-test-parallel         Run the fully auto-g mated test suite
-test                  Run fully automated test suite based on Bats
-
-update-changelog      Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN env set)
-update-functions      Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/pdf
-update-readme         Re-generate the PDF version of the README
-update-usage          Auto-generate documentation of shell functions into USAGE.pdf
-update                Runs all of the updates, add locally modiofied files to git.
-open-readme           Open README.pdf in the system viewer
 ----
 
 I've added whitespaces around a set of common tasks you might find useful. 

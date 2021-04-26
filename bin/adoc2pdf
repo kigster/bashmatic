@@ -128,6 +128,8 @@ bundle exec --gemfile="${bashmatic_gemfile}" asciidoctor-pdf \\
       --verbose \\
       --quiet \\
       --timings \\
+      --attribute toc \\
+      --attribute toclevels=5 \\
       --attribute allow-uri-read \\
       --attribute pdf-theme="${BASHMATIC_HOME}/.asciidoc-pdf-theme.yml" \\
       --attribute pdf-fontsdir="${BASHMATIC_HOME}/.fonts;GEM_FONTS_DIR"  \\
