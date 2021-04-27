@@ -11,9 +11,12 @@
 .ensure.ffmpeg() {
 
   is.a-command ffmpeg && return 0
-  package.is-installed ffmpeg || package.install ffmpeg
-  is.a-command ffmpeg && return 0
+  package.is-installed ffmpeg || { 
+    warning "ffmpeg was not found, installing it..."
+    package.install ffmpeg
+  }
 
+  is.a-command ffmpeg && return 0
   error "Can't find ffmpeg after installation."
   return 1
 }
@@ -55,22 +58,44 @@
 video.convert.compress() {
   local file="$1"; shift
   local output=${file/\.*/.mkv}
-  local algo="${2:-"1"}"
+  local algo="${1:-"11"}"
 
-  [[ "${file}" == "${output}" ]] && output="${output/\.mkv/-smaller-${ratio}.mkv}"
-  
-  h2 "Starting ffmpeg conversion from ${file} to ${output}, with algorithm #${ratio}" \
-     "Source file size is $(file.size.mb ${file})"
+  [[ "${file}" == "${output}" ]] && output="${output/\.*/-converted-${ratio}.mkv}"
+
+  is.an-existing-file "${output}" && { 
+    info "File ${output} already exists, making a backup..."
+    run "mv \"${output}\" \"${output}.$(time.now.db)\""
+  }
+
+  h2 "Starting ffmpeg conversion, source file size is ${bldred}$(file.size.mb "${file}")"
+     " • Source:      [${file}]" \
+     " • Destination: [${output}]" \
+     " • Algorithm:   [#${algo}]" 
+
+  .ensure.ffmpeg
   
   run.set-next show-output-on
   local func=".video.convert.compress-${algo}"
+  arrow.blk-on-cyan "conversion function: "
+  printf "${bldblu}\n"
+  hr; echo
+  type "${func}"
+  printf "${clr}"
+  hr; echo
+
   run "${func} \"${file}\" \"${output}\""
   
   local before="$(file.size "${file}")"
   local after="$(file.size "${output}")"
-  local reduction=$(( 100 * ( before - after ) / before ))
-
-  success "File ${output} was prodiced with ${reduction}% size savings."  
+  local reduction=
+  if [[ ${before} -lt ${after} ]] ; then
+    reduction=$(( 100 * ( after - before ) / before ))
+    warning "${output} was generated with ${reduction}% increase in file size, from ${before} to ${after}"
+  else
+    reduction=$(( 100 * ( before - after ) / before ))
+    success "${output} was generated with ${reduction}% reduction in file size, from ${before} to ${after}"
+  fi
+  return 0
 }
 
 
