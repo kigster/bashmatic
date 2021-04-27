@@ -172,3 +172,30 @@ audio.dir.mp3-to-wav() {
 æ.mp3() {
   audio.make.mp3 "$@"
 }
+
+.audio.karaoke.format() {
+  echo "$*" | sedx 's/([a-zA-Z_]*)([^a-zA-Z_])(.*)$/\1——\3/g; s/_([0-9]*)[^_]\.wav/\.wav/g' | sedx 's/\)?\(([a-zA-Z_]*)\)\)/--\1/g' | sedx 's/(\(|\)|_-|_—)//g' | tr '[:upper:]' '[:lower:]'
+}
+
+audio.dir.rename-wavs() {
+  local dir="$1"
+  local pwd="$(pwd -P)"
+  if [[ -n "${dir}" ]]; then
+    [[ ! -d "${dir}" ]] && {
+    error "First argument is either blank (current directory)" \
+      "or the folder where *.wav files to be renamed are."
+      return 1
+    }
+    cd "${dir}"
+  fi
+
+  local nfile
+  for file in $(ls -1 '*.wav'); do
+     n="$(.audio.karaoke.format "${file}" | sed 's/—/_/g')"
+     h1 "${file}" "${n}"
+     run "mv -vn \"${file}\" \"${n}\"";  
+  done
+
+  run "cd \"${pwd}\""
+}
+
