@@ -1,12 +1,11 @@
 source 'https://rubygems.org'
 
 gem "rexml"
-#gem "rexml-document"
-gem "ttfunk", '=1.7.0'
+gem "ttfunk", "=1.5.1"
 gem "prawn"
 gem "specific_install"
-gem "prawn-table", github: "prawnpdf/prawn-table"
-gem "asciidoctor-pdf", github: "asciidoctor/asciidoctor-pdf"
+gem "prawn-table"#  git: 'git@github.com/prawnpdf/prawn-table'
+gem "asciidoctor-pdf" #, git: 'git@github.com/asciidoctor/asciidoctor-pdf.git'
 gem "rouge"
 gem "pygments.rb"
 gem "coderay"
