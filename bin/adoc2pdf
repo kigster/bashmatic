@@ -11,7 +11,6 @@ export bashmatic_gems="${HOME}/.bundle/gems/bashmatic"
 function adoc-header() {
   local file="$1"
 
-
 cat <<EOF
 :pdf-fontsdir: ${BASHMATIC_HOME}./fonts;GEM_FONTS_DIR
 :pdf-theme: ${BASHMATIC_HOME}/.asciidoc-pdf-theme-titilium.yml
@@ -19,6 +18,8 @@ cat <<EOF
 :rouge-style: base16.monokai
 :safe: unsafe
 :allow-uri-read:
+:toc:
+:toclevels: 5
 :icons: font
 EOF
   local attrfile=".$1.attr"
@@ -57,6 +58,7 @@ function install-gems() {
 function ensure-dependencies() {
   h6 "Ensuring PDF conversion dependencies are installed..."
 
+  run.set-all abort-on-error
   install-fonts
   install-graphicsmagick
   install-gems
@@ -98,6 +100,7 @@ main() {
     return 1
   }
 
+  h6 "Ensuring all PDF dependencies are available..."
   ensure-dependencies
 
   run "rm -f ${target} ${temp}"

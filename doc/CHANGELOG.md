@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.2.0...HEAD)
+
+**Merged pull requests:**
+
+- Updating README with installer info [\#63](https://github.com/kigster/bashmatic/pull/63) ([kigster](https://github.com/kigster))
+- Add bash-it framework installation [\#61](https://github.com/kigster/bashmatic/pull/61) ([kigster](https://github.com/kigster))
+
+## [v2.2.0](https://github.com/kigster/bashmatic/tree/v2.2.0) (2021-04-27)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.2...v2.2.0)
+
 ## [v2.1.2](https://github.com/kigster/bashmatic/tree/v2.1.2) (2021-04-21)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.1...v2.1.2)

@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
 gem "rexml"
-#gem "rexml-document"
 gem "ttfunk", git: "https://github.com/prawnpdf/ttfunk.git" #, '=1.7.0'
 gem "prawn"
 gem "specific_install"
