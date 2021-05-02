@@ -125,6 +125,7 @@ main() {
 #!/usr/bin/env bash
 export BUNDLE_PATH="${bashmatic_gems}"
 bundle exec --gemfile="${bashmatic_gemfile}" asciidoctor-pdf \\
+      --trace \\
       --verbose \\
       --quiet \\
       --timings \\
