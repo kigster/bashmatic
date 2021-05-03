@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
+# vim: ft=bash
+# @copyright © 2016-2021 Konstantin Gredeskoul, All rights reserved
+# @license MIT License.
+#
+# @file lib/audio.sh
+# @description Audio conversions routines.
 
+
+# @description Given a music audio file, determine its frequency.
 audio.file.frequency() {
   local file="$1"
   [[ -z $(command -V mdls) ]] && return 1
@@ -26,6 +34,10 @@ _term() {
 
 export child_pid=
 
+# @description Given a folder of MP3 files, and an optional KHz specification, 
+#              perform a sequential conversion from AIF/WAV format to MP3.
+# @example 
+#              audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ]
 audio.make.mp3s() {
   local dir="${1:-"."}"
   local kHz="${2:-"48"}"
@@ -87,6 +99,7 @@ audio.make.mp3s() {
   success 'All done.'
 }
 
+# @description Converts one AIF/WAV file to high-rez 320 Kbps MP3
 audio.make.mp3() {
   local file="$1"
   shift
@@ -120,6 +133,12 @@ audio.make.mp3() {
   success "MP3 file ${nfile} is $(file.size.mb "${nfile}")Mb"
 }
 
+# @description Converts one AIF/WAV file to high-rez 320 Kbps MP3
+æ.mp3() {
+  audio.make.mp3 "$@"
+}
+
+# @description Decodes a folder with MP3 files back into WAV
 audio.file.mp3-to-wav() {
   local from="${1/.\//}"
   local destination="$2"
@@ -149,11 +168,12 @@ audio.file.mp3-to-wav() {
   fi
 }
 
-# Usage: assume a folder with a bunch of MP3s in subfolders
-# audio.dir.mp3-to-wav "MP3" "/Volumes/SDCARD"
+# @description assume a folder with a bunch of MP3s in subfolders
 #
-# This will process all MP3 files and decode them into the
-# same folder structure but under /Volumes/SDCARD.
+# @example This will process all MP3 files and decode them into the
+#          same folder structure but under /Volumes/SDCARD.
+#
+#          audio.dir.mp3-to-wav "MP3" "/Volumes/SDCARD"
 #
 audio.dir.mp3-to-wav() {
   local from="$1"
@@ -169,15 +189,33 @@ audio.dir.mp3-to-wav() {
   run "cd -"
 }
 
-æ.mp3() {
-  audio.make.mp3 "$@"
-}
 
+# @description Rename function for one filename to another.
+#              This particular function deals with files of this format:
+#              Downloaded from karaoke-version.com:
+# @example
+#              .audio.karaoke.format "Michael_Jackson_Billie_Jean(Drum_Backing_Track_(Drum_only))_248921.wav"
+#              => michael_jackson_billie_jean——drum_backing_track-drum_only.wav
 .audio.karaoke.format() {
   echo "$*" | sedx 's/([a-zA-Z_]*)([^a-zA-Z_])(.*)$/\1——\3/g; s/_([0-9]*)[^_]\.wav/\.wav/g' | sedx 's/\)?\(([a-zA-Z_]*)\)\)/--\1/g' | sedx 's/(\(|\)|_-|_—)//g' | tr '[:upper:]' '[:lower:]'
 }
 
+# @description This function receives a format specification, and an optional
+#              directory as a second argument. Format specification is meant to 
+#              map to a function .audio.<format>.format that's used as follows:
+#              .audio.<format>.format "file-name" => "new file name" 
+# @example 
+#              audio.dir.rename-wavs karaoke ~/Karaoke
 audio.dir.rename-wavs() {
+  local format="$1"; shift
+  local func=".audio.${format}.format"
+
+  is.a-function "${func}" || { 
+    error "Format not recognized: ${format}" \
+    "usage: audio.dir.rename-wavs <renaming-scheme> [ optional-dir ]"
+    return 1
+  }
+
   local dir="$1"
   local pwd="$(pwd -P)"
   if [[ -n "${dir}" ]]; then
@@ -197,5 +235,15 @@ audio.dir.rename-wavs() {
   done
 
   run "cd \"${pwd}\""
+}
+
+# @description Renames wav files in the current folder (or the folder 
+#              passed as an argument, based on the naming scheme downloaded
+#              from karaoke-version.com
+# @example 
+#              audio.dir.rename-karaoke-wavs "~/Karaoke"
+#
+audio.dir.rename-karaoke-wavs() {
+  audio.dir.rename-wavs karaoke "$@"
 }
 

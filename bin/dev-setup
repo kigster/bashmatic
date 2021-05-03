@@ -84,9 +84,26 @@ export DevSetup__Version="0.4.0"
 }
 
 .dev-setup.action.z() {
-  local dir=/usr/local/src/z
-  local script=/usr/local/src/z/z.sh
-  [[ -d ${dir} ]] || run "git clone https://github.com/rupa/z ${dir}"
+  local sources=/usr/local/src
+  local dir="${sources}/z"
+  local script="${dir}/z.sh"
+
+  if [[ ! -d "${sources}" ]] ; then
+    mkdir -p ${sources} 2>/dev/null || {
+      info "Please enter your SUDO password, if asked:"
+      set -x
+      sudo mkdir -p "${sources}"
+      set +x
+      run "sudo chown -R ${USER} ${sources}"
+    }
+  fi
+
+  [[ -d ${sources} ]] || {
+    error "Can't find folder [${sources}] even after attempting to create it with sudo."
+    return 1
+  }
+
+  [[ -d "${dir}" ]] || run "git clone https://github.com/rupa/z ${dir}"
 
   for init in ${HOME}/.bash_profile ${HOME}/.zshrc; do
     grep -q "${script}" ${init} || {
@@ -95,7 +112,12 @@ export DevSetup__Version="0.4.0"
     }
   done
 
-  [[ -f ${script} ]] && source "${script}"
+  [[ -f ${script} ]] && { 
+    info "Loading z.sh script"
+    source "${script}" 
+    success "z.sh installed successfully"
+  }
+
 }
 
 .dev-setup.action.fonts() {

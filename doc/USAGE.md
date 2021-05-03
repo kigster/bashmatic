@@ -251,6 +251,100 @@ Local debugging helper, activate it with DEBUG=1
 ---
 
 
+## File `lib/audio.sh`
+
+# lib/audio.sh
+
+
+Audio conversions routines.
+
+
+
+* [audio.file.frequency()](#audiofilefrequency)
+* [audio.make.mp3s()](#audiomakemp3s)
+* [audio.make.mp3()](#audiomakemp3)
+* [audio.file.mp3-to-wav()](#audiofilemp3-to-wav)
+* [audio.dir.mp3-to-wav()](#audiodirmp3-to-wav)
+* [.audio.karaoke.format()](#audiokaraokeformat)
+* [audio.dir.rename-wavs()](#audiodirrename-wavs)
+* [audio.dir.rename-karaoke-wavs()](#audiodirrename-karaoke-wavs)
+
+### `audio.file.frequency()`
+
+Given a music audio file, determine its frequency.
+
+### `audio.make.mp3s()`
+
+Given a folder of MP3 files, and an optional KHz specification, 
+perform a sequential conversion from AIF/WAV format to MP3.
+
+#### Example
+
+```bash
+audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ]
+```
+
+### `audio.make.mp3()`
+
+Converts one AIF/WAV file to high-rez 320 Kbps MP3
+
+### `audio.file.mp3-to-wav()`
+
+Decodes a folder with MP3 files back into WAV
+
+### `audio.dir.mp3-to-wav()`
+
+assume a folder with a bunch of MP3s in subfolders
+
+#### Example
+
+```bash
+same folder structure but under /Volumes/SDCARD.
+```
+
+### `.audio.karaoke.format()`
+
+Rename function for one filename to another.
+This particular function deals with files of this format:
+Downloaded from karaoke-version.com:
+
+#### Example
+
+```bash
+.audio.karaoke.format "Michael_Jackson_Billie_Jean(Drum_Backing_Track_(Drum_only))_248921.wav"
+=> michael_jackson_billie_jean——drum_backing_track-drum_only.wav
+```
+
+### `audio.dir.rename-wavs()`
+
+This function receives a format specification, and an optional
+directory as a second argument. Format specification is meant to 
+map to a function .audio.<format>.format that's used as follows:
+.audio.<format>.format "file-name" => "new file name" 
+
+#### Example
+
+```bash
+audio.dir.rename-wavs karaoke ~/Karaoke
+```
+
+### `audio.dir.rename-karaoke-wavs()`
+
+Renames wav files in the current folder (or the folder 
+passed as an argument, based on the naming scheme downloaded
+from karaoke-version.com
+
+#### Example
+
+```bash
+audio.dir.rename-karaoke-wavs "~/Karaoke"
+```
+
+
+
+---
+
+
 ## File `lib/brew.sh`
 
 
@@ -288,12 +382,65 @@ Prints a "arrow-like" line using powerline characters
 
 ## File `lib/video.sh`
 
-# is.sh
+# lib/video.sh
 
 
-video conversions
+Video conversions routines.
 
 
+
+* [.ensure.ffmpeg()](#ensureffmpeg)
+* [.video.convert.compress-11()](#videoconvertcompress-11)
+* [.video.convert.compress-12()](#videoconvertcompress-12)
+* [.video.convert.compress-13()](#videoconvertcompress-13)
+* [.video.convert.compress-21()](#videoconvertcompress-21)
+* [.video.convert.compress-22()](#videoconvertcompress-22)
+* [.video.convert.compress-23()](#videoconvertcompress-23)
+* [.video.convert.compress-3()](#videoconvertcompress-3)
+* [video.convert.compress()](#videoconvertcompress)
+
+### `.ensure.ffmpeg()`
+
+Installs ffmpeg
+
+### `.video.convert.compress-11()`
+
+Given two arguments (from), (to), performs a video recompression
+
+### `.video.convert.compress-12()`
+
+Given two arguments (from), (to), performs a video recompression
+
+### `.video.convert.compress-13()`
+
+Given two arguments (from), (to), performs a video recompression
+
+### `.video.convert.compress-21()`
+
+Given two arguments (from), (to), performs a video recompression
+
+### `.video.convert.compress-22()`
+
+Given two arguments (from), (to), performs a video recompression
+
+### `.video.convert.compress-23()`
+
+Given two arguments (from), (to), performs a video recompression
+
+### `.video.convert.compress-3()`
+
+Given two arguments (from), (to), performs a video recompression
+
+### `video.convert.compress()`
+
+Given two arguments (from), (to), performs a video recompression
+according to the algorithm in the second argument.
+
+#### Example
+
+```bash
+video.convert.compress bigfile.mov 13
+```
 
 
 

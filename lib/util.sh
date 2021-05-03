@@ -154,15 +154,6 @@ util.remove-from-init-files() {
   return "${LibRun__LastExitCode}"
 }
 
-util.whats-installed() {
-  declare -a hb_aliases=($(alias | ${GrepCommand} 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
-  h2 "Installed app aliases:" ' ' "${hb_aliases[@]}"
-
-  h2 "Installed DB Functions:"
-  info "hb.db  [ ms | r1 | r2 | c ]"
-  info "hb.ssh <server-name-substring>, eg hb.ssh web"
-}
-
 util.is-a-function() {
   is.a-function "$@"
 }

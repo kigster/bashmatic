@@ -1,5 +1,4 @@
 = Bashmatic™: BASH/ZSH primitives for Humans and for Fun.
-
 :title: Bashmatic™: BASH/ZSH primitives for Humans and for Fun.
 :subtitle: BASH primitives for humans and for fun.
 :doctype: book
@@ -697,7 +696,7 @@ Now let's run it properly:
 ----
 $ gem.install simple-feed
        installing simple-feed (latest)...
-  ✔︎    $ gem install simple-feed   ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔   5685 ms 〕    0
+  ✔︎    $ gem install simple-feed   ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔   5685 ms 〕    0
   ✔︎    $ gem list > ${BASHMATIC_TEMP}/.gem/gem.list ▪▪▪▪▪▪〔    503 ms 〕    0
 ----
 
@@ -751,7 +750,52 @@ db                sedx              run               sym
 
 At a high level, the following modules are provided, in order of importance:
 
-==== 1. Runtime
+==== Runtime Framework — Executing Commands The Right Way™
+
+One of the key parts of Bashmatic is the framework around running commands and reporting on their execution status. 
+
+The two most important functions in this framework are:
+
+* `run.set-next [ option option ... ]`
+* `run.set-all [ option option ... ]`
+* `run "command"`
+
+The first two allow you to configure how the `run` command behaves. The `run.set-next` only affects the first invocation of `run`. After that all runtime options revert to the defaults.
+
+`run.set-all` affects ALL `run` invocations following it. 
+
+[Runtime Options]
+====
+The following options can be passed to the `run.set-next` and `run.set-all`:
+
+abort-on-error:: exits the script when the command fails. 
+ask-on-error:: interactively asks the user when the command fails. 
+continue-on-error:: prints a warning, and continues when the command fails. 
+***
+dry-run-on:: turns dry-run on
+dry-run-off:: turns dry-run off 
+***
+on-decline-exit:: when `run.ui.ask` is used and user says NO, exits the program.
+on-decline-return:: when `run.ui.ask` is used and user says NO, returns from the function.
+***
+show-command-on:: shows the command being executed
+show-command-off:: silently executes the command
+***
+show-output-off:: swallows command's STDOUT, but prints STDERR on error
+show-output-on:: prints STDOUT of the command as it executes
+====
+
+For example:
+
+```
+❯ run.set-next show-output-off; run "ls -1 | wc -l";  run.set-next show-output-on; run "ls -1 | wc -l";
+  ✔︎   ❯ ls -1 | wc -l ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔     74 ms 〕    0
+       # Command below will be shown with its output:
+       ❯ ls -1 | wc -l
+      17
+
+  ✔︎  ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪〔     80 ms 〕    0
+```
 
 The following files provide this functionality:
 
@@ -782,21 +826,7 @@ run.set-all.list
 
 Using these functions you can write powerful shell scripts that display each command they run, it's status, duration, and can abort on various conditions. You can ask the user to confirm, and you can show a user message and wait for any key pressed to continue.
 
-===== Runtime Framework in Depth
-
-One of the core tenets of this library is it's "runtime" framework, which offers a way to run and display commands as they run, while having a fine-grained control over the following:
-
-* What happens when one of the commands fails? Options include:
- ** Ignore and continue (default):  `continue-on-error`
- ** Ask the user if she wants to proceed: `ask-on-error`
- ** Abort the entire run: `abort-on-error`
-* How is command output displayed?
- ** Is it swallowed for compactness, and only shown if there is an error? (default): `show-output-off`
- ** Or is it shown regardless? `show-output-on`
-* Should commands actually run (`dry-run-off`), or simply be printed? (`dry-run-on`).
-
 ===== Examples of Runtime Framework
-
 ____
 NOTE, in the following examples we assume you installed the library into your project's folder as `.bashmatic` (a "hidden" folder starting with a dot).
 ____
@@ -825,7 +855,9 @@ run "bundle exec rspec"
 
 And most importantly, you can use our fancy UI drawing routines to communicate with the user, which are based on familiar HTML constructs, such as `h1`, `h2`, `hr`, etc.
 
-==== 2. Output Modules
+==== Controlling Output
+
+A large chunk of Bashmatic is devoted to printing pretty dialogs and controlling the output of program execution.
 
 The `lib/output.sh` module does all of the heavy lifting with providing many UI elements, such as frames, boxes, lines, headers, and many more.
 
@@ -889,7 +921,7 @@ When you run this, you should see something like this:
 [source,bash]
 ----
  $ verify-cask TextMate
-  ✔︎    verifying brew cask TextMate....
+   ✔︎  verifying brew cask TextMate....
 ----
 
 In the above example, you see the checkbox appear to the left of the text. In fact, it appears a second after, right as `sleep 1` returns. This is because this paradigm is meant for wrapping constructs that might succeed or fail.
@@ -939,7 +971,9 @@ There is an link:examples/test-ui.sh[example script] that demonstrates the capab
 
 If you ran the script, you should see the output shown link:.bashmatic.png[in this screenshot]. Your colors may vary depending on what color scheme and font you use for your terminal.
 
-==== 3. Package management: Brew and RubyGems
+
+
+==== Package management: Brew and RubyGems
 
 You can reliably install ruby gems or brew packages with the following syntax:
 
@@ -948,10 +982,7 @@ You can reliably install ruby gems or brew packages with the following syntax:
 #!/usr/bin/env bash
 
 source ${BASHMATIC_HOME}/init.sh
-
-h2 "Installing ruby gem sym and brew package curl..." \
-   
-
+h2 "Installing ruby gem sym and brew package curl..."
 gem.install sym
 brew.install.package curl
 
@@ -962,7 +993,7 @@ When you run the above script, you shyould seee the following output:
 
 image::doc/img/bashmatic-example.png[example,align=center,width=80%]
 
-==== 4. Shortening URLs and Github Access
+==== Shortening URLs and Github Access
 
 You can shorten URLs on the command line using Bitly, but for this to work, you must set the following environment variables in your shell init:
 
@@ -980,7 +1011,7 @@ $ url.shorten https://raw.githubusercontent.com/kigster/bashmatic/master/bin/ins
 # http://bit.ly/2IIPNE1
 ----
 
-===== Github Access
+==== Github Access
 
 There are a couple of Github-specific helpers:
 
@@ -1009,7 +1040,7 @@ $ github.clone sym
   ✔︎ $ git clone git@github.com:kigster/sym ▪▪▪▪▪▪〔     931 ms 〕  
 ----
 
-==== 5. File Helpers
+==== File Helpers
 
 [source,bash]
 ----
@@ -1031,7 +1062,7 @@ For instance, `file.stat` offers access to the `fstat()` C-function:
 22799
 ----
 
-==== 6. Array Helpers
+==== Array Helpers
 
 [source,bash]
 ----
@@ -1061,7 +1092,7 @@ $ array.includes  "cow" "${farm_animals[@]}" && echo Yes || echo No
 No
 ----
 
-==== 7. Utilities
+==== Utilities
 
 The utilities module has the following functions:
 
@@ -1069,17 +1100,17 @@ The utilities module has the following functions:
 ----
 $ bashmatic.functions-from util
 
-pause.long                                    util.install-direnv
-pause                                         util.is-a-function
-pause.short                                   util.is-numeric
-pause.medium                                  util.is-variable-defined
-util.append-to-init-files                     util.lines-in-folder
-util.arch                                     util.remove-from-init-files
-util.call-if-function                         util.shell-init-files
-shasum.sha-only                           util.shell-name
-shasum.sha-only-stdin                           util.ver-to-i
-util.functions-starting-with                  util.whats-installed
-util.generate-password                        watch.ls-al
+pause.long                     util.install-direnv
+pause                          util.is-a-function
+pause.short                    util.is-numeric
+pause.medium                   util.is-variable-defined
+util.append-to-init-files      util.lines-in-folder
+util.arch                      util.remove-from-init-files
+util.call-if-function          util.shell-init-files
+shasum.sha-only                util.shell-name
+shasum.sha-only-stdin          util.ver-to-i
+util.functions-starting-with   util.whats-installed
+util.generate-password       `  watch.ls-al
 ----
 
 For example, version helpers can be very handy in automated version detection, sorting and identifying the latest or the oldest versions:
@@ -1092,9 +1123,11 @@ $ util.i-to-ver $(util.ver-to-i '12.4.9')
 12.4.9
 ----
 
-==== 8. Ruby and Ruby Gems
+==== Ruby and Ruby Gems
 
-Ruby helpers abound:
+link:lib/ruby.sh[Ruby Version Helpers] and link:lib/gem.sh[Ruby Gem Helpers], that can extract curren gem version from either `Gemfile.lock` or globally installed gem list.
+
+Additional Ruby helpers abound:
 
 [source,bash]
 ----
@@ -1176,11 +1209,10 @@ $ gem.version awesome_print
 1.8.0
 ----
 
-==== 9. Additional Helpers
+==== Additional Helpers
 
 There are plenty more modules, that help with:
 
-* link:lib/ruby.sh[Ruby Version Helpers] and (Ruby Gem Helpers)[lib/gem.sh], that can extract curren gem version from either `Gemfile.lock` or globally installed gem list..
 * link:lib/aws.sh[AWS helpers] – requires `awscli` and credentials setup, and offers some helpers to simplify AWS management.
 * link:lib/docker.sh[Docker Helpers] – assist with docker image building and pushing/pulling
 * link:lib/sym.sh[Sym] – encryption with the gem called https://github.com/kigster/sym[`sym`]
