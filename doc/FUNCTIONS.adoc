@@ -548,6 +548,51 @@ audio.dir.mp3-to-wav ()
 
 ----
 
+==== `audio.dir.rename-karaoke-wavs`
+
+[source,bash]
+----
+audio.dir.rename-karaoke-wavs () 
+{ 
+    audio.dir.rename-wavs karaoke "$@"
+}
+
+----
+
+==== `audio.dir.rename-wavs`
+
+[source,bash]
+----
+audio.dir.rename-wavs () 
+{ 
+    local format="$1"
+    shift
+    local func=".audio.${format}.format"
+    is.a-function "${func}" || { 
+        error "Format not recognized: ${format}" "usage: audio.dir.rename-wavs <renaming-scheme> [ optional-dir ]"
+        return 1
+    }
+    local dir="$1"
+    local pwd="$(pwd -P)"
+    if [[ -n "${dir}" ]]; then
+        [[ ! -d "${dir}" ]] && { 
+            error "First argument is either blank (current directory)" "or the folder where *.wav files to be renamed are."
+            return 1
+        }
+        cd "${dir}"
+    fi
+    local nfile
+    for file in $(ls -1 '*.wav')
+    do
+        n="$(.audio.karaoke.format "${file}" | sed 's/—/_/g')"
+        h1 "${file}" "${n}"
+        run "mv -vn \"${file}\" \"${n}\""
+    done
+    run "cd \"${pwd}\""
+}
+
+----
+
 ==== `audio.file.frequency`
 
 [source,bash]
@@ -12338,21 +12383,6 @@ util.ver-to-i ()
 
 ----
 
-==== `util.whats-installed`
-
-[source,bash]
-----
-util.whats-installed () 
-{ 
-    declare -a hb_aliases=($(alias | ${GrepCommand} 'hb\..*=' | sedx 's/alias//g; s/=.*$//g'))
-    h2 "Installed app aliases:" ' ' "${hb_aliases[@]}"
-    h2 "Installed DB Functions:"
-    info "hb.db  [ ms | r1 | r2 | c ]"
-    info "hb.ssh <server-name-substring>, eg hb.ssh web"
-}
-
-----
-
 ==== `var.expand`
 
 [source,bash]
@@ -12424,16 +12454,37 @@ video.convert.compress ()
     local file="$1"
     shift
     local output=${file/\.*/.mkv}
-    local algo="${2:-"1"}"
-    [[ "${file}" == "${output}" ]] && output="${output/\.mkv/-smaller-${ratio}.mkv}"
-    h2 "Starting ffmpeg conversion from ${file} to ${output}, with algorithm #${ratio}" "Source file size is $(file.size.mb ${file})"
+    local algo="${1:-"11"}"
+    [[ "${file}" == "${output}" ]] && output="${output/\.*/-converted-${ratio}.mkv}"
+    is.an-existing-file "${output}" && { 
+        info "File ${output} already exists, making a backup..."
+        run "mv \"${output}\" \"${output}.$(time.now.db)\""
+    }
+    h2 "Starting ffmpeg conversion, source file size is ${bldred}$(file.size.mb "${file}")"
+    " • Source:      [${file}]" " • Destination: [${output}]" " • Algorithm:   [#${algo}]"
+    .ensure.ffmpeg
     run.set-next show-output-on
     local func=".video.convert.compress-${algo}"
+    arrow.blk-on-cyan "conversion function: "
+    printf "${bldblu}\n"
+    hr
+    echo
+    type "${func}"
+    printf "${clr}"
+    hr
+    echo
     run "${func} \"${file}\" \"${output}\""
     local before="$(file.size "${file}")"
     local after="$(file.size "${output}")"
-    local reduction=$(( 100 * ( before - after ) / before ))
-    success "File ${output} was prodiced with ${reduction}% size savings."
+    local reduction=
+    if [[ ${before} -lt ${after} ]]; then
+        reduction=$(( 100 * ( after - before ) / before ))
+        warning "${output} was generated with ${reduction}% increase in file size, from ${before} to ${after}"
+    else
+        reduction=$(( 100 * ( before - after ) / before ))
+        success "${output} was generated with ${reduction}% reduction in file size, from ${before} to ${after}"
+    fi
+    return 0
 }
 
 ----
