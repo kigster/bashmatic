@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Private Functions
 #===============================================================================
 
@@ -18,7 +20,7 @@ unset bashmatic_db_host
 unset bashmatic_db_database
 
 db.psql.args-data-only() {
-  printf -- "%s" "--no-align --pset footer -q -X --tuples-only"
+  printf -- "%s" "-A -t --no-align --pset footer -q -X --tuples-only"
 }
 
 db.config.init() {
@@ -189,7 +191,7 @@ db.psql.connect.just-data() {
 
 db.psql.run() {
   local dbname="$1"; shift
-  db.psql.connect "${dbname}" -X --pset border=0 -c "\"$@\""
+  db.psql.connect "${dbname}" -t -A -X --pset border=0 -c "$@"
 }
 
 db.psql.list-users() {
