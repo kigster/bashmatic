@@ -346,7 +346,7 @@ function analyze.main() {
     (
       # this will give us the exit code of the db run command if it fails.
       set -eo pipefail
-      flag_quiet=1 db.psql.run-multiple "${analyze__dbname}" "${operations[@]}" 1>"${file_stdout}" 2>"${file_stderr}"
+      db -q run-multiple "${analyze__dbname}" "${operations[@]}" 1>"${file_stdout}" 2>"${file_stderr}"
     ) 
     code=$?
 

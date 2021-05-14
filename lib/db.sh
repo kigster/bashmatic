@@ -198,8 +198,13 @@ db.psql.run-multiple() {
   local dbname="$1"; shift
   local commands
   for arg in "$@"; do
-    commands="${commands} -c \"${arg}\""
+    if [[ ${arg} =~ \" ]]; then
+      commands="${commands} -c '$(printf "%s" "${arg}")'"
+    else
+      commands="${commands} -c \"$(printf "%s" "${arg}")\""
+    fi
   done
+  echo "${commands}">/tmp/a
   db.psql.connect "${dbname}" -t -A -X --pset border=0 "${commands}"
 }
 
