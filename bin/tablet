@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: ft=bash
 #
 # Bashmatic Framework®
 #
@@ -387,6 +388,7 @@ function analyze.main() {
     fi
   done
 
+  echo
   if [[ ${failures} -eq 0 && ${successes} -gt 0 ]] ; then
     success "A total of ${successes} tables have been ${verb_past_tense} in $(time.with-duration.end analyze)"
     return 0
