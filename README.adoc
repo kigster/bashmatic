@@ -603,7 +603,6 @@ You can view the full list by passing `--commands` flag:
 
 image::doc/img/db-commands.png[db usage,border=2,width=80%,align=center]
 
-
 Altgernatively, here is the `--examples` view:
 
 image::doc/img/db-examples.png[db examples,border=2,width=80%,align=center]
@@ -611,7 +610,6 @@ image::doc/img/db-examples.png[db examples,border=2,width=80%,align=center]
 ==== Sub-Command `db connections`
 
 You can get a list of all availabled db connections with either
-
 
 [source,bash]
 ----
@@ -659,6 +657,26 @@ component_id,file_path,fingerprint_sha_256,fingerprint_comment_stripped_sha_256,
 6121f5b3-d68d-479d-9b83-77e9ca07dd2b,weiboSDK/src/main/java/com/sina/weibo/sdk/openapi/models/Tag.java,
 6121f5b3-d68d-479d-9b83-77e9ca07dd2b,weiboSDK/src/main/java/com/sina/weibo/sdk/openapi/models/Comment.java,
 ----
+
+=== `bin/tablet` Script 
+
+Building atop of the powerful `db` script mechanics, is another powerful script called `tablet`.
+
+The script is meant to be run against one database, and perform a table-level operation on a set of tables that can be specified in numerous ways. It started with the need to ANALYZE only some of the tables, specifically those that have not been auto-analyzed, but grew into a much more capable tool that can do things like:
+
+ * Analyze all tables in a database that have never been analyzed`
+ * Analyze all tables in a database that have not been analyzed in N days
+ * Analyze a set of specific tables, or exclude tables using regular expression
+ * Instead of analyzing tables, perform any other table-level command such as:
+ ** `TRUNCATE`
+ ** `VACUUM` and `VACCUUM FULL`
+ ** `DROP TABLE`
+ ** `REINDEX TABLE`
+ ** etc..
+
+Below is the screenshot of the help screen from this script:
+
+image::doc/img/bashmatic-tablet.png[Tablet Script in Action,border=2,width=80%,align=center]
 
 == Usage
 

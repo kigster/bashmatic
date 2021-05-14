@@ -4,7 +4,7 @@
 #===============================================================================
 
 function is-verbose() {
-  ((flag_verbose))
+  ((flag_verbose))  
 }
 
 function is-quiet() {
@@ -179,7 +179,7 @@ db.psql.connect() {
 }
 
 # @description Similar to the db.psql.connect, but outputs
-#              just the raw data with no headers.
+#              just the raw data with no headers.a
 #
 # @example
 #    db.psql.connect.just-data production -c 'select datname from pg_database;'
@@ -192,6 +192,15 @@ db.psql.connect.just-data() {
 db.psql.run() {
   local dbname="$1"; shift
   db.psql.connect "${dbname}" -t -A -X --pset border=0 -c "$@"
+}
+
+db.psql.run-multiple() {
+  local dbname="$1"; shift
+  local commands
+  for arg in "$@"; do
+    commands="${commands} -c \"${arg}\""
+  done
+  db.psql.connect "${dbname}" -t -A -X --pset border=0 "${commands}"
 }
 
 db.psql.list-users() {
@@ -351,11 +360,29 @@ db.actions.run() {
   db.psql.run "$@"
 }
 
+# @description 
+#    Executes multiple commands by passing them to psql each with -c flag. This
+#    allows, for instance, setting session values, and running commands such as VACUUM which 
+#    can not run within an implicit transaction started when joining multiple statements with ";"
+#
+# @example
+#    $ db -q run my_database 'set default_statistics_target to 10; show default_statistics_target; vacuum users'
+#    ERROR:  VACUUM cannot run inside a transaction block
+#
+#    $ db -q run-multiple my_database 'set default_statistics_target to 10' 'show default_statistics_target' 'vacuum users'
+#    SET
+#    10
+#    VACUUM
+
+db.actions.run-multiple() {
+  db.psql.run-multiple "$@"
+}
+
 db.actions.csv() {
   local dbname=${1};  shift
   [[ -z ${dbname} ]] && return 1
   export flag_quiet=1
-  db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$@\""
+  db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$*\""
 }
 
 db.actions.explain() {
