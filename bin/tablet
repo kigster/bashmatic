@@ -1,0 +1,404 @@
+#!/usr/bin/env bash
+#
+# Bashmatic Framework®
+#
+# Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved, MIT License.
+#
+# @description This executable script is meant to perform per-table "analyze verbose"
+#              database. It can choose tables that have never been analyzed, or
+#              haven't been analyze in a long time, filter some tables out, etc.
+# vim: ft=bash
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" || exit 1; pwd -P)")"
+
+source "${BASHMATIC_HOME}/init.sh"
+source "${BASHMATIC_HOME}/lib/db.sh"
+source "${BASHMATIC_HOME}/lib/db_cli.sh"
+source "${BASHMATIC_HOME}/lib/db_top.sh"
+
+[[ -s ${bashmatic_db_config} ]] || setup.action.databases
+
+function analyze.usage() {
+  printf "${bldgrn}USAGE:${clr}\n"
+  printf "    ${bldylw}tablet [options] dbname [table1 table2 ...]  \n\n"
+
+  printf "${bldgrn}DESCRIPTION:${clr}\n"
+  printf "    Use this script to perform table-level operations in a given database,\n"
+  printf "    with connection params defined in the file ${bldcyn}${bashmatic_db_config/$HOME/\~}${clr}.\n\n"
+  printf "    The default operation is a safe ${bldylw}analyze verbose${clr}, but can be changed.\n\n"
+  printf "    You define db connection either with -d flag, or the first non-flag argument is\n"
+  printf "    interpreted as the DB name. Additional non-flag arguments are interpreted as\n"
+  printf "    table names, and if provided, used as the tables to perform the action on.\n\n"
+
+  printf "    NOTE: \n"
+  printf "    • To list available database connections, run:\n"
+  printf "      ${bldgrn}db --connections${clr}\n\n"
+  printf "    • To list available db script commands, run:\n"
+  printf "      ${bldgrn}db --commands${clr}\n\n"
+
+  printf "${bldgrn}OPTIONS:${clr}\n"
+  printf "    ${bldylw}-d | --database NAME          ${clr}Database connection name.${clr}\n"
+  printf "    ${bldylw}-o | --operation OPERATION    ${clr}Operation to perform on a table.${clr}\n"
+  printf "                                  ${clr}Defaults to ${bldylw}${analyze__table_operation}.${clr}\n\n"
+  printf "    ${undred}Be very careful with this!${clr}\n"
+  printf "    ${bldred}You can use this flag to change 'analyze' to a destructive operation, such as:${clr}\n"
+  printf "    ${bldred}drop, truncate, vacuum, vacuum full, which may result in an extended${clr}\n"
+  printf "    ${bldred}application downtime if performed accidentally, or maliciously. Changing${clr}\n"
+  printf "    ${bldred}the operation forces the interactive confirmation.${clr}\n\n"
+  printf "    ${bldylw}-y | --yes                    ${clr}Skip interactive confirmation.${clr}\n"
+  printf "    ${bldylw}-a | --abort-on-error         ${clr}Abort the script if any DB operation fails.${clr}\n"
+  printf "    ${bldylw}-n | --dry-run                ${clr}Only print commands to be executed.${clr}\n"
+  printf "    ${bldylw}-v | --verbose                ${clr}Print additional verbose info.${clr}\n"
+  printf "    ${bldylw}-h | --help                   ${clr}This help message.${clr}\n\n"
+
+  printf "${bldgrn}CHOOSING THE TABLES:${clr}\n"
+  printf "    Table specification flags are cumulative: in other words you can combine them.\n"
+  printf "    Tables obtained by applying the following flags are sorted and uniq'd, and \n"
+  printf "    then filtered, whenever a regex filter is provided.\n\n"
+  printf "    ${bldylw}-t | --table NAME             ${clr}Operate on a given table(s)${clr}\n"
+  printf "    ${bldylw}-s | --since-days DAYS        ${clr}Operate on tables with analyze data older than DAYS${clr}\n"
+  printf "    ${bldylw}-u | --unanalyzed             ${clr}Operate on tables that have never been analyzed${clr}\n\n"
+
+  printf "    Apply additional regex to the list of tables defined by the above options:\n"
+  printf "    NOTE: regex can either include (pass) or exclude (reject) table names.\n"
+  printf "    ${bldylw}-r | --regex REGEX            ${clr}Regex to apply to include/exclude tables.${clr}\n\n"
+
+  printf "${bldgrn}EXAMPLES:${clr}\n"
+  printf "    ${txtpur}# In the examples below we assume you defined ${bldcyn}prod.db${txtpur} connection.\n"
+  printf "    ${txtpur}# Dry-run — only print what would be analyzed:\n"
+  printf "    ${bldylw}tablet -n -d dev.local -t users -t profiles -t sessions\n\n"
+
+  printf "    ${txtpur}# analyze all un-analyzed tables, EXCEPT those\n"
+  printf "    ${txtpur}# matching 'Locks', '*LDAP*', or 'Pull*'\n"
+  printf "    ${txtpur}# note that we define DB conneciton without -d flag here:\n"
+  printf "    ${bldylw}tablet dev.local -u -r '^Locks$|^LDAP|^Pull'\n\n"
+
+  printf "    ${txtpur}# vacuum tables matching 'Session*':\n"
+  printf "    ${bldylw}tablet dev.local -r '^Session.*$' -o 'vacuum analyze verbose' \n\n"
+  echo
+  exit 0
+}
+
+export analyze__dbname=
+export analyze__table_operation="analyze verbose"
+export analyze__dry_run=0
+export analyze__on_error_abort=0
+export analyze__verbose=0
+export analyze__yes=0
+
+export analyze__unanalyzed=0
+export analyze__all=1
+export analyze__older_than_days=0
+declare -a analyze__tables
+export analyze__tables=()
+
+export analyze__table_regex=
+
+function analyze.parse-opts() {
+  [[ -z "$1" ]] && {
+    analyze.usage
+    exit 0
+  }
+
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -t | --table)
+      shift
+      export analyze__all=0
+      export analyze__tables+=("$1")
+      shift
+      ;;
+    -s | --since-days)
+      shift
+      local arg="$1"
+      export analyze__all=0
+      export analyze__older_than_days=$((arg + 0))
+      shift
+      ;;
+    -u | --unanalyzed)
+      shift
+      export analyze__all=0
+      export analyze__unanalyzed=1
+      ;;
+
+    -r | --regex)
+      shift
+      export analyze__table_regex="$1"
+      shift
+      ;;
+
+    -o | --operation)
+      shift
+      export analyze__table_operation="$1"
+      shift
+      ;;
+
+    -d | --database)
+      shift
+      export analyze__dbname="$1"
+      shift
+      ;;
+
+    -n | --dry-run)
+      shift
+      export analyze__dry_run=1
+      ;;
+
+    -v | --verbose)
+      shift
+      export analyze__verbose=1
+      ;;
+
+    -a | --abort-on-error)
+      shift
+      export analyze__on_error_abort=1
+      ;;
+
+    -y | --yes)
+      shift
+      export analyze__yes=1
+      ;;
+
+    -h | --help)
+      shift
+      analyze.usage
+      exit 0
+      ;;
+
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+
+    -?*)
+      printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+      exit 127
+      shift
+      ;;
+
+    *) # Parse non-flag arguments
+      [[ -z "$1" ]] && break
+
+      if [[ -z ${analyze__dbname} ]]; then
+        export analyze__dbname="$1"
+        shift
+      else
+        export analyze__all=0
+        export analyze__tables+=("$1")
+        shift
+      fi
+      ;;
+    esac
+  done
+}
+
+source "${BASHMATIC_HOME}/init.sh"
+
+function analyze.get-tables.unanalyzed() {
+  # shellcheck disable=SC2046
+  db run "${analyze__dbname}" 'select relname from pg_stat_user_tables where analyze_count + autoanalyze_count = 0 order by relname' 2>/dev/null
+}
+
+function analyze.get-tables.all() {
+  # shellcheck disable=SC2046
+  db list-tables "${analyze__dbname}" 2>/dev/null
+}
+
+function analyze.get-tables.unanalyzed-since() {
+  # shellcheck disable=SC2046
+  local query=$(cat <<SQL | tr -d '\n' | sed 's/  */ /g; s/^ *//g'
+    select relname 
+    from   pg_stat_user_tables 
+    where  ( last_analyze is NULL or 
+             now() - last_analyze > interval '${analyze__older_than_days} days' ) 
+           and  
+           ( last_autoanalyze is NULL or 
+             now() - last_autoanalyze > interval '${analyze__older_than_days} days') 
+    order by relname
+SQL
+    )
+
+  db run "${analyze__dbname}" "${query}"  2>/dev/null
+}
+
+function analyze.validate() {
+  local db="${analyze__dbname}"
+
+  [[ -z $db ]] && analyze.usage
+  local connection="$(db.config.connections | grep -E "^$db$")"
+  if [[ -z ${connection} ]]; then
+    error "Database name is invalid: ${db}"
+    info "The following connections are available:"
+    db.config.connections
+    echo
+    exit 1
+  fi
+
+  local -a tables
+  tables=()
+  # Determine the list of tables
+  # shellcheck disable=SC2207
+  ((analyze__all)) && tables+=($(analyze.get-tables.all))
+  # shellcheck disable=SC2207
+  ((analyze__unanalyzed)) && tables+=($(analyze.get-tables.unanalyzed))
+  # shellcheck disable=SC2207
+  ((analyze__older_than_days)) && tables+=($(analyze.get-tables.unanalyzed-since "${analyze__older_than_days}"))
+
+  # shellcheck disable=SC2207
+  tables=($(array.uniq "${tables[@]}"))
+
+  if [[ -n ${analyze__table_regex} ]]; then
+    local -a filtered
+    for t in "${tables[@]}"; do
+      [[ $t =~ ${analyze__table_regex} ]] || continue
+      filtered+=( "${t}" ) 
+    done
+    # shellcheck disable=SC2206
+    tables=( ${filtered[@]} )
+  fi
+
+  # shellcheck disable=SC2206
+  export analyze__tables+=( ${tables[@]} )
+  export analyze__tables=( $(array.uniq "${analyze__tables[@]}") )
+
+  return 0
+}
+
+function analyze.main() {
+  analyze.parse-opts "$@"
+  analyze.validate
+
+  # shellcheck disable=SC2206
+  local -a verbs=( ${analyze__table_operation} )
+  local verb=${verbs[0]}
+  local verb_past_tense="${verb}"
+  local verb_present_tense="${verb}"
+  [[ ${verb} =~ e$ ]] && {
+    verb_past_tense=${verb_past_tense:0:-1}
+    verb_present_tense=${verb_present_tense:0:-1}
+  }
+  verb_past_tense="${verb_past_tense}ed"
+  verb_present_tense="${verb_present_tense}ing"
+
+  if [[ ${verb^^} =~ TRUNC|VACUUM|DROP|REINDEX ]]; then
+    warning "You've selected a potentially destructive operation: ${bldred}${analyze__table_operation^^}" \
+            "When run against live databases, this may cause downtime."
+
+    run.ui.ask "Are you sure you want to proceed with the operation ${bldred}${analyze__table_operation}"
+  fi
+
+  if ((analyze__verbose)); then
+    h2 "${bldcyn}${verb^} ${#analyze__tables[@]} tables from the database ${bldylw}${analyze__dbname}" "${analyze__tables[@]}"
+  else
+    h1 "${verb^} ${#analyze__tables[@]} tables from the database ${bldylw}${analyze__dbname}"
+  fi
+
+  ((analyze__yes)) || {
+    hl.yellow-on-gray "Please confirm ${verb} action on ${#analyze__tables[@]} tables in ${analyze__dbname}."
+    run.ui.ask "Proceed with ${verb_present_tense}?"
+  }
+
+  local on_error="continuing..."
+  ((analyze__on_error_abort)) && on_error="aborting..."
+
+  printf "${bldgrn}${bakblk}"
+  local progress_empty="█"
+  local progress_done="${bldgrn}█"
+  local progress_error="${bldred}█"
+  time.with-duration.start analyze
+  ((analyze__verbose)) || printf "  ${verb_present_tense}: "
+  local i=0
+  local successes=0
+  local failures=0
+
+  local operation
+  local error
+
+  local file_stderr=$(file.temp ${RANDOM})
+  local file_stdout=$(file.temp ${RANDOM})
+  trap "rm -f ${file_stderr} ${file_stdout}" EXIT
+
+  for t in "${analyze__tables[@]}"; do
+    i="$((i + 1))"
+    if ((analyze__verbose)); then
+      inf "${verb_present_tense^} table #${i} → ${bldylw}$(printf "%-20.20s" "${t}") $(txt-info)... "
+    else
+      printf "${progress_empty}"
+      cursor.shift.x -2
+    fi
+
+    ((analyze__dry_run)) && {
+      ((analyze__verbose)) && { 
+        printf "(dry run)"; ok: ; echo; continue
+      }
+      continue
+    }
+    
+    operation="SET maintenance_work_mem = '2GB'; SET default_statistics_target to 100; ${analyze__table_operation} \"${t}\";"
+    local OIFS="${IFS}"
+    local -a operations
+    IFS=';' read -r -a operations <<< "${operation}"
+    IFS="${OIFS}"
+    time.with-duration.start "${t}"
+
+    (
+      # this will give us the exit code of the db run command if it fails.
+      set -eo pipefail
+      flag_quiet=1 db.psql.run-multiple "${analyze__dbname}" "${operations[@]}" 1>"${file_stdout}" 2>"${file_stderr}"
+    ) 
+    code=$?
+
+    [[ -s ${file_stderr} ]] && {
+       error="$(cat "${file_stderr}" "${file_stdout}" | grep ERROR: | sed 's/.*ERROR://g')"
+       [[ -n ${error} ]] && {
+         ((code)) || code=111
+       }
+    }
+
+    [[ -s ${file_stdout} ]] && {
+      result=$(grep scanned "${file_stdout}" | sed -E "s/.*INFO: *\"${t}\": //g" | sed 's/^ *$//g')
+    }
+
+    if ((code)); then
+      failures=$((failures + 1))
+      if ((analyze__verbose)); then
+        printf "[ERROR]"; not-ok:
+        arrow.blk-on-red "${error}"
+
+        ((analyze__on_error_abort)) && \
+          error "DB statement returned code ${code}, ${italic}${on_error}." \
+            "Problematic Statement: ${txtblk}${bakred}${operation}" \
+            "Resulting Error      : ${bldred}${bakblk}${error}"
+
+      else
+        printf "${progress_error}"
+      fi
+
+      ((analyze__on_error_abort)) && exit ${code}
+    else 
+      successes=$((successes + 1))
+      if ((analyze__verbose)); then
+        printf "${bldgrn} OK, ${verb_past_tense} in $(time.with-duration.end "${t}"| sed 's/  / /g')"; ok:
+        [[ -n ${result} ]] && arrow.blk-on-ylw "${result}"
+      else
+        printf "${progress_done}"
+      fi
+    fi
+  done
+
+  if [[ ${failures} -eq 0 && ${successes} -gt 0 ]] ; then
+    success "A total of ${successes} tables have been ${verb_past_tense} in $(time.with-duration.end analyze)"
+    return 0
+  elif [[ ${failures} -gt 0 && ${successes} -eq 0 ]]; then
+    error "Zero tables have been ${vverb_past_tense}, while ${failures} tables failed to."
+  else
+    h3 "Partial Success:" \
+      "${bldgrn}A total of ${successes} table(s) have been ${verb_past_tense} in $(time.with-duration.end analyze)" \
+      "${bldred}A total of ${failures} table(s) have failed to ${verb}."
+  fi
+
+  return 1
+}
+
+analyze.main "$@"
