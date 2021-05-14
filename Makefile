@@ -3,7 +3,7 @@
 # vim: noexpandtab
 
 # grep '^[a-z\-]*:' Makefile | cut -d: -f 1 | tr '\n' ' '
-.PHONY:	 help install fonts-setup fonts-clean update-changelog update-functions update-usage update-readme regenerate-readme reduce-size-readme open-readme git-add update setup test docker-build docker-run docker-run-bash docker-run-zsh docker-run-fish file-stats-git file-stats-local shell-files
+.PHONY:	 help install fonts-setup fonts-clean update-changelog update-functions update-usage update-readme regenerate-readme reduce-size-readme open-readme git-add update setup test docker-build docker-run docker-run-bash docker-run-zsh docker-run-fish file-stats-git file-stats-local shell-files release tag
 
 red             		:= \033[0;31m
 bold             		:= \033[1;45m
@@ -74,6 +74,7 @@ make-utf8:			## Convert all text SHELL script  files from ASCII to UTF8 format
 				     $CONVERT   "$file"   -o  "${file%.txt}.utf8.converted"
 				done
 				exit 0
+				"
 
 file-stats-git:			## Print all  files  known to `git ls-files` command
 				@git ls-files | xargs files
@@ -150,6 +151,7 @@ tag:				## Tag this commit with .version and push to remote
 				@git tag $(BASHMATIC_TAG) -f
 				@git push --tags -f
 
-release: tag 			## Make a new release named after the latest tag
-				@command -v gh>/dev/null || brew install gh
-				@gh release create $(BASHMATIC_TAG) . --title "$(BASHMATIC_RELEASE)"
+release: 			## Make a new release named after the latest tag
+				command -v gh >/dev/null || brew install gh
+				gh release create $(BASHMATIC_TAG) . --title $(BASHMATIC_RELEASE)
+
