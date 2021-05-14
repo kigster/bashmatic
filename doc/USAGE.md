@@ -634,7 +634,7 @@ db.psql.connect production -c 'show all'
 ### `db.psql.connect.just-data()`
 
 Similar to the db.psql.connect, but outputs
-just the raw data with no headers.
+just the raw data with no headers.a
 
 #### Example
 

@@ -33,6 +33,7 @@
 * xref:#module-gem[gem]
 * xref:#module-git[git]
 * xref:#module-github[github]
+* xref:#module-gpg[gpg]
 * xref:#module-is[is]
 * xref:#module-jemalloc[jemalloc]
 * xref:#module-json[json]
@@ -2270,7 +2271,7 @@ db.actions.csv ()
     shift
     [[ -z ${dbname} ]] && return 1
     export flag_quiet=1
-    db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$@\""
+    db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$*\""
 }
 
 ----
@@ -2401,6 +2402,17 @@ db.actions.pga ()
 db.actions.run () 
 { 
     db.psql.run "$@"
+}
+
+----
+
+==== `db.actions.run-multiple`
+
+[source,bash]
+----
+db.actions.run-multiple () 
+{ 
+    db.psql.run-multiple "$@"
 }
 
 ----
@@ -2592,7 +2604,7 @@ db.psql.args ()
 ----
 db.psql.args-data-only () 
 { 
-    printf -- "%s" "--no-align --pset footer -q -X --tuples-only"
+    printf -- "%s" "-A -t --no-align --pset footer -q -X --tuples-only"
 }
 
 ----
@@ -2843,7 +2855,25 @@ db.psql.run ()
 { 
     local dbname="$1"
     shift
-    db.psql.connect "${dbname}" -X --pset border=0 -c "\"$@\""
+    db.psql.connect "${dbname}" -t -A -X --pset border=0 -c "$@"
+}
+
+----
+
+==== `db.psql.run-multiple`
+
+[source,bash]
+----
+db.psql.run-multiple () 
+{ 
+    local dbname="$1"
+    shift
+    local commands
+    for arg in "$@"
+    do
+        commands="${commands} -c \"${arg}\""
+    done
+    db.psql.connect "${dbname}" -t -A -X --pset border=0 "${commands}"
 }
 
 ----
@@ -4990,6 +5020,48 @@ github.validate ()
         github.setup
         return $?
     fi
+}
+
+----
+
+
+=== Module `gpg`
+
+==== `gpgit.install`
+
+[source,bash]
+----
+gpgit.install () 
+{ 
+    gpgit.install-deps
+    VERSION=1.4.1
+    run "wget \"https://github.com/NicoHood/gpgit/releases/download/${VERSION}/gpgit-${VERSION}.tar.xz\""
+    run "wget \"https://github.com/NicoHood/gpgit/releases/download/${VERSION}/gpgit-${VERSION}.tar.xz.asc\""
+    run "gpg2 --keyserver hkps://keyserver.ubuntu.com --recv-keys 97312D5EB9D7AE7D0BD4307351DAE9B7C1AE9161"
+    gpg2 --verify "gpgit-${VERSION}.tar.xz.asc" "gpgit-${VERSION}.tar.xz"
+    tar -xf "gpgit-${VERSION}.tar.xz"
+    sudo make -C "gpgit-${VERSION}" PREFIX=/usr/local install
+    gpgit --helpp
+}
+
+----
+
+==== `gpgit.install-deps`
+
+[source,bash]
+----
+gpgit.install-deps () 
+{ 
+    util.os
+    case "${AppCurrentOS}" in 
+        darwin)
+            brew.install.packages "coreutils gawk gnu-sed git tar xz-utils bzip lzip file jq curl gzip"
+        ;
+        linux)
+            run "sudo apt-get install bash gnupg2 git tar xz-utils coreutils gawk grep sed"
+            run "sudo apt-get install gzip bzip lzip file jq curl"
+        ;
+    esac
 }
 
 ----
