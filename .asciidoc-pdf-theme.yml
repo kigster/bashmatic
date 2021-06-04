@@ -147,7 +147,7 @@ font:
       bold_italic: cascadiamono-semibold.ttf
       italic: cascadiamono-semilight.ttf
       semibold: cascadiamono-semibold.ttf
-    Lato:
+    Lato: # for file in $(ls -1 ~/Library/Fonts/Lato-*ttf); do n=$(echo $file| tr '[:upper:]' '[:lower:]' | xargs basename); echo $n; cp -v $file $n ; done
       black: lato-black.ttf
       black_italic: lato-blackitalic.ttf
       bold: lato-bold.ttf
