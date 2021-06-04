@@ -1,11 +1,12 @@
 extends: default
 base:
-  border-color: 303030
+  border-color: 612e0a
   font:
-    size: 11
+    size: 10
     color: 222222
-    family: Barlow
-  line-height-length: 13
+    family: Lato
+    weight: 500
+  line-height-length: 11
   line-height: $base-line-height-length / $base-font-size
 vertical-spacing: $base-line-height-length
 code:
@@ -17,14 +18,25 @@ code:
   font:  
     size: 7
     family: Cascadia
+    weight: 800
+pre:
+  background-color: fdea7266
+  font-color: $base-font-color
+  border-color: 756600f2
+  line-height-length: 11
+  line-height: $code-line-height-length / $code-font-size
+  font:  
+    size: 8
+    family: Cascadia
+    weight: 800
 heading:
   line-height-length: 20
-  line-height: $heading-line-height-length / $heading-font-size
   font:
-    color: BF5F10
-    family: Cairo
+    color: f16b04
+    family: Barlow
     style: bold
-    size: 15
+    size: 17
+  line-height: $heading-line-height-length / $heading-font-size
 image:
   border-radius: 15
 admonition:
@@ -47,13 +59,28 @@ mark:
 key:
   background-color: F0F0FF
   border-color: A0A0A0
-heading:
-  font-color: $base-font-color
 title_page:
   title:
-    font-color: E09000
-  authors:
-    font-color: B06000
+    font:
+      color: ff4f2f
+      family: Barlow
+      style: semibold
+      size: 30
+      weight: 200
+  author:
+    font:
+      color: 5f1f00
+      family: Cairo
+      style: bold
+      size: 18
+      weight: 200
+  subtitle:
+    font:
+      color: 111
+      family: Cairo
+      style: bold
+      size: 18
+      weight: 200
 abstract:
   font-color: 
 blockquote:
@@ -71,8 +98,8 @@ example:
   background-color: $page-background-color
   border-color: $base-border-color
 sidebar:
-  background-color: 111111
-  border-color: 1A1A1A
+  background-color: aaf594ad
+  border-color: 145700e6
   title:
     font-color: $heading-font-color
 thematic-break:
@@ -88,7 +115,7 @@ footer:
   border-color: 222222
 font:
   catalog:
-    merge: true  set value to true to merge catalog with theme you're extending
+    merge: true # set value to true to merge catalog with theme you're extending
     Barlow:
       bold: barlowcondensed-semibold.ttf
       bold_italic: barlowcondensed-semibolditalic.ttf
@@ -106,6 +133,7 @@ font:
     AdventPro: 
       normal: adventpro-light.ttf
       bold: adventpro-bold.ttf
+      semibold: adventpro-semibold.ttf
       italic: adventpro-semibold.ttf
       bold_italic: adventpro-thin.ttf
     Arvo:
@@ -119,6 +147,26 @@ font:
       bold_italic: cascadiamono-semibold.ttf
       italic: cascadiamono-semilight.ttf
       semibold: cascadiamono-semibold.ttf
+    Lato:
+      black: lato-black.ttf
+      black_italic: lato-blackitalic.ttf
+      bold: lato-bold.ttf
+      bold_italic: lato-bolditalic.ttf
+      hairline: lato-hairline.ttf
+      hairline_italic: lato-hairlineitalic.ttf
+      heavy: lato-heavy.ttf
+      heavy_italic: lato-heavyitalic.ttf
+      italic: lato-italic.ttf
+      light: lato-light.ttf
+      light_italic: lato-lightitalic.ttf
+      medium: lato-medium.ttf
+      medium_italic: lato-mediumitalic.ttf
+      regular: lato-regular.ttf
+      semibold: lato-semibold.ttf
+      semibold_italic: lato-semibolditalic.ttf
+      thin: lato-thin.ttf
+      thin_italic: lato-thinitalic.ttf
+
 page:
   background-color: FFFFFF
   layout: portrait
@@ -126,3 +174,6 @@ page:
   size: Letter
 toc:
   :toclevels: 5
+  font:
+    size: 8
+    family: Barlow

@@ -5,9 +5,6 @@
 
 source "${BASHMATIC_HOME}/lib/db.sh"
 
-declare -a db_actions
-export db_actions=($(util.functions-matching.diff db.actions.))
-
 db.usage() {
   local config="~/$(basename $(dirname ${bashmatic_db_config}))/$(basename  ${bashmatic_db_config})"
   usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" \
@@ -43,6 +40,13 @@ function db.connections-list() {
   echo; hr; echo
   exit 0
 }
+
+function db.actions.commands() {
+  db.commands-list
+}
+
+declare -a db_actions
+export db_actions=($(util.functions-matching.diff db.actions.))
 
 function db.examples() {
   h2 EXAMPLES \
@@ -133,8 +137,8 @@ function db.main() {
       [[ -n ${action} ]] && break
       export action="$1"; shift
       array.includes "${action}" "${db_actions[@]}" || {
-        error "Invalid action: ${action}"
-        info "Valid actions are: $(array.to.csv "${db_actions[@]}")"
+        error "Invalid Command" "${action}"
+        db.commands-list 
         return 1
       }
       export func="db.actions.${action}"

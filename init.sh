@@ -8,6 +8,8 @@ export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 function source-if-exists() {
   local file
   for file in "$@"; do
+    [[ -n $DEBUG ]] && printf "${bldblu}sourcing ${bldylw}%30s${clr}\n" "${file}"
+
     [[ -f "${file}" ]] && source "${file}"
   done
 }

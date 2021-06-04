@@ -354,7 +354,8 @@ h6 {
   font-weight: 600;
   font-style: normal;
   color: #ba3925;
-  text-rendering: optimizeLegibility;
+  letter-spacing: 1px;
+  text-rendering: geometricPrecision;
   margin-top: 1em;
   margin-bottom: 0.5em;
   line-height: 1.0125em;
@@ -1152,7 +1153,7 @@ table.tableblock #preamble > .sectionbody > .paragraph:first-of-type p {
 }
 .literalblock.output pre {
   color: #f7f7f8;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: #ddd;
 }
 .listingblock pre.highlightjs {
   padding: 0;

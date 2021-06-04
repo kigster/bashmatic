@@ -120,7 +120,7 @@ main() {
   info "Rendering ADOC file: ${bldylw}${temp}"
   
   local script=$(file.temp)
-  trap "rm -f ${script} ${temp}" EXIT
+  ((bashmatic_adoc2pdf_debug)) || trap "rm -f ${script} ${temp}" EXIT
 
   # Create a tiny script so that we can debug it later if needed
   # as well as print it to STDOUT

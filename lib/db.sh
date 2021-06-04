@@ -189,9 +189,9 @@ db.psql.connect.just-data() {
   db.psql.connect "${dbname}" $(db.psql.args-data-only) "$@"
 }
 
-db.psql.run() {
+db.psql.explain() {
   local dbname="$1"; shift
-  db.psql.connect "${dbname}" -t -A -X --pset border=0 -c "$@"
+  db.psql.connect "${dbname}" -t -A -X --pset border=0 -c "'explain $*'"
 }
 
 db.psql.run-multiple() {
@@ -390,15 +390,19 @@ db.actions.csv() {
   db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$*\""
 }
 
-db.actions.explain() {
+export _bashmatic_db_explain_sql="EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON)"
+export _bashmatic_db_analyze_sql="EXPLAIN (COSTS, VERBOSE, BUFFERS, FORMAT JSON)"
+export _bashmatic_db_explain=
+
+.db.actions.explain-json() {
+  local flags
   local dbname="$1"; shift
   local query="$1"; shift
-  local flags
-  local explain_sql="EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON)"
+  local explain_sql="${__bashmatic_db_explain}"
   local explain_json
 
   if [[ -f "${query}" ]]; then
-    local explain="${query}.explain"
+    local explain="query.explain"
     local explain_json="${query}.explain.json"
     echo "${explain_sql}" > "${explain}"
     cat "${query}" >> "${explain}"
@@ -412,8 +416,22 @@ db.actions.explain() {
   db.psql.connect "${dbname}" "-AXt -P pager=off ${flags}"
 }
 
+db.actions.explain() {
+  db.psql.explain "$@"
+}
+
+db.actions.explain-json() {
+  export _bashmatic_db_explain="${_bashmatic_db_analyze_sql}"
+  .db.actions.explain "$@"
+}
+
+db.actions.explain-analyze-json() {
+  export _bashmatic_db_explain="${_bashmatic_db_explain_sql}"
+  .db.actions.explain "$@"
+}
+
 db.actions.data-dir() {
-  db.psql.connect "$@" $(db.psql.args-data-only) -c 'show data_directory' | $(which grep) -E -v 'data_directory|row'
+  db.psql.connect "$@" $(db.psql.args-data-only) -c "'show data_directory'" #| $(command -v grep) -E -v 'data_directory|row'
 }
 
 # @description Installs (if needed) pg_activity and starts it up against the connection
