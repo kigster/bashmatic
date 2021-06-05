@@ -88,11 +88,11 @@ video.convert.compress() {
   
   run.set-next show-output-on
   local func=".video.convert.compress-${algo}"
-  arrow.blk-on-cyan "conversion function: "
-  printf "${bldblu}\n"
+  arrow.blk-on-ylw "Conversion Function: "
+  printf -- "%s${bldblu}\n" " "
   hr; echo
   type "${func}"
-  printf "${clr}"
+  printf -- "%s${clr}\n" " "
   hr; echo
 
   run "${func} \"${file}\" \"${output}\""
@@ -109,5 +109,17 @@ video.convert.compress() {
   fi
   return 0
 }
+
+video-squeeze() {
+  for file in "$@"; do
+    [[ -s "${file}" ]] || { 
+      warning "Skipping ${file}..."
+      continue
+    }
+
+    arrow.blk-on-blue "Compressing \"${file}\""
+    video.convert.compress "${file}"
+  done
+} 
 
 
