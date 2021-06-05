@@ -76,48 +76,70 @@ video.convert.compress() {
 
   is.an-existing-file "${output}" && { 
     info "File ${output} already exists, making a backup..."
-    run "mv \"${output}\" \"${output}.$(time.now.db)\""
+    local t="$(time.now.db | tr -d ' ')"
+    # shellcheck disable=SC2001
+    local backup_output="$(echo "${output}" | sed "s/\.\(.*\)$/-${t}.\1/g")"
+    info "Backing up a name clashing file to ${backup_output}..."
+    run "mv \"${output}\" \"${backup_output}\""
   }
 
-  h2 "Starting ffmpeg conversion, source file size is ${bldred}$(file.size.mb "${file}")"
+  h2 "Starting ffmpeg conversion, source file size is ${bldred}$(file.size.mb "${file}")" \
      " • Source:      [${file}]" \
      " • Destination: [${output}]" \
      " • Algorithm:   [#${algo}]" 
 
   .ensure.ffmpeg
   
-  run.set-next show-output-on
   local func=".video.convert.compress-${algo}"
-  arrow.blk-on-ylw "Conversion Function: "
-  printf -- "%s${bldblu}\n" " "
-  hr; echo
-  type "${func}"
-  printf -- "%s${clr}\n" " "
-  hr; echo
 
+  is.a-function "${func}" || {
+    error "${func} is not a valid function name."
+    return 1
+  }
+
+  arrow.blk-on-ylw "Conversion Function: ${func}"
+
+  local token=$(echo "${file}" | shasum.sha | cut -f 1 -d ' ')
+  time.with-duration.start "${token}"
+
+  arrow.wht-on-blu "Please wait while we compress this file... (set DEBUG=1 to see the output)"
+  echo
+
+  ((DEBUG)) && run.set-next show-output-on
   run "${func} \"${file}\" \"${output}\""
   
   local before="$(file.size "${file}")"
   local after="$(file.size "${output}")"
   local reduction=
+  local duration=$(time.with-duration.end "${token}")
   if [[ ${before} -lt ${after} ]] ; then
     reduction=$(( 100 * ( after - before ) / before ))
-    warning "${output} was generated with ${reduction}% increase in file size, from ${before} to ${after}"
+    warning "${output} was generated with ${reduction}%% increase in file size" \
+            "from ${before} to ${after}" \
+            "and took ${duration}"
   else
     reduction=$(( 100 * ( before - after ) / before ))
-    success "${output} was generated with ${reduction}% reduction in file size, from ${before} to ${after}"
+    success "${output} was generated with ${reduction}%% reduction in file size" \
+            "from ${before} to ${after}" \
+            "and took ${duration}"
   fi
+
   return 0
 }
 
 video-squeeze() {
+  [[ -z "$*" ]] && {
+    printf --  "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-squeeze *.mp4 *.m4v${clr}\n"
+    return 0
+  }
+
   for file in "$@"; do
     [[ -s "${file}" ]] || { 
       warning "Skipping ${file}..."
       continue
     }
 
-    arrow.blk-on-blue "Compressing \"${file}\""
+    arrow.blk-on-blu "Compressing \"${file}\""
     video.convert.compress "${file}"
   done
 } 

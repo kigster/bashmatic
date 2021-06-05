@@ -1227,6 +1227,29 @@ $ gem.version awesome_print
 1.8.0
 ----
 
+==== Audio & Video Compression Helpers
+
+You can discover the audio and video functions using `bashmatic.functions` helper:
+
+[source,bash]
+----
+ ❯ bashmatic.functions 1 | egrep -i 'video|audio'
+audio.dir.mp3-to-wav
+audio.dir.rename-karaoke-wavs
+audio.dir.rename-wavs
+audio.file.frequency
+audio.file.mp3-to-wav
+audio.make.mp3
+audio.make.mp3.usage
+audio.make.mp3s
+video-squeeze
+video.convert.compress
+----
+
+These commands auto-install ffmpeg and other utilities, and then use best in class compression. For instance, here is 80% compressed video file:
+
+image::doc/img/video-squeeze.png[Video Squeeze, width="70%",align="center"]
+
 ==== Additional Helpers
 
 There are plenty more modules, that help with:
