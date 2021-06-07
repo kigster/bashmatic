@@ -60,7 +60,7 @@ function dir.temp() {
 
 file.print-normalized-name() {
   local file="$1"
-  echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-]//g; s/--+/-/g;'
+  echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-/&]//g; s/--+/-/g;'
 }
 
 # @description This function will rename all files passed to it as follows: spaces
@@ -77,6 +77,7 @@ file.normalize-files() {
   for file in "$@"; do  
     local new_name="$(file.print-normalized-name "${file}")"
     [[ "${file}" == "${new_name}" ]] && continue
+    run "mkdir -p \$(dirname \"${new_name}\")"
     if ((DEBUG)); then
       echo mv -v \"${file}\" \"${new_name}\"
     else
