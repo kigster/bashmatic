@@ -194,6 +194,12 @@ db.psql.explain() {
   db.psql.connect "${dbname}" -t -A -X --pset border=0 -c "'explain $*'"
 }
 
+db.psql.run() {
+  local dbname="$1"; shift
+  local query="$1"; shift
+  db.psql.connect.just-data ${dbname} -c "${query}" "@"
+}
+
 db.psql.run-multiple() {
   local dbname="$1"; shift
   local commands
@@ -374,11 +380,9 @@ db.actions.run() {
 #    $ db -q run my_database 'set default_statistics_target to 10; show default_statistics_target; vacuum users'
 #    ERROR:  VACUUM cannot run inside a transaction block
 #
-#    $ db -q run-multiple my_database 'set default_statistics_target to 10' 'show default_statistics_target' 'vacuum users'
-#    SET
+#    $ db -q run-multiple my_database 'set default_statistics_target to 10' 'show default_statistics_target' 'vacuum users' SET
 #    10
 #    VACUUM
-
 db.actions.run-multiple() {
   db.psql.run-multiple "$@"
 }
@@ -455,7 +459,8 @@ db.actions.pga() {
 }
 
 db.actions.list-tables() {
-  db.psql.connect "$@" $(db.psql.args-data-only) -c 'select relname from pg_stat_user_tables order by relname asc'
+  local dbname="$1"; shift
+  db.psql.connect -q ${dbname} $(db.psql.args-data-only) -c 'select relname from pg_stat_user_tables order by relname asc' "$@"
 }
 
 db.actions.table-settings-show() {
