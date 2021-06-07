@@ -6,60 +6,83 @@
 # @file lib/video.sh
 # @description Video conversions routines.
 
+declare -a required_packages
+export required_packages=(node@14 ffmpeg)
+export ffmpeg_binary="ffmpeg"
 
 # @description Installs ffmpeg
-.ensure.ffmpeg() {
+.video.install-deps() {
+  for package in "${required_packages[@]}"; do
+    package.install "${package}" || return 1
+  done
 
-  is.a-command ffmpeg && return 0
-  package.is-installed ffmpeg || { 
-    warning "ffmpeg was not found, installing it..."
-    package.install ffmpeg
-  }
+  [[ -z $(which ffmpeg-bar) ]] && run "npm install --global ffmpeg-progressbar-cli"
 
-  is.a-command ffmpeg && return 0
-  error "Can't find ffmpeg after installation."
-  return 1
+  if (command -v ffmpeg-bar >/dev/null); then
+    export ffmpeg_binary="ffmpeg-bar "
+  else
+    export ffmpeg_binary="ffmpeg-y -loglevel error -stats "
+  fi
+
+  return 0
 }
 
-# ffmpeg -i input.mkv -vf "scale=iw/2:ih/2" half_the_frame_size.mkv
-# ffmpeg -i input.mkv -vf "scale=iw/3:ih/3" a_third_the_frame_size.mkv
-# ffmpeg -i input.mkv -vf "scale=iw/4:ih/4" a_fourth_the_frame_size.mkv
+.video.ffmpeg-run() {
+  local cmd="${ffmpeg_binary} $*"
+  ((DEBUG)) && h1 "Executing Command:" "${cmd}"
+  eval "${cmd}"
+}
+
+# @description Named after the author of a similar tool that does this:
+# @url https://coderunner.io/shrink-videos-with-ffmpeg-and-preserve-metadata/
+.video.convert.compress-shrinkwrap() {
+  .video.ffmpeg-run -i "${1}" \
+     -preset fast -copy_unknown -map_metadata 0 -map 0 \
+     -codec copy -codec:v libx265 -pix_fmt yuv420p -crf 23 \
+     -codec:a copy -vbr 4 "${2}"
+}
+
+# \"${ffmpeg_binary}\" -i input.mkv -vf "scale=iw/2:ih/2" half_the_frame_size.mkv
+# \"${ffmpeg_binary}\" -i input.mkv -vf "scale=iw/3:ih/3" a_third_the_frame_size.mkv
+# \"${ffmpeg_binary}\" -i input.mkv -vf "scale=iw/4:ih/4" a_fourth_the_frame_size.mkv
 
 # @description Given two arguments (from), (to), performs a video recompression
 .video.convert.compress-11() {
-  run "ffmpeg -n -loglevel error -stats -i \"${1}\" -preset faster -c:v libx265 -crf 22 -c:a copy \"${2}\""
+  local file="$1"; shift
+  .video.ffmpeg-run -y -i "${file}" -preset faster -c:v libx265 -crf 22 -c:a copy "$@"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
 .video.convert.compress-12() {
-  run "ffmpeg -n -loglevel error -stats -i \"${1}\" -preset faster -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/2:ih/2' \"${2}\""
+  .video.ffmpeg-run -y -i "${1}" -preset faster -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/2:ih/2' "${2}"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
 .video.convert.compress-13() {
-  run "ffmpeg -n -loglevel error -stats -i \"${1}\" -preset faster -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/3:ih/3' \"${2}\""
+  .video.ffmpeg-run -y -i "${1}" -preset faster -c:v libx265 -crf 22 -c:a copy -vf 'scale=iw/3:ih/3' "${2}"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
 .video.convert.compress-21() {
-  run "ffmpeg -n -loglevel error -stats -i \"${1}\" -preset faster -vcodec libx264 -crf 28 -tune film \"${2}\""
+  .video.ffmpeg-run -y -i "${1}" -preset faster -vcodec libx264 -crf 28 -tune film "${2}"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
 .video.convert.compress-22() {
-  run "ffmpeg -n -loglevel error -stats -i \"${1}\" -preset faster -vcodec libx264 -crf 28 -tune film -vf 'scale=iw/2:ih/2' \"${2}\""
+  .video.ffmpeg-run -y -i "${1}" -preset faster -vcodec libx264 -crf 28 -tune film -vf 'scale=iw/2:ih/2' "${2}"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
 .video.convert.compress-23() {
-  run "ffmpeg -n -loglevel error -stats -i \"${1}\" -preset faster -vcodec libx264 -crf 28 -tune film -vf 'scale=iw/3:ih/3' \"${2}\""
+  .video.ffmpeg-run -y -i "${1}" -preset faster -vcodec libx264 -crf 28 -tune film -vf 'scale=iw/3:ih/3' "${2}"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
 .video.convert.compress-3() {
   # https://unix.stackexchange.com/questions/28803/how-can-i-reduce-a-videos-size-with-ffmpeg
   # Here is a 2 pass example. Pretty hard coded but it really puts on the squeeze
-  run "ffmpeg -y -i \"$1\" -c:v libvpx-vp9 -pass 1 -deadline best -crf 30 -b:v 664k -c:a libopus -f webm /dev/null && ffmpeg -i \"$1\" -c:v libvpx-vp9 -pass 2 -crf 30 -b:v 664k -c:a libopus -strict -2 \"$2\""
+  .video.ffmpeg-run -y -i "$1" -c:v libvpx-vp9 -pass 1 -deadline best -crf 30 -b:v 664k -c:a libopus -f webm /dev/null && \
+    .video.ffmpeg-run -y -i "$1" -c:v libvpx-vp9 -pass 2 -crf 30 -b:v 664k -c:a libopus -strict -2 "$2"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
@@ -69,8 +92,8 @@
 #              video.convert.compress bigfile.mov 13
 video.convert.compress() {
   local file="$1"; shift
-  local output=${file/\.*/.mkv}
-  local algo="${1:-"11"}"
+  local algo="${1:-"11"}"; shift
+  local output="${1:-"${file/\.*/.mkv}"}"; shift
 
   [[ "${file}" == "${output}" ]] && output="${output/\.*/-converted-${ratio}.mkv}"
 
@@ -83,12 +106,12 @@ video.convert.compress() {
     run "mv \"${output}\" \"${backup_output}\""
   }
 
-  h2 "Starting ffmpeg conversion, source file size is ${bldred}$(file.size.mb "${file}")" \
+  h2 "Starting \"${ffmpeg_binary}\" conversion, source file size is ${bldred}$(file.size.mb "${file}")" \
      " • Source:      [${file}]" \
      " • Destination: [${output}]" \
-     " • Algorithm:   [#${algo}]" 
+     " • Algorithm:   [${algo}]" 
 
-  .ensure.ffmpeg
+  .video.install-deps
   
   local func=".video.convert.compress-${algo}"
 
@@ -98,15 +121,18 @@ video.convert.compress() {
   }
 
   arrow.blk-on-ylw "Conversion Function: ${func}"
+  arrow.blk-on-blu "Source File:         \"${file}\""
+  arrow.blk-on-grn "Destination File:    \"${output}\""
 
   local token=$(echo "${file}" | shasum.sha | cut -f 1 -d ' ')
   time.with-duration.start "${token}"
 
-  arrow.wht-on-blu "Please wait while we compress this file... (set DEBUG=1 to see the output)"
+  info "Please wait while we compress this file... (set DEBUG=1 to see the output)"
   echo
 
-  ((DEBUG)) && run.set-next show-output-on
-  run "${func} \"${file}\" \"${output}\""
+  run.set-all show-output-on abort-on-error
+  ${func} "${file}" "${output}"
+  run.set-all show-output-off
   
   local before="$(file.size "${file}")"
   local after="$(file.size "${output}")"
@@ -127,6 +153,7 @@ video.convert.compress() {
   return 0
 }
 
+
 video-squeeze() {
   [[ -z "$*" ]] && {
     printf --  "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-squeeze *.mp4 *.m4v${clr}\n"
@@ -140,8 +167,38 @@ video-squeeze() {
     }
 
     arrow.blk-on-blu "Compressing \"${file}\""
-    video.convert.compress "${file}"
+    video.convert.compress "${file}" 
   done
 } 
+
+
+.destination-file-name() {
+  local source="$1"
+  local dest
+  if [[ "${source}" =~ " " ]]; then
+    dest="$(echo "${source}" | sed -E 's/\.(.*)$/ (Compressed).\1/g')"
+  else
+    dest="$(echo "${source}" | sed -E 's/\.(.*)$/-compressed.\1/g')"
+  fi
+  printf -- "%s" "${dest}"
+}
+
+video-shrink() {
+  [[ -z "$*" ]] && {
+    printf --  "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mp4${clr}\n"
+    return 0
+  }
+
+  for file in "$@"; do
+    [[ -s "${file}" ]] || { 
+      warning "Skipping ${file}..."
+      continue
+    }
+    dest="$(.destination-file-name "${file}")"
+    h1 "Compressing \"${file}\"" "To \"${dest}\""
+    video.convert.compress "${file}" "shrinkwrap" "${dest}" 
+  done
+} 
+
 
 

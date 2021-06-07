@@ -2,6 +2,7 @@
 export bashmatic__hostname="${HOSTNAME:-${HOST:-$(/usr/bin/env hostname)}}"
 export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
 
+# @description Creates a temporary file and returns it as STDOUT
 function file.temp() {
   local host="${HOST:-${HOSTNAME:-$(hostname)}}"
   local user="${USER:-"$(whoami)"}"
@@ -38,7 +39,7 @@ function dir.temp() {
 .file.make_executable() {
   local file=$1
 
-  if [[ -f "${file}" && -n $(head -1 $1 | ${GrepCommand} '#!.*(bash|ruby|env)') ]]; then
+  if [[ -f "${file}" && -n $(head -1 "$1" | ${GrepCommand} '#!.*(bash|ruby|env)') ]]; then
     printf "making file ${bldgrn}${file}${clr} executable since it's a script...\n"
     chmod 755 "${file}"
     return 0
@@ -49,12 +50,41 @@ function dir.temp() {
 
 .file.remote_size() {
   local url="$1"
-  printf $(($(curl -sI $url | grep -i 'Content-Length' | awk '{print $2}') + 0))
+  printf $(($(curl -sI "${url}" | grep -i 'Content-Length' | awk '{print $2}') + 0))
 }
 
 .file.size_bytes() {
   local file="$1"
   printf $(($(wc -c <"$file") + 0))
+}
+
+file.print-normalized-name() {
+  local file="$1"
+  echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-]//g; s/--+/-/g;'
+}
+
+# @description This function will rename all files passed to it as follows: spaces
+#              are replaced by dashes, non printable characters are removed,
+#              and the filename is lower cased. 
+#
+# @example 
+#       file.normalize-files "My Word Document.docx" 
+#       # my-word-document.docx
+#              
+file.normalize-files() {
+  trap 'set +x' EXIT INT
+
+  for file in "$@"; do  
+    local new_name="$(file.print-normalized-name "${file}")"
+    [[ "${file}" == "${new_name}" ]] && continue
+    if ((DEBUG)); then
+      echo mv -v \"${file}\" \"${new_name}\"
+    else
+      run "mv \"${file}\" \"${new_name}\""
+    fi
+  done
+    
+  return 
 }
 
 # Replaces a given regex with a string
@@ -65,7 +95,8 @@ file.gsub() {
   shift
   local replace="$1"
   shift
-  local runtime_options="$*"
+  local
+   runtime_options="$*"
 
   [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && {
     error "Invalid usage of file.sub — " \
@@ -96,6 +127,7 @@ file.exists-and-newer-than() {
   fi
 }
 
+# @description Ask the user whether to overwrite the file
 file.ask.if-exists() {
   local file="$1"
   shift
@@ -133,7 +165,7 @@ file.install-with-backup() {
     fi
   fi
 
-  run "mkdir -p $(dirname ${dest}) && cp ${source} ${dest}"
+  run "mkdir -p $(dirname "${dest}") && cp ${source} ${dest}"
 }
 
 file.last-modified-date() {
