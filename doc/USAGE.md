@@ -3,6 +3,41 @@
 ---
 
 
+## File `lib/file.sh`
+
+
+
+* [file.temp()](#filetemp)
+* [file.normalize-files()](#filenormalize-files)
+* [file.ask.if-exists()](#fileaskif-exists)
+
+### `file.temp()`
+
+Creates a temporary file and returns it as STDOUT
+
+### `file.normalize-files()`
+
+This function will rename all files passed to it as follows: spaces
+are replaced by dashes, non printable characters are removed,
+and the filename is lower cased. 
+
+#### Example
+
+```bash
+file.normalize-files "My Word Document.docx" 
+# my-word-document.docx
+       
+```
+
+### `file.ask.if-exists()`
+
+Ask the user whether to overwrite the file
+
+
+
+---
+
+
 ## File `lib/pids.sh`
 
 
@@ -389,7 +424,8 @@ Video conversions routines.
 
 
 
-* [.ensure.ffmpeg()](#ensureffmpeg)
+* [.video.install-deps()](#videoinstall-deps)
+* [.video.convert.compress-shrinkwrap()](#videoconvertcompress-shrinkwrap)
 * [.video.convert.compress-11()](#videoconvertcompress-11)
 * [.video.convert.compress-12()](#videoconvertcompress-12)
 * [.video.convert.compress-13()](#videoconvertcompress-13)
@@ -399,9 +435,13 @@ Video conversions routines.
 * [.video.convert.compress-3()](#videoconvertcompress-3)
 * [video.convert.compress()](#videoconvertcompress)
 
-### `.ensure.ffmpeg()`
+### `.video.install-deps()`
 
 Installs ffmpeg
+
+### `.video.convert.compress-shrinkwrap()`
+
+Named after the author of a similar tool that does this:
 
 ### `.video.convert.compress-11()`
 
@@ -602,6 +642,7 @@ installed
 * [db.psql.db-settings()](#dbpsqldb-settings)
 * [db.psql.connect.db-settings-pretty()](#dbpsqlconnectdb-settings-pretty)
 * [db.psql.connect.db-settings-toml()](#dbpsqlconnectdb-settings-toml)
+* [db.actions.run-multiple()](#dbactionsrun-multiple)
 * [db.actions.pga()](#dbactionspga)
 
 ### `db.config.parse()`
@@ -691,6 +732,19 @@ db.psql.connect.db-settings-toml primary > primary.ini
 #### Arguments
 
 * @arg1 dbname database entry name in ~/.db/database.yml
+
+### `db.actions.run-multiple()`
+
+Executes multiple commands by passing them to psql each with -c flag. This
+allows, for instance, setting session values, and running commands such as VACUUM which 
+can not run within an implicit transaction started when joining multiple statements with ";"
+
+#### Example
+
+```bash
+$ db -q run my_database 'set default_statistics_target to 10; show default_statistics_target; vacuum users'
+ERROR:  VACUUM cannot run inside a transaction block
+```
 
 ### `db.actions.pga()`
 

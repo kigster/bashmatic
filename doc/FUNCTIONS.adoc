@@ -2866,6 +2866,21 @@ db.psql.report-error ()
 
 ----
 
+==== `db.psql.run`
+
+[source,bash]
+----
+db.psql.run () 
+{ 
+    local dbname="$1"
+    shift
+    local query="$1"
+    shift
+    db.psql.connect.just-data ${dbname} -c "${query}" "@"
+}
+
+----
+
 ==== `db.psql.run-multiple`
 
 [source,bash]
@@ -3381,6 +3396,33 @@ dir.is-a-dir ()
 
 ----
 
+==== `dir.rsync-to`
+
+[source,bash]
+----
+dir.rsync-to () 
+{ 
+    local from="$1"
+    shift
+    local to="$1"
+    shift
+    [[ -d ${from} ]] || { 
+        error "usage: dir.rsync-to [ from-dir ] [ enclosing-to-dir ]" "Directory ${from} does not exist."
+        return 1
+    }
+    [[ -d ${to} ]] || { 
+        error "usage: dir.rsync-to [ from-dir ] [ enclosing-to-dir ]" "Directory ${to} does not exist."
+        return 1
+    }
+    command -v rsync > /dev/null || package.install rsync
+    h3 "Starting RSync: [${from} —> ${to}]"
+    local flags="avht"
+    run.ui.ask "Do you want do delete files in ${to} that don't match files in ${from}?"
+    rsync -avht "${from}" "${to}"
+}
+
+----
+
 ==== `dir.short-home`
 
 [source,bash]
@@ -3818,7 +3860,8 @@ file.gsub ()
     shift
     local replace="$1"
     shift
-    local runtime_options="$*"
+    local
+    runtime_options="$*"
     [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && { 
         error "Invalid usage of file.sub — " "USAGE: file.gsub <file>    <find-regex>        <replace-regex>" "EG:    file.gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'"
         return 1
@@ -3856,7 +3899,7 @@ file.install-with-backup ()
             ui.closer.ok:
         fi
     fi
-    run "mkdir -p $(dirname ${dest}) && cp ${source} ${dest}"
+    run "mkdir -p $(dirname "${dest}") && cp ${source} ${dest}"
 }
 
 ----
@@ -3907,6 +3950,40 @@ file.list.filter-non-empty ()
     do
         [[ -s "${file}" ]] && echo "${file}"
     done
+}
+
+----
+
+==== `file.normalize-files`
+
+[source,bash]
+----
+file.normalize-files () 
+{ 
+    trap 'set +x' EXIT INT
+    for file in "$@"
+    do
+        local new_name="$(file.print-normalized-name "${file}")"
+        [[ "${file}" == "${new_name}" ]] && continue
+        if ((DEBUG)); then
+            echo mv -v \"${file}\" \"${new_name}\"
+        else
+            run "mv \"${file}\" \"${new_name}\""
+        fi
+    done
+    return
+}
+
+----
+
+==== `file.print-normalized-name`
+
+[source,bash]
+----
+file.print-normalized-name () 
+{ 
+    local file="$1"
+    echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-]//g; s/--+/-/g;'
 }
 
 ----
@@ -12539,6 +12616,53 @@ watch.set-refresh ()
 
 === Module `video`
 
+==== `video-shrink`
+
+[source,bash]
+----
+video-shrink () 
+{ 
+    [[ -z "$*" ]] && { 
+        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mp4${clr}\n"
+        return 0
+    }
+    for file in "$@"
+    do
+        [[ -s "${file}" ]] || { 
+            warning "Skipping ${file}..."
+            continue
+        }
+        dest="$(.destination-file-name "${file}")"
+        h1 "Compressing \"${file}\"" "To \"${dest}\""
+        video.convert.compress "${file}" "shrinkwrap" "${dest}"
+    done
+}
+
+----
+
+==== `video-squeeze`
+
+[source,bash]
+----
+video-squeeze () 
+{ 
+    [[ -z "$*" ]] && { 
+        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-squeeze *.mp4 *.m4v${clr}\n"
+        return 0
+    }
+    for file in "$@"
+    do
+        [[ -s "${file}" ]] || { 
+            warning "Skipping ${file}..."
+            continue
+        }
+        arrow.blk-on-blu "Compressing \"${file}\""
+        video.convert.compress "${file}"
+    done
+}
+
+----
+
 ==== `video.convert.compress`
 
 [source,bash]
@@ -12547,36 +12671,45 @@ video.convert.compress ()
 { 
     local file="$1"
     shift
-    local output=${file/\.*/.mkv}
     local algo="${1:-"11"}"
+    shift
+    local output="${1:-"${file/\.*/.mkv}"}"
+    shift
     [[ "${file}" == "${output}" ]] && output="${output/\.*/-converted-${ratio}.mkv}"
     is.an-existing-file "${output}" && { 
         info "File ${output} already exists, making a backup..."
-        run "mv \"${output}\" \"${output}.$(time.now.db)\""
+        local t="$(time.now.db | tr -d ' ')"
+        local backup_output="$(echo "${output}" | sed "s/\.\(.*\)$/-${t}.\1/g")"
+        info "Backing up a name clashing file to ${backup_output}..."
+        run "mv \"${output}\" \"${backup_output}\""
     }
-    h2 "Starting ffmpeg conversion, source file size is ${bldred}$(file.size.mb "${file}")"
-    " • Source:      [${file}]" " • Destination: [${output}]" " • Algorithm:   [#${algo}]"
-    .ensure.ffmpeg
-    run.set-next show-output-on
+    h2 "Starting \"${ffmpeg_binary}\" conversion, source file size is ${bldred}$(file.size.mb "${file}")" " • Source:      [${file}]" " • Destination: [${output}]" " • Algorithm:   [${algo}]"
+    .video.install-deps
     local func=".video.convert.compress-${algo}"
-    arrow.blk-on-cyan "conversion function: "
-    printf "${bldblu}\n"
-    hr
+    is.a-function "${func}" || { 
+        error "${func} is not a valid function name."
+        return 1
+    }
+    arrow.blk-on-ylw "Conversion Function: ${func}"
+    arrow.blk-on-blu "Source File:         \"${file}\""
+    arrow.blk-on-grn "Destination File:    \"${output}\""
+    local token=$(echo "${file}" | shasum.sha | cut -f 1 -d ' ')
+    time.with-duration.start "${token}"
+    info "Please wait while we compress this file... (set DEBUG=1 to see the output)"
     echo
-    type "${func}"
-    printf "${clr}"
-    hr
-    echo
-    run "${func} \"${file}\" \"${output}\""
+    run.set-all show-output-on abort-on-error
+    ${func} "${file}" "${output}"
+    run.set-all show-output-off
     local before="$(file.size "${file}")"
     local after="$(file.size "${output}")"
     local reduction=
+    local duration=$(time.with-duration.end "${token}")
     if [[ ${before} -lt ${after} ]]; then
         reduction=$(( 100 * ( after - before ) / before ))
-        warning "${output} was generated with ${reduction}% increase in file size, from ${before} to ${after}"
+        warning "${output} was generated with ${reduction}%% increase in file size" "from ${before} to ${after}" "and took ${duration}"
     else
         reduction=$(( 100 * ( before - after ) / before ))
-        success "${output} was generated with ${reduction}% reduction in file size, from ${before} to ${after}"
+        success "${output} was generated with ${reduction}%% reduction in file size" "from ${before} to ${after}" "and took ${duration}"
     fi
     return 0
 }

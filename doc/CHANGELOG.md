@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.2.5](https://github.com/kigster/bashmatic/tree/v2.2.5) (2021-06-05)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.2.4...v2.2.5)
+
+## [v2.2.4](https://github.com/kigster/bashmatic/tree/v2.2.4) (2021-06-04)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.2.3...v2.2.4)
+
 ## [v2.2.3](https://github.com/kigster/bashmatic/tree/v2.2.3) (2021-05-14)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.2.1...v2.2.3)
@@ -8,19 +16,16 @@
 
 - Adding new script bin/tablet for table-level ops [\#65](https://github.com/kigster/bashmatic/pull/65) ([kigster](https://github.com/kigster))
 - Video compression and renaming WAV files [\#64](https://github.com/kigster/bashmatic/pull/64) ([kigster](https://github.com/kigster))
+- Updating README with installer info [\#63](https://github.com/kigster/bashmatic/pull/63) ([kigster](https://github.com/kigster))
+- Add bash-it framework installation [\#61](https://github.com/kigster/bashmatic/pull/61) ([kigster](https://github.com/kigster))
 
 ## [v2.2.1](https://github.com/kigster/bashmatic/tree/v2.2.1) (2021-04-27)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.2.0...v2.2.1)
 
-## [v2.2.0](https://github.com/kigster/bashmatic/tree/v2.2.0) (2021-04-26)
+## [v2.2.0](https://github.com/kigster/bashmatic/tree/v2.2.0) (2021-04-27)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.2...v2.2.0)
-
-**Merged pull requests:**
-
-- Updating README with installer info [\#63](https://github.com/kigster/bashmatic/pull/63) ([kigster](https://github.com/kigster))
-- Add bash-it framework installation [\#61](https://github.com/kigster/bashmatic/pull/61) ([kigster](https://github.com/kigster))
 
 ## [v2.1.2](https://github.com/kigster/bashmatic/tree/v2.1.2) (2021-04-21)
 
