@@ -3,8 +3,10 @@
 load test_helper
 
 source lib/util.sh
+source lib/sedx.sh
 source lib/array.sh
 source lib/output.sh
+source lib/output-utils.sh
 source lib/path.sh
 source lib/is.sh
 source lib/file.sh
