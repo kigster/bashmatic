@@ -20,6 +20,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      
+    - name: Install ZSH
+      run: 
+        sudo apt-get update -yqq && sudo apt-get install -yqq zsh
 
     - name: Verify that ZSH can source init.sh
       env:
