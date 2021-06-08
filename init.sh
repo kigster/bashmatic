@@ -8,16 +8,16 @@ export SHELL_COMMAND
 # deterministicaly figure out our currently loaded shell.
 SHELL_COMMAND="$(/bin/ps -p $$ -o args | /usr/bin/grep -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | /usr/bin/sed -E 's/-//g')"
 
-[[ -f "${BASHMATIC_HOME}/init.sh" ]] || {
+[[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
     ((DEBUG)) && echo "Detected zsh version ${ZSH_VERSION}, source=$0:A"
-    BASHMATIC_HOME="$0:A"
+    BASHMATIC_HOME="$(dirname "$0:A")"
   elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
     ((DEBUG)) && echo "Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}"
     BASHMATIC_HOME="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
   else
     echo "WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}"
-    BASHMATIC_HOME="$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)/$(basename -- "$0")")"
+    BASHMATIC_HOME="$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
   fi
 }
 
