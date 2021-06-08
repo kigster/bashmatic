@@ -1,6 +1,9 @@
 #!/usr/bin/env bats
+
+source lib/sedx.sh
 source lib/util.sh
 
+set -e
 
 moo() {
   echo "config/moo.enc" | sedx 's/\.(sym|enc)$//g'
