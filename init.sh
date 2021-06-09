@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-PATH="/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin:/opt/local/bin"
+PATH="/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin:/opt/local/bin:${PATH}"
 export PATH
 
 set +e
