@@ -6,6 +6,38 @@
 # @file lib/audio.sh
 # @description Audio conversions routines.
 
+source "${BASHMATIC_HOME}/lib/video.sh"
+
+function audio.m4a.to.mp3() {
+  local file="$1"
+  [[ -z "${file}" ]] && return 0
+  [[ -f "${file}" ]] || { 
+    error "File does not exist: ${file}"
+    return 1
+  }
+  local output="${file/\.m4a/.mp3}"
+  [[ -s ${output} ]] && {
+    info "${file} has already been converted... Skipping."
+    return 0
+  }
+
+  h1 "From: ${bldylw}${file} " "To:   ${bldblu}${output}"
+  command -v ffmpeg >/dev/null || .video.install-deps
+  local cmd="ffmpeg -i \"${file}\" -codec:a libmp3lame -qscale:a 1 \"${output}\""
+  h2 "${cmd}"
+  run "${cmd}"
+}
+
+
+function audio.m4as.to.mp3s() {
+  folder="${1:-"."}"
+  info "Converting the following files:"
+  find "${folder}" -name '*.m4a'  
+  hr; echo
+  info "Ctrl-C to abort."
+  echo
+  find "${folder}" -name '*.m4a' -exec bash -c 'source ~/.bashmatic/init.sh; audio.m4a.to.mp3 "{}"' \;
+}
 
 # @description Given a music audio file, determine its frequency.
 audio.file.frequency() {
