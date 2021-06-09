@@ -10,6 +10,9 @@
 #    echo "test" | util.rot13-stdin
 #
 # @requires A working Ruby installation.
+
+source ${BASHMATIC_HOME}/lib/sedx.sh
+
 util.rot13-stdin() {
   ruby -e 'puts STDIN.read.
   tr(
