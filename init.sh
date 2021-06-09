@@ -30,6 +30,8 @@ export BASHMATIC_LIBDIR
 BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 export BASHMATIC_OS
 
+ln -nfs "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source"
+
 function .bashmatic.load-time() {
   [[ -n $(type millis 2>/dev/null) ]] && return 0
 
@@ -37,8 +39,8 @@ function .bashmatic.load-time() {
   export __bashmatic_start_time="$(millis)"
 }
 
+
 function source-if-exists() {
-  ln -nfs "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source"
   [[ -n $(type safe-source 2>/dev/null) ]] || source "${BASHMATIC_HOME}/.bash_safe_source"
   safe-source "$@"
 }
