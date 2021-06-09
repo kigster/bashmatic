@@ -2,6 +2,7 @@
 
 load test_helper
 
+source lib/sedx.sh
 source lib/util.sh
 source lib/pipe.sh
 

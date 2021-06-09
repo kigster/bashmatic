@@ -1,17 +1,48 @@
 #!/usr/bin/env bash
-# vim: ft=sh
+# vim: ft=bash
+PATH="/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin:/opt/local/bin"
+export PATH
 
-export BASHMATIC_HOME="$(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P)"
-export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
-export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+set +e
+export SHELL_COMMAND
+# deterministicaly figure out our currently loaded shell.
+SHELL_COMMAND="$(/bin/ps -p $$ -o args | /usr/bin/grep -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | /usr/bin/sed -E 's/-//g')"
+
+[[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
+  if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
+    ((DEBUG)) && echo "Detected zsh version ${ZSH_VERSION}, source=$0:A"
+    BASHMATIC_HOME="$(dirname "$0:A")"
+  elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
+    ((DEBUG)) && echo "Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}"
+    BASHMATIC_HOME="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
+  else
+    echo "WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}"
+    BASHMATIC_HOME="$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
+  fi
+}
+
+export BASHMATIC_HOME
+((DEBUG)) && echo "INFO: BASHMATIC_HOME=${BASHMATIC_HOME}"
+
+BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
+export BASHMATIC_LIBDIR
+
+BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+export BASHMATIC_OS
+
+ln -nfs "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source"
+
+function .bashmatic.load-time() {
+  [[ -n $(type millis 2>/dev/null) ]] && return 0
+
+  [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source "${BASHMATIC_HOME}/lib/time.sh"
+  export __bashmatic_start_time="$(millis)"
+}
+
 
 function source-if-exists() {
-  local file
-  for file in "$@"; do
-    [[ -n $DEBUG ]] && printf "${bldblu}sourcing ${bldylw}%30s${clr}\n" "${file}"
-
-    [[ -f "${file}" ]] && source "${file}"
-  done
+  [[ -n $(type safe-source 2>/dev/null) ]] || source "${BASHMATIC_HOME}/.bash_safe_source"
+  safe-source "$@"
 }
 
 # Set initial state to 0
@@ -26,14 +57,14 @@ function bashmatic.set-is-loaded() {
   __bashmatic_load_state=1
 }
 
-function bashmatic.reset-is-loaded() {
+function bashmatic.set-is-not-loaded() {
   __bashmatic_load_state=0
 }
 
-function .bashmatic.core() {
+function bashmatic.init-core() {
   # DEFINE CORE VARIABLES
   export BASHMATIC_URL="https://github.com/kigster/bashmatic"
-  export BASHMATIC_OS="${AppCurrentOS}"
+  export BASHMATIC_OS="${BASHMATIC_OS}"
 
   # shellcheck disable=2046
   export BASHMATIC_TEMP="/tmp/${USER}/.bashmatic"
@@ -42,13 +73,13 @@ function .bashmatic.core() {
   if [[ -f ${BASHMATIC_HOME}/init.sh ]] ; then
     export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
   else
-    echo "Can't determine BASHMATIC_HOME, giving up sorry!"
-    return
+    printf "${bldred}ERROR: —> Can't determine BASHMATIC_HOME, giving up sorry!${clr}\n"
+    return 1
   fi
   
   [[ -n $DEBUG ]] && {
     [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source "${BASHMATIC_HOME}/lib/time.sh"
-    start=$(millis)
+    export __bashmatic_start_time=$(millis)
   }
   
   # If defined BASHMATIC_AUTOLOAD_FILES, we source these files together with BASHMATIC
@@ -60,7 +91,7 @@ function .bashmatic.core() {
   done
   
   # shellcheck disable=SC2155
-  export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | head -1)"
+  export BASHMATIC_VERSION="$(head -1 "${BASHMATIC_HOME}/.version")"
   [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH="${PATH}:${BASHMATIC_HOME}/bin"
   unalias grep 2>/dev/null || true
   export GrepCommand="$(command -v grep) -E "
@@ -93,16 +124,14 @@ function .bashmatic.init.linux() {
   return 0
 }
 
-function .bashmatic.initialize() {
-  set -e
-  local init_func=".bashmatic.init.${AppCurrentOS}"
+function bashmatic.init() {
+  local init_func=".bashmatic.init.${BASHMATIC_OS}"
   
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
 
   local setup_script="${BASHMATIC_LIBDIR}/bashmatic.sh"
   
   if [[ -s "${setup_script}" ]]; then
-    set +e
     source "${setup_script}"
     bashmatic.setup
     local code=$?
@@ -114,19 +143,18 @@ function .bashmatic.initialize() {
   fi
 
   if [[ -n $DEBUG ]]; then
-    end=$(millis)
-    attention "Bashmatic Library took $((end - start)) milliseconds to load."
+    local __bashmatic_end_time=$(millis)
+    notice "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
   fi
 
-  return 0
-}
+  unset __bashmatic_end_time
+  unset __bashmatic_start_time
 
-function bashmatic.init() {
-  .bashmatic.initialize "$@" 
   bashmatic.set-is-loaded
 }
 
-echo "$1" | grep -E -q 'reload|force|refresh' && bashmatic.reset-is-loaded
+echo "$*" | grep -E -q 'reload|force|refresh' && bashmatic.set-is-not-loaded
 
-.bashmatic.core
+bashmatic.init-core 
 bashmatic.is-loaded || bashmatic.init "$@"
+

@@ -20,7 +20,7 @@ bashmatic.is-developer() {
 }
 
 bashmatic.reload() {
-  bashmatic.reset-is-loaded
+  bashmatic.set-is-not-loaded
   source "${BASHMATIC_INIT}"
 }
 

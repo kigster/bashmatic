@@ -61,6 +61,7 @@ function path.dirs.delete() {
   local path="$1"
   shift
 
+  local opath=""
   for p in "$@"; do
     opath="${path}"
     # take care of the :path: case first
