@@ -136,42 +136,9 @@ bash -c "$(curl -fsSL https://bashmatic.re1.re); \
 
 Here is the complete list of options accepted by the installer:
 
-[source,bash]
-----
-❯ bin/bashmatic-install --help
+image::doc/img/bashmatic-install.png[Installer,width=70%,align=center]
 
-USAGE: 
-  bin/bashmatic-install [ flags ]
 
-DESCRIPTION:
-  Install Bashmatic, and on OSX also installs build tools, brew and latest bash
-  into /usr/local/bin/bash.
-
-FLAGS:
-  -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ~/.bashmatic)
-  -V, --bash-version VERSION    Install BASH VERSION (default: 5.1-rc2)
-  -P, --bash-prefix PATH        Install BASH into PATH (default: /usr/local)
-
-  -l, --skip-on-login           Do not install Bashmatic Hook into your dotfiles, which
-                                it does by the default. If you skip it, you can always
-                                change your mind later and add it to your shell dot files
-                                by running the following on the command line:
-
-                                You can always do so later with the following:
-                                $ ~/.bashmatic/bin/bashmatic load-at-login 
-
-                                This above will install the Bashmatic hook into your shell 
-                                dotfile, eg ~/.bash_profile. if you are on BASH,
-                                or ~/.zshrc if you are on ZSH..
-
-  -g, --skip-git                Do not abort if the destination has local changes
-  -i, --skip-install            Only install/verify prerequisites, skip install.
-
-  -v, --verbose                 See additional output as bootstrap is running.
-  -q, --quiet                   See only error output.
-  -d, --debug                   Turn on 'set -x' to see all commands running.
-  -h, --help                    Show this help message.
-----
 
 === Understanding what the Installer Does
 
