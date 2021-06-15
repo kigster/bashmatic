@@ -67,7 +67,10 @@ function specs.init() {
   export BatsSource="${ProjectRoot}/.bats-sources"
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
-  run "rm -rf \"${BatsPrefix}\" \"${BatsSource}\" \"${BatsRoot}\""
+  ((flag_file_reinstall)) && {
+    info "Wiping out ${BatsPrefix} since --reinstall flag was provided..."
+    run "rm -rf \"${BatsPrefix}\" \"${BatsSource}\" \"${BatsRoot}\""
+  }
 
   dbg "BatsPrefix is ${BatsPrefix}"
 
@@ -123,17 +126,19 @@ function specs.install.bats.brew() {
 }
 
 function specs.install.bats.sources() {
-  hl.subtle "Installing Bats from sources..."
-  [[ -x ${BatsPrefix}/bin/bats ]] && return 0
-  run "cd ${ProjectRoot}"
+
+  [[ -x "${BatsPrefix}/bin/bats" ]] && return 0
+  
+  cd "${ProjectRoot}" >/dev/null || exit 1
 
   run.set-next show-output-off abort-on-error
 
-  [[ ! -d "${BatsRoot}" ]] &&
-    run "git clone ${BATS_SOURCES_CORE} ${BatsRoot}"
+  [[ -d "${BatsRoot}" ]] || run "git clone ${BATS_SOURCES_CORE} ${BatsRoot}"
 
-  [[ ! -d "${BatsSource}" ]] &&
+  [[ -d "${BatsSource}" ]] || {
+    hl.subtle "Installing Bats from sources..."
     run "cd $(dirname "${BatsSource}") && git clone ${BATS_SOURCES_CORE} $(basename "${BatsSource}")"
+  }
 
   [[ -d "${BatsSource}" && -x "${BatsSource}/install.sh" ]] || {
     error "Can't find Bats source folder: expected ${BatsSource} to contain Bats sources..."
@@ -302,6 +307,7 @@ function specs.utils.get-filename() {
 }
 
 export flag_file_count=0
+export flag_file_reinstall=0
 export flag_file_count_failed=0
 export flag_keep_going_on_error=0
 export flag_bats_args="-p"
@@ -330,6 +336,10 @@ function specs.parse-opts() {
     -t | --taps)
       shift
       export flag_bats_args="-t"
+      ;;
+    -r | --reinstall)
+      shift
+      export flag_file_reinstall=1
       ;;
     -i | --install)
       shift
@@ -381,8 +391,6 @@ function specs.header() {
 }
 
 function specs.usage() {
-  specs.header
-
   printf "${bldylw}USAGE\n    ${bldgrn}bin/specs [ options ] [ test1 test2 ... ]${clr}\n\n"
   printf "    ${txtcyn}where test1 can be a full filename, or a partial, eg. ${txtcyn}'test/util_tests.bats'\n"
   printf "    or just 'util'. Multiple arguments are also allowed.\n\n"
@@ -402,6 +410,7 @@ function specs.usage() {
   printf "                            This may speed up your test suite by 2-3x\n\n"
   printf "    -i | --install METHOD   Install Bats using the provided methjod.\n"
   printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtpur}\n\n"
+  printf "    -r | --reinstall        Reinstalls Bats completely before the test suite is run.\n"
   printf "    -c | --continue         Continue after a failing test file.\n"
   printf "    -t | --taps             Use taps bats formatter, instead of pretty.\n"
   printf "    -h | --help             Show help message\n\n"
@@ -423,8 +432,8 @@ function specs.run() {
   export test_files=()
   export all_test_files=()
 
-  dbgf specs.init "$@"
   dbgf specs.parse-opts "$@"
+  dbgf specs.init
 
   dbgf specs.install "${Bashmatic__BatsInstallMethod}"
   dbgf specs.validate-bats

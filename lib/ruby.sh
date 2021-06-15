@@ -134,6 +134,12 @@ ruby.installed-gems() {
 }
 
 ##——————————————————————————————————————————————————————————————————————————————————
+function ruby.gems.post-install() {
+  run "warp-dir install --force --dotfile ~/.bash_profile"
+}
+
+
+##——————————————————————————————————————————————————————————————————————————————————
 ruby.gems.install() {
   local -a gems=($@)
   gem.clear-cache
@@ -249,9 +255,8 @@ ruby.gems.uninstall() {
 
 ##——————————————————————————————————————————————————————————————————————————————————
 ruby.rubygems-update() {
-  info "Updating RubyGems..."
-  run.set-next show-output-on
-  run "gem update --system"
+  info "Updating RubyGems... Please wait (this may take a minute)"
+  run "gem update --system -N"
   gem.clear-cache
 }
 
@@ -285,6 +290,7 @@ ruby.init() {
   ruby.install-upgrade-bundler
   ruby.gems.install
   ruby.kigs-gems
+  ruby.gems.post-install
 }
 
 #——————————————————————————————————————————————————————————————————————————————————

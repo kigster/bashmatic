@@ -67,7 +67,7 @@ function path.dirs.delete() {
     # take care of the :path: case first
     path="$(eval "echo '${path}' | sedx 's#:${p}:#:#g'")"
     # If the path didn't change, use a more aggressive regex
-    [[ ${path} == "${opath}" ]] && path="$(eval "echo '${path}' | sedx 's#(^|:|$)${p}(:|^|$)##g'")"
+    [[ "${path}" == "${opath}" ]] && path="$(eval "echo '${path}' | sedx 's#(^|:|$)${p}(:|^|$)##g'")"
     is-dbg && dbg "path=${path} after removing ${p}"
   done
 
