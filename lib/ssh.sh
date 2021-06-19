@@ -16,6 +16,7 @@ function ssh.key.filenames() {
 
 function ssh.load-keys() {
   local pattern="$1"
+  ssh.key.filenames "$@"
 
   find "${__bm__ssh_folder}" -type f \
     -name "id_*${pattern}*" -and -not \

@@ -50,6 +50,13 @@ install:			## install BashMatic Locally in ~/.bashmatic
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Running bin/bashmatic-installer script..$(clear)\n"
 				@$(BASHMATIC_HOME)/bin/bashmatic-install
 
+
+install-ruby:			## Installs the Bashmatic default Ruby version using rbenv
+				@bash -c "cd $(BASHMATIC_HOME) && ./bin/dev-setup -g ruby"
+
+install-dev:			## Installs the Development Tooling using dev-setup script
+				@bash -c "cd $(BASHMATIC_HOME) && ./bin/dev-setup -g 'bash-it caching cpp fonts gnu go java js load-balancing monitoring postgres postgres-package python ruby'"
+
 fonts-setup:			
 				@bash -c 'tar xzf .fonts.tar.gz'
 
