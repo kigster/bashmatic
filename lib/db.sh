@@ -20,7 +20,7 @@ unset bashmatic_db_host
 unset bashmatic_db_database
 
 db.psql.args-data-only() {
-  printf -- "%s" "-A -t --no-align --pset footer -q -X --tuples-only"
+  printf -- "%s" "-t --no-align --pset footer -q -X --tuples-only"
 }
 
 db.config.init() {

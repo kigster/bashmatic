@@ -16,13 +16,21 @@ function ssh.key.filenames() {
 
 function ssh.load-keys() {
   local pattern="$1"
+
   ssh.key.filenames "$@"
 
-  find "${__bm__ssh_folder}" -type f \
-    -name "id_*${pattern}*" -and -not \
-    -name '*.pub' -print \
+  local dir="${__bm__ssh_folder}"
+  local regex="id_*${pattern}*"
+
+  info "Loading keys from ${bldylw}${dir}$(txt-info), matching regex: ${bldred}[${regex}]"
+
+  find "${dir}" -type f \
+    -name "${regex}" -and -not \
+    -name '*.pub' \
     -exec ssh-add {} \;
 }
+
+alias lk="ssh.load-keys"
 
 function ssh.keys.generate() {
   local name="$1"
