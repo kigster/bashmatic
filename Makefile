@@ -94,7 +94,7 @@ update-readme:			fonts-setup regenerate-readme fonts-clean open-readme ## Re-gen
 
 regenerate-readme:		fonts-setup
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Converting README.adoc into the PDF...$(clear)\n"
-				cat README.adoc | sed -E 's/^:title: Bashmatic® _v[^:]*::/:title: Bashmatic® _v$(BASHMATIC_VERSION)_::/g;' > r.adoc
+				cat README.adoc | sed -E 's/^:title: Bashmatic® _v[^:]* —/:title: Bashmatic® _v$(BASHMATIC_VERSION)_ —/g;' > r.adoc
 				mv r.adoc README.adoc
 				$(BASHMATIC_HOME)/bin/adoc2pdf README.adoc
 					

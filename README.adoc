@@ -1,5 +1,5 @@
-[separator=::]
-= Bashmatic® v2.3.1:: BASH-based DSL helpers for humans, sysadmins, and fun.
+[separator=—]
+= Bashmatic® v2.3.1 — BASH-based DSL helpers for humans, sysadmins, and fun.
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
