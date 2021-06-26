@@ -126,6 +126,7 @@ output.color.off() {
   stty -a 2>/dev/null| grep "${field}" | tr -d ';' | tr ' ' '\n' | grep -B 1 "${field}" | head -1
 }
 
+
 .output.current-screen-width.unconstrained() {
   local w
   util.os
@@ -135,6 +136,10 @@ output.color.off() {
     w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
   fi
   printf -- "%d" "$w"
+}
+
+screen.width.actual() {
+  .output.current-screen-width.unconstrained  
 }
 
 .output.current-screen-width.constrained() {

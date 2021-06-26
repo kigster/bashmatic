@@ -12,10 +12,10 @@ db.usage() {
     "-v / --verbose" "Show additional output" \
     "-n / --dry-run" "Only print commands, but do not run them" \
     "├GLOBAL FLAGS:" " " \
-    "--commands" "List all sub-commands to the db script" \
-    "--connectons" "List all available database connections" \
-    "--examples" "Show script usage examples" \
-    "--help" "Show this help screen" \
+    "-C / --commands" "List all sub-commands to the db script" \
+    "-c / --connectons" "List all available database connections" \
+    "-e / --examples" "Show script usage examples" \
+    "-h / --help" "Show this help screen" \
     " " " " \
     "├SUMMARY:" " " \
     " " "This tool uses a list of database connections defined in the" \
@@ -26,7 +26,7 @@ db.usage() {
 function db.commands-list() {
   h5 "Available Commands"
   printf "${bldgrn}"
-  array.to.bullet-list ${db_actions[@]} | sed 's/^/     /g'
+  array.to.bullet-list "${db_actions[@]}" | sed 's/^/     /g'
   echo; hr; echo
   exit 0
 }
@@ -36,7 +36,7 @@ function db.connections-list() {
   local -a connections
   connections=($(db.actions.connections))
   printf "${bldblu}"
-  array.to.bullet-list ${connections[@]} | sed 's/^/     /g'
+  array.to.bullet-list "${connections[@]}" | sed 's/^/     /g'
   echo; hr; echo
   exit 0
 }
@@ -88,6 +88,9 @@ export flag_verbose=0
 export action=
 
 function db.main() {
+  declare -a psql_extra_args
+  export psql_extra_args=()
+
  # Parse additional flags
   [[ -z "$*" ]] && {
     db.usage
@@ -96,25 +99,19 @@ function db.main() {
 
   while :; do
     case $1 in
-    --help)
+    -h | --help)
       shift
       db.usage
       return
       ;;
 
-    --examples)
+    -e | --examples)
       shift
       db.examples
       return
       ;;
 
-    --commands)
-      shift
-      db.commands-list
-      return
-      ;;
-
-    --connections)
+    -c | --connections)
       shift
       db.connections-list
       return
@@ -124,15 +121,18 @@ function db.main() {
       shift
       export flag_quiet=1
       ;;
+
     -v | --verbose)
       shift
       export flag_verbose=1
       ;;
-    --commands)
+
+    -C | --commands)
       shift
       h3 "Valid actions are:" "${db_actions[@]}"
       exit 0
       ;;
+ 
     [a-z]*)
       [[ -n ${action} ]] && break
       export action="$1"; shift
@@ -145,7 +145,11 @@ function db.main() {
       ;;
     --)
       shift
-      break
+      # Remaining arguments are for psql
+      export psql_extra_args=("$@")
+      while (($#)); do
+        shift
+      done
       ;;
     *)
       [[ -z "$1" ]] && break

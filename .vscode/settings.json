@@ -1,11 +1,14 @@
 {
    "asciidoc.preview.style": ".asciidoctor.css",
    "command-runner.commands": {
-      "Run Bats Unit Tests": "cd ${workspaceFolder} && bin/specs ${file}",
+      "Run Bats Unit Tests": "cd ${workspaceFolder} && ./bin/specs ${file}",
    },
    "cSpell.words": [
       "Bashmatic"
    ],
    "compile-hero.disable-compile-files-on-did-save-code": true,
-   "shellcheck.enableQuickFix": true
+   "shellcheck.enableQuickFix": true,
+   "workbench.colorTheme": "Noctis Bordo",
+   "window.zoomLevel": 2,
+   "customPresentationMode.backup": {}
 }
