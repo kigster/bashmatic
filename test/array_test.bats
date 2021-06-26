@@ -190,3 +190,31 @@ versions_array() {
   [[ $(egrep ' • kig' -c ${tmp}) -eq 1 ]] &&
   [[ $(egrep ' • pig' -c ${tmp}) -eq 1 ]]
 }
+
+@test "array.force-range > outside the range > less than min" {
+  local number=10
+  local n=$(array.force-range ${number} 100 150 120 200 1000)
+  set -e
+  [[ ${n} -eq 100 ]]
+}
+
+@test "array.force-range > outside the range > greater than max" {
+  local number=2400
+  local n=$(array.force-range ${number} 100 150 120 200 1000)
+  set -e
+  [[ ${n} -eq 1000 ]]
+}
+
+@test "array.force-range > within the range " {
+  local number=101
+  local n=$(array.force-range ${number} 100 150 120 200 1000)
+  set -e
+  [[ ${n} -eq 101 ]]
+}
+
+@test "array.force-range > within the range > equal to a boundary " {
+  local number=100
+  local n=$(array.force-range ${number} 100 150 120 200 1000)
+  set -e
+  [[ ${n} -eq 100 ]]
+}

@@ -66,6 +66,7 @@ array.includes-or-complain() {
     else
       error "Value ${element} must be one of the supplied values:" "${output[@:0:10]}"
     fi
+
     echo
     return 0
   }
@@ -163,6 +164,45 @@ array.min() {
     [[ ${v} -lt ${min} ]] && min="$v"
   done
   printf -- "%d" "${min}"
+}
+
+# @description 
+#   Given a numeric argument, and an additional array of numbers,
+#   determines the min/max range of the array and prints out the
+#   number if it's within the range of array's min and max.
+#   Otherwise prints out either min or max.
+#
+# @example
+#     $ array.force-range 26 0 100
+#     # => 26
+#     $ array.force-range 26 60 100
+#     # => 60
+function array.force-range() {
+  local n="$1"
+  is.numeric "${n}" || {
+    error "First argument to this function must be numeric, got ${n}" >&2
+    return 1
+  }
+
+  shift
+  
+  [[ "${#@}" -gt 0 ]] || {
+    error "Please pass additional arguments to define min/max" >&2
+    return 1
+ } 
+
+  local min=$(array.min "$@")
+  local max=$(array.max "$@")
+
+  if [[ $n -lt $min ]]; then
+    n=${min}
+  elif [[ $n -gt ${max} ]]; then
+    n=${max}
+  else 
+    n=${n}
+  fi
+
+  printf -- "%d" "${n}"
 }
 
 # @description 

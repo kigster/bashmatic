@@ -124,6 +124,7 @@ Installs Bash-It Framework
 * [array.sort()](#arraysort)
 * [array.sort-numeric()](#arraysort-numeric)
 * [array.min()](#arraymin)
+* [array.force-range()](#arrayforce-range)
 * [array.max()](#arraymax)
 * [array.uniq()](#arrayuniq)
 * [array.from.command()](#arrayfromcommand)
@@ -202,6 +203,22 @@ Negative numbers are supported, but non-integers are not.
 $ declare -a array=(10 20 30 -5 5)
 $ array.min "," "${array[@]}"
 -5
+```
+
+### `array.force-range()`
+
+Given a numeric argument, and an additional array of numbers,
+determines the min/max range of the array and prints out the
+number if it's within the range of array's min and max.
+Otherwise prints out either min or max.
+
+#### Example
+
+```bash
+$ array.force-range 26 0 100
+# => 26
+$ array.force-range 26 60 100
+# => 60
 ```
 
 ### `array.max()`
@@ -968,6 +985,23 @@ cc35aad389e61942c75e111f1eddbe634d74b4b1
 ---
 
 
+## File `lib/color.sh`
+
+
+
+* [color.current-background()](#colorcurrent-background)
+
+### `color.current-background()`
+
+Prints the background color of the terminal, assuming terminal responds
+to the escape sequence. More info: 
+https://stackoverflow.com/questions/2507337/how-to-determine-a-terminals-background-color
+
+
+
+---
+
+
 ## File `lib/pg.sh`
 
 
@@ -1142,18 +1176,6 @@ whenever /var/log/postgresql.log is.an-empty-file && {
 Miscellaneous utilities.
 
 
-
-* [util.rot13-stdin()](#utilrot13-stdin)
-
-### `util.rot13-stdin()`
-
-Convert STDIN using rot13
-
-#### Example
-
-```bash
-echo "test" | util.rot13-stdin
-```
 
 
 

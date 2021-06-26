@@ -19,12 +19,24 @@ unset bashmatic_db_password
 unset bashmatic_db_host
 unset bashmatic_db_database
 
-db.psql.args-data-only() {
+db.psql.args-data-only() { 
   printf -- "%s" "-t --no-align --pset footer -q -X --tuples-only"
 }
 
 db.config.init() {
   export bashmatic_db_connection=(host database username password)
+}
+
+db.config.init-max-query-len() {
+  local w=$(screen.width.actual)
+  local max_query_len
+  
+  max_query_len=$(( w - 20 ))
+  max_query_len=$(array.force-range "${max_query_len}" 80 1000)
+
+  ((flag_verbose)) && { attention "Queries will be truncated to ${max_query_len} characters" >&2; }
+
+  printf "%d" "${max_query_len}"  # characters
 }
 
 # @description Returns a space-separated values of db host, db name, username and password
@@ -117,7 +129,8 @@ db.psql.report-error() {
   [[ -z "${__psql_stderr}" ]] && return 0
   [[ -s "${__psql_stderr}" ]] || return 0
 
-  error "Error running command: " "${bldylw}psql ${argv[*]}"
+  error "Error running command: ""${bldylw}psql ${argv[*]}"
+  # shellcheck disable=SC2002
   printf -- "${txtred}$(cat "${__psql_stderr}" | sed -E 's/^/   /g')${clr}\n"
   hr
   rm -f "${__psql_stderr}"
@@ -126,7 +139,9 @@ db.psql.report-error() {
 
 print-cli() {
   is-verbose || return
-  h1 "Running command line:" "${bldylw}$*"
+  notice "Running command line:" 
+  cursor.up 2
+  notice "${itablk}$*"
 }
 
 # @description Connect to one of the databases named in the YAML file, and
@@ -153,6 +168,7 @@ db.psql.connect() {
   db.psql.args.config "${dbname}" >"${tempfile}"
 
   local -a args=($(cat "${tempfile}"))
+  [[ -n "${psql_extra_args[*]}" ]] && args+=("${psql_extra_args[@]}")
 
   rm -f "${tempfile}" >/dev/null
 
@@ -165,7 +181,8 @@ db.psql.connect() {
   set +e
   is-verbose && echo
   if [[ ${action} == "run" ]]; then
-    print-cli psql --echo-errors "${args[@]}" "$@"
+    print-cli "psql ${args[*]} --echo-errors $*"
+    # print-cli psql --echo-errors "${args[@]}" "$@"
     psql "${args[@]}" --echo-errors "$@" 2>"${__psql_stderr}"
     local code=$?
     [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
@@ -326,6 +343,66 @@ db.psql.args.maintenance() {
   db.psql.args.localhost "--maintenance-db=postgres $*"
 }
 
+.db.locks.generate-sql() {
+  local table="$1"
+  local temp_sql="$(file.temp sql)"
+  local max_query_len=$(db.config.init-max-query-len)
+
+  cat <<SQL > "${temp_sql}"
+SELECT
+    a.pid,
+    a.state,
+    a.usename,
+    a.client_addr,
+    a.wait_event_type,
+    a.wait_event,
+    state,
+    t.relname as table_name,
+    to_char(now()::time - a.query_start::time, 'HH24:MI:SS') AS duration,
+    substring(regexp_replace(substring(a.query, 0, 2000), E'[\n\r]+', '\n', 'g'), 0, ${max_query_len:-1000}) AS sql
+FROM
+    pg_stat_activity a,
+    pg_locks l,
+    pg_class t
+WHERE
+    l.relation = t.oid
+    AND t.relkind = 'r'
+    AND t.relname ILIKE '%${table}%'
+    AND a.pid = l.pid
+    AND state != 'idle'
+    AND (wait_event IS NOT NULL
+        OR wait_event_type IS NOT NULL)
+ORDER BY
+    duration DESC;
+SQL
+
+  printf "%s" "${temp_sql}"
+}
+
+db.psql.table-locks() {
+  local db="$1"; shift
+  local table="$1"; shift
+  local file="$(.db.locks.generate-sql "${table}")"
+
+  db.psql.connect "${db}" "$*" -X -x --pset=pager -q -f "${file}" | GREP_COLOR=41 grep --color=always -E "(${table:-"table_name.*$"}|$)"
+
+  [[ -f "${file}" ]] && rm -f "${file}"
+}
+
+db.psql.table-locks-query() {
+  local db="$1"; shift
+  local table="$1"; shift
+  local file="$(.db.locks.generate-sql "${table}")"
+  printf "\n${txtgrn}"
+  cat "${file}"
+  printf "\n${clr}"
+  [[ -f "${file}" ]] && rm -f "${file}"
+}
+
+#—————————————————————————————————————————————————— END OF PSQL FUNCTIONS —————————————————————————————————————————————————————————
+#
+#—————————————————————————————————————————————————— START DB ACTIONS ——————————————————————————————————————————————————————————————
+
 db.wait-until-db-online() {
   local db="${1}"
   inf 'waiting for the database to come up...'
@@ -359,6 +436,14 @@ db.datetime() {
   fi
 }
 
+db.actions.table-locks() {
+  db.psql.table-locks "$@"
+}
+
+db.actions.table-locks-query() {
+  db.psql.table-locks-query "$@"
+}
+
 db.actions.top() {
   db.top "$@"
 }
@@ -371,6 +456,9 @@ db.actions.run() {
   db.psql.run "$@"
 }
 
+db.actions.set-max-query-len() {
+  db.config.set-max-query-len "$@"
+}
 # @description 
 #    Executes multiple commands by passing them to psql each with -c flag. This
 #    allows, for instance, setting session values, and running commands such as VACUUM which 
