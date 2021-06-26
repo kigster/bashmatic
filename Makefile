@@ -70,19 +70,6 @@ file-stats-local:		## Print all non-test files and run `file` utility on them.
 shell-files:			## Lists every single checked in SHELL file in this repo
 				@find . -type f \! -ipath '*\.git*' -and  ! -ipath '*\.bundle*' -and ! -ipath '*\.bats*' | sed  's/^\.\///g' | xargs file | grep  Bourne | awk '{print $1}'
 
-make-utf8:			## Convert all text SHELL script  files from ASCII to UTF8 format
-				@bash -c "
-					function to-utf8() {
-						FROM_ENCODING="$1"
-					TO_ENCODING="UTF-8"
-					CONVERT="iconv  -f  $FROM_ENCODING  -t  $TO_ENCODING"
-				#loop to convert multiple files 
-				for  file  in  *.txt; do
-				     $CONVERT   "$file"   -o  "${file%.txt}.utf8.converted"
-				done
-				exit 0
-				"
-
 file-stats-git:			## Print all  files  known to `git ls-files` command
 				@git ls-files | xargs files
 
@@ -107,7 +94,9 @@ update-readme:			fonts-setup regenerate-readme fonts-clean open-readme ## Re-gen
 
 regenerate-readme:		fonts-setup
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Converting README.adoc into the PDF...$(clear)\n"
-				@[[ -s README.adoc ]] && $(BASHMATIC_HOME)/bin/adoc2pdf README.adoc
+				cat README.adoc | sed -E 's/^:title: Bashmatic® _v[^:]*::/:title: Bashmatic® _v$(BASHMATIC_VERSION)_::/g;' > r.adoc
+				mv r.adoc README.adoc
+				$(BASHMATIC_HOME)/bin/adoc2pdf README.adoc
 					
 reduce-size-readme:
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Reducing the PDF Size.... $(clear)\n"

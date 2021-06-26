@@ -82,7 +82,7 @@ function docs.markdown.append-copyright() {
   cat>>"${usage_md}" <<EOF
 ## Copyright & License
 
- * Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved.
+ * Copyright © 2017-$(date '+%Y') Konstantin Gredeskoul, All rights reserved.
  * Distributed under the MIT License.
 EOF
 

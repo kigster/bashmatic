@@ -2511,6 +2511,39 @@ db.actions.run-multiple ()
 
 ----
 
+==== `db.actions.set-max-query-len`
+
+[source,bash]
+----
+db.actions.set-max-query-len () 
+{ 
+    db.config.set-max-query-len "$@"
+}
+
+----
+
+==== `db.actions.table-locks`
+
+[source,bash]
+----
+db.actions.table-locks () 
+{ 
+    db.psql.table-locks "$@"
+}
+
+----
+
+==== `db.actions.table-locks-query`
+
+[source,bash]
+----
+db.actions.table-locks-query () 
+{ 
+    db.psql.table-locks-query "$@"
+}
+
+----
+
 ==== `db.actions.table-settings-set`
 
 [source,bash]
@@ -2599,6 +2632,24 @@ db.config.get-file ()
 db.config.init () 
 { 
     export bashmatic_db_connection=(host database username password)
+}
+
+----
+
+==== `db.config.init-max-query-len`
+
+[source,bash]
+----
+db.config.init-max-query-len () 
+{ 
+    local w=$(screen.width.actual)
+    local max_query_len
+    max_query_len=$(( w - 20 ))
+    max_query_len=$(array.force-range "${max_query_len}" 80 1000)
+    ((flag_verbose)) && { 
+        attention "Queries will be truncated to ${max_query_len} characters" 1>&2
+    }
+    printf "%d" "${max_query_len}"
 }
 
 ----
@@ -2775,6 +2826,7 @@ db.psql.connect ()
     local tempfile=$(mktemp)
     db.psql.args.config "${dbname}" > "${tempfile}"
     local -a args=($(cat "${tempfile}"))
+    [[ -n "${psql_extra_args[*]}" ]] && args+=("${psql_extra_args[@]}")
     rm -f "${tempfile}" > /dev/null
     [[ ${flag_quiet} -eq 0 ]] && { 
         printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n" 1>&2
@@ -2785,7 +2837,7 @@ db.psql.connect ()
     set +e
     is-verbose && echo
     if [[ ${action} == "run" ]]; then
-        print-cli psql --echo-errors "${args[@]}" "$@"
+        print-cli "psql ${args[*]} --echo-errors $*"
         psql "${args[@]}" --echo-errors "$@" 2> "${__psql_stderr}"
         local code=$?
         [[ ${code} -ne 0 || -s "${__psql_stderr}" ]] && db.psql.report-error "${args[@]}" "$@"
@@ -2945,7 +2997,7 @@ db.psql.report-error ()
     local -a argv=("$@")
     [[ -z "${__psql_stderr}" ]] && return 0
     [[ -s "${__psql_stderr}" ]] || return 0
-    error "Error running command: " "${bldylw}psql ${argv[*]}"
+    error "Error running command: ""${bldylw}psql ${argv[*]}"
     printf -- "${txtred}$(cat "${__psql_stderr}" | sed -E 's/^/   /g')${clr}\n"
     hr
     rm -f "${__psql_stderr}"
@@ -2988,6 +3040,42 @@ db.psql.run-multiple ()
     done
     echo "${commands}" > /tmp/a
     db.psql.connect "${dbname}" -t -A -X --pset border=0 "${commands}"
+}
+
+----
+
+==== `db.psql.table-locks`
+
+[source,bash]
+----
+db.psql.table-locks () 
+{ 
+    local db="$1"
+    shift
+    local table="$1"
+    shift
+    local file="$(.db.locks.generate-sql "${table}")"
+    db.psql.connect "${db}" "$*" -X -x --pset=pager -q -f "${file}" | GREP_COLOR=41 grep --color=always -E "(${table:-"table_name.*$"}|$)"
+    [[ -f "${file}" ]] && rm -f "${file}"
+}
+
+----
+
+==== `db.psql.table-locks-query`
+
+[source,bash]
+----
+db.psql.table-locks-query () 
+{ 
+    local db="$1"
+    shift
+    local table="$1"
+    shift
+    local file="$(.db.locks.generate-sql "${table}")"
+    printf "\n${txtgrn}"
+    cat "${file}"
+    printf "\n${clr}"
+    [[ -f "${file}" ]] && rm -f "${file}"
 }
 
 ----
@@ -3055,7 +3143,9 @@ is-verbose ()
 print-cli () 
 { 
     is-verbose || return
-    h1 "Running command line:" "${bldylw}$*"
+    notice "Running command line:"
+    cursor.up 2
+    notice "${itablk}$*"
 }
 
 ----
@@ -3098,7 +3188,7 @@ db.commands-list ()
 { 
     h5 "Available Commands"
     printf "${bldgrn}"
-    array.to.bullet-list ${db_actions[@]} | sed 's/^/     /g'
+    array.to.bullet-list "${db_actions[@]}" | sed 's/^/     /g'
     echo
     hr
     echo
@@ -3117,7 +3207,7 @@ db.connections-list ()
     local -a connections
     connections=($(db.actions.connections))
     printf "${bldblu}"
-    array.to.bullet-list ${connections[@]} | sed 's/^/     /g'
+    array.to.bullet-list "${connections[@]}" | sed 's/^/     /g'
     echo
     hr
     echo
@@ -3143,28 +3233,25 @@ db.examples ()
 ----
 db.main () 
 { 
+    declare -a psql_extra_args
+    export psql_extra_args=()
     [[ -z "$*" ]] && { 
         db.usage
         return
     }
     while :; do
         case $1 in 
-            --help)
+            -h | --help)
                 shift
                 db.usage
                 return
             ;
-            --examples)
+            -e | --examples)
                 shift
                 db.examples
                 return
             ;
-            --commands)
-                shift
-                db.commands-list
-                return
-            ;
-            --connections)
+            -c | --connections)
                 shift
                 db.connections-list
                 return
@@ -3177,7 +3264,7 @@ db.main ()
                 shift
                 export flag_verbose=1
             ;
-            --commands)
+            -C | --commands)
                 shift
                 h3 "Valid actions are:" "${db_actions[@]}"
                 exit 0
@@ -3195,7 +3282,10 @@ db.main ()
             ;
             --)
                 shift
-                break
+                export psql_extra_args=("$@")
+                while (($#)); do
+                    shift
+                done
             ;
             *)
                 [[ -z "$1" ]] && break
@@ -3221,7 +3311,7 @@ db.main ()
 db.usage () 
 { 
     local config="~/$(basename $(dirname ${bashmatic_db_config}))/$(basename  ${bashmatic_db_config})"
-    usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "--commands" "List all sub-commands to the db script" "--connectons" "List all available database connections" "--examples" "Show script usage examples" "--help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
+    usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "-C / --commands" "List all sub-commands to the db script" "-c / --connectons" "List all available database connections" "-e / --examples" "Show script usage examples" "-h / --help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
 }
 
 ----
@@ -6846,6 +6936,17 @@ screen.height ()
 screen.width () 
 { 
     .output.screen-width
+}
+
+----
+
+==== `screen.width.actual`
+
+[source,bash]
+----
+screen.width.actual () 
+{ 
+    .output.current-screen-width.unconstrained
 }
 
 ----
