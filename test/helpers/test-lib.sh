@@ -60,14 +60,11 @@ function specs.init() {
   export ProjectRoot="$(specs.find-project-root)"
   dbg "ProjectRoot is ${ProjectRoot}"
 
-  # shellcheck disable=SC2064
-  [[ ! -f "${ProjectRoot}/Gemfile.lock" ]] && trap "rm -f ${ProjectRoot}/Gemfile.lock" EXIT
-
   export BatsRoot="${ProjectRoot}/.bats-sources"
   export BatsSource="${ProjectRoot}/.bats-sources"
   export BatsPrefix="${ProjectRoot}/.bats-prefix"
 
-  run "rm -rf \"${BatsPrefix}\" \"${BatsSource}\" \"${BatsRoot}\""
+  ((flag_bats_reinstall)) && run "rm -rf \"${BatsPrefix}\" \"${BatsSource}\" \"${BatsRoot}\""
 
   dbg "BatsPrefix is ${BatsPrefix}"
 
@@ -117,14 +114,23 @@ function specs.find-project-root() {
 #------------------------------------------------------------------
 # Bats Installation
 function specs.install.bats.brew() {
-  hl.subtle "Installing Bats from HomeBrew..."
+  hl.subtle "Verifying Bats is brew-installed"
   run "brew tap kaos/shell"
   brew.install.packages bats-core bats-assert bats-file
 }
 
 function specs.install.bats.sources() {
-  hl.subtle "Installing Bats from sources..."
-  [[ -x ${BatsPrefix}/bin/bats ]] && return 0
+  inf "Checking that Bats is installed from sources..."
+  if [[ -x ${BatsPrefix}/bin/bats ]]; then
+    printf "${bldgrn}YES ✔"
+    ok: 
+    info "NOTE: you can clean/reinstall bats framework by passing -r / --reinstall flag."
+    return 0
+  else
+    printf "${bldred}NOPE 𐄂"
+    not-ok:
+  fi
+
   run "cd ${ProjectRoot}"
 
   run.set-next show-output-off abort-on-error
@@ -305,6 +311,7 @@ export flag_file_count=0
 export flag_file_count_failed=0
 export flag_keep_going_on_error=0
 export flag_bats_args="-p"
+export flag_bats_reinstall=0
 export flag_parallel_tests=0
 
 function specs.parse-opts() {
@@ -321,6 +328,10 @@ function specs.parse-opts() {
     -c | --continue)
       shift
       export flag_keep_going_on_error=1
+      ;;
+    -r | --reinstall)
+      shift
+      export flag_bats_reinstall=1
       ;;
     -p | --parallel)
       shift
@@ -371,18 +382,18 @@ function specs.parse-opts() {
 }
 
 function specs.header() {
-  hr
   echo
-  printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
-  printf "\e[48;5;11m\e[48;31;207m  BASHMATIC TEST RUNNER, VERSION ${black}$(bashmatic.version)                                                    ${clr}\n"
-  printf "\e[48;5;11m\e[48;30;209m  © 2016-2021 Konstantin Gredeskoul, All Rights Reserved,  MIT License.                   ${clr}\n"
-  printf "\e[48;5;11m\e[48;30;209m                                                                                          ${clr}\n"
+  printf "      \e[0;0;4m                                                       ${clr}\n"
+  printf "      \e[42;24;1m                                                       ${clr}\n"
+  printf "      \e[42;30;5m    Bashmatic© Test Runner                             ${clr}\n"
+  printf "      \e[42;30;5m    ${bldwht}Library version $(bashmatic.version)                              ${clr}\n"
+  printf "      \e[42;24;1m                                                       ${clr}\n"
+  printf "      \e[43;30;3m    %s  ${clr}\n" "© 2016-2021 Konstantin Gredeskoul, (MIT License)."
+  printf "      \e[43;14;4m    %43.43s        ${clr}\n" " "
   echo
 }
 
 function specs.usage() {
-  specs.header
-
   printf "${bldylw}USAGE\n    ${bldgrn}bin/specs [ options ] [ test1 test2 ... ]${clr}\n\n"
   printf "    ${txtcyn}where test1 can be a full filename, or a partial, eg. ${txtcyn}'test/util_tests.bats'\n"
   printf "    or just 'util'. Multiple arguments are also allowed.\n\n"
@@ -394,7 +405,7 @@ function specs.usage() {
   printf "    NOTE: this script can be run not just inside Bashmatic Repo. It works\n"
   printf "          very well when invoked from another project, as long as the bin directory\n"
   printf "          is in the PATH. So make sure to set somewhere:\n" 
-  printf "          ${bldgrn}export PATH=\${BASHMATIC_HOME}/bin:\${PATH}\n\n"
+  printf "          ${bldylw}export PATH=\${BASHMATIC_HOME}/bin:\${PATH}\n\n"
   hr
   echo
   printf "${bldylw}OPTIONS\n${txtpur}"
@@ -402,6 +413,7 @@ function specs.usage() {
   printf "                            This may speed up your test suite by 2-3x\n\n"
   printf "    -i | --install METHOD   Install Bats using the provided methjod.\n"
   printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtpur}\n\n"
+  printf "    -r | --reinstall        Reinstall Bats framework before running\n"
   printf "    -c | --continue         Continue after a failing test file.\n"
   printf "    -t | --taps             Use taps bats formatter, instead of pretty.\n"
   printf "    -h | --help             Show help message\n\n"
