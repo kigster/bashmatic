@@ -57,6 +57,7 @@
 * xref:#module-run[run]
 * xref:#module-runtime[runtime]
 * xref:#module-runtime-config[runtime-config]
+* xref:#module-sedx[sedx]
 * xref:#module-set[set]
 * xref:#module-settings[settings]
 * xref:#module-shasum[shasum]
@@ -216,6 +217,38 @@ array.eval.in-groups-of ()
         ${function} "${group[@]}"
     fi
     return 0
+}
+
+----
+
+==== `array.force-range`
+
+[source,bash]
+----
+array.force-range () 
+{ 
+    local n="$1"
+    is.numeric "${n}" || { 
+        error "First argument to this function must be numeric, got ${n}" 1>&2
+        return 1
+    }
+    shift
+    [[ "${#@}" -gt 0 ]] || { 
+        error "Please pass additional arguments to define min/max" 1>&2
+        return 1
+    }
+    local min=$(array.min "$@")
+    local max=$(array.max "$@")
+    if [[ $n -lt $min ]]; then
+        n=${min}
+    else
+        if [[ $n -gt ${max} ]]; then
+            n=${max}
+        else
+            n=${n}
+        fi
+    fi
+    printf -- "%d" "${n}"
 }
 
 ----
@@ -639,6 +672,50 @@ audio.file.mp3-to-wav ()
         error "File ${from} is not an MP3 file."
         return 1
     fi
+}
+
+----
+
+==== `audio.m4a.to.mp3`
+
+[source,bash]
+----
+audio.m4a.to.mp3 () 
+{ 
+    local file="$1"
+    [[ -z "${file}" ]] && return 0
+    [[ -f "${file}" ]] || { 
+        error "File does not exist: ${file}"
+        return 1
+    }
+    local output="${file/\.m4a/.mp3}"
+    [[ -s ${output} ]] && { 
+        info "${file} has already been converted... Skipping."
+        return 0
+    }
+    h1 "From: ${bldylw}${file} " "To:   ${bldblu}${output}"
+    command -v ffmpeg > /dev/null || .video.install-deps
+    local cmd="ffmpeg -i \"${file}\" -codec:a libmp3lame -qscale:a 1 \"${output}\""
+    h2 "${cmd}"
+    run "${cmd}"
+}
+
+----
+
+==== `audio.m4as.to.mp3s`
+
+[source,bash]
+----
+audio.m4as.to.mp3s () 
+{ 
+    folder="${1:-"."}"
+    info "Converting the following files:"
+    find "${folder}" -name '*.m4a'
+    hr
+    echo
+    info "Ctrl-C to abort."
+    echo
+    find "${folder}" -name '*.m4a' -exec bash -c 'source ~/.bashmatic/init.sh; audio.m4a.to.mp3 "{}"' \
 }
 
 ----
@@ -1891,6 +1968,17 @@ bold ()
 
 ----
 
+==== `color.current-background`
+
+[source,bash]
+----
+color.current-background () 
+{ 
+    printf "\e]11;?\a"
+}
+
+----
+
 ==== `color.disable`
 
 [source,bash]
@@ -2610,7 +2698,7 @@ db.psql.args ()
 ----
 db.psql.args-data-only () 
 { 
-    printf -- "%s" "-A -t --no-align --pset footer -q -X --tuples-only"
+    printf -- "%s" "-t --no-align --pset footer -q -X --tuples-only"
 }
 
 ----
@@ -3965,6 +4053,7 @@ file.normalize-files ()
     do
         local new_name="$(file.print-normalized-name "${file}")"
         [[ "${file}" == "${new_name}" ]] && continue
+        run "mkdir -p \$(dirname \"${new_name}\")"
         if ((DEBUG)); then
             echo mv -v \"${file}\" \"${new_name}\"
         else
@@ -3983,7 +4072,7 @@ file.normalize-files ()
 file.print-normalized-name () 
 { 
     local file="$1"
-    echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-]//g; s/--+/-/g;'
+    echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-/&]//g; s/--+/-/g;'
 }
 
 ----
@@ -8380,6 +8469,7 @@ path.dirs.delete ()
 { 
     local path="$1"
     shift
+    local opath=""
     for p in "$@"
     do
         opath="${path}"
@@ -10446,6 +10536,73 @@ run.set-next.list ()
 ----
 
 
+=== Module `sedx`
+
+==== `sedx`
+
+[source,bash]
+----
+sedx () 
+{ 
+    [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
+    [[ -z ${bashmatic__sed_command} ]] && { 
+        warning "Can't determine determine advanced sed location, using regular sed." 1>&2
+        export bashmatic__sed_command="/usr/bin/sed"
+    }
+    ${bashmatic__sed_command} -E "$@"
+}
+
+----
+
+==== `sedx.cache-command`
+
+[source,bash]
+----
+sedx.cache-command () 
+{ 
+    local sed_path="$(util.ensure-gnu-sed)"
+    [[ -x "${sed_path}" ]] || sed_path="$(command -v gsed || command -v sed)"
+    export bashmatic__sed_command="${sed_path}"
+}
+
+----
+
+==== `util.ensure-gnu-sed`
+
+[source,bash]
+----
+util.ensure-gnu-sed () 
+{ 
+    local sed_path
+    local gsed_path
+    util.os
+    case "${AppCurrentOS}" in 
+        darwin)
+            gsed_path="$(command -v gsed 2>/dev/null)"
+            if [[ -z "${gsed_path}" ]]; then
+                echo
+                h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
+                ( brew install gnu-sed --force --quiet && brew unlink gnu-sed
+                brew link gnu-sed --overwrite ) 1>&2 > /dev/null
+                hash -r 2> /dev/null
+                gsed_path="$(command -v gsed 2>/dev/null)"
+                [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
+            fi
+            [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || { 
+                error "Can't find GNU sed even after installation." 1>&2
+            }
+            sed_path="${gsed_path}"
+        ;
+        *)
+            sed_path="$(command -v sed)"
+        ;
+    esac
+    echo -n "${sed_path}"
+}
+
+----
+
+
 === Module `set`
 
 ==== `set-e-restore`
@@ -10799,7 +10956,11 @@ ssh.keys.generate ()
 ssh.load-keys () 
 { 
     local pattern="$1"
-    find "${__bm__ssh_folder}" -type f -name "id_*${pattern}*" -and -not -name '*.pub' -print -exec ssh-add {} \
+    ssh.key.filenames "$@"
+    local dir="${__bm__ssh_folder}"
+    local regex="id_*${pattern}*"
+    info "Loading keys from ${bldylw}${dir}$(txt-info), matching regex: ${bldred}[${regex}]"
+    find "${dir}" -type f -name "${regex}" -and -not -name '*.pub' -exec ssh-add {} \
 }
 
 ----
@@ -12112,31 +12273,6 @@ pause.short ()
 
 ----
 
-==== `sedx`
-
-[source,bash]
-----
-sedx () 
-{ 
-    [[ -z ${bashmatic__sed_command} ]] && sedx.cache-command
-    eval "${bashmatic__sed_command} \"$@\""
-}
-
-----
-
-==== `sedx.cache-command`
-
-[source,bash]
-----
-sedx.cache-command () 
-{ 
-    local sed_path="$(util.ensure-gnu-sed)"
-    local sed_command="${sed_path:=$(command -v sed)} -E "
-    export bashmatic__sed_command="${sed_command}"
-}
-
-----
-
 ==== `util.append-to-init-files`
 
 [source,bash]
@@ -12208,41 +12344,6 @@ util.dev-setup.update ()
     run "mv /tmp/a ${BASHMATIC_HOME}/bin/.dev-setup"
     run "cd ${BASHMATIC_HOME} && git add bin/.dev-setup"
     run "cd -"
-}
-
-----
-
-==== `util.ensure-gnu-sed`
-
-[source,bash]
-----
-util.ensure-gnu-sed () 
-{ 
-    local sed_path
-    local gsed_path
-    util.os
-    case "${AppCurrentOS}" in 
-        darwin)
-            gsed_path="$(command -v gsed 2>/dev/null)"
-            if [[ -z "${gsed_path}" ]]; then
-                echo
-                h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
-                ( brew install gnu-sed --force --quiet && brew unlink gnu-sed
-                brew link gnu-sed --overwrite ) 1>&2 > /dev/null
-                hash -r 2> /dev/null
-                gsed_path="$(command -v gsed 2>/dev/null)"
-                [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
-            fi
-            [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || { 
-                error "Can't find GNU sed even after installation." 1>&2
-            }
-            sed_path="${gsed_path}"
-        ;
-        *)
-            sed_path="$(command -v sed)"
-        ;
-    esac
-    echo -n "${sed_path}"
 }
 
 ----

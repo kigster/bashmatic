@@ -385,10 +385,10 @@ function specs.header() {
   echo
   printf "      \e[0;0;4m                                                       ${clr}\n"
   printf "      \e[42;24;1m                                                       ${clr}\n"
-  printf "      \e[42;30;5m    Bashmatic© Test Runner                             ${clr}\n"
-  printf "      \e[42;30;5m    ${bldwht}Library version $(bashmatic.version)                              ${clr}\n"
+  printf "      \e[42;30;5m    Bashmatic® Test Runner                             ${clr}\n"
+  printf "      \e[42;30;2m    Version $(bashmatic.version)                                      ${clr}\n"
   printf "      \e[42;24;1m                                                       ${clr}\n"
-  printf "      \e[43;30;3m    %s  ${clr}\n" "© 2016-2021 Konstantin Gredeskoul, (MIT License)."
+  printf "      \e[43;30;3m    %s  ${clr}\n" "© 2016-$(date '+%Y') Konstantin Gredeskoul, (MIT License)."
   printf "      \e[43;14;4m    %43.43s        ${clr}\n" " "
   echo
 }
