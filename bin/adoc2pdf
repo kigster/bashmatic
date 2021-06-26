@@ -101,7 +101,7 @@ main() {
   }
 
   h6 "Ensuring all PDF dependencies are available..."
-  ensure-dependencies
+  ((SKIP_DEPS)) || ensure-dependencies
 
   run "rm -f ${target} ${temp}"
   h6 "Starting ADOC -> PDF Conversion..."

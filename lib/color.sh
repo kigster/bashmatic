@@ -11,6 +11,13 @@ function reset-color() {
   echo -en "${clr}"
 }
 
+# @description Prints the background color of the terminal, assuming terminal responds
+#              to the escape sequence. More info: 
+#              https://stackoverflow.com/questions/2507337/how-to-determine-a-terminals-background-color
+function color.current-background() {
+  printf "\e]11;?\a"
+}
+
 function color.enable() {
   if [[ ${BashMatic__ColorLoaded} -eq 1 ]]; then
     [[ -n ${DEBUG} ]] && echo "colors are already loaded."

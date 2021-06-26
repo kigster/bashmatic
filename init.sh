@@ -22,7 +22,6 @@ SHELL_COMMAND="$(/bin/ps -p $$ -o args | /usr/bin/grep -v -E 'ARGS|COMMAND' | /u
 }
 
 export BASHMATIC_HOME
-((DEBUG)) && echo "INFO: BASHMATIC_HOME=${BASHMATIC_HOME}"
 
 BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
 export BASHMATIC_LIBDIR
