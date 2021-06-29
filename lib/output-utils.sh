@@ -38,7 +38,7 @@ function err() {
 
 function ask() {
   printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}"
-  printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
+  printf -- "%s${bakcyn}${bldwht}❯ ${bldylw}" "${LibOutput__LeftPrefix}"
 }
 
 function inf() {

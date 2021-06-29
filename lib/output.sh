@@ -93,6 +93,15 @@ cursor.right() {
   .output.cursor-right-by "$@"
 }
 
+cursor.save() {
+  printf "\e[s"
+}
+
+cursor.restore() {
+  printf "\e[u"
+}
+
+
 output.print-at-x-y() {
   local x=$1
   shift
@@ -569,21 +578,6 @@ stderr() {
   printf "${txtred}"
   [[ -s ${file} ]] && cat ${file}
   reset-color
-}
-
-command-spacer() {
-  local color="${txtgrn}"
-  [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"
-
-  [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
-
-  printf "%s${color}" ""
-
-  # shellcheck disable=SC2154
-  local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10))
-  # shellcheck disable=SC2154
-
-  [[ ${__width} -gt 0 ]] && .output.replicate-to "▪" "${__width}"
 }
 
 duration() {
