@@ -24,6 +24,11 @@ export LibRun__ShowCommandOutput__Default=${False}
 export LibRun__AskOnError__Default=${False}
 export LibRun__ShowCommand__Default=${True}
 
+export LibRun__CommandColorBg__Default="${bakcyn}"
+export LibRun__CommandColorFg__Default="${txtblk}"
+export LibRun__CommandColor__Default="${LibRun__CommandColorFg__Default}${LibRun__CommandColorBg__Default}"
+
+
 # Maximum number of Retries that can be set via the
 # LibRun__RetryCount variable before running the command.
 # After running the command, RetryCount is reset to RetryCountDefault.
@@ -37,6 +42,8 @@ export LibRun__RetryCountMax=3
   export LibRun__ShowCommand=${LibRun__ShowCommand__Default}
   export LibRun__RetrySleep=${LibRun__RetrySleep:-"0.1"} # sleep between failed retries
   export LibRun__RetryCount="${LibRun__RetryCount__Default}"
+  export LibRun__CommandColor="${LibRun__CommandColor__Default}"
+  export LibRun__PromptColor="${bldwht}${LibRun__CommandColorBg__Default}"
 
   declare -a LibRun__RetryExitCodes
   export LibRun__RetryExitCodes=()
@@ -129,10 +136,19 @@ export commands_completed=0
   local command="$*"
 
   if [[ ${LibRun__ShowCommandOutput} -eq ${True} ]]; then
-    printf "${clr}\n"
+    echo
+    cursor.at.x 0
+    hr
+    cursor.at.x 7
+    printf "${LibRun__PromptColor} ❯  ${LibRun__CommandColor}${command} ${clr}"
+    cursor.down 2
+    printf "\n${txtcyn}\n"
     eval "${command}"
     export LibRun__LastExitCode=$?
+    echo
+    run.print-command "${command}"
   else
+    run.print-command "${command}"
     eval "${command}" 2>"${stderr}" 1>"${stdout}"
     export LibRun__LastExitCode=$?
   fi
@@ -146,7 +162,7 @@ run.dry-run-prefix() {
 
 run.print-command() {
   local command="$1"
-  local max_width=${2:-"100"}
+  local max_width=${2:-"120"}
   local min_width=60
   local w
   w=$(($(.output.screen-width) - 10))
@@ -157,8 +173,8 @@ run.print-command() {
 
   local prefix="${LibOutput__LeftPrefix}${clr}"
   local ascii_cmd
-  local command_prompt="${prefix}❯ "
-  local command_width=$((w - 30))
+  local command_prompt="${prefix} ❯ "
+  local command_width=$((w - 10))
   
   [[ ${command_width} -lt ${min_width} ]] && command_width=${min_width}
 
@@ -168,21 +184,31 @@ run.print-command() {
   # if printing command output don't show dots leading to duration
   export LibRun__CommandLength=${#ascii_cmd}
 
-  [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && {
-    export LibRun__AssignedWidth=$((w - 3))
-    export LibRun__CommandLength=1
-    printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"
-  }
-
   if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
-    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(.output.replicate-to "*" 40)"
+    printf "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "*" 40)"
   else
-    printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}"
+    printf "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "${command:0:${command_width}}"
   fi
 }
 
 run.print-command-full-screen() {
   run.print-long-command "$1" $(screen.width)
+}
+
+command-spacer() {
+  local color="${LibRun__CommandColor}"
+  [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"
+
+  [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
+
+  printf "%s${color}" ""
+
+  # shellcheck disable=SC2154
+  local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10))
+  # shellcheck disable=SC2154
+
+  [[ ${__width} -gt 0 ]] && .output.replicate-to "${LibRun__CommandColor} " "${__width}"
+  printf "${clr}"
 }
 
 run.print-long-command() {
@@ -194,7 +220,7 @@ run.print-long-command() {
 
   export LibRun__AssignedWidth=${w}
 
-  local prefix="${LibOutput__LeftPrefix}${clr}"
+  local prefix="${LibRun__PromptColor}${LibOutput__LeftPrefix}${clr}"
   local ascii_cmd
   local command_prompt="${prefix}❯ $(run.dry-run-prefix)"
   local command_width=$((w - 10))
@@ -203,6 +229,14 @@ run.print-long-command() {
   printf "${command}" | fold -s -w${w} |
     awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
 
+}
+
+run.post-command-with-output() {
+  local duration="$1"
+  if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
+    command-spacer
+    duration ${duration} ${LibRun__LastExitCode}
+  fi
 }
 
 #
@@ -220,7 +254,6 @@ run.print-long-command() {
     run.inspect
   fi
 
-  run.print-command "${command}"
 
   local __Previous__ShowCommandOutput=${LibRun__ShowCommandOutput}
   set +e
@@ -256,21 +289,13 @@ run.print-long-command() {
 
   export LibRun__ShowCommandOutput=${__Previous__ShowCommandOutput}
 
-  [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && { echo; }
-
   if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
-    if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
-      command-spacer
-      duration ${duration} ${LibRun__LastExitCode}
-    fi
+    run.post-command-with-output ${duration}
     ui.closer.ok
     commands_completed=$((commands_completed + 1))
     echo
   else
-    if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
-      command-spacer
-      duration ${duration} ${LibRun__LastExitCode}
-    fi
+    run.post-command-with-output ${duration}
     ui.closer.not-ok
     echo
     local stderr_printed=false
