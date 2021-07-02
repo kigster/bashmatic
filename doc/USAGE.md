@@ -10,10 +10,12 @@
 * [file.temp()](#filetemp)
 * [file.normalize-files()](#filenormalize-files)
 * [file.ask.if-exists()](#fileaskif-exists)
+* [file.install-with-backup()](#fileinstall-with-backup)
 
 ### `file.temp()`
 
 Creates a temporary file and returns it as STDOUT
+shellcheck disable=SC2120
 
 ### `file.normalize-files()`
 
@@ -32,6 +34,23 @@ file.normalize-files "My Word Document.docx"
 ### `file.ask.if-exists()`
 
 Ask the user whether to overwrite the file
+
+### `file.install-with-backup()`
+
+Installs a given file into a provided destination, while
+making a copy of the destination if it already exists.
+
+#### Example
+
+```bash
+file.install-with-backup conf/.psqlrc ~/.psqlrc backup-strategy-function
+```
+
+#### Arguments
+
+* @arg1 File to backup
+* @arg2 Destination
+* @arg3 [optional] Shortname of the optional backup strategy: 'bak' or 'folder'. 
 
 
 
@@ -426,6 +445,22 @@ Prints a "arrow-like" line using powerline characters
 
 * @arg1 Width (optional) — only intepretered as width if the first argument is a number.
 * @args Text to print
+
+
+
+---
+
+
+## File `lib/file-helpers.sh`
+
+
+
+* [.file.make_executable()](#filemake_executable)
+
+### `.file.make_executable()`
+
+Makes a file executable but only if it already contains
+a "bang" line at the top.
 
 
 

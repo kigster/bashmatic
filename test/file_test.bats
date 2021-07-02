@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-#
+# vim: ft=bash
 load test_helper
 
 # file.exists-and-newer-than
@@ -17,6 +17,7 @@ load test_helper
 # files.map
 # files.map.shell-scripts
 
+source lib/file-helpers.sh
 source lib/file.sh
 source lib/time.sh
 source lib/util.sh

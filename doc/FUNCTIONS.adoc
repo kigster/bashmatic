@@ -29,6 +29,7 @@
 * xref:#module-dir[dir]
 * xref:#module-docker[docker]
 * xref:#module-file[file]
+* xref:#module-file-helpers[file-helpers]
 * xref:#module-ftrace[ftrace]
 * xref:#module-gem[gem]
 * xref:#module-git[git]
@@ -3958,7 +3959,7 @@ file.exists-and-newer-than ()
     shift
     local minutes="${1}"
     shift
-    if [[ -n "$(find ${file} -mmin -${minutes} -print 2>/dev/null)" ]]; then
+    if [[ -n "$(find "${file}" -mmin -"${minutes}" -print 2>/dev/null)" ]]; then
         return 0
     else
         return 1
@@ -4058,26 +4059,45 @@ file.gsub ()
 file.install-with-backup () 
 { 
     local source="$1"
-    local dest="$2"
+    shift
     if [[ ! -f "${source}" ]]; then
         error "file ${source} can not be found"
-        return 4
+        return 1
     fi
+    local dest="$1"
+    shift
+    [[ -z ${dest} ]] && { 
+        error "usage: file.install-with-backup <source> <dest> [ bak | folder ]"
+        return 1
+    }
+    local backup_strategy="${1:-"bak"}"
+    shift
+    local backup_fn=".file.backup.strategy.${backup_strategy}"
+    is.a-function "${backup_fn}" || { 
+        error "Invalid backup method '${backup_strategy}': supported are: 'bak' and 'folder'"
+        return 1
+    }
     if [[ -f "${dest}" ]]; then
-        if [[ -z $(diff "${dest}" "${source}" 2>/dev/null) ]]; then
-            info: "${dest} is up to date"
+        if [[ -z $(diff "${dest}" "${source}" 2>&1) ]]; then
+            info: "The two files ${source} and ${dest} are identical."
             return 0
         else
-            ((LibFile__ForceOverwrite)) || { 
-                info "file ${dest} already exists, skipping (use -f to overwrite)"
+            if [[ ${LibFile__ForceOverwrite} -eq 1 ]]; then
+                info "file ${dest} already exists, but overwrite flag was set, so overwriting."
+                run.set-next show-output-on
+                run "cp -v \"${source}\" \"${dest}\""
                 return 0
-            }
-            inf "making a backup of ${dest} (${dest}.bak)"
-            cp "${dest}" "${dest}.bak" > /dev/null
-            ui.closer.ok:
+            else
+                info "creating a backup of ${dest}..."
+                ${backup_fn} "${dest}" && { 
+                    success "File ${dest} has been backed up."
+                }
+            fi
         fi
     fi
-    run "mkdir -p $(dirname "${dest}") && cp ${source} ${dest}"
+    run "mkdir -p $(dirname "${dest}")"
+    run.set-next show-output-on
+    run "cp -v ${source} ${dest}"
 }
 
 ----
@@ -4144,8 +4164,8 @@ file.normalize-files ()
         local new_name="$(file.print-normalized-name "${file}")"
         [[ "${file}" == "${new_name}" ]] && continue
         run "mkdir -p \$(dirname \"${new_name}\")"
-        if ((DEBUG)); then
-            echo mv -v \"${file}\" \"${new_name}\"
+        if run.config.is-dry-run; then
+            info "mv -v \"${file}\" \"${new_name}\""
         else
             run "mv \"${file}\" \"${new_name}\""
         fi
@@ -4332,6 +4352,9 @@ files.map.shell-scripts ()
 }
 
 ----
+
+
+=== Module `file-helpers`
 
 
 === Module `ftrace`
@@ -5553,7 +5576,7 @@ is.command ()
 ----
 is.integer () 
 { 
-    is.numeric "$1" && [[ ! $1 =~ \. ]]
+    is.numeric "$1" && [[ ! $1 =~ \. ]] && grep -c
 }
 
 ----
@@ -6499,22 +6522,6 @@ center ()
 
 ----
 
-==== `command-spacer`
-
-[source,bash]
-----
-command-spacer () 
-{ 
-    local color="${txtgrn}"
-    [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"
-    [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
-    printf "%s${color}" ""
-    local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10))
-    [[ ${__width} -gt 0 ]] && .output.replicate-to "▪" "${__width}"
-}
-
-----
-
 ==== `cursor.at.x`
 
 [source,bash]
@@ -6559,6 +6566,17 @@ cursor.left ()
 
 ----
 
+==== `cursor.restore`
+
+[source,bash]
+----
+cursor.restore () 
+{ 
+    printf "\e[u"
+}
+
+----
+
 ==== `cursor.rewind`
 
 [source,bash]
@@ -6578,6 +6596,17 @@ cursor.rewind ()
 cursor.right () 
 { 
     .output.cursor-right-by "$@"
+}
+
+----
+
+==== `cursor.save`
+
+[source,bash]
+----
+cursor.save () 
+{ 
+    printf "\e[s"
 }
 
 ----
@@ -8135,7 +8164,7 @@ abort ()
 ask () 
 { 
     printf -- "%s${txtylw}$*${clr}\n" "${LibOutput__LeftPrefix}"
-    printf -- "%s${txtylw}❯ ${bldwht}" "${LibOutput__LeftPrefix}"
+    printf -- "%s${bakcyn}${bldwht}❯ ${bldylw}" "${LibOutput__LeftPrefix}"
 }
 
 ----
@@ -10157,6 +10186,23 @@ run.ui.retry-command ()
 
 === Module `runtime`
 
+==== `command-spacer`
+
+[source,bash]
+----
+command-spacer () 
+{ 
+    local color="${LibRun__CommandColor}"
+    [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"
+    [[ -z ${LibRun__AssignedWidth} || -z ${LibRun__CommandLength} ]] && return
+    printf "%s${color}" ""
+    local __width=$((LibRun__AssignedWidth - LibRun__CommandLength - 10))
+    [[ ${__width} -gt 0 ]] && .output.replicate-to "${LibRun__CommandColor} " "${__width}"
+    printf "${clr}"
+}
+
+----
+
 ==== `run`
 
 [source,bash]
@@ -10284,26 +10330,31 @@ run.inspect-variable ()
     if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_off}" ]]; then
         return 0
     fi
-    printf "    ${bldylw}%-35s ${txtblk}${color} " ${var_name}
+    printf -- "    ${bldylw}%-35s ${txtblk}${color} " "${var_name}"
     [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
+    local dot_count="$(echo "${var_value}" | sedx -E 's/[^.]//g' | tr -d '\n' | wc -c)"
     if [[ "${print_value}" -eq 1 ]]; then
         if [[ -n "${value}" ]]; then
-            printf "%*.*s" ${avail_len} ${avail_len} "${value}"
+            printf -- "%*.*s" ${avail_len} ${avail_len} "${value}"
         else
-            if $(util.is-numeric "${var_value}"); then
-                avail_len=$((${avail_len} - 5))
-                if [[ "${var_value}" =~ '.' ]]; then
-                    printf "%*.2f" ${avail_len} "${var_value}"
+            if $(is.numeric "${var_value}"); then
+                avail_len=$((avail_len - 5))
+                if [[ ${dot_count} -gt 1 || ${dot_count} -gt 1 ]]; then
+                    printf -- "%*s" "${avail_len}" "${var_value}"
                 else
-                    printf "%*d" ${avail_len} "${var_value}"
+                    if [[ "${var_value}" =~ '.' ]]; then
+                        printf -- "%*.2f" "${avail_len}" "${var_value}"
+                    else
+                        printf -- "%*d" "${avail_len}" "${var_value}"
+                    fi
                 fi
             else
-                avail_len=$((${avail_len} - 5))
-                printf "%*.*s" ${avail_len} ${avail_len} "${var_value}"
+                avail_len=$((avail_len - 5))
+                printf -- "%*.*s" "${avail_len}" "${avail_len}" "${var_value}"
             fi
         fi
     else
-        printf "%*.*s" ${avail_len} ${avail_len} "${value}"
+        printf -- "%*.*s" "${avail_len}" "${avail_len}" "${value}"
     fi
     echo
 }
@@ -10364,6 +10415,21 @@ run.on-error.ask-is-enabled ()
 
 ----
 
+==== `run.post-command-with-output`
+
+[source,bash]
+----
+run.post-command-with-output () 
+{ 
+    local duration="$1"
+    if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
+        command-spacer
+        duration ${duration} ${LibRun__LastExitCode}
+    fi
+}
+
+----
+
 ==== `run.print-command`
 
 [source,bash]
@@ -10371,7 +10437,7 @@ run.on-error.ask-is-enabled ()
 run.print-command () 
 { 
     local command="$1"
-    local max_width=${2:-"100"}
+    local max_width=${2:-"120"}
     local min_width=60
     local w
     w=$(($(.output.screen-width) - 10))
@@ -10379,20 +10445,15 @@ run.print-command ()
     export LibRun__AssignedWidth=${w}
     local prefix="${LibOutput__LeftPrefix}${clr}"
     local ascii_cmd
-    local command_prompt="${prefix}❯ "
-    local command_width=$((w - 30))
+    local command_prompt="${prefix} ❯ "
+    local command_width=$((w - 10))
     [[ ${command_width} -lt ${min_width} ]] && command_width=${min_width}
     ascii_cmd="$(printf "${command_prompt}$(run.dry-run-prefix)%-.${command_width}s " "${command:0:${command_width}}")"
     export LibRun__CommandLength=${#ascii_cmd}
-    [[ ${LibRun__ShowCommandOutput} -eq ${True} ]] && { 
-        export LibRun__AssignedWidth=$((w - 3))
-        export LibRun__CommandLength=1
-        printf "${prefix}${txtblk}# Command below will be shown with its output:${clr}\n"
-    }
     if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
-        printf "${prefix}❯ ${bldylw}%-.${command_width}s " "$(.output.replicate-to "*" 40)"
+        printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "*" 40)"
     else
-        printf "${prefix}❯ ${bldylw}%-.${command_width}s " "${command:0:${command_width}}"
+        printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "${command:0:${command_width}}"
     fi
 }
 
@@ -10421,7 +10482,7 @@ run.print-long-command ()
     w=$(($(.output.screen-width) - 10))
     [[ ${w} -gt ${max_width} ]] && w=${max_width}
     export LibRun__AssignedWidth=${w}
-    local prefix="${LibOutput__LeftPrefix}${clr}"
+    local prefix="${LibRun__PromptColor}${LibOutput__LeftPrefix}${clr}"
     local ascii_cmd
     local command_prompt="${prefix}❯ $(run.dry-run-prefix)"
     local command_width=$((w - 10))
