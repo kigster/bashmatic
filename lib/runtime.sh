@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #——————————————————————————————————————————————————————————————————————————————
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
@@ -185,9 +184,9 @@ run.print-command() {
   export LibRun__CommandLength=${#ascii_cmd}
 
   if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
-    printf "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "*" 40)"
+    printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "*" 40)"
   else
-    printf "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "${command:0:${command_width}}"
+    printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "${command:0:${command_width}}"
   fi
 }
 
@@ -250,10 +249,9 @@ run.post-command-with-output() {
 .run.exec() {
   local command="$*"
 
-  if [[ -n ${DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
+  if ((INSPECT)) || [[ -n ${DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
     run.inspect
   fi
-
 
   local __Previous__ShowCommandOutput=${LibRun__ShowCommandOutput}
   set +e
@@ -426,25 +424,32 @@ run.inspect-variable() {
     return 0
   fi
 
-  printf "    ${bldylw}%-35s ${txtblk}${color} " ${var_name}
+  printf -- "    ${bldylw}%-35s ${txtblk}${color} " "${var_name}"
   [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
+
+  # Counts the number of dots present in the numeric argument
+  local dot_count="$(echo "${var_value}" | sedx -E 's/[^.]//g' | tr -d '\n' | wc -c)"
 
   if [[ "${print_value}" -eq 1 ]]; then
     if [[ -n "${value}" ]]; then
-      printf "%*.*s" ${avail_len} ${avail_len} "${value}"
-    elif $(util.is-numeric "${var_value}"); then
-      avail_len=$((${avail_len} - 5))
-      if [[ "${var_value}" =~ '.' ]]; then
-        printf "%*.2f" ${avail_len} "${var_value}"
+      printf -- "%*.*s" ${avail_len} ${avail_len} "${value}"
+    elif $(is.numeric "${var_value}"); then
+      avail_len=$((avail_len - 5))
+      if [[ ${dot_count} -gt 1 || ${dot_count} -gt 1 ]]; then
+        printf -- "%*s" "${avail_len}" "${var_value}"
       else
-        printf "%*d" ${avail_len} "${var_value}"
+        if [[ "${var_value}" =~ '.' ]]; then
+          printf -- "%*.2f" "${avail_len}" "${var_value}"
+        else
+          printf -- "%*d" "${avail_len}" "${var_value}"
+        fi
       fi
     else
-      avail_len=$((${avail_len} - 5))
-      printf "%*.*s" ${avail_len} ${avail_len} "${var_value}"
+      avail_len=$((avail_len - 5))
+      printf -- "%*.*s" "${avail_len}" "${avail_len}" "${var_value}"
     fi
   else
-    printf "%*.*s" ${avail_len} ${avail_len} "${value}"
+    printf -- "%*.*s" "${avail_len}" "${avail_len}" "${value}"
   fi
   echo
 }

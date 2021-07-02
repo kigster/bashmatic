@@ -221,7 +221,7 @@ function is.a-script() {
 
 # https://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
 function is.integer() {
-  is.numeric "$1" && [[ ! $1 =~ \. ]]
+  is.numeric "$1" && [[ ! $1 =~ \. ]] && grep -c 
 }
 
 function is.numeric() {
