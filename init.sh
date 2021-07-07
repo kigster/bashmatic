@@ -6,7 +6,7 @@ export PATH
 set +e
 export SHELL_COMMAND
 # deterministicaly figure out our currently loaded shell.
-SHELL_COMMAND="$(/bin/ps -p $$ -o args | /usr/bin/grep -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | /usr/bin/sed -E 's/-//g')"
+SHELL_COMMAND="$(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
 [[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
