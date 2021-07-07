@@ -1,8 +1,10 @@
+#!/usr/local/bin/env bash
+# vim: ft=bash
 
-export bashmatic__hostname="${HOSTNAME:-${HOST:-$(/usr/bin/env hostname)}}"
-export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
+source "${BASHMATIC_LIBDIR}/file-helpers.sh"
 
 # @description Creates a temporary file and returns it as STDOUT
+# shellcheck disable=SC2120
 function file.temp() {
   local host="${HOST:-${HOSTNAME:-$(hostname)}}"
   local user="${USER:-"$(whoami)"}"
@@ -32,32 +34,6 @@ function dir.temp() {
   trap "rm -rf ${dir}" EXIT
 }
 
-# Makes a file executable but only if it already contains
-# a "bang" line at the top.
-#
-# Usage: .file.make_executable ${pathname}
-.file.make_executable() {
-  local file=$1
-
-  if [[ -f "${file}" && -n $(head -1 "$1" | ${GrepCommand} '#!.*(bash|ruby|env)') ]]; then
-    printf "making file ${bldgrn}${file}${clr} executable since it's a script...\n"
-    chmod 755 "${file}"
-    return 0
-  else
-    return 1
-  fi
-}
-
-.file.remote_size() {
-  local url="$1"
-  printf $(($(curl -sI "${url}" | grep -i 'Content-Length' | awk '{print $2}') + 0))
-}
-
-.file.size_bytes() {
-  local file="$1"
-  printf $(($(wc -c <"$file") + 0))
-}
-
 file.print-normalized-name() {
   local file="$1"
   echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-/&]//g; s/--+/-/g;'
@@ -78,8 +54,8 @@ file.normalize-files() {
     local new_name="$(file.print-normalized-name "${file}")"
     [[ "${file}" == "${new_name}" ]] && continue
     run "mkdir -p \$(dirname \"${new_name}\")"
-    if ((DEBUG)); then
-      echo mv -v \"${file}\" \"${new_name}\"
+    if run.config.is-dry-run; then
+      info "mv -v \"${file}\" \"${new_name}\""
     else
       run "mv \"${file}\" \"${new_name}\""
     fi
@@ -121,7 +97,7 @@ file.exists-and-newer-than() {
   shift
   local minutes="${1}"
   shift
-  if [[ -n "$(find ${file} -mmin -${minutes} -print 2>/dev/null)" ]]; then
+  if [[ -n "$(find "${file}" -mmin -"${minutes}" -print 2>/dev/null)" ]]; then
     return 0
   else
     return 1
@@ -143,30 +119,60 @@ file.ask.if-exists() {
   return 0
 }
 
+# @description Installs a given file into a provided destination, while
+#              making a copy of the destination if it already exists.
+# @arg1 File to backup
+# @arg2 Destination
+# @arg3 [optional] Shortname of the optional backup strategy: 'bak' or 'folder'. 
+#                  If not provided, defaults to 'bak'
+# Alternatively, set LibFile__ForceOverwrite=1 to overwrite.
+# @example
+#     file.install-with-backup conf/.psqlrc ~/.psqlrc backup-strategy-function
+#
 file.install-with-backup() {
-  local source="$1"
-  local dest="$2"
+  local source="$1"; shift
   if [[ ! -f "${source}" ]]; then
     error "file ${source} can not be found"
-    return 4
+    return 1
   fi
 
-  if [[ -f "${dest}" ]]; then
-    if [[ -z $(diff "${dest}" "${source}" 2>/dev/null) ]]; then
-      info: "${dest} is up to date"
+  local dest="$1"; shift
+
+  [[ -z ${dest} ]] && {
+    error "usage: file.install-with-backup <source> <dest> [ bak | folder ]"
+    return 1 
+  }
+
+  local backup_strategy="${1:-"bak"}"; shift
+  local backup_fn=".file.backup.strategy.${backup_strategy}"
+
+  is.a-function "${backup_fn}" || {
+    error "Invalid backup method '${backup_strategy}': supported are: 'bak' and 'folder'"
+    return 1
+  } 
+
+  if [[ -f "${dest}" ]]; then 
+    if [[ -z $(diff "${dest}" "${source}" 2>&1) ]]; then
+      info: "The two files ${source} and ${dest} are identical."
       return 0
     else
-      ((LibFile__ForceOverwrite)) || {
-        info "file ${dest} already exists, skipping (use -f to overwrite)"
+      if [[ ${LibFile__ForceOverwrite} -eq 1 ]]; then
+        info "file ${dest} already exists, but overwrite flag was set, so overwriting."
+        run.set-next show-output-on
+        run "cp -v \"${source}\" \"${dest}\""
         return 0
-      }
-      inf "making a backup of ${dest} (${dest}.bak)"
-      cp "${dest}" "${dest}.bak" >/dev/null
-      ui.closer.ok:
+      else
+        info "creating a backup of ${dest}..."
+        ${backup_fn} "${dest}" && {
+          success "File ${dest} has been backed up."
+        } 
+      fi
     fi
   fi
 
-  run "mkdir -p $(dirname "${dest}") && cp ${source} ${dest}"
+  run "mkdir -p $(dirname "${dest}")"
+  run.set-next show-output-on
+  run "cp -v ${source} ${dest}"
 }
 
 file.last-modified-date() {

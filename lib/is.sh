@@ -221,18 +221,11 @@ function is.a-script() {
 
 # https://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
 function is.integer() {
-  is.numeric "$1" && [[ ! $1 =~ \. ]]
+  [[ $1 =~ ^[+-]?[0-9]+$ ]]
 }
 
-function is.numeric() {
-  case $1 in
-  '' | *[!\-0-9.]*)
-    return 1
-    ;;
-  *)
-    return 0
-    ;;
-  esac
+function is.numeric() { 
+  [[ $1 =~ ^[+-]?([0-9]+([.][0-9]*)?|\.[0-9]+)$ ]]
 }
 
 function is.command() {

@@ -5,9 +5,10 @@ source lib/is.sh
 source lib/user.sh
 source lib/output.sh
 
-set -e
 export not_blank_var="blah"
 export blank_var=
+
+set -e
 
 function moo() {
   echo moo moo
@@ -71,31 +72,35 @@ function moo() {
 }
 
 @test "is.integer(integer)" {
-  is.integer 123
-  is.integer 0
-  is.integer 1
-  is.integer -3
+  set -e
+  is.integer 123      &&
+  is.integer 0        &&
+  is.integer 1        &&
+  is.integer -3       &&
   is.integer 1235987897
 }
 
 @test "is.integer(not integer)" {
-  ! is.integer ""
-  ! is.integer 123.2
-  ! is.integer asdf
-  ! is.integer 0x042
+  set -e
+  ! is.integer ""     &&
+  ! is.integer 123.2    &&
+  ! is.integer asdf     &&
+  ! is.integer 0x042 
 }
 
 @test "is.numeric(numeric)" {
-  is.numeric 123.4
-  is.numeric -1234
-  is.numeric 999
+  set -e
+  is.numeric 123.4 &&
+  is.numeric -1234 &&
+  is.numeric 999   &&
   is.numeric 0
 }
 
 @test "is.numeric(not numeric)" {
-  ! is.numeric ""
-  ! is.numeric "asdfg"
-  ! is.numeric "0x0234"
+  set -e
+  ! is.numeric ""         &&
+  ! is.numeric "asdfg"    &&
+  ! is.numeric "0x0234"   &&
   ! is.numeric "1234aaa"
 }
 
