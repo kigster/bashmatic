@@ -494,6 +494,17 @@ run.inspect-variables-that-are() {
     "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"
 }
 
+# @description Prints values of all variables starting with prefixes in args
+# @example Print all bashmatic variables:
+#
+#     run.inspect-vars BASHMATIC_
+#
+run.inspect-vars() {
+  for var in "$@"; do
+    run.inspect-variables-that-are starting-with "$var"
+  done
+}
+
 # shellcheck disable=SC2120
 run.inspect() {
   if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
