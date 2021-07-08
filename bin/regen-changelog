@@ -5,6 +5,8 @@
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 source "${BASHMATIC_HOME}/init.sh"
 
+command -v rbenv >/dev/null && eval "$(rbenv init -)"
+
 git.is-valid-repo || {
   error "Current folder is not a git repo."
   exit 1

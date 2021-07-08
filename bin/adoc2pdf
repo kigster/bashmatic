@@ -8,6 +8,8 @@ source "${BASHMATIC_HOME}/init.sh" >/dev/null
 export bashmatic_gemfile="${BASHMATIC_HOME}/Gemfile"
 export bashmatic_gems="${HOME}/.bundle/gems/bashmatic"
 
+command -v rbenv && eval "$(rbenv init -)"
+
 function adoc-header() {
   local file="$1"
 
@@ -46,6 +48,7 @@ function install-graphicsmagick() {
   brew.install.package ${package}
   local dir=$(brew --prefix ${package})
   brew.package.link ${package}
+  return 0
 }
 
 function install-gems() {
@@ -58,7 +61,7 @@ function install-gems() {
 function ensure-dependencies() {
   h6 "Ensuring PDF conversion dependencies are installed..."
 
-  run.set-all abort-on-error
+  #run.set-all abort-on-error
   install-fonts
   install-graphicsmagick
   install-gems
