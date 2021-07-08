@@ -23,8 +23,8 @@ export LibRun__ShowCommandOutput__Default=${False}
 export LibRun__AskOnError__Default=${False}
 export LibRun__ShowCommand__Default=${True}
 
-export LibRun__CommandColorBg__Default="${bakcyn}"
-export LibRun__CommandColorFg__Default="${txtblk}"
+export LibRun__CommandColorBg__Default="${bakblk}"
+export LibRun__CommandColorFg__Default="${txtylw}"
 export LibRun__CommandColor__Default="${LibRun__CommandColorFg__Default}${LibRun__CommandColorBg__Default}"
 
 
@@ -173,7 +173,7 @@ run.print-command() {
   local prefix="${LibOutput__LeftPrefix}${clr}"
   local ascii_cmd
   local command_prompt="${prefix} ❯ "
-  local command_width=$((w - 10))
+  local command_width=$((w - 25))
   
   [[ ${command_width} -lt ${min_width} ]] && command_width=${min_width}
 
@@ -184,7 +184,7 @@ run.print-command() {
   export LibRun__CommandLength=${#ascii_cmd}
 
   if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
-    printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "*" 40)"
+    printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "■" ${command_width})"
   else
     printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "${command:0:${command_width}}"
   fi
