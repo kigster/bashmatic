@@ -5171,7 +5171,11 @@ git.sync ()
         cd "${dir}" > /dev/null
         return 1
     }
-    git.update-repo-if-needed
+    if ((DEBUG)); then
+        git.update-repo-if-needed
+    else
+        git.update-repo-if-needed 1>&2 > /dev/null
+    fi
     cd "${dir}" > /dev/null
     return 0
 }
@@ -5576,7 +5580,7 @@ is.command ()
 ----
 is.integer () 
 { 
-    is.numeric "$1" && [[ ! $1 =~ \. ]] && grep -c
+    [[ $1 =~ ^[+-]?[0-9]+$ ]]
 }
 
 ----
@@ -5621,14 +5625,7 @@ is.not-blank ()
 ----
 is.numeric () 
 { 
-    case $1 in 
-        '' | *[!\-0-9.]*)
-            return 1
-        ;
-        *)
-            return 0
-        ;
-    esac
+    [[ $1 =~ ^[+-]?([0-9]+([.][0-9]*)?|\.[0-9]+)$ ]]
 }
 
 ----
@@ -10387,6 +10384,20 @@ run.inspect-variables-that-are ()
     local pattern_type="${1}"
     local pattern="${2}"
     run.inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"
+}
+
+----
+
+==== `run.inspect-vars`
+
+[source,bash]
+----
+run.inspect-vars () 
+{ 
+    for var in "$@"
+    do
+        run.inspect-variables-that-are starting-with "$var"
+    done
 }
 
 ----

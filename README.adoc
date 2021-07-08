@@ -1,5 +1,6 @@
 [separator=—]
-= Bashmatic® v2.3.1 — BASH-based DSL helpers for humans, sysadmins, and fun.
+= Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
+:author: Version 2.4.1
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -29,7 +30,7 @@ _Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (5
 
 _Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the https://github.com/kigster/bashmatic/blob/master/lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
 
-icon:arrow-down[2x]
+icon:arrow-circle-down[3x, color="purple"]
 
 [source,bash]
 ----
@@ -55,16 +56,14 @@ Final note, - once Bashmatic is installed and loaded by your shell init files, y
 
 _Bashmatic®_ offers a huge range of ever-growing helper functions for running commands, auto-retrying, repeatable, runtime-measuring execution framework with the key function `run`. There are helpers for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, installing packages, and much more.
 
-WARNING: A good portion of the helpers within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specifc functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
+NOTE: A good portion of the helpers within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specifc functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
 
 Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[functions index page].
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* :) 
 
 
-
-
-[WARNING]
+[CAUTION]
 ====
 You can also download the **https://github.com/kigster/bashmatic/blob/master/README.pdf[PDF version of this document]** which is better for print. 
 
@@ -99,7 +98,7 @@ Despite the above points, it is also generally accepted that:
 * It's often difficult to understand what the hell is going on while the script is running, because either its not outputting anything useful, OR it's outputting way too much.
 * When BASH errors occur, shit generally hits the fan and someone decides that they should rewrite the 20-line BASH script in C{pp} or Go, because, well, it's a goddamn BASH script and it ain't working.
 
-IMPORTANT: _Bashmatic_'s goal is to make BASH programming both fun, consistent, and provide plenty of visible output to the user so that there is no mystery as to what is going on.
+TIP: _Bashmatic_'s goal is to make BASH programming both fun, consistent, and provide plenty of visible output to the user so that there is no mystery as to what is going on.
 
 == Installing Bashmatic
 
@@ -109,14 +108,14 @@ Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping sc
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
 
-NOTE: The shortcut link resolves to the HEAD version of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in Bashmatic Repo.
 
-icon:arrow-down[3x, color="green"]
 [source,bash]
 ----
 bash -c "$(curl -fsSL https://bashmatic.re1.re); \
-             bashmatic-install"
+             bashmatic-install -q"
 ----
+
+TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo.
 
 You can pass additional flags to the `bashmatic-install` function, including:
 
@@ -170,9 +169,11 @@ $ grep bashmatic ~/.bashrc
 [[ -f ~/.bashmatic/init.sh ]] && source ~/.bashmatic/init.sh
 ----
 
-Then you will have insta-access to all of the convenience functions Bashmtic offers (all 700+ of them).
-
-And while loading the `init.sh` file adds time to your login initialzation, and may auto-update the Bashmatic library, there may be good reasons when you prefer NOT to automatically load it on login.
+[ATTENTION]
+====
+icon:check-circle[fw, color="green"] Pros of loading at login:: Instant access to 800+ convenience functions Bashmtic offers and helpers. Bashmatic will auto-update whenever its loaded from the master branch.
+icon:times-circle[fw, color="red"] Cons of loading at login:: About 600ms delay at login, and a potential security attack vector (eg, if someone hacks the repo).
+====
 
 If the above command shows the output you see above, when you grep your `bashrc` or `zshrc`, then all Bashmatic Functions will be loaded into your shell. This could be very convenient, for instance, 
 
@@ -273,7 +274,7 @@ Sometimes you may not be able to use `git` (I have seen issues ranging from loca
 
 [source,bash]
 ----
-export BASHMATIC_TAG="v1.13.0"
+export BASHMATIC_TAG="v2.4.1"
 set -e
 cd ${HOME}
 curl --insecure -fSsl \

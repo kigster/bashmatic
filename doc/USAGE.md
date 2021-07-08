@@ -1217,6 +1217,21 @@ Miscellaneous utilities.
 ---
 
 
+## File `lib/runtime.sh`
+
+
+
+* [run.inspect-vars()](#runinspect-vars)
+
+### `run.inspect-vars()`
+
+Prints values of all variables starting with prefixes in args
+
+
+
+---
+
+
 ## File `lib/pdf.sh`
 
 # Bashmatic Utilities for PDF file handling
