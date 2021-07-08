@@ -8,7 +8,6 @@ source "${BASHMATIC_HOME}/init.sh" >/dev/null
 export bashmatic_gemfile="${BASHMATIC_HOME}/Gemfile"
 export bashmatic_gems="${HOME}/.bundle/gems/bashmatic"
 
-command -v rbenv && eval "$(rbenv init -)"
 
 function adoc-header() {
   local file="$1"
@@ -52,6 +51,8 @@ function install-graphicsmagick() {
 }
 
 function install-gems() {
+  command -v rbenv >/dev/null && eval "$(rbenv init -)"
+
   gem.cache-refresh
   gem.is-installed prawn-gmagick || run "gem install prawn-gmagick -- --with-opt-include=${dir}/include/GraphicsMagick"
   run "mkdir -p ${bashmatic_gems}"
