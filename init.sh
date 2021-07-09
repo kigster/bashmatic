@@ -4,7 +4,7 @@
 export GREP_CMD
 GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
 
-for _path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do
+for _path in ${HOME}/.rbenv/shims ${HOME}/.pyenv/shims /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do
   ((DEBUG)) && echo "PATH=[${PATH}], checking for PATH component [${_path}]"
   [[ -d "${_path}" ]] && {
     (echo ":${PATH}:" | ${GREP_CMD} -q ":${_path}:") || {

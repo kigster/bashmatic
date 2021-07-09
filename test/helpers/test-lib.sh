@@ -78,7 +78,7 @@ function specs.init() {
   (mkdir -p "${BatsPrefix}"/bin 2>/dev/null) || true
   (mkdir -p "${BatsPrefix}"/libexec 2>/dev/null) || true
 
-  export PATH="${ProjectRoot}/bin:/usr/bin:/usr/local/bin:/bin:/sbin:/opt/bin:/opt/local/bin:/opt/sbin"
+  export PATH="${ProjectRoot}/bin:${PATH}"
   export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${PATH}"
 
   export Bashmatic__BatsInstallMethod="sources"

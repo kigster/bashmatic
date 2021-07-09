@@ -4,6 +4,7 @@ load "test_helper"
 
 source "lib/config.sh"
 source "lib/output.sh"
+source "lib/output-boxes.sh"
 source "lib/ruby.sh"
 source "lib/gem.sh"
 

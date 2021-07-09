@@ -87,6 +87,13 @@ function path.uniq() {
   array.join ':' $(path.dirs.uniq "$@")
 }
 
+# @description 
+#     Using sed and tr uniq the PATH without re-sorting it.
+function PATH.uniqify() {
+  local _p="$(printf "${PATH}" | sed 's/:/\n/g' | uniq | tr '\n' ':')"
+  [[ "${_p}" == "${PATH}" ]] || export PATH="${_p}"
+}
+
 # @description
 #    Appends a new directory to the $PATH and prints the result to STDOUT,
 #    Does NOT mutate the actual $PATH
