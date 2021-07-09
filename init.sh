@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
+export GREP_CMD
+GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
+
 for _path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do
   ((DEBUG)) && echo "PATH=[${PATH}], checking for PATH component [${_path}]"
   [[ -d "${_path}" ]] && {
-    (echo ":${PATH}:" | grep -q ":${_path}:") || {
+    (echo ":${PATH}:" | ${GREP_CMD} -q ":${_path}:") || {
       export PATH="${PATH}:${_path}"
     }
   }
@@ -13,7 +16,7 @@ done
 set +e
 export SHELL_COMMAND
 # deterministicaly figure out our currently loaded shell.
-SHELL_COMMAND="$(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
+SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
 [[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
