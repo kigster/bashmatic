@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
-for path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do
-  [[ -d "${path}" ]] && echo "${PATH}" | grep -q "${path}" || export PATH="${PATH}"
+for _path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do
+  ((DEBUG)) && echo "PATH=[${PATH}], checking for PATH component [${_path}]"
+  [[ -d "${_path}" ]] && {
+    (echo ":${PATH}:" | grep -q ":${_path}:") || {
+      export PATH="${PATH}:${_path}"
+    }
+  }
 done
 
 set +e
