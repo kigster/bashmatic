@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-PATH="/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin:/opt/local/bin:${PATH}"
-export PATH
+
+for path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do
+  [[ -d "${path}" ]] && echo "${PATH}" | grep -q "${path}" || export PATH="${PATH}"
+done
 
 set +e
 export SHELL_COMMAND
