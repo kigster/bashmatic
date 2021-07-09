@@ -1,8 +1,14 @@
 # Changelog
 
-## [v2.4.1](https://github.com/kigster/bashmatic/tree/v2.4.1) (2021-07-08)
+## [v2.4.1](https://github.com/kigster/bashmatic/tree/v2.4.1) (2021-07-09)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.0...v2.4.1)
+
+**Merged pull requests:**
+
+- Prettier commands + version 2.4.0 [\#74](https://github.com/kigster/bashmatic/pull/74) ([kigster](https://github.com/kigster))
+- Synchronize git updates quietly [\#73](https://github.com/kigster/bashmatic/pull/73) ([kigster](https://github.com/kigster))
+- Alternative command coloring [\#70](https://github.com/kigster/bashmatic/pull/70) ([kigster](https://github.com/kigster))
 
 ## [v2.4.0](https://github.com/kigster/bashmatic/tree/v2.4.0) (2021-07-02)
 
