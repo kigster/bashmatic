@@ -108,21 +108,28 @@ Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping sc
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
 
-
 [source,bash]
 ----
-bash -c "$(curl -fsSL https://bashmatic.re1.re); \
-             bashmatic-install -q"
+bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
 ----
 
 TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo.
 
-You can pass additional flags to the `bashmatic-install` function, including:
+==== Installing a Particular Version or a Branch
+
+You can install a branch or a tag of Bashmatic by passing `-b / --git-branch <tag|branch>` flag.
+
+==== Customizing the Installer Script
+
+You can pass flags to the `bashmatic-install` function to control how, where to Bashmatic is installed, and where from it is downloaded, including:
 
 - `-v` or `--verbose` for displaying additional output, or the opposite: 
+- `-d` or `--debug` will print additional debugging output 
+- `-f` or `--force` will replace any existing bashmatic folder with the new one
 - `-q` or `--quiet` for no output
 - `-l` or `--skip-on-login` to NOT install the hook that loads Bashmatic on login.
 - If you prefer to install Bashmatic in a non-standard location (the default is `~/.bashmatic`),  you can use the `-H PATH` flag
+
 
 For instance, here is a verbose installation with a custom destination:
 
@@ -132,10 +139,12 @@ bash -c "$(curl -fsSL https://bashmatic.re1.re); \
               bashmatic-install -v -H ~/workspace/bashmatic"
 ----
 
+If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:kigster/bashmatic` origin, instead of the default `https://...`
+
+
 Here is the complete list of options accepted by the installer:
 
-image::doc/img/bashmatic-install.png[Installer,width=70%,align=center]
-
+image::doc/img/bashmatic-install.png[Installer,width=80%,align=left]
 
 
 === Understanding what the Installer Does
