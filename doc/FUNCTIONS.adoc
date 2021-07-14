@@ -331,8 +331,9 @@ array.has-element ()
 array.includes () 
 { 
     local search="$1"
+    [[ -z $search ]] && return 1
     shift
-    [[ "$*" =~ ${search} ]] || return 1
+    [[ "$*" =~ "${search}" ]] || return 1
     for e in "${@}"
     do
         [[ "$e" == "${search}" ]] && { 
@@ -1510,12 +1511,15 @@ brew.cask.tap ()
 ----
 brew.install () 
 { 
-    local brew=$(which brew 2>/dev/null)
+    inf "Checking if a local brew command exists already ..." 1>&2
+    local brew=$(command -v brew >/dev/null)
     if [[ -z "${brew}" ]]; then
-        info "Installing Homebrew, please wait..."
-        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+        not-ok:
+        info "Brew wasn't found — installing Homebrew, ${bldgrn}please wait..."
+        run "/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)""
     else
-        info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
+        ok:
+        info "Excellent: an existing Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1) exists"
         run "brew update"
     fi
 }
@@ -8537,6 +8541,18 @@ package.ensure.is-installed ()
 
 === Module `path`
 
+==== `PATH.uniqify`
+
+[source,bash]
+----
+PATH.uniqify () 
+{ 
+    local _p="$(printf "${PATH}" | sed 's/:/\n/g' | uniq | tr '\n' ':')"
+    [[ "${_p}" == "${PATH}" ]] || export PATH="${_p}"
+}
+
+----
+
 ==== `PATH_add`
 
 [source,bash]
@@ -9966,7 +9982,7 @@ ruby.rubygems-update ()
 { 
     info "Updating RubyGems..."
     run.set-next show-output-on
-    run "gem update --system"
+    run "gem update --system -N"
     gem.clear-cache
 }
 
@@ -10457,12 +10473,12 @@ run.print-command ()
     local prefix="${LibOutput__LeftPrefix}${clr}"
     local ascii_cmd
     local command_prompt="${prefix} ❯ "
-    local command_width=$((w - 10))
+    local command_width=$((w - 25))
     [[ ${command_width} -lt ${min_width} ]] && command_width=${min_width}
     ascii_cmd="$(printf "${command_prompt}$(run.dry-run-prefix)%-.${command_width}s " "${command:0:${command_width}}")"
     export LibRun__CommandLength=${#ascii_cmd}
     if [[ "${LibRun__ShowCommand}" -eq ${False} ]]; then
-        printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "*" 40)"
+        printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "$(.output.replicate-to "■" ${command_width})"
     else
         printf -- "${prefix}${LibRun__PromptColor} ❯ ${LibRun__CommandColor} %-.${command_width}s " "${command:0:${command_width}}"
     fi

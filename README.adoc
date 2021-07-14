@@ -1,6 +1,6 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
-:author: Version 2.4.1
+:author: Version 2.4.2
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -130,21 +130,22 @@ You can pass flags to the `bashmatic-install` function to control how, where to 
 - `-l` or `--skip-on-login` to NOT install the hook that loads Bashmatic on login.
 - If you prefer to install Bashmatic in a non-standard location (the default is `~/.bashmatic`),  you can use the `-H PATH` flag
 
-
-For instance, here is a verbose installation with a custom destination:
+.Example of a customized installation
+====
+For instance, here we are installing Bashmatic into a non-default destination, while printing additional verbose & debug information, as well as using `-f` (force) to possibly overwrite the destination folder (if it already exists) with a checkout of Bashmatic according to a tag `v2.4.1`:
 
 [source,bash]
 ----
 bash -c "$(curl -fsSL https://bashmatic.re1.re); \
-              bashmatic-install -v -H ~/workspace/bashmatic"
+           bashmatic-install -d -v -f -b v2.4.1 -H ~/workspace/bashmatic"
 ----
+====
 
-If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:kigster/bashmatic` origin, instead of the default `https://...`
-
+If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:kigster/bashmatic` origin, instead of the default `https://github.com/kigster/bashmatic':
 
 Here is the complete list of options accepted by the installer:
 
-image::doc/img/bashmatic-install.png[Installer,width=80%,align=left]
+image::doc/img/bashmatic-install.png[Installer,width=99%,align=left]
 
 
 === Understanding what the Installer Does
@@ -306,7 +307,7 @@ When you install Bashmatic it automatically adds a hook to your `~/.bash_profile
 Add the following to your `~/.zshrc` file:
 
 [source,zsh]
-[[ -f ~/.bashmatic/init.sh ]] && source ~/.bashmatic/init.sh
+[[ -f ~/.bashmatic/init.sh ]] && source "~/.bashmatic/init.sh"
 
 NOTE: The entire library takes less than 300ms to load on ZSH and a recent MacBook Pro.
 
@@ -318,30 +319,41 @@ You can run `make help` and read the available targets:
 
 [source,bash]
 ----
-❯ make help
+❯ make
+
+help               Prints help message auto-generated from the comments.
+open-readme        Open README.pdf in the system viewer
 
 docker-build       Builds the Docker image with the tooling inside
 docker-run-bash    Drops you into a BASH session with Bashmatic Loaded
 docker-run-fish    Drops you into a FISH session with Bashmatic Loaded
 docker-run-zsh     Drops you into a ZSH session with Bashmatic Loaded
 docker-run         Drops you into a BASH session
+
 file-stats-git     Print all  files  known to `git ls-files` command
 file-stats-local   Print all non-test files and run `file` utility on them.
-help               Prints help message auto-generated from the comments.
+
+install-dev        Installs the Development Tooling using dev-setup script
+install-ruby       Installs the Bashmatic default Ruby version using rbenv
 install            install BashMatic Locally in ~/.bashmatic
-open-readme        Open README.pdf in the system viewer
+
 release            Make a new release named after the latest tag
+tag                Tag this commit with .version and push to remote
+
 setup              Run the comprehensive development setup on this machine
 shell-files        Lists every single checked in SHELL file in this repo
-tag                Tag this commit with .version and push to remote
-test-parallel      Run the fully auto-g mated test suite
+
 test               Run fully automated test suite based on Bats
+test-parallel      Run the fully auto-g mated test suite
+
 update-changelog   Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN env var set)
 update-functions   Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/pdf
 update-readme      Re-generate the PDF version of the README
-update-usage       Auto-generate doc/USAGE documentation from lib shell files, to doc/USAGE.adoc/pdf
-update             Runs all of the updates, add locally modiofied files to git.
+update-usage       Auto-generate doc/USAGE documentation from lib shell files, 
+                   to doc/USAGE.adoc/pdf
 
+update             Runs all update targets to regenerate all PDF docs and the 
+                   Changelog.
 ----
 
 I've added whitespaces around a set of common tasks you might find useful. 
