@@ -37,8 +37,12 @@ array.has-element() {
 #   Similar to array.has-elements, but does not print anything, just
 #   returns 0 if includes, 1 if not.
 array.includes() {
-  local search="$1"; shift
-  [[ "$*" =~ ${search} ]] || return 1
+  local search="$1"; 
+  [[ -z $search ]] && return 1
+  shift
+
+  [[ "$*" =~ "${search}" ]] || return 1
+  
   for e in "${@}"; do
     [[ "$e" == "${search}" ]] && {
       return 0

@@ -58,12 +58,16 @@ function brew.upgrade() {
 }
 
 function brew.install() {
-  local brew=$(which brew 2>/dev/null)
+  inf "Checking if a local brew command exists already ..." >&2
+  local brew=$(command -v brew >/dev/null)
   if [[ -z "${brew}" ]]; then
-    info "Installing Homebrew, please wait..."
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    not-ok:
+
+    info "Brew wasn't found — installing Homebrew, ${bldgrn}please wait..."
+    run "/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)""
   else
-    info "Detected Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1)"
+    ok:
+    info "Excellent: an existing Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1) exists"
     run "brew update"
   fi
 }

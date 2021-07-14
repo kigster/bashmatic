@@ -251,7 +251,7 @@ ruby.gems.uninstall() {
 ruby.rubygems-update() {
   info "Updating RubyGems..."
   run.set-next show-output-on
-  run "gem update --system"
+  run "gem update --system -N"
   gem.clear-cache
 }
 
