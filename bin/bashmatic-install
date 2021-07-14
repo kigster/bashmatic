@@ -325,7 +325,7 @@ export bootstrap__bashmatic_home=${HOME}/.bashmatic
 export bootstrap__bash_version="5.1-rc2"
 export bootstrap__bash_prefix="/usr/local"
 export bootstrap__sudoers_dir="/private/etc/sudoers.d"
-export bootstrap__git_https=0 # by default use git@
+export bootstrap__git_method="https"
 
 function is-debug() {
   ((bootstrap__debug))
@@ -349,9 +349,7 @@ ${bldylw}DESCRIPTION:
   into /usr/local/bin/bash.
 
 ${bldylw}FLAGS:${clr}
-  -G, --git-https               If supplied, bashmatic is installed from 
-                                https://github.com/kigster/bashmatic,
-                                instead of git@github.com:kigster/bashmatic (default)
+  -m, --git-method [git|https]  The default is 'https' unless your username is 'kig'.
 
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home/${HOME}/\~})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
@@ -403,9 +401,13 @@ function .install.parse-opts() {
       export bootstrap__bashmatic_home="$1"
       shift
       ;;
-    -s | --git-https)
+    -m | --git-method)
       shift
-      export bootstrap__git_https=1
+      export bootstrap__git_method="$1"
+      [[ ${bootstrap__git_method} == "https" || ${bootstrap__git_method} == "git" ]] || {
+       .err "Invalid usage of -m, expected either https or git."
+        exit 1
+      }
       shift
       ;;
     -p | --print)
@@ -460,10 +462,13 @@ function .install.parse-opts() {
     esac
   done
 
-  if [[ $bootstrap__git_https -eq 0 ]]; then
+  if [[ $bootstrap__git_method -eq "git" ]]; then
     export BASHMATIC_URL="git@github.com:kigster/bashmatic"
-  else
+  elif [[ $bootstrap__git_method -eq "https" ]]; then
     export BASHMATIC_URL="https://github.com/kigster/bashmatic"
+  else
+    .err "Invalid git method, please set to either git or https."
+    exit 1
   fi
 }
 
