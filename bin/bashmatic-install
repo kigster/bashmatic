@@ -176,7 +176,7 @@ function .install.bash-install-if-needed() {
 function .install.git-sync() {
   is-verbose &&.puts "Checking if existing bashmatic folder is locally modified..."
 
-  ((bootstrap__skip_git_check)) && return
+  ((bootstrap__skip_git_check)) && return 0
 
   cd "${BASHMATIC_HOME}" >/dev/null
   [[ -d ".git" ]] || return
@@ -193,7 +193,7 @@ function .install.git-sync() {
     echo
     return 1
   else
-    git checkout -q -b "${bootstrap__git_branch}" && git pull -q --rebase >/dev/null
+    git checkout -q "${bootstrap__git_branch}" && git pull -q --rebase >/dev/null
   fi
 
   cd - >/dev/null
