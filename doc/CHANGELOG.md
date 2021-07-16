@@ -1,12 +1,17 @@
 # Changelog
 
-## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+## [v2.4.2](https://github.com/kigster/bashmatic/tree/v2.4.2) (2021-07-16)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.1...HEAD)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.1...v2.4.2)
 
 **Closed issues:**
 
 - Root CA certificate for bashmatic.re1.re expired [\#76](https://github.com/kigster/bashmatic/issues/76)
+
+**Merged pull requests:**
+
+- Customize bashmatic installer with several new options [\#77](https://github.com/kigster/bashmatic/pull/77) ([kigster](https://github.com/kigster))
+- \[Snyk\] Fix for 1 vulnerabilities [\#75](https://github.com/kigster/bashmatic/pull/75) ([snyk-bot](https://github.com/snyk-bot))
 
 ## [v2.4.1](https://github.com/kigster/bashmatic/tree/v2.4.1) (2021-07-09)
 
