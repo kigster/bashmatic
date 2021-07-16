@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.1...HEAD)
+
+**Closed issues:**
+
+- Root CA certificate for bashmatic.re1.re expired [\#76](https://github.com/kigster/bashmatic/issues/76)
+
 ## [v2.4.1](https://github.com/kigster/bashmatic/tree/v2.4.1) (2021-07-09)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.0...v2.4.1)

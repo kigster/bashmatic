@@ -176,7 +176,7 @@ function .install.bash-install-if-needed() {
 function .install.git-sync() {
   is-verbose &&.puts "Checking if existing bashmatic folder is locally modified..."
 
-  ((bootstrap__skip_git_check)) && return
+  ((bootstrap__skip_git_check)) && return 0
 
   cd "${BASHMATIC_HOME}" >/dev/null
   [[ -d ".git" ]] || return
@@ -193,7 +193,7 @@ function .install.git-sync() {
     echo
     return 1
   else
-    git checkout -q master && git pull -q --rebase >/dev/null
+    git checkout -q "${bootstrap__git_branch}" && git pull -q --rebase >/dev/null
   fi
 
   cd - >/dev/null
@@ -319,6 +319,7 @@ export bootstrap__skip_git_check=0
 export bootstrap__skip_install=0
 export bootstrap__verbose=0
 export bootstrap__quiet=0
+export bootstrap__force=0
 export bootstrap__print=0
 export bootstrap__skip_on_login=0
 export bootstrap__bashmatic_home=${HOME}/.bashmatic
@@ -326,6 +327,7 @@ export bootstrap__bash_version="5.1-rc2"
 export bootstrap__bash_prefix="/usr/local"
 export bootstrap__sudoers_dir="/private/etc/sudoers.d"
 export bootstrap__git_method="https"
+export bootstrap__git_branch="master"
 
 function is-debug() {
   ((bootstrap__debug))
@@ -339,6 +341,10 @@ function is-quiet() {
   ((bootstrap__quiet))
 }
 
+function is-force() {
+  ((bootstrap__force))
+}
+
 function .install.usage() {
   printf "
 ${bldylw}USAGE: 
@@ -350,6 +356,8 @@ ${bldylw}DESCRIPTION:
 
 ${bldylw}FLAGS:${clr}
   -m, --git-method [git|https]  The default is 'https' unless your username is 'kig'.
+  -b, --git-branch [branch|tag] Use a concrete branch or a tag when installing, defaults to
+                                the 'master' branch.
 
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home/${HOME}/\~})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
@@ -372,8 +380,9 @@ ${bldylw}FLAGS:${clr}
 
   -p, --print-home              Print the identied canonical folder.
   -v, --verbose                 See additional output as bootstrap is running.
+  -f, --force                   Force a reinstall of any existing target.
   -q, --quiet                   See only.error output.
-  -d, --debug                   Turn on 'set -x' to see all commands running.
+  -d, --debug                   Turn on 'set -x' to see some of the commands running.
   -h, --help                    Show this help message.
 ${clr}\n\n"
 }
@@ -399,6 +408,10 @@ function .install.parse-opts() {
     -H | --bashmatic-home)
       shift
       export bootstrap__bashmatic_home="$1"
+      [[ -z ${bootstrap__bashmatic_home} ]] && {
+       .err "-H requires a valid argument."
+        exit 1
+      }
       shift
       ;;
     -m | --git-method)
@@ -410,6 +423,15 @@ function .install.parse-opts() {
       }
       shift
       ;;
+    -b | --git-branch)
+      shift
+      export bootstrap__git_branch="$1"
+      [[ -z ${bootstrap__git_branch} ]] && {
+       .err "-b flag requires either a tag or a branch name."
+        exit 1
+      }
+      shift
+      ;;
     -p | --print)
       shift
       export bootstrap__print=1
@@ -417,7 +439,6 @@ function .install.parse-opts() {
     -d | --debug)
       shift
       export bootstrap__debug=1
-      set -x
       ;;
     -v | --verbose)
       shift
@@ -440,6 +461,10 @@ function .install.parse-opts() {
     -l | --skip-on-login)
       shift
       export bootstrap__skip_on_login=1
+      ;;
+    -f | --force)
+      shift
+      export bootstrap__force=1
       ;;
     -h | -\? | --help)
       shift
@@ -476,11 +501,18 @@ function .install.download-and-install() {
   export BASHMATIC_HOME="${bootstrap__bashmatic_home}"
   local code=0
 
-  if [[ -d ${BASHMATIC_HOME} && -f ${BASHMATIC_HOME}/init.sh ]]; then
+  if [[ -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" && ${bootstrap__force} -eq 0 ]]; then
     .install.git-sync || return 1
   else
-    git clone -q ${BASHMATIC_URL} "${BASHMATIC_HOME}" >/dev/null
+    ((bootstrap__force)) && [[ ${PWD} != "${BASHMATIC_HOME}" && -d ${BASHMATIC_HOME} ]] && {
+      .wrn "Warning: removing existing ${BASHMATIC_HOME}..."
+      rm -rf "${BASHMATIC_HOME}"
+    }
+    ((bootstrap__debug)) && set -x
+    git clone --depth 1 \
+      --branch "${bootstrap__git_branch}" -q "${BASHMATIC_URL}" "${BASHMATIC_HOME}"
     code=$?
+    set +x
   fi
 
   if [[ ${code} -ne 0 ]]; then

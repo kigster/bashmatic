@@ -553,6 +553,7 @@ Utilities for managing the $PATH variable
 * [path.dirs.uniq()](#pathdirsuniq)
 * [path.dirs.delete()](#pathdirsdelete)
 * [path.uniq()](#pathuniq)
+* [PATH.uniqify()](#pathuniqify)
 * [path.append()](#pathappend)
 * [path.prepend()](#pathprepend)
 * [path.mutate.uniq()](#pathmutateuniq)
@@ -598,6 +599,10 @@ just prints the result to STDOUT
 
 Removes duplicates from the $PATH (or argument) and prints the
 results in the PATH format (column-joined). DOES NOT mutate the actual $PATH
+
+### `PATH.uniqify()`
+
+Using sed and tr uniq the PATH without re-sorting it.
 
 ### `path.append()`
 
