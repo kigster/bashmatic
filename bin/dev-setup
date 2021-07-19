@@ -15,11 +15,11 @@
 source "${BASHMATIC_HOME}/init.sh"
 source "${BASHMATIC_HOME}/lib/util.sh"
 source "${BASHMATIC_HOME}/lib/is.sh"
+source "${BASHMATIC_HOME}/lib/brew.sh"
 
 output.constrain-screen-width 100
 
-export DEFAULT_RUBY_VERSION="$(test -f .ruby-version && cat .ruby-version || echo '3.0.0')"
-
+export DEFAULT_RUBY_VERSION="$(test -f .ruby-version && cat .ruby-version || echo '3.0.1')" 
 export DEFAULT_POSTGRESQL_VERSION="latest"
 export DEFAULT_MYSQL_VERSION="11"
 

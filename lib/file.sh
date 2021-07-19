@@ -175,8 +175,16 @@ file.install-with-backup() {
   run "cp -v ${source} ${dest}"
 }
 
+# @description Returns date in the format YYYY-MM-DD
+#
 file.last-modified-date() {
-  stat -f "%Sm" -t "%Y-%m-%d" "$1"
+  if [[ $BASHMATIC_OS =~ darwin ]]; then
+    mod_time_fmt="-f %m"
+  else
+    mod_time_fmt="-c %Y"
+  fi
+  local epoch=$(stat ${mod_time_fmt} "$1")
+  time.epoch-to-local ${epoch}
 }
 
 file.last-modified-year() {
