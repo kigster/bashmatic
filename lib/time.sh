@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# vim: ft=bash
 #——————————————————————————————————————————————————————————————————————————————
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
@@ -116,6 +118,12 @@ time.epoch-to-local() {
   local epoch_ts=$1
   [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch)
   eval "$(time.date-from-epoch ${epoch_ts}) \"+%m/%d/%Y, %r\""
+}
+
+time.epoch-to-date() {
+  local epoch_ts=$1
+  [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch)
+  eval "$(time.date-from-epoch ${epoch_ts}) \"+%Y-%m-%d\""
 }
 
 time.epoch.minutes-ago() {

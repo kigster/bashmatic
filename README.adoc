@@ -145,7 +145,7 @@ If you have your SSH keys installed both locally, and the public key was configu
 
 Here is the complete list of options accepted by the installer:
 
-image::doc/img/bashmatic-install.png[Installer,width=99%,align=left]
+image::doc/img/bashmatic-install.png[Installer,width=80%,align=left]
 
 
 === Understanding what the Installer Does
@@ -267,7 +267,7 @@ $ bashmatic functions 1 | wc -l
 To install Bashmatic manually, follow these steps (feel free to change `BASHMATIC_HOME` if you like):
   
 
-=== Using Git
+==== Using Git
 
 [source,bash]
 ----
@@ -278,7 +278,7 @@ cd "${BASHMATIC_HOME}" && ./bin/bashmatic-install -v
 cd ->/dev/null
 ----
 
-=== Using Curl
+==== Using Curl
 
 Sometimes you may not be able to use `git` (I have seen issues ranging from local certificate mismatch to old versions of git, and more), but maybe able to download with `curl`. In that case, you can lookup the https://github.com/kigster/bashmatic/tags[latest tag] (substitute "v1.6.0" below with that tag), and then issue this command:
 
@@ -296,11 +296,11 @@ cd ${HOME}/.bashmatic && ./bin/bashmatic-install -v
 cd ~ >/dev/null
 ----
 
-=== Reloading Bashmatic
+==== Reloading Bashmatic
 
 You can always reload _Bashmatic®_ with `bashmatic.reload` function. This simply performs the sourcing of `${BASHMATIC_HOME}/init.sh`.
 
-=== Loading Bashmatic at Startup
+==== Loading Bashmatic at Startup
 
 When you install Bashmatic it automatically adds a hook to your `~/.bash_profile`, but if you are on ZSH you may need to add it manually (for now).
 
@@ -311,7 +311,7 @@ Add the following to your `~/.zshrc` file:
 
 NOTE: The entire library takes less than 300ms to load on ZSH and a recent MacBook Pro.
 
-== Discovering via the `Makefile`
+=== Discovering via the `Makefile`
 
 The top-level `Makefile` is mostly provided as a convenience as it encapsulates some common tasks used in development by Bashmatic Author(s), as well as others useful to anyone exploring Bashmatic.
 
@@ -360,7 +360,7 @@ I've added whitespaces around a set of common tasks you might find useful.
 
 Let's take a quick look at what's available here.
 
-=== Befriending the Makefile 
+==== Exploring the Makefile 
 
 Makefile is provided as a convenience for running most common tasks and to simplify running some more complex tasks that require remembering many arguments, such as `make setup`. You might want to use the Makefile for several reasons:
 
@@ -391,7 +391,7 @@ This particular make target runs `bin/dev-setup` script with the following actio
 
 NOTE: Running `make update` is is required for submitting any pull request.
 
-=== Docker Make Targets
+==== Docker Make Targets
 
 Bashmatic comes with a Dockerfile that can be used to run tests or jsut manually validate various functionality under linux, and possibly to experiment.
 
@@ -399,10 +399,36 @@ Run `make docker-build` to create an docker image `bashmatic:latest`.
 
 Run `make docker-run-bash` (or `...-zsh` or `...-fish`) to start a container with your favorite shell, and then validate if your functions work as expected.
 
-image::doc/img/docker-bash.png[Docker Build,width=80%,align=center]
+image::doc/img/docker-bash.png[Docker Build,width=80%,align=left]
 
 Note how this dropped me straight into the Linux environment prompt with Bashmatic already installed.
 
+=== Using Bashmatic In Your Scripts
+
+There are four helper functions to assist with embedding Bashmatic into a new Shell script:
+
+[source,bash]
+----
+❯ bashmatic.snippets.[TAB][TAB]
+bashmatic.snippets.copy-for-paste     
+bashmatic.snippets.print-for-install  
+bashmatic.snippets.vscode             
+bashmatic.snippets.vscode-overwrite
+----
+
+The last two are meant to be used with VSCode Snippets feature.
+
+The first one can be used as is. You run it, and it will copy Bashmatic Initialization in the clipboard. Start a new file, a paste it. 
+
+You will need to perform one global find/replace before this file is usable:
+
+[source,regex]
+:% s/\\\$/\$/g
+
+Run the above in VIM to replace `\$` with `$` and the file should be ready to go.
+
+
+'''
 
 == Examples of Bashmatic in Action  
 
@@ -417,9 +443,14 @@ Just look at this tiny, five-line script:
 [source,bash]
 ----
 #!/usr/bin/env bash
+# vim: ft=bash
 
+# Install & Load Bashmatics
+[[ -d "${HOME}/.bashmatic" ]] || \
+  bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q",
 source ${BASHMATIC_HOME}/init.sh
 
+# Start Using Bashmatic Helpers
 h2 "Installing ruby gem sym and brew package curl..." \
    "Please standby..."
 
@@ -429,7 +460,7 @@ gem.install "sym" && brew.install.package "curl" && \
 
 Results in this detailed and, let's be honest, _gorgeous_ ASCII output:
 
-image::doc/img/bashmatic-example.png[example,width=80%,align=center]
+image::doc/img/bashmatic-example.png[example,width=80%,align=left]
 
 Tell me you are not at all excited to start writing complex installation flows in BASH right away?
 
@@ -447,7 +478,7 @@ We provided an example script in link:examples/k8s-installer.sh[`examples/k8s-in
 
 Here is the output of running this script:
 
-image::doc/img/k8installer.png[K8 Minicube Installer,width=80%,align=center]
+image::doc/img/k8installer.png[K8 Minicube Installer,width=80%,align=left]
 
 Why do we think this type of installer is pretty awesome, compared to a silent but deadly shell script that "Jim-in-the-corner" wrote and now nobody understands?
 
@@ -472,7 +503,7 @@ NOTE: the script relies on Homebrew behind the scenes, and therefore would not w
 
 It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
-image::doc/img/dev-setup.png[Developer Setup,width=80%,align=center]
+image::doc/img/dev-setup.png[Developer Setup,width=80%,align=left]
 
 In the example below we'll use `dev-setup` script to install the following:
  
@@ -526,7 +557,7 @@ Just like with the regular `top` you can see the "top" resource-consuming proces
 
 Here is the pixelated screenshot of `dbtop` running against two live databases:
 
-image::doc/img/dbtop.png[DBTop Example,width=80%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
+image::doc/img/dbtop.png[DBTop Example,width=80%,align=left,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
 
 In order for this to work, you must first define database connection parameters in a YAML file located at the following PATH: `~/.db/database.yml`.
 
@@ -581,7 +612,7 @@ You can configure the following settings for `db top`:
 
 If you run `db` without any arguments, or with `-h` you will see the following:
 
-image::doc/img/db.png[db usage,border=2,width=80%,align=center]
+image::doc/img/db.png[db usage,border=2,width=80%,align=left]
 
 As you might notice, there is an ever-growing list of "actions" — the sub-commands to the `db` script.
 
@@ -589,11 +620,11 @@ As you might notice, there is an ever-growing list of "actions" — the sub-comm
 
 You can view the full list by passing `--commands` flag:
 
-image::doc/img/db-commands.png[db usage,border=2,width=80%,align=center]
+image::doc/img/db-commands.png[db usage,border=2,width=80%,align=left]
 
 Altgernatively, here is the `--examples` view:
 
-image::doc/img/db-examples.png[db examples,border=2,width=80%,align=center]
+image::doc/img/db-examples.png[db examples,border=2,width=80%,align=left]
 
 ==== Sub-Command `db connections`
 
@@ -606,7 +637,7 @@ db connections
 db --connections
 ----
 
-image::doc/img/db-connections.png[db usage,border=2,width=80%,align=center]
+image::doc/img/db-connections.png[db usage,border=2,width=80%,align=left]
 
 ==== Sub-Command `db pga` (eg. `pg_activity`)
 
@@ -614,7 +645,7 @@ For instance, a recent addition is the ability to invoke https://github.com/dali
 
 You can invoke `db pga <connection>` where the connection is taken from the database connection definitions shown above. This is what `pg-activity` looks like in action:
 
-image::doc/img/db-pga.png[pg_activity,border=2,width=80%,align=center]
+image::doc/img/db-pga.png[pg_activity,border=2,width=80%,align=left]
 
 ==== Other Sub-Commands
 
@@ -664,7 +695,7 @@ The script is meant to be run against one database, and perform a table-level op
 
 Below is the screenshot of the help screen from this script:
 
-image::doc/img/bashmatic-tablet.png[Tablet Script in Action,border=2,width=80%,align=center]
+image::doc/img/bashmatic-tablet.png[Tablet Script in Action,border=2,width=80%,align=left]
 
 == Usage
 
@@ -997,7 +1028,7 @@ success "installed Sym version $(gem.version sym)"
 
 When you run the above script, you shyould seee the following output:
 
-image::doc/img/bashmatic-example.png[example,align=center,width=80%]
+image::doc/img/bashmatic-example.png[example,align=left,width=80%]
 
 ==== Shortening URLs and Github Access
 
@@ -1364,7 +1395,7 @@ The script can be run:
 
 The script accepts a bunch of CLI arguments and flags shown below:
 
-image::doc/img/specs.png[example,align=center,width=60%]
+image::doc/img/specs.png[example,align=left,width=60%]
 
 
 ==== Run Tests Sequentially using the `Makefile`
@@ -1389,7 +1420,7 @@ If you invoke it with this flag, the script will install **GNU Parallel** utilit
 
 Below is the screenshot of the tests running with the parallel flag. The script automatically detects that my machine has 16 CPU cores and uses this as a parallization factor.
 
-image::doc/img/specs-parallel.png[example,align=center,width=60%]
+image::doc/img/specs-parallel.png[example,align=left,width=60%]
 
 
 

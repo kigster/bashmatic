@@ -9,8 +9,8 @@
 __bashmatic_warning_notification=${HOME}/.bashmatic/.developer-warned
 
 bashmatic.cd-into() {
- [[ -d ${BASHMATIC_HOME} ]] || return 1
- cd "${BASHMATIC_HOME}"
+  [[ -d ${BASHMATIC_HOME} ]] || return 1
+  cd "${BASHMATIC_HOME}" || exit 1
 }
 
 # @descripion True if .envrc.local file is present. We take it as a sign
@@ -63,7 +63,7 @@ bashmatic.functions-from() {
     sedx 's/\(\) *\{.*$//g' |
     tr -d '()' |
     sedx '/^ *$/d' |
-    eval  "${GrepCommand} '^(_|\.)' -v" |
+    eval "${GrepCommand} '^(_|\.)' -v" |
     sort |
     uniq |
     columnize "$@"
@@ -99,7 +99,6 @@ bashmatic.bash.exit-unless-version-four-or-later() {
     exit 1 >/dev/null
   }
 }
-
 
 bashmatic.source() {
   local __path="${BASHMATIC_LIBDIR}"
@@ -196,39 +195,86 @@ export __bashmatic_auto_update_help_file="${BASHMATIC_HOME}/.auto-update-disable
 
 function bashmatic.auto-update() {
   # Run in a subshell
+  [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+
   (
     unset -f _direnv_hook >/dev/null 2>&1
     [[ ${Bashmatic__Test} -eq 1 ]] && return 0
     local pwd="$(pwd -P)"
-    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}"
+    cd "${BASHMATIC_HOME}" || exit 1
     git.configure-auto-updates
     git.repo-is-clean || {
       output.is-ssh || {
         output.is-terminal && bashmatic.auto-update-error
-        cd "${pwd}" >/dev/null
+        cd "${pwd}" >/dev/null || exit 1
         return 1
       }
     }
 
     git.update-repo-if-needed
-    cd "${pwd}" >/dev/null
+    cd "${pwd}" >/dev/null || exit 1
   )
 }
 
 function bashmatic.auto-update-error() {
   bashmatic.is-developer || return
-  file.exists-and-newer-than ${__bashmatic_warning_notification} 10 || return 
-  touch ${__bashmatic_warning_notification}
+  file.exists-and-newer-than "${__bashmatic_warning_notification}" 10 || return
+  touch "${__bashmatic_warning_notification}"
 
   if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
     cat "${__bashmatic_auto_update_help_file}" >&2
   else
     output.constrain-screen-width 60
     box.black-on-yellow \
-        "${bldwht}Warning! BASHMATIC_HOME contains local modifications." \
-        "Automatic update is disabled until git state is clean again." |
-        tee -a "${__bashmatic_auto_update_help_file}" >&2
+      "${bldwht}Warning! BASHMATIC_HOME contains local modifications." \
+      "Automatic update is disabled until git state is clean again." |
+      tee -a "${__bashmatic_auto_update_help_file}" >&2
   fi
 }
 
+# @description Prints to STDOUT BASH code required to install and initialize Bashmatic.
+#   This can be used in your custom BASH scripts to take advantage of Bashatmic.
+# @example
+#   touch "my-setup.sh"
+#   bashmatic.install.print >> "my-setup"
 
+function bashmatic.snippets.vscode() {
+  local shellsnippets="${HOME}/Library/Application Support/Code/User/snippets/shellscript.json"
+  if [[ -f ${shellsnippets} ]] && grep -q "!bashmatic" "${shellsnippets}"; then
+    info "It appears that your snippets file already has !bashmatic macro."
+    info "To replace your installed VSCode Snippets file, run:"
+    info "  • ${bldylw}bashmatic.snippets.vscode-overwrite"
+    info "To copy bashmatic initialization code into your clipboard, run:"
+    info "  • ${bldylw}bashmatic.snippets.copy"
+  else
+    cat "${BASHMATIC_HOME}/doc/snippets/shellscript.json" >>"${shellsnippets}"
+  fi
+}
+
+# @description Installs snippets file for VSCode so that bashmatic can be
+#   used and installed via the Snippets feature.
+function bashmatic.snippets.vscode-overwrite() {
+  local shellsnippets="${HOME}/Library/Application Support/Code/User/snippets/shellscript.json"
+  cp -v "${BASHMATIC_HOME}/doc/snippets/shellscript.json" "${shellsnippets}"
+}
+
+# @description Prints to STDOUT BASH code required to install and initialize Bashmatic.
+#   This can be used in your custom BASH scripts to take advantage of Bashatmic.
+# @example
+#   touch "my-setup.sh"
+#   bashmatic.snippets.print-for-install>> "my-setup"
+function bashmatic.snippets.print-for-install() {
+  # shellcheck disable=SC2002
+  cat "${BASHMATIC_HOME}/doc/snippets/shellscript.json" | jq -r '.shebang_bashmatic_author.body | join("\n")'
+}
+
+# @description Copies bashmatic installer code to the clipboard.
+#   Use Paste to insert it into your script.
+# @example
+#   bashmatic.install.copy
+#   vi my-setup.sh
+#   Cmd-V # to paste
+function bashmatic.snippets.copy-for-paste() {
+  # shellcheck disable=SC2002
+  bashmatic.snippets.print-for-install | pbcopy
+}

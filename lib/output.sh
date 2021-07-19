@@ -31,6 +31,10 @@ function output.constrain-screen-width() {
   return 0
 }
 
+function bashmatic.ui.set-width() {
+  is.numeric "$1" && output.constrain-screen-width "$1"
+}
+
 function output.unconstrain-screen-width() {
   export LibOutput__WidthDetectionStrategy="unconstrained"
   return 0

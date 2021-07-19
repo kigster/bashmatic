@@ -1,0 +1,66 @@
+{
+    "shebang_author": {
+        "prefix": "#! shebang for BASH scripts",
+        "body": [
+            "#!/usr/bin/env bash",
+            "# vim: ft=bash:",
+            "",
+            "# @author:\tKonstantin Gredeskoul",
+            "# @since: \t${CURRENT_MONTH}/${CURRENT_DATE}/${CURRENT_YEAR}",
+            "",
+            "# @description ${1:description of the file}",
+            ""
+        ],
+        "description": "Print #!/usr/bin/env bash with VIM syntax"
+    },
+    "shebang_bashmatic_author": {
+        "prefix": "#! shebang with bashmatic and author",
+        "body": [
+            "#!/usr/bin/env bash",
+            "# vim: ft=bash:",
+            "",
+            "# @author:\tKonstantin Gredeskoul, https://github.com/kigster, https://kig.re",
+            "# @since: \t${CURRENT_MONTH}/${CURRENT_DATE}/${CURRENT_YEAR}",
+            "",
+            "# @description ${1:description of the file}",
+            "",
+            "[[ -d \"\\${HOME}/.bashmatic\" ]] || bash -c \"\\$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q\"",
+            "[[ -f \"\\${HOME}/.bashmatic/init.sh\" ]] || { echo \"Unable to find Bashmatic's init.sh after an attempted installation.\"; exit 1; }",
+            " ",
+            "# shellcheck source=\"\\${HOME}/.bashmatic/init.sh\"",
+            "# shellcheck disable=SC1091",
+            ". \"\\${HOME}/.bashmatic/init.sh\"",
+            "#——————————————————————————————————————————————————————————————————————————"
+        ],
+        "description": "Print #!/usr/bin/env bash with VIM syntax"
+    },
+    "shebang_bashmatic": {
+        "prefix": "!shebang with bashmatic",
+        "body": [
+            "#!/usr/bin/env bash",
+            "# vim: ft=bash",
+            "#",
+            "# Load Bashmatic Framework for ease of development and user interaction.",
+            "# For more information, please run one of the below messages:",
+            "#",
+            "# Read PDF Documentation:",
+            "# • curl -fsSL https://bashmatic-pdf.re1.re/ -o bashmatic.pdf; open bashmatic.pdf",
+            "#",
+            "# Read the Github README:",
+            "# • open https://bashmatic-readme.re1.re",
+            "#",
+            "# © 2015-2021 Konstantin Gredeskoul, MIT License.",
+            "#",
+            "# You can pass many flasgs to bashmatic-install functions to control its behavior.",
+            "# See https://bashmatic-install.re1.re/ for more info.", 
+            "#",
+            " ",
+            "[[ -d \"\\${HOME}/.bashmatic\" ]] || bash -c \"\\$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q\"",
+            "[[ -f \"\\${HOME}/.bashmatic/init.sh\" ]] || { echo \"Unable to find Bashmatic's init.sh after an attempted installation.\"; exit 1; }",
+            ". \"\\${HOME}/.bashmatic/init.sh\"",
+            " "
+        ],
+        "description": "Loads Bashmatic Framework with comments and safety checks."
+    }
+}
+
