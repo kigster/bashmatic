@@ -100,8 +100,8 @@ function .usage.flags() {
 # TODO: ensure this works across file sourcing
 function .usage-cache-file() {
   local script_name="${BASH_SOURCE[-1]}"
-  local script_dir="$(dirname ${script_name})"
-  local script_base="$(basename ${script_name})"
+  local script_dir="$(dirname "${script_name}")"
+  local script_base="$(basename "${script_name}")"
   local script_usage_cache="${script_dir}/.${script_base}"
   printf "%s" "${script_usage_cache}"
 }

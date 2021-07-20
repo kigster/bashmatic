@@ -57,3 +57,31 @@ set -e
   [[ "${output}" =~ "LibRun__Verbose" ]]
 }
 
+@test "! set.dry-run.on && is.dry-run.on " {
+  set -e
+  ! is.dry-run.on
+  set.dry-run.on
+  is.dry-run.on
+}
+
+@test "set.dry-run.on && is.dry-run.on" {
+  set -e
+  ! is.dry-run.on
+  set.dry-run.on
+  is.dry-run.on && is.dry-run.on
+}
+
+@test "set.dry-run.off && ! is.dry-run.on " {
+  set -e
+  ! is.dry-run.on
+  set.dry-run.off
+  is.dry-run.off && is.dry-run.off
+}
+
+@test "set.dry-run.off && ! is.dry-run.on" {
+  set -e
+  ! is.dry-run.on
+  set.dry-run.off && ! is.dry-run.on
+  set.dry-run.on && ! is.dry-run.off && is.dry-run.on
+}
+

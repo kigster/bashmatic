@@ -102,7 +102,42 @@ ____run.set.next.continue-on-error() {
   export LibRun__AbortOnError=${False}
 }
 
-### Turns on DRY-RUN when comamnds are printed but not executed.
+# Turns on DRY-RUN when comamnds are printed but not executed.
+
+# @description Returns 0 when dry-run flag was set, 1 otherwise.
+# @note: run() function can be safely called when dry-run is active.
+# @example:
+#     set.dry-run.on
+#     is.dry-run.on || rm -f ${temp}
+function is.dry-run.on() {
+  ((LibRun__DryRun))
+}
+
+# @description Returns 0 when dry-run flag was set, 1 otherwise.
+# @note: run() function can be safely called when dry-run is active.
+# @example:
+#     set.dry-run.off
+#     is.dry-run.on || rm -f ${temp}
+function is.dry-run.off() {
+  ((LibRun__DryRun)) || return 0
+  return 1
+}
+
+# @description Returns 0 when dry-run flag was set, 1 otherwise.
+# @example:
+#     set.dry-run.on
+#     is.dry-run.on || run "ls -al"
+function set.dry-run.on() {
+  export LibRun__DryRun=1
+}
+
+# @description Returns 1 when dry-run flag was set, 0 otherwise.
+# @example:
+#     set.dry-run.on
+#     is.dry-run.on || run "ls -al"
+function set.dry-run.off() {
+  export LibRun__DryRun=0
+}
 
 ____run.set.all.dry-run-on() {
   export LibRun__DryRun=${True}

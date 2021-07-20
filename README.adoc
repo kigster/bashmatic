@@ -79,7 +79,7 @@ You can also download the **https://github.com/kigster/bashmatic/blob/master/REA
 
 * BASH version 4+
 * BASH version 3 (partial compatibility, some functions are disabled)
-* ZSH – as of recent update, Bashmatic is almost 100% compatible with ZSH.   
+* ZSH – as of recent update, Bashmatic is almost 90% compatible with ZSH.   
 
 **Not  Supported**
 
@@ -429,7 +429,7 @@ gem.install "sym" && brew.install.package "curl" && \
 
 Results in this detailed and, let's be honest, _gorgeous_ ASCII output:
 
-image::doc/img/bashmatic-example.png[example,width=80%,align=center]
+image::doc/img/bashmatic-example.png[example,width=90%,border=2]
 
 Tell me you are not at all excited to start writing complex installation flows in BASH right away?
 
