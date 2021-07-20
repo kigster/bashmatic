@@ -3,7 +3,7 @@
 
 export EXPIRE_USAGE_CACHE=${EXPIRE_USAGE_CACHE:-"0"}
 
-function .usage.setup() {
+function __usage_setup() {
   export __color_fg=${1:-${txtylw}}
   export __color_bdr=${2:-${txtblu}}
   export __color_cmd=${3:-${txtgrn}}
@@ -15,20 +15,20 @@ function .usage.setup() {
   export LibUsage__NoFlagsIndent=15
 }
 
-function .usage.begin() {
-  .usage.setup "$@"
+function __usage_begin() {
+  __usage_setup "$@"
   .output.box-top "${__color_bdr}"
 }
 
-function .usage.title() {
+function __usage_title() {
   for line in "$@"; do
-    .output.boxed-text "${__color_bdr}" "${__color_fg}" "${__color_headers}$(.usage.hdr description) ${__color_fg}${line}"
+    .output.boxed-text "${__color_bdr}" "${__color_fg}" "${__color_headers}$(__usage_hdr description) ${__color_fg}${line}"
   done
   .output.box-separator "${__color_bdr}"
 }
 
-function .usage.command() {
-  .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr usage) ${__color_cmd}$1"
+function __usage_command() {
+  .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(__usage_hdr usage) ${__color_cmd}$1"
   shift
 
   for line in "$@"; do
@@ -37,7 +37,7 @@ function .usage.command() {
   .output.box-separator "${__color_bdr}"
 }
 
-function .usage.hdr() {
+function __usage_hdr() {
   printf "%-15s " "$*:" | tr 'a-z' 'A-Z'
 }
 
@@ -46,7 +46,7 @@ function usage.set-min-flag-len() {
   export LibUsage__MinFlagLen="${1}"
 }
 
-function .usage.flags() {
+function __usage_flags() {
   local -a flags=("$@")
   local line=""
   local n=0
@@ -74,7 +74,7 @@ function .usage.flags() {
   fi
 
   local n=0
-  .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr flags)"
+  .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(__usage_hdr flags)"
 
   for arg in "$@"; do
     if (($(($n % 2)) == 0)); then
@@ -108,7 +108,7 @@ function .usage-cache-file() {
   printf "%s" "${script_usage_cache}"
 }
 
-function .usage.box() {
+function __usage_box() {
   local command
   local title
 
@@ -122,10 +122,10 @@ function .usage.box() {
 
   shift
 
-  .usage.begin
-  .usage.command "${command}"
-  [[ -n ${title} ]] && .usage.title "${title}"
-  [[ -n "$*" ]] && .usage.flags "$@"
+  __usage_begin
+  __usage_command "${command}"
+  [[ -n ${title} ]] && __usage_title "${title}"
+  [[ -n "$*" ]] && __usage_flags "$@"
 }
 
 # @description Prints out the USAGE information for a command.
@@ -143,18 +143,18 @@ function usage-box() {
   if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
     cat "${backup}"
   else
-    .usage.box "$@" | tee ${backup}
+    __usage_box "$@" | tee ${backup}
   fi
 }
 
 function usage-box.section() {
   printf "${__color_headers}"
-  .usage.hdr "$*"
+  __usage_hdr "$*"
 }
 
 function usage-box.sub-section() {
   .output.box-separator "${__color_bdr}"
-  .output.boxed-text "${__color_bdr}" "${__color_sub_headers}" "$(.usage.hdr "$1")"
+  .output.boxed-text "${__color_bdr}" "${__color_sub_headers}" "$(__usage_hdr "$1")"
 }
 
 # Help Helpers that are typically online lineers.

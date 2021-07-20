@@ -85,7 +85,7 @@ export commands_completed=0
     export LibRun__LastExitCode=
     .run.exec "$@"
 
-    return ${LibRun__LastExitCode}
+    return "${LibRun__LastExitCode}"
   fi
 }
 

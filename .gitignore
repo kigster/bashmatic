@@ -1,24 +1,19 @@
-bin/bats
+.bundle
 .bats-*
+.envrc.local
+.fonts/
+.idea/
+.last-rebase
+.ruby-version
+*.pdf.reduced
+**/.DS_Store
+/Gemfile.lock
 /test/tmp/
 /test/version_tmp/
 /tmp/
-.last-rebase
-test/all.bats
-.idea/
+bin/bats
+hello/
 libexec/
 share/
-hello/
-/Gemfile.lock
 shellcheck.log
-**/.DS_Store
-.envrc.local
-.fonts/
-*.pdf.reduced
-<<<<<<< HEAD
-.bundle/
-doc/USAGE.adoc
-.developer-warned
-=======
-.ruby-version
->>>>>>> 3f14443 (WIP: dd-local)
+test/all.bats
