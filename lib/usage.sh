@@ -36,12 +36,11 @@ function .usage.begin() {
   printf "%-15s " "$*:" | tr 'a-z' 'A-Z'
 }
 
-
 export LibUsage__MinFlagLen=14
 export LibUsage__NoFlagsIndent=15
 
 usage.set-min-flag-len() {
-export LibUsage__MinFlagLen="${1}"
+  export LibUsage__MinFlagLen="${1}"
 }
 
 function .usage.flags() {
@@ -55,7 +54,7 @@ function .usage.flags() {
 
   # First we compute the length of the longest flag, and longest flag
   # description. Yes, I know — total overkill.
-  for arg in "$@"; do
+  for arg in "${flags[@]}"; do
     if (($(($n % 2)) == 0)); then
       l=${#arg}
       [[ $l -gt ${l_flags} ]] && l_flags=$l
@@ -180,4 +179,80 @@ function help-comment() {
 
 function help-details() {
   printf "    ${txtblu}$*\n"
+}
+
+# @description
+#     This is a massive hack and I am ashemed to have written it.
+#     With that out of the way, here we go. This command generates a pretty usage box
+#     for a tool or another command.
+#
+# @example
+#     usage-widget [-]<width> \                         # box width. If it starts with "-" forces cache wipe.
+#         "command [flags] <arg1 ... >" \               # <-- USAGE
+#         "This command is beyond description." \       # <-- DESCRIPTION
+#         "[®]string" \                                 # <-- This and subsequent lines may optionally start with "®" symbol,
+#         "[®]string" \                                 #     which will turn them into sub-headings:
+#         "[®]string" \
+#         "[®]string"
+#
+# @example
+#      usage-widget 90 \
+#         "command [flags] <arg1 ... >" \
+#         "This command is beyond description." \
+#         "®examples" \
+#         "Some examples will follow" \
+#         "And others won't."
+#     ┌──────────────────────────────────────────────────────────────────────────────────────┐
+#     │  USAGE:           command [flags] <arg1 ... >                                        │
+#     ├──────────────────────────────────────────────────────────────────────────────────────┤
+#     │  DESCRIPTION:     This command is beyond description.                                │
+#     ├──────────────────────────────────────────────────────────────────────────────────────┤
+#     │                                                                                      │
+#     │  EXAMPLES:                                                                           │
+#     │                   Some examples will follow                                          │
+#     │                   And others won't.                                                  │
+#     └──────────────────────────────────────────────────────────────────────────────────────┘
+#
+function usage-widget() {
+  local width="$1"
+  local cache_wipe=0
+
+  [[ ${width} =~ ^- ]] && {
+    cache_wipe=1
+    width=${width:1}
+  }
+
+  is.numeric "${width}" && {
+    shift
+    bashmatic.set-widget-width-to "${width}"
+  }
+
+  ((cache_wipe)) && rm -f "$(.usage-cache-file)"
+
+  local -a args=("$@")
+  ((DEBUG)) && {
+    h1 "Got total of ${#args[@]} arguments."
+  }
+
+  local -a details
+  local left_space
+  left_space="$(cursor.right 1) "
+
+  if [[ ${#args[@]} -gt 2 ]]; then
+    for i in $(seq 2 50); do
+      [[ -z ${args[$i]} ]] && break
+
+      if [[ ${args[$i]} =~ ^® ]]; then
+        details+=("$(cursor.left 4)$(usage-box.section "${args[$i]/®/}")")
+        details+=(" ")
+      else
+        details+=("${left_space}")
+        details+=("$(cursor.left 6)${args[$i]}")
+      fi
+    done
+  fi
+
+  usage-box "${args[0]} © ${args[1]}" \
+    "$(cursor.up 1; cursor.left 5)" "$(cursor.right 10)" \
+    "${details[@]}"
 }
