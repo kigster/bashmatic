@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.4.3](https://github.com/kigster/bashmatic/tree/v2.4.3) (2021-07-23)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.2...v2.4.3)
+
+**Merged pull requests:**
+
+- New function "usage-widget", version bump to 2.4.3 [\#79](https://github.com/kigster/bashmatic/pull/79) ([kigster](https://github.com/kigster))
+
 ## [v2.4.2](https://github.com/kigster/bashmatic/tree/v2.4.2) (2021-07-16)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.1...v2.4.2)

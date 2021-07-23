@@ -10,6 +10,7 @@
 == Bashmatic Modules
 
 * xref:#module-.audio[.audio]
+* xref:#module-.usage[.usage]
 * xref:#module-7z[7z]
 * xref:#module-array[array]
 * xref:#module-asciidoc[asciidoc]
@@ -83,6 +84,9 @@
 
 
 === Module `.audio`
+
+
+=== Module `.usage`
 
 
 === Module `7z`
@@ -6512,6 +6516,17 @@ ascii-pipe ()
 
 ----
 
+==== `bashmatic.set-widget-width-to`
+
+[source,bash]
+----
+bashmatic.set-widget-width-to () 
+{ 
+    output.constrain-screen-width "$@"
+}
+
+----
+
 ==== `center`
 
 [source,bash]
@@ -12141,6 +12156,48 @@ usage-box.sub-section ()
 { 
     .output.box-separator "${__color_bdr}"
     .output.boxed-text "${__color_bdr}" "${__color_sub_headers}" "$(.usage.hdr "$1")"
+}
+
+----
+
+==== `usage-widget`
+
+[source,bash]
+----
+usage-widget () 
+{ 
+    local width="$1"
+    local cache_wipe=0
+    [[ ${width} =~ ^- ]] && { 
+        cache_wipe=1
+        width=${width:1}
+    }
+    is.numeric "${width}" && { 
+        shift
+        bashmatic.set-widget-width-to "${width}"
+    }
+    ((cache_wipe)) && rm -f "$(.usage-cache-file)"
+    local -a args=("$@")
+    ((DEBUG)) && { 
+        h1 "Got total of ${#args[@]} arguments."
+    }
+    local -a details
+    local left_space
+    left_space="$(cursor.right 1) "
+    if [[ ${#args[@]} -gt 2 ]]; then
+        for i in $(seq 2 50)
+        do
+            [[ -z ${args[$i]} ]] && break
+            if [[ ${args[$i]} =~ ^® ]]; then
+                details+=("$(cursor.left 4)$(usage-box.section "${args[$i]/®/}")")
+                details+=(" ")
+            else
+                details+=("${left_space}")
+                details+=("$(cursor.left 6)${args[$i]}")
+            fi
+        done
+    fi
+    usage-box "${args[0]} © ${args[1]}" "$(cursor.up 1; cursor.left 5)" "$(cursor.right 10)" "${details[@]}"
 }
 
 ----

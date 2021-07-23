@@ -1,6 +1,6 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
-:author: Version 2.4.2
+:author: Version 2.4.3
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
