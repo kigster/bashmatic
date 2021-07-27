@@ -382,7 +382,7 @@ ${bldylw}FLAGS:${clr}
   -v, --verbose                 See additional output as bootstrap is running.
   -f, --force                   Force a reinstall of any existing target.
   -q, --quiet                   See only.error output.
-  -d, --debug                   Turn on 'set -x' to see some of the commands running.
+  -d, --debug                   Print the values of configuration variables for debugging.
   -h, --help                    Show this help message.
 ${clr}\n\n"
 }
@@ -487,9 +487,9 @@ function .install.parse-opts() {
     esac
   done
 
-  if [[ $bootstrap__git_method -eq "git" ]]; then
+  if [[ "${bootstrap__git_method}" == "git" ]]; then
     export BASHMATIC_URL="git@github.com:kigster/bashmatic"
-  elif [[ $bootstrap__git_method -eq "https" ]]; then
+  elif [[ "${bootstrap__git_method}" == "https" ]]; then
     export BASHMATIC_URL="https://github.com/kigster/bashmatic"
   else
     .err "Invalid git method, please set to either git or https."
@@ -508,9 +508,10 @@ function .install.download-and-install() {
       .wrn "Warning: removing existing ${BASHMATIC_HOME}..."
       rm -rf "${BASHMATIC_HOME}"
     }
-    ((bootstrap__debug)) && set -x
-    git clone --depth 1 \
-      --branch "${bootstrap__git_branch}" -q "${BASHMATIC_URL}" "${BASHMATIC_HOME}"
+    ((bootstrap__debug)) && run.inspect-vars "bootstrap__"
+    local cmd="git clone --depth 1 --branch \"${bootstrap__git_branch}\" -q \"${BASHMATIC_URL}\" \"${BASHMATIC_HOME}\""
+    ((bootstrap__verbose)) && run "${cmd}"
+    ((bootstrap__verbose)) || eval "${cmd} >/dev/null"
     code=$?
     set +x
   fi
