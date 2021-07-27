@@ -508,10 +508,9 @@ function .install.download-and-install() {
       .wrn "Warning: removing existing ${BASHMATIC_HOME}..."
       rm -rf "${BASHMATIC_HOME}"
     }
-    ((bootstrap__debug)) && run.inspect-vars "bootstrap__"
     local cmd="git clone --depth 1 --branch \"${bootstrap__git_branch}\" -q \"${BASHMATIC_URL}\" \"${BASHMATIC_HOME}\""
-    ((bootstrap__verbose)) && run "${cmd}"
-    ((bootstrap__verbose)) || eval "${cmd} >/dev/null"
+    ((bootstrap__verbose)) && eval "set -ex; ${cmd}; set +ex"
+    ((bootstrap__verbose)) || eval "${cmd}" >/dev/null
     code=$?
     set +x
   fi
