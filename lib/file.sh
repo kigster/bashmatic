@@ -90,6 +90,11 @@ file.gsub() {
   run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
 }
 
+# @description A super verbose shortcut to [[ file -nt file2 ]]
+function file.first-is-newer-than-second() {
+  [[ "$1" -nt "$2" ]]
+}
+
 # Usage:
 #   (( $(file.exists-and-newer-than "/tmp/file.txt" 30) )) && echo "Yes!"
 file.exists-and-newer-than() {
