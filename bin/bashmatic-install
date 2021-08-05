@@ -421,6 +421,7 @@ function .install.parse-opts() {
        .err "Invalid usage of -m, expected either https or git."
         exit 1
       }
+      [[ ${bootstrap__git_method} == "https" ]] && export bootstrap__skip_git_check=1
       shift
       ;;
     -b | --git-branch)
