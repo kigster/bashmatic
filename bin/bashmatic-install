@@ -204,7 +204,7 @@ function .install.git-sync() {
 
 function .install.linux-requirements() {
   [[ ${bootstrap__git_method} == "https" ]] && return 0
-  
+
   command -v git >/dev/null || {
     apt-get install git -yqq || sudo apt-get install git -yqq
     exit 1
@@ -555,7 +555,7 @@ function .install.current-shell() {
   }
   (
     # deterministicaly figure out our currently loaded shell.
-    current_shell="$(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | cut -d ' ' -f 1 | sed -E 's/-//g')"
+    current_shell="$(basename $(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | cut -d ' ' -f 1 | sed -E 's/-//g'))"
     export current_shell
     if [[ "${current_shell}" =~ zsh ]]; then
       command -v zsh
