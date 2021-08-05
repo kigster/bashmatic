@@ -203,9 +203,10 @@ function .install.git-sync() {
 #——————————————————————————————————————————————————————————————————————————————————————
 
 function .install.linux-requirements() {
+  [[ ${bootstrap__git_method} == "https" ]] && return 0
+  
   command -v git >/dev/null || {
-   .err "Please install git on your system first." \
-      "Perhaps try apt-get install git?"
+    apt-get install git -yqq || sudo apt-get install git -yqq
     exit 1
   }
 }
@@ -561,7 +562,7 @@ function .install.current-shell() {
     elif [[ "${current_shell}" =~ bash ]]; then
       command -v bash
     else
-    .wrn "Detected an unsupported shell type: ${current_shell}" >&2
+      .wrn "Detected an unsupported shell type: ${current_shell}" >&2
       command -v "${current_shell}"
     fi
   ) | tr -d ' '
