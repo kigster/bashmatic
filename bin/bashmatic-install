@@ -20,7 +20,6 @@ declare -a BREW_PACKAGES
 export CHOWN_DIRS=(/usr/local/* /Library/Ruby /Library/Python)
 export BREW_PACKAGES=(coreutils gnu-sed)
 
-
 # Constants
 export clr='\e[0m' # Text Reset
 
@@ -545,6 +544,9 @@ function .install.current-shell() {
     # Perhaps we are in a Docker container.
     export PATH="${PATH}:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/bin"
   fi
+
+  [[ -z ${LC_CTYPE} ]] && export LC_CTYPE=C 
+  [[ -z ${LANG} ]] && export LANG=C
 
   [[ -n ${current_shell} ]] && /bin/ps -p $$ -o args | grep -q "${current_shell}" && {
     printf -- '%s' "${current_shell/ /}" | tr -d ' '
