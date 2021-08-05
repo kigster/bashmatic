@@ -203,12 +203,11 @@ function .install.git-sync() {
 #——————————————————————————————————————————————————————————————————————————————————————
 
 function .install.linux-requirements() {
-  [[ ${bootstrap__git_method} == "https" ]] && return 0
-
-  command -v git >/dev/null || {
-    apt-get install git -yqq || sudo apt-get install git -yqq
-    exit 1
-  }
+  for package in unzip git curl; do
+    command -v "${command}" >/dev/null || {
+      apt-get install "${command}" -yqq || sudo apt-get install "${command}" -yqq
+    }
+  done
 }
 
 #——————————————————————————————————————————————————————————————————————————————————————
