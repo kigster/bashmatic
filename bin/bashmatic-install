@@ -540,13 +540,19 @@ function .install.run-not-source() {
 }
 
 function .install.current-shell() {
-  [[ -n ${current_shell} ]] && /bin/ps -p $$ -o args | /usr/bin/grep -q "${current_shell}" && {
+  if [[ -z $(which grep) || -z $(which sed) || -z $(which cut) ]]; then
+    # something is seriosly screwy with the system's PATH. 
+    # Perhaps we are in a Docker container.
+    export PATH="${PATH}:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/bin"
+  fi
+
+  [[ -n ${current_shell} ]] && /bin/ps -p $$ -o args | grep -q "${current_shell}" && {
     printf -- '%s' "${current_shell/ /}" | tr -d ' '
     return 0
   }
   (
     # deterministicaly figure out our currently loaded shell.
-    current_shell="$(/bin/ps -p $$ -o args | /usr/bin/grep -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | /usr/bin/sed -E 's/-//g')"
+    current_shell="$(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | cut -d ' ' -f 1 | sed -E 's/-//g')"
     export current_shell
     if [[ "${current_shell}" =~ zsh ]]; then
       command -v zsh

@@ -187,7 +187,7 @@ bashmatic.setup() {
 
   output.unconstrain-screen-width
 
-  [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+  [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update 1>&2 2>/dev/null
 
   return 0
 }
