@@ -5,7 +5,7 @@ export GREP_CMD
 GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
 
 # Save the value of $DEBUG, but convert it to 1 in case its not.
-export __debug="${DEBUG}"
+export __debug="${BASHMATIC_DEBUG}"
 [[ -n ${__debug} ]] && export __debug=1
 
 for _path in ${HOME}/.rbenv/shims ${HOME}/.pyenv/shims /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do

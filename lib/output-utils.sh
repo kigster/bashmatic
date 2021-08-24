@@ -123,19 +123,19 @@ function columnize() {
 }
 
 function dbg-on() {
-  export USER_DEBUG=$(time.now.db)
+  export BASHMATIC_DEBUG=$(time.now.db)
 }
 
 function dbg-off() {
-  unset USER_DEBUG
+  unset BASHMATIC_DEBUG
 }
 
 # @description Checks if we have debug mode enabled
 function is-dbg() {
-  [[ -n ${USER_DEBUG} ]]
+  [[ -n ${BASHMATIC_DEBUG} ]]
 }
 
-# @description Local debugging helper, activate it with `export USER_DEBUG=1`
+# @description Local debugging helper, activate it with `export BASHMATIC_DEBUG=1`
 function dbg() {
   is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" >&2
   return 0
