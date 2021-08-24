@@ -5,16 +5,16 @@ function safe-source() {
   set +e
   for file in "$@"; do
     [[ -f "${file}" ]] && {
-      ((DEBUG)) && printf "sourcing ${txtgrn}%-40s${clr}..." "${file}"
+      ((__debug)) && printf "sourcing ${txtgrn}%-40s${clr}..." "${file}"
       source "${file}"
       code=$?
-      ((DEBUG)) && {
+      ((__debug)) && {
         ((code)) && printf "${txtred} [ ${bldred}X${txtred}, exit code=${code} ]${clr}\n"
         ((code)) || printf "${txtgrn} [ ✔︎ OK] ${clr}\n"
       }
       continue
     }
-    ((DEBUG)) && printf "sourcing ${txtylw}%-40s${clr}... ${txtylw}[ ${bldylw}X${txtylw}, file not found ]${clr}\n" "${file}"
+    ((__debug)) && printf "sourcing ${txtylw}%-40s${clr}... ${txtylw}[ ${bldylw}X${txtylw}, file not found ]${clr}\n" "${file}"
   done
 }
 

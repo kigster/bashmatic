@@ -33,7 +33,6 @@ __downloader_output_dir="./downloader-images"
 export __downloader_output_dir
 
 declare -a __downloader_source_pages
-__downloader_source_pages=()
 export __downloader_source_pages
 
 downloader.usage() {
@@ -165,11 +164,13 @@ downloader.fetch-images() {
   }
 
   local wc="$(wc -l "${__downloader_image_urls}" | tr -d '\n')"
-  local -a url_count=(${wc})
-  [[ "${url_count}" -eq 0 ]] && {
+  [[ ${wc} -eq 0 ]] && {
     error "No matching image URLs were found in ${source}"
     return
   }
+
+  # shellcheck disable=SC2206
+  local -a url_count=( ${wc} )
 
   info "Image URLs discovered: ${bldylw}${url_count[0]}"
 
@@ -240,7 +241,7 @@ downloader.extract-image-urls() {
   if [[ -f ${__downloader_tempfile} ]]; then
     grep -E -i 'src="[^"].*\.(png|jpg|jpe?g|gif|tiff|svg|pdf|bmp)"' ${__downloader_tempfile} |
       sedx 's/^\s+//g; s/\s+$//g; s/.*src="?//g; s/".*$//g' |
-      grep -E ${flags} |
+      grep -E "${flags}" |
       sort |
       uniq >"${__downloader_image_urls}"
   fi
@@ -261,7 +262,7 @@ downloader.inspect-state() {
   h2 'DEBUG: Internal Variables:'
   local index
   run.inspect-variables-that-are starting-with __downloader
-  local url_count=${#__downloader_source_pages[@]}
+  local url_count="${#__downloader_source_pages[@]}"
 
   for index in $(seq 0 $((url_count - 1))); do
     run.inspect-variable "__downloader_source_pages[${index}]"

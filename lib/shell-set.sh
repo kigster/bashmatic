@@ -72,7 +72,7 @@ shell-set.push-stack() {
   shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
   shell-set.is-set ${value} || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
 
-  [[ -n ${DEBUG} ]] && shell-set-show
+  [[ -n ${__debug} ]] && shell-set-show
 }
 
 shell-set.pop-stack() {
@@ -89,7 +89,7 @@ shell-set.pop-stack() {
   local pop=(${last})
 
   export SetOptsStack=("${SetOptsStack[@]/$pop/}")
-  [[ -n ${DEBUG} ]] && shell-set-show
+  [[ -n ${__debug} ]] && shell-set-show
   eval "set ${last}"
 }
 

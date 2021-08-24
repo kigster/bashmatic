@@ -46,7 +46,7 @@ function inf() {
 }
 
 function info-debug() {
-  [[ -z ${DEBUG} ]] && return
+  [[ -z ${__debug} ]] && return
   printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
 }
 
@@ -123,19 +123,19 @@ function columnize() {
 }
 
 function dbg-on() {
-  export DEBUG=$(time.now.db)
+  export USER_DEBUG=$(time.now.db)
 }
 
 function dbg-off() {
-  unset DEBUG
+  unset USER_DEBUG
 }
 
 # @description Checks if we have debug mode enabled
 function is-dbg() {
-  [[ -n $DEBUG ]]
+  [[ -n ${USER_DEBUG} ]]
 }
 
-# @description Local debugging helper, activate it with DEBUG=1
+# @description Local debugging helper, activate it with `export USER_DEBUG=1`
 function dbg() {
   is-dbg && printf "     ${txtgrn}[DEBUG | ${txtylw}$(time.now.with-ms)${txtgrn}]  ${txtblu}$(txt-info)$*\n" >&2
   return 0

@@ -162,7 +162,7 @@ function is.a-function.invoke() {
 }
 
 function is.a-function() {
-  if typeset -f "$1" >/dev/null; then
+  if [[ -n $1 ]] && typeset -f "$1" >/dev/null 2>&1; then
     return 0
   else
     return 1

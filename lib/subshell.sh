@@ -33,7 +33,7 @@ bashmatic.detect-subshell() {
   local len="${#BASH_SOURCE[@]}"
   local last_index=$((len - 1))
 
-  [[ -n ${DEBUG} ]] && {
+  [[ -n ${__debug} ]] && {
     echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" >&2
     echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" >&2
     echo "\$0            = $0" >&2

@@ -48,7 +48,7 @@ repos.recursive-update() {
   else
     for dir in $(find . -type d -name '.git'); do
       local subdir=$(dirname "$dir")
-      [[ -n "${DEBUG}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
+      [[ -n "${__debug}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
       repos.recursive-update "${subdir}"
       if [[ $? -eq 2 ]]; then
         error "folder ${bldylw}${subdir}${bldred} return error!"
