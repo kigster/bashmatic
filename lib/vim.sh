@@ -25,7 +25,7 @@ vim.gvim-off() {
 
   # import into the current shell
   eval "
-    [[ -n '${DEBUG}' ]] && set -x
+    [[ -n '${__debug}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOff}
     unalias ${LibVim__editorVi} 2>/dev/null
     unalias ${LibVim__editorGvimOff} 2>/dev/null
@@ -49,7 +49,7 @@ vim.gvim-on() {
 
   # import into the current shell
   eval "
-    [[ -n '${DEBUG}' ]] && set -x
+    [[ -n '${__debug}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOn}
     alias ${LibVim__editorVi}=${LibVim__editorGvimOn}
     alias ${LibVim__editorGvimOff}=${LibVim__editorGvimOn}

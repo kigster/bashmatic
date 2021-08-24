@@ -9,6 +9,7 @@
 
 * [file.temp()](#filetemp)
 * [file.normalize-files()](#filenormalize-files)
+* [file.first-is-newer-than-second()](#filefirst-is-newer-than-second)
 * [file.ask.if-exists()](#fileaskif-exists)
 * [file.install-with-backup()](#fileinstall-with-backup)
 
@@ -30,6 +31,10 @@ file.normalize-files "My Word Document.docx"
 # my-word-document.docx
        
 ```
+
+### `file.first-is-newer-than-second()`
+
+A super verbose shortcut to [[ file -nt file2 ]]
 
 ### `file.ask.if-exists()`
 
@@ -315,7 +320,7 @@ Checks if we have debug mode enabled
 
 ### `dbg()`
 
-Local debugging helper, activate it with DEBUG=1
+Local debugging helper, activate it with `export USER_DEBUG=1`
 
 
 

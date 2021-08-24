@@ -1329,7 +1329,7 @@ bashmatic.setup ()
     bashmatic.source util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
     output.unconstrain-screen-width
-    [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+    [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update 1>&2 2> /dev/null
     return 0
 }
 
@@ -2050,7 +2050,7 @@ color.disable ()
 color.enable () 
 { 
     if [[ ${BashMatic__ColorLoaded} -eq 1 ]]; then
-        [[ -n ${DEBUG} ]] && echo "colors are already loaded."
+        [[ -n ${__debug} ]] && echo "colors are already loaded."
     else
         export txtblk='\e[0;30m'
         export txtred='\e[0;31m'
@@ -3440,7 +3440,7 @@ db.top ()
             local vertical_shift_next=$((percent_total_height_next * screen_height / 100))
             local height=$((vertical_shift_next - vertical_shift - 7))
             cursor.at.y ${vertical_shift} >> "${tof}"
-            [[ -n ${DEBUG} ]] && { 
+            [[ -n ${__debug} ]] && { 
                 .output.set-indent 0
                 info "CURRENT ❯${bldylw} % = ${percent_total_height}, %++ = ${percent_total_height_next}" >> "${tof}"
                 h1 -- "Database: ${dbname}" "PSQL arguments:" "${connections_arguments[${index}]}" >> "${tof}"
@@ -3926,7 +3926,7 @@ dir.temp ()
 { 
     local dir="$(file.temp)/$$/${RANDOM/284/_-=}"
     mkdir -p "${dir}" 2> /dev/null
-    [[ -n $DEBUG ]] && { 
+    [[ -n ${__debug} ]] && { 
         info "temporary folder is: ${dir}"
         inf "it exists?  "
         [[ -d ${dir} ]] && ok:
@@ -4031,6 +4031,17 @@ file.extension.replace ()
 file.find () 
 { 
     find . -name "*$1*" -type f -print
+}
+
+----
+
+==== `file.first-is-newer-than-second`
+
+[source,bash]
+----
+file.first-is-newer-than-second () 
+{ 
+    [[ "$1" -nt "$2" ]]
 }
 
 ----
@@ -4929,7 +4940,7 @@ git.local-vs-remote ()
     local local_repo=$(git rev-parse @)
     local remote_repo=$(git rev-parse "$upstream")
     local base=$(git merge-base @ "$upstream")
-    if [[ -n ${DEBUG} ]]; then
+    if [[ -n ${__debug} ]]; then
         printf "
       pwd         = $(pwd)
       remote      = $(git.remotes)
@@ -5179,7 +5190,7 @@ git.sync ()
         cd "${dir}" > /dev/null
         return 1
     }
-    if ((DEBUG)); then
+    if ((__debug)); then
         git.update-repo-if-needed
     else
         git.update-repo-if-needed 1>&2 > /dev/null
@@ -5421,7 +5432,7 @@ is.a-directory ()
 ----
 is.a-function () 
 { 
-    if typeset -f "$1" > /dev/null; then
+    if [[ -n $1 ]] && typeset -f "$1" > /dev/null 2>&1; then
         return 0
     else
         return 1
@@ -6204,14 +6215,14 @@ change-underscan ()
     run "open /System/Library/PreferencePanes/Displays.prefPane"
     run.ui.ask "Have you changed the resolution and exited Display Prefs? "
     local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')
-    [[ -n $DEBUG ]] && info "diff line is at ${line}"
+    [[ -n ${__debug} ]] && info "diff line is at ${line}"
     value=
     if [[ "${line}" -gt 0 ]]; then
         line_pscn_key=$(($line - 4))
         line_pscn_value=$(($line - 3))
         ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && { 
             value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}')
-            [[ -n $DEBUG ]] && info "current value is ${value}"
+            [[ -n ${__debug} ]] && info "current value is ${value}"
         }
     else
         error "It does not appear that anything changed, sorry."
@@ -8228,7 +8239,7 @@ dbg ()
 ----
 dbg-off () 
 { 
-    unset DEBUG
+    unset USER_DEBUG
 }
 
 ----
@@ -8239,7 +8250,7 @@ dbg-off ()
 ----
 dbg-on () 
 { 
-    export DEBUG=$(time.now.db)
+    export USER_DEBUG=$(time.now.db)
 }
 
 ----
@@ -8351,7 +8362,7 @@ info ()
 ----
 info-debug () 
 { 
-    [[ -z ${DEBUG} ]] && return
+    [[ -z ${__debug} ]] && return
     printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
 }
 
@@ -8375,7 +8386,7 @@ info: ()
 ----
 is-dbg () 
 { 
-    [[ -n $DEBUG ]]
+    [[ -n ${USER_DEBUG} ]]
 }
 
 ----
@@ -9508,7 +9519,7 @@ repos.recursive-update ()
         for dir in $(find . -type d -name '.git')
         do
             local subdir=$(dirname "$dir")
-            [[ -n "${DEBUG}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
+            [[ -n "${__debug}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
             repos.recursive-update "${subdir}"
             if [[ $? -eq 2 ]]; then
                 error "folder ${bldylw}${subdir}${bldred} return error!"
@@ -11059,7 +11070,7 @@ shell-set.pop-stack ()
     fi
     local pop=(${last})
     export SetOptsStack=("${SetOptsStack[@]/$pop/}")
-    [[ -n ${DEBUG} ]] && shell-set-show
+    [[ -n ${__debug} ]] && shell-set-show
     eval "set ${last}"
 }
 
@@ -11075,7 +11086,7 @@ shell-set.push-stack ()
     local is_set=${-//[^${value}]/}
     shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
     shell-set.is-set ${value} || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
-    [[ -n ${DEBUG} ]] && shell-set-show
+    [[ -n ${__debug} ]] && shell-set-show
 }
 
 ----
@@ -11184,7 +11195,7 @@ bashmatic.detect-subshell ()
     export BASH_SUBSHELL_DETECTED=true
     local len="${#BASH_SOURCE[@]}"
     local last_index=$((len - 1))
-    [[ -n ${DEBUG} ]] && { 
+    [[ -n ${__debug} ]] && { 
         echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2
         echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2
         echo "\$0            = $0" 1>&2
@@ -12178,7 +12189,7 @@ usage-widget ()
     }
     ((cache_wipe)) && rm -f "$(.usage-cache-file)"
     local -a args=("$@")
-    ((DEBUG)) && { 
+    ((__debug)) && { 
         h1 "Got total of ${#args[@]} arguments."
     }
     local -a details
@@ -13103,7 +13114,7 @@ vim.gvim-off ()
     ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
     ${GrepCommand} -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >> ${LibVim__initFile}
     eval "
-    [[ -n '${DEBUG}' ]] && set -x
+    [[ -n '${__debug}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOff}
     unalias ${LibVim__editorVi} 2>/dev/null
     unalias ${LibVim__editorGvimOff} 2>/dev/null
@@ -13127,7 +13138,7 @@ vim.gvim-on ()
     ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
     ${GrepCommand} -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >> ${LibVim__initFile}
     eval "
-    [[ -n '${DEBUG}' ]] && set -x
+    [[ -n '${__debug}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOn}
     alias ${LibVim__editorVi}=${LibVim__editorGvimOn}
     alias ${LibVim__editorGvimOff}=${LibVim__editorGvimOn}

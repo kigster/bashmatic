@@ -72,7 +72,7 @@ function git.sync() {
     return 1
   }
 
-  if ((DEBUG)); then
+  if ((__debug)); then
     git.update-repo-if-needed
   else
     git.update-repo-if-needed >&2 1>/dev/null
@@ -160,7 +160,7 @@ function git.local-vs-remote() {
   local remote_repo=$(git rev-parse "$upstream")
   local base=$(git merge-base @ "$upstream")
 
-  if [[ -n ${DEBUG} ]]; then
+  if [[ -n ${__debug} ]]; then
     printf "
       pwd         = $(pwd)
       remote      = $(git.remotes)

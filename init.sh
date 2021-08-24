@@ -4,8 +4,11 @@
 export GREP_CMD
 GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
 
+# Save the value of $DEBUG, but convert it to 1 in case its not.
+export __debug="${DEBUG}"
+[[ -n ${__debug} ]] && export __debug=1
+
 for _path in ${HOME}/.rbenv/shims ${HOME}/.pyenv/shims /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin; do
-  ((DEBUG)) && echo "PATH=[${PATH}], checking for PATH component [${_path}]"
   [[ -d "${_path}" ]] && {
     (echo ":${PATH}:" | ${GREP_CMD} -q ":${_path}:") || {
       export PATH="${PATH}:${_path}"
@@ -20,10 +23,10 @@ SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr
 
 [[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
-    ((DEBUG)) && echo "Detected zsh version ${ZSH_VERSION}, source=$0:A"
+    ((__debug)) && echo "Detected zsh version ${ZSH_VERSION}, source=$0:A"
     BASHMATIC_HOME="$(dirname "$0:A")"
   elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
-    ((DEBUG)) && echo "Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}"
+    ((__debug)) && echo "Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}"
     BASHMATIC_HOME="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
   else
     echo "WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}"
@@ -86,7 +89,7 @@ function bashmatic.init-core() {
     return 1
   fi
   
-  [[ -n $DEBUG ]] && {
+  [[ -n ${__debug} ]] && {
     [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source "${BASHMATIC_HOME}/lib/time.sh"
     export __bashmatic_start_time=$(millis)
   }
@@ -94,7 +97,7 @@ function bashmatic.init-core() {
   # If defined BASHMATIC_AUTOLOAD_FILES, we source these files together with BASHMATIC
   for _init in ${BASHMATIC_AUTOLOAD_FILES}; do
     [[ -s "${PWD}/${_init}" ]] && {
-      [[ -n $DEBUG ]] && echo "sourcing in ${PWD}/${_init}"
+      [[ -n ${__debug} ]] && echo "sourcing in ${PWD}/${_init}"
       source "${PWD}/${_init}"
     }
   done
@@ -151,7 +154,7 @@ function bashmatic.init() {
     return 1
   fi
 
-  if [[ -n $DEBUG ]]; then
+  if [[ -n ${__debug} ]]; then
     local __bashmatic_end_time=$(millis)
     notice "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
   fi
@@ -160,6 +163,13 @@ function bashmatic.init() {
   unset __bashmatic_start_time
 
   bashmatic.set-is-loaded
+
+  declare -a paths=()
+  for p in $(path.dirs ${PATH}); do 
+    paths+=("$p")
+  done
+  ((__debug)) && h3bg "The \$PATH is now: " "${paths[@]}"
+
 }
 
 echo "$*" | grep -E -q 'reload|force|refresh' && bashmatic.set-is-not-loaded
