@@ -15,7 +15,7 @@
 
 set -e -o pipefail
 
-source "${BASHMATIC_HOME}/init.sh"
+source "${BASHMATIC_HOME}/init.sh" refresh
 source "${BASHMATIC_HOME}/test/helpers/test-lib.sh"
 eval "$(cat ${BASHMATIC_HOME}/lib/time.sh)"
 eval "$(cat ${BASHMATIC_HOME}/lib/bashmatic.sh)"

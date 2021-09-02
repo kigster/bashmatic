@@ -1,7 +1,7 @@
 #!/usr/local/bin/env bash
 # vim: ft=bash
 
-source "${BASHMATIC_LIBDIR}/file-helpers.sh"
+[[ -f "${BASHMATIC_HOME}/lib/file-helpers.sh" ]] && source "${BASHMATIC_HOME}/lib/file-helpers.sh"
 
 # @description Creates a temporary file and returns it as STDOUT
 # shellcheck disable=SC2120

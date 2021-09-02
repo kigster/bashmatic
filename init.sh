@@ -29,6 +29,12 @@ function .bashmatic.pre-init() {
     export __path_debug=1
     printf "${itacyn}PATH before update: ${bldylw}$PATH${clr}\n"
   }
+  src "${BASHMATIC_HOME}/lib/util.sh"
+  src "${BASHMATIC_HOME}/lib/file.sh"
+  src "${BASHMATIC_HOME}/lib/file.sh"
+
+  ((BASHMATIC_CACHE_INIT)) && return 0
+
   src "${BASHMATIC_HOME}/lib/is.sh"
   src "${BASHMATIC_HOME}/lib/color.sh"
   src "${BASHMATIC_HOME}/lib/output-repeat-char.sh"
@@ -210,20 +216,20 @@ function bashmatic.init() {
 
     local env_file="${BASHMATIC_HOME}/.envrc.${file}"
     if [[ -f $env_file ]]; then
-      printf "${bldgrn}Loading env file ${bldylw}${env_file}${clr}...\n"
+      printf "${bldgrn}Loading env file ${bldylw}${env_file}${clr}...\n" >&2
       source "$env_file"
     fi
 
     if [[ -n "$file" && -f "$file" ]]; then
-      printf "${bldgrn}Loading env file ${bldylw}${file}${clr}...\n"
+      printf "${bldgrn}Loading env file ${bldylw}${file}${clr}...\n" >&2
       source "${file}"
     elif [[ "$file" =~ (reload|force|refresh) ]]; then
-      printf "${bldgrn}Resetting caching\n"
+      printf "${bldgrn}Resetting caching\n" >&2
       bashmatic.set-is-not-loaded
     fi
   done
   
-  [[ -z $DEBUG && -n $BASHMATIC_CACHE_INIT ]] && return
+  [[ -z $DEBUG && $BASHMATIC_CACHE_INIT -eq 1 ]] && return
   bashmatic.init-core  
 
   bashmatic.is-loaded || bashmatic.init "$@"

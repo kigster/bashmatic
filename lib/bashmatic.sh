@@ -187,11 +187,10 @@ bashmatic.setup() {
     return 1
   fi
 
-  bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
-  bashmatic.shell-check || return 1
-  bashmatic.source util.sh git.sh file.sh color.sh brew.sh
+  #bashmatic.source is.sh time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
+  #bashmatic.shell-check || return 1
+  #bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
-
   output.unconstrain-screen-width
 
   [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update 1>&2 2>/dev/null
