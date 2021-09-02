@@ -18,3 +18,4 @@ shellcheck.log
 .bundle/
 doc/USAGE.adoc
 .developer-warned
+.history
