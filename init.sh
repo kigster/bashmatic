@@ -3,21 +3,18 @@
 set +ex
 export BASHMATIC_HOME="${BASHMATIC_HOME}"
 
-if [[ ! -d ${BASHMATIC_HOME} || ! -f ${BASHMATIC_HOME}/init.sh ]]; then
-  export BASHMATIC_HOME="$(/usr/bin/dirname "$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" || exit 1; pwd -P)")"
+if [[ ! -d ${BASHMATIC_HOME} || ! -f "${BASHMATIC_HOME}/init.sh" ]]; then
+  export BASHMATIC_HOME="$(/usr/bin/dirname "$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)")"
 fi
 
-if [[ ! -d ${BASHMATIC_HOME} || ! -f ${BASHMATIC_HOME}/init.sh ]]; then
+if [[ ! -d ${BASHMATIC_HOME} || ! -f "${BASHMATIC_HOME}/init.sh" ]]; then
   export BASHMATIC_HOME="${HOME}/.bashmatic"
 fi
 
-((BASHMATIC_PATH_DEBUG)) && echo "BASHMATIC_HOME=[${BASHMATIC_HOME}]"
-
-if [[ -f ${BASHMATIC_HOME}/.bash_safe_source ]] ; then 
-  cp -p "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source" 2>/dev/null
+if [[ -f "${BASHMATIC_HOME}/.bash_safe_source" ]] ; then 
+  source "${BASHMATIC_HOME}/.bash_safe_source"
+  cp -p  "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source" 2>/dev/null
 fi
-
-source "${BASHMATIC_HOME}/.bash_safe_source"
 
 function .bashmatic.pre-init() {
   export GREP_CMD
@@ -32,12 +29,12 @@ function .bashmatic.pre-init() {
     export __path_debug=1
     printf "${itacyn}PATH before update: ${bldylw}$PATH${clr}\n"
   }
-  src ${BASHMATIC_HOME}/lib/is.sh
-  src ${BASHMATIC_HOME}/lib/color.sh
-  src ${BASHMATIC_HOME}/lib/output-repeat-char.sh
-  src ${BASHMATIC_HOME}/lib/output.sh
-  src ${BASHMATIC_HOME}/lib/output-utils.sh
-  src ${BASHMATIC_HOME}/lib/output-boxes.sh
+  src "${BASHMATIC_HOME}/lib/is.sh"
+  src "${BASHMATIC_HOME}/lib/color.sh"
+  src "${BASHMATIC_HOME}/lib/output-repeat-char.sh"
+  src "${BASHMATIC_HOME}/lib/output.sh"
+  src "${BASHMATIC_HOME}/lib/output-utils.sh"
+  src "${BASHMATIC_HOME}/lib/output-boxes.sh"
 
   export PATH=/usr/local/bin:/usr/bin:/bin:/sbin
   for _path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin ${HOME}/.rbenv/shims ${HOME}/.pyenv/shims ; do
@@ -139,7 +136,7 @@ function bashmatic.init-core() {
   fi
 
   [[ -n ${__debug} ]] && {
-    [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source "${BASHMATIC_HOME}/lib/time.sh"
+    [[ -f "${BASHMATIC_HOME}/lib/time.sh" ]] && source "${BASHMATIC_HOME}/lib/time.sh"
     export __bashmatic_start_time=$(millis)
   }
 
@@ -148,6 +145,13 @@ function bashmatic.init-core() {
     [[ -s "${PWD}/${_init}" ]] && {
       [[ -n ${__debug} ]] && echo "sourcing in ${PWD}/${_init}"
       source "${PWD}/${_init}"
+    }
+  done
+
+  for _file in $(find "${BASHMATIC_HOME}/lib" -name '*.sh' -type f); do
+    [[ -s "$${_file}" ]] && {
+      [[ -n ${__debug} ]] && echo "sourcing in ${_file}"
+      source "${_file}"
     }
   done
 
@@ -185,8 +189,44 @@ function .bashmatic.init.linux() {
   return 0
 }
 
+function bashmatic.init.paths() {
+  declare -a paths=()
+  for p in $(path.dirs "${PATH}"); do
+    paths+=("$p")
+  done
+
+  ((__path_debug)) && {
+    h3bg "The current \$PATH components are:"
+    for p in "${paths[@]}"; do
+      printf " • [$(printf "%40.40s\n" "${p}")]\n"
+    done
+  }
+  return 0
+}
+
 function bashmatic.init() {
-  .bashmatic.pre-init
+  for file in "$1" "$2" "$3" "$4"; do
+    [[ $0 == "$1" ]] && continue 
+
+    local env_file="${BASHMATIC_HOME}/.envrc.${file}"
+    if [[ -f $env_file ]]; then
+      printf "${bldgrn}Loading env file ${bldylw}${env_file}${clr}...\n"
+      source "$env_file"
+    fi
+
+    if [[ -n "$file" && -f "$file" ]]; then
+      printf "${bldgrn}Loading env file ${bldylw}${file}${clr}...\n"
+      source "${file}"
+    elif [[ "$file" =~ (reload|force|refresh) ]]; then
+      printf "${bldgrn}Resetting caching\n"
+      bashmatic.set-is-not-loaded
+    fi
+  done
+  
+  [[ -z $DEBUG && -n $BASHMATIC_CACHE_INIT ]] && return
+  bashmatic.init-core  
+
+  bashmatic.is-loaded || bashmatic.init "$@"
 
   local init_func=".bashmatic.init.${BASHMATIC_OS}"
 
@@ -215,30 +255,9 @@ function bashmatic.init() {
 
   bashmatic.set-is-loaded
 
-  declare -a paths=()
-  for p in $(path.dirs "${PATH}"); do
-    paths+=("$p")
-  done
-  ((__debug)) && h3bg "The \$PATH is now: "
-  for p in "${paths[@]}"; do
-    echo " • [${p}]"
-  done
+  export BASHMATIC_CACHE_INIT=1
+  return 0
 }
 
-[[ -z $DEBUG && -n $BASHMATIC_CACHE_INIT ]] && return
-.bashmatic.pre-init
-
-echo $*
-if [[ "$1" == "debug" ]] ; then
-  source ${BASHMATIC_HOME}/.envrc.debug
-else
-  source ${BASHMATIC_HOME}/.envrc.no-debug
-fi
-
-echo "$*" | grep -E -q 'reload|force|refresh' && bashmatic.set-is-not-loaded
-
-bashmatic.init-core
-bashmatic.is-loaded || bashmatic.init "$@"
-
-export BASHMATIC_CACHE_INIT=1
+bashmatic.init "$@"
 
