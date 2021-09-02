@@ -10,7 +10,7 @@ __bashmatic_warning_notification=${HOME}/.bashmatic/.developer-warned
 
 bashmatic.cd-into() {
  [[ -d ${BASHMATIC_HOME} ]] || return 1
- cd "${BASHMATIC_HOME}"
+ cd "${BASHMATIC_HOME}" || exit 1
 }
 
 # @descripion True if .envrc.local file is present. We take it as a sign
@@ -21,6 +21,13 @@ bashmatic.is-developer() {
 
 bashmatic.reload() {
   bashmatic.set-is-not-loaded
+  source "${BASHMATIC_INIT}"
+}
+
+bashmatic.reload-debug() {
+  bashmatic.set-is-not-loaded
+  export BASHMATIC_PATH_DEBUG=1
+  source "${BASHMATIC_HOME}/.envrc.debug"
   source "${BASHMATIC_INIT}"
 }
 

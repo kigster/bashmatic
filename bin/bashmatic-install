@@ -526,6 +526,7 @@ function .install.download-and-install() {
       return 1
     }
     # shellcheck disable=SC1090
+    ((bootstrap_debug)) && source "${BASHMATIC_HOME}/.envrc.debug"
     source "${BASHMATIC_INIT}"
     ((bootstrap__skip_on_login)) || bashmatic.load-at-login
     is-quiet || success "Your BashMatic has been successfully installed."
