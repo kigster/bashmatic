@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+
 # Bashmatic Utilities
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
@@ -15,10 +16,9 @@
 
 set -e -o pipefail
 
-source "${BASHMATIC_HOME}/init.sh"
+source "${BASHMATIC_HOME}/lib/bashmatic.sh"
+source "${BASHMATIC_HOME}/init.sh" refresh
 source "${BASHMATIC_HOME}/test/helpers/test-lib.sh"
-eval "$(cat ${BASHMATIC_HOME}/lib/time.sh)"
-eval "$(cat ${BASHMATIC_HOME}/lib/bashmatic.sh)"
 
 function specs.main() {
   export TEST_DIR="${TEST_DIR:-"test"}"
@@ -32,4 +32,4 @@ function specs.main() {
   fi
 }
 
-bashmatic.run-if-subshell specs.main "$@"
+specs.main "$@"
