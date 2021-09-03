@@ -10,7 +10,7 @@ function src() {
     [[ -z $file ]] && break
     shift
     [[ -f "${file}" ]] && {
-      ((__debug)) && printf "sourcing ${txtgrn}%50s${clr}..." "${file}"
+      ((__debug)) && printf "${BASHMATIC_PREFIX} sourcing ${txtgrn}%50s${clr}..." "${file}"
       source "${file}"
       code=$?
       ((__debug)) && {
@@ -19,7 +19,7 @@ function src() {
       }
       continue
     }
-    ((__debug)) && printf "sourcing ${txtylw}%50s${clr}... ${txtylw}[ ${bldylw}X${txtylw}, file not found ]${clr}\n" "${file}"
+    ((__debug)) && printf "${BASHMATIC_PREFIX} sourcing ${txtylw}%50s${clr}... ${txtylw}[ ${bldylw}X${txtylw}, file not found ]${clr}\n" "${file}"
   done
 
   return 0

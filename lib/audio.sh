@@ -6,8 +6,6 @@
 # @file lib/audio.sh
 # @description Audio conversions routines.
 
-source "${BASHMATIC_HOME}/lib/video.sh"
-
 function audio.m4a.to.mp3() {
   local file="$1"
   [[ -z "${file}" ]] && return 0

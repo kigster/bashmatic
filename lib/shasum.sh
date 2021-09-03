@@ -5,6 +5,8 @@
 # @file shasum.sh
 export __default_bashmatic__sha_command="/usr/bin/env shasum"
 
+source "${BASHMATIC_HOME}/lib/is.sh"
+
 # @description 
 #   Override the default SHA command and alogirthm
 #   Default is shasum -a 256
@@ -47,6 +49,8 @@ shasum.sha-only() {
 shasum.sha-only-stdin() {
   echo "$*" | eval "${__bashmatic__sha_command}"  | cut -d' ' -f 1
 }
+
+is.a-function bashmatic.bash.version-four-or-later || source ${BASHMATIC_HOME}/lib/bashmatic.sh
 
 if bashmatic.bash.version-four-or-later; then
 
