@@ -215,9 +215,14 @@ util.functions-matching() {
 }
 
 util.functions-matching.diff() {
-  for e in $(util.functions-matching "${1}"); do
-    echo "${e/${1}/}"
+  for m in "$@"; do
+    [[ -z "$1" ]] && break
+    for e in $(util.functions-matching "${1}"); do
+      printf "${e/$1/}\n"
+    done
+    shift
   done
+  return 0
 }
 
 util.install-direnv() {

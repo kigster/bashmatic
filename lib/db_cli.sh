@@ -1,30 +1,13 @@
-
 #!/usr/bin/env bash
 # vim: ft=sh
 # shellcheck disable=2046
 
 source "${BASHMATIC_HOME}/lib/db.sh"
 
-db.usage() {
-  local config="~/$(basename $(dirname ${bashmatic_db_config}))/$(basename  ${bashmatic_db_config})"
-  usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" \
-    "-q / --quiet" "Suppress the colorful header messages" \
-    "-v / --verbose" "Show additional output" \
-    "-n / --dry-run" "Only print commands, but do not run them" \
-    "├GLOBAL FLAGS:" " " \
-    "-C / --commands" "List all sub-commands to the db script" \
-    "-c / --connectons" "List all available database connections" \
-    "-e / --examples" "Show script usage examples" \
-    "-h / --help" "Show this help screen" \
-    " " " " \
-    "├SUMMARY:" " " \
-    " " "This tool uses a list of database connections defined in the" \
-    " " "YAML file that must be installed at: ${bldylw}${config}" \
-    " " " "
-}
-
 function db.commands-list() {
   h5 "Available Commands"
+  source "${BASHMATIC_HOME}/lib/util.sh"
+  db.refresh.actions
   printf "${bldgrn}"
   array.to.bullet-list "${db_actions[@]}" | sed 's/^/     /g'
   echo; hr; echo
@@ -46,7 +29,28 @@ function db.actions.commands() {
 }
 
 declare -a db_actions
-export db_actions=($(util.functions-matching.diff db.actions.))
+
+function db.refresh.actions() {
+  export db_actions=( $(util.functions-matching.diff db.actions.) )
+}
+
+function db.usage() {
+  local config="~/$(basename $(dirname ${bashmatic_db_config}))/$(basename  ${bashmatic_db_config})"
+  usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" \
+    "-q / --quiet" "Suppress the colorful header messages" \
+    "-v / --verbose" "Show additional output" \
+    "-n / --dry-run" "Only print commands, but do not run them" \
+    "├GLOBAL FLAGS:" " " \
+    "-C / --commands" "List all sub-commands to the db script" \
+    "-c / --connectons" "List all available database connections" \
+    "-e / --examples" "Show script usage examples" \
+    "-h / --help" "Show this help screen" \
+    " " " " \
+    "├SUMMARY:" " " \
+    " " "This tool uses a list of database connections defined in the" \
+    " " "YAML file that must be installed at: ${bldylw}${config}" \
+    " " " "
+}
 
 function db.examples() {
   h2 EXAMPLES \
@@ -169,7 +173,8 @@ function db.main() {
 }
 
 db.cli-setup() {
-  color.enable
+  db.refresh.actions
+  color.enable >/dev/null
   output.constrain-screen-width 110
 
   if [[ $(screen.width) -lt 110 ]]; then
@@ -177,3 +182,5 @@ db.cli-setup() {
     return 1
   fi
 }
+
+

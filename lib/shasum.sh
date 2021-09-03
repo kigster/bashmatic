@@ -5,6 +5,8 @@
 # @file shasum.sh
 export __default_bashmatic__sha_command="/usr/bin/env shasum"
 
+source "${BASHMATIC_HOME}/lib/is.sh"
+
 # @description 
 #   Override the default SHA command and alogirthm
 #   Default is shasum -a 256
