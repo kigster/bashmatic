@@ -25,3 +25,4 @@ function src() {
   return 0
 }
 
+alias safe-source="src"
