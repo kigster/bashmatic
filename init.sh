@@ -211,12 +211,10 @@ function bashmatic.init() {
 
     local env_file="${BASHMATIC_HOME}/.envrc.${file}"
     if [[ -f $env_file ]]; then
-      output.is-tty && printf "${BASHMATIC_PREFIX}${bldgrn}Loading env file ${bldylw}${env_file}${clr}...\n" >&2
       source "$env_file"
     fi
 
     if [[ "$file" =~ (reload|force|refresh) ]]; then
-      output.is-tty && printf "${BASHMATIC_PREFIX} ${bldgrn}Resetting caching...${clr}\n" >&2
       bashmatic.set-is-not-loaded
     fi
   done
