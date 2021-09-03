@@ -113,12 +113,10 @@ function bashmatic.is-loaded() {
 
 function bashmatic.set-is-loaded() {
   export __bashmatic_load_state=1
-  export BASHMATIC_CACHE_INIT=1
 }
 
 function bashmatic.set-is-not-loaded() {
   export __bashmatic_load_state=0
-  export BASHMATIC_CACHE_INIT=0
 }
 
 function bashmatic.init-core() {
@@ -213,21 +211,16 @@ function bashmatic.init() {
 
     local env_file="${BASHMATIC_HOME}/.envrc.${file}"
     if [[ -f $env_file ]]; then
-      printf "${BASHMATIC_PREFIX}${bldgrn}Loading env file ${bldylw}${env_file}${clr}...\n" >&2
+      output.is-tty && printf "${BASHMATIC_PREFIX}${bldgrn}Loading env file ${bldylw}${env_file}${clr}...\n" >&2
       source "$env_file"
     fi
 
-    if [[ -n "$file" && -f "$file" ]]; then
-      printf "${BASHMATIC_PREFIX}${bldgrn}Loading env file ${bldylw}${file}${clr}...\n" >&2
-      source "${file}"
-    elif [[ "$file" =~ (reload|force|refresh) ]]; then
-      printf "${BASHMATIC_PREFIX} ${bldgrn}Resetting caching...${clr}\n" >&2
+    if [[ "$file" =~ (reload|force|refresh) ]]; then
+      output.is-tty && printf "${BASHMATIC_PREFIX} ${bldgrn}Resetting caching...${clr}\n" >&2
       bashmatic.set-is-not-loaded
     fi
   done
   
-  [[ -z $DEBUG && $BASHMATIC_CACHE_INIT -eq 1 ]] && return
-
   bashmatic.init-core  
   bashmatic.is-loaded || bashmatic.init "$@"
 

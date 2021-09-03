@@ -10,7 +10,6 @@
 == Bashmatic Modules
 
 * xref:#module-.audio[.audio]
-* xref:#module-.usage[.usage]
 * xref:#module-7z[7z]
 * xref:#module-array[array]
 * xref:#module-asciidoc[asciidoc]
@@ -60,6 +59,7 @@
 * xref:#module-runtime[runtime]
 * xref:#module-runtime-config[runtime-config]
 * xref:#module-sedx[sedx]
+* xref:#module-serial[serial]
 * xref:#module-set[set]
 * xref:#module-settings[settings]
 * xref:#module-shasum[shasum]
@@ -84,9 +84,6 @@
 
 
 === Module `.audio`
-
-
-=== Module `.usage`
 
 
 === Module `7z`
@@ -1211,7 +1208,7 @@ bashmatic.bash.version-four-or-later ()
 bashmatic.cd-into () 
 { 
     [[ -d ${BASHMATIC_HOME} ]] || return 1
-    cd "${BASHMATIC_HOME}"
+    cd "${BASHMATIC_HOME}" || exit 1
 }
 
 ----
@@ -1312,6 +1309,20 @@ bashmatic.reload ()
 
 ----
 
+==== `bashmatic.reload-debug`
+
+[source,bash]
+----
+bashmatic.reload-debug () 
+{ 
+    bashmatic.set-is-not-loaded
+    export BASHMATIC_PATH_DEBUG=1
+    source "${BASHMATIC_HOME}/.envrc.debug"
+    source "${BASHMATIC_INIT}"
+}
+
+----
+
 ==== `bashmatic.setup`
 
 [source,bash]
@@ -1324,7 +1335,8 @@ bashmatic.setup ()
         .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
         return 1
     fi
-    bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
+    bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh
+    bashmatic.source is.sh output-boxes.sh user.sh
     bashmatic.shell-check || return 1
     bashmatic.source util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
@@ -3179,7 +3191,8 @@ db.actions.commands ()
 ----
 db.cli-setup () 
 { 
-    color.enable
+    db.refresh.actions
+    color.enable > /dev/null
     output.constrain-screen-width 110
     if [[ $(screen.width) -lt 110 ]]; then
         error "Please resize your terminal to have at last 110 columns."
@@ -3196,6 +3209,8 @@ db.cli-setup ()
 db.commands-list () 
 { 
     h5 "Available Commands"
+    source "${BASHMATIC_HOME}/lib/util.sh"
+    db.refresh.actions
     printf "${bldgrn}"
     array.to.bullet-list "${db_actions[@]}" | sed 's/^/     /g'
     echo
@@ -3309,6 +3324,17 @@ db.main ()
         return 3
     }
     ${func} "$@"
+}
+
+----
+
+==== `db.refresh.actions`
+
+[source,bash]
+----
+db.refresh.actions () 
+{ 
+    export db_actions=($(util.functions-matching.diff db.actions.))
 }
 
 ----
@@ -8239,7 +8265,7 @@ dbg ()
 ----
 dbg-off () 
 { 
-    unset USER_DEBUG
+    unset BASHMATIC_DEBUG
 }
 
 ----
@@ -8250,7 +8276,7 @@ dbg-off ()
 ----
 dbg-on () 
 { 
-    export USER_DEBUG=$(time.now.db)
+    export BASHMATIC_DEBUG=$(time.now.db)
 }
 
 ----
@@ -8386,7 +8412,7 @@ info: ()
 ----
 is-dbg () 
 { 
-    [[ -n ${USER_DEBUG} ]]
+    [[ -n ${BASHMATIC_DEBUG} ]]
 }
 
 ----
@@ -10818,6 +10844,39 @@ util.ensure-gnu-sed ()
 ----
 
 
+=== Module `serial`
+
+==== `serial.baud`
+
+[source,bash]
+----
+serial.baud () 
+{ 
+    if [[ -n $1 ]]; then
+        is.number "$1" && export BashmaticSerial__DefaultBaud="$1"
+    fi
+    h2 "Current Baud Rate:" "${bldylw}${BashmaticSerial__DefaultBaud} Bits/Second"
+}
+
+----
+
+==== `serial.device`
+
+[source,bash]
+----
+serial.device () 
+{ 
+    if [[ -n $1 && $1 =~ ^/dev ]]; then
+        export BashmaticSerial__DefaultDevice="$1"
+    else
+        export BashmaticSerial__DefaultDevice=$(ls -1 /dev/cu.* | grep -vi bluetooth | tail -1)
+    fi
+    h3 "Current Device is:" "${bldylw}${BashmaticSerial__DefaultDevice}"
+}
+
+----
+
+
 === Module `set`
 
 ==== `set-e-restore`
@@ -12543,7 +12602,7 @@ util.append-to-init-files ()
     for init_file in "${shell_files[@]}"
     do
         file="${init_file}"
-        [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && { 
+        [[ -f ${file} ]] && grep -q "${search}" "${file}" && { 
             is_installed=${file}
             break
         }
@@ -12570,7 +12629,7 @@ util.append-to-init-files ()
 ----
 util.arch () 
 { 
-    echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr '[:upper:]' '[:lower:]'
+    echo -n "${AppCurrentOS}-$(/usr/bin/uname -m)-$(/usr/bin/uname -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
 }
 
 ----
@@ -12613,11 +12672,11 @@ util.eval-function-body ()
 { 
     local name="$1"
     shift
-    type ${name} | grep -qi function || { 
+    type "${name}" | grep -qi function || { 
         error "${name} is not a function."
         return 1
     }
-    eval "$(type ${name} | sedx '1,3d;$d')" "$@"
+    eval "$(type "${name}" | sedx '1,3d;$d')" "$@"
 }
 
 ----
@@ -12630,7 +12689,7 @@ util.functions-matching ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '"
+    eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '"
 }
 
 ----
@@ -12641,10 +12700,16 @@ util.functions-matching ()
 ----
 util.functions-matching.diff () 
 { 
-    for e in $(util.functions-matching "${1}")
+    for m in "$@"
     do
-        echo "${e/${1}/}"
+        [[ -z "$1" ]] && break
+        for e in $(util.functions-matching "${1}")
+        do
+            printf "${e/$1/}\n"
+        done
+        shift
     done
+    return 0
 }
 
 ----
@@ -12657,7 +12722,7 @@ util.functions-starting-with ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | /usr/bin/tr '\n ' ' '
 }
 
 ----
@@ -12793,7 +12858,7 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    export AppCurrentOS="${AppCurrentOS:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
+    export AppCurrentOS="${AppCurrentOS:-$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 ----
@@ -12826,7 +12891,7 @@ util.remove-from-init-files ()
     do
         run.config.detail-is-enabled && inf "verifying file ${init_file}..."
         file="${init_file}"
-        if [[ -f ${file} && -n "$(grep "${search}" "${file}")" ]]; then
+        if [[ -f ${file} ]] && grep -q "${search}" "${file}"; then
             run.config.detail-is-enabled && ui.closer.ok:
             local matches=$(grep -c "${search}" "${file}")
             run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"

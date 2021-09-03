@@ -320,7 +320,7 @@ Checks if we have debug mode enabled
 
 ### `dbg()`
 
-Local debugging helper, activate it with `export USER_DEBUG=1`
+Local debugging helper, activate it with `export BASHMATIC_DEBUG=1`
 
 
 
