@@ -1,0 +1,9 @@
+# vim: ft=make ts=8 sw=8
+
+.PHONE test
+
+PATH:="/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin:/opt/local/bin:$(HOME)/.bashmatic/bin"
+
+test:			
+		@bash -c "source $(BASHMATIC_HOME)/init.sh; "
+

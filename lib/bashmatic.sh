@@ -92,15 +92,15 @@ bashmatic.functions.runtime() {
 }
 
 # Setup
-bashmatic.bash.version() {
+function bashmatic.bash.version() {
   echo "${BASH_VERSION/[^0-9]*/}"
 }
 
-bashmatic.bash.version-four-or-later() {
+function bashmatic.bash.version-four-or-later() {
   [[ $(bashmatic.bash.version) -gt 3 ]]
 }
 
-bashmatic.bash.exit-unless-version-four-or-later() {
+function bashmatic.bash.exit-unless-version-four-or-later() {
   bashmatic.bash.version-four-or-later || {
     error "Sorry, this functionality requires BASH version 4 or later."
     exit 1 >/dev/null
@@ -187,9 +187,10 @@ bashmatic.setup() {
     return 1
   fi
 
-  #bashmatic.source is.sh time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
-  #bashmatic.shell-check || return 1
-  #bashmatic.source util.sh git.sh file.sh color.sh brew.sh
+  bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh 
+  bashmatic.source is.sh output-boxes.sh user.sh
+  bashmatic.shell-check || return 1
+  bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
   output.unconstrain-screen-width
 

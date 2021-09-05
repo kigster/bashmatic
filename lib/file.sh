@@ -24,7 +24,7 @@ function file.temp() {
 function dir.temp() {
   local dir="$(file.temp)/$$/${RANDOM/284/_-=}"
   mkdir -p "${dir}" 2>/dev/null
-  [[ -n ${__debug} ]] && {
+  [[ -n ${BASHMATIC_DEBUG} ]] && {
     info "temporary folder is: ${dir}"
     inf "it exists?  "
     [[ -d ${dir}  ]] && ok:

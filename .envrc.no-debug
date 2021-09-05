@@ -1,4 +1,7 @@
+# vim: ft=bah
+# vim: ft=bash
 unset DEBUG
 unset BASHMATIC_DEBUG
 unset BASHMATIC_PATH_DEBUG
-unset __debug
+unset BASHMATIC_DEBUG
+unset BASHMATIC_DEBUG

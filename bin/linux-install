@@ -27,8 +27,8 @@ function main() {
     ruby-build
     curl
     silversearcher-ag
-    postgresql-13
-    postgresql-client-13
+    postgresql
+    postgresql-client
     screenfetch
     inxi
   )
