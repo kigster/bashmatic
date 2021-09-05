@@ -313,7 +313,7 @@ function .install.os-requirements() {
 # Main Body
 #——————————————————————————————————————————————————————————————————————————————————————
 
-export bootstrap__debug=0
+export bootstrapBASHMATIC_DEBUG=0
 export bootstrap__skip_git_check=0
 export bootstrap__skip_install=0
 export bootstrap__verbose=0
@@ -329,7 +329,7 @@ export bootstrap__git_method="https"
 export bootstrap__git_branch="master"
 
 function is-debug() {
-  ((bootstrap__debug))
+  ((bootstrapBASHMATIC_DEBUG))
 }
 
 function is-verbose() {
@@ -438,7 +438,7 @@ function .install.parse-opts() {
       ;;
     -d | --debug)
       shift
-      export bootstrap__debug=1
+      export bootstrapBASHMATIC_DEBUG=1
       ;;
     -v | --verbose)
       shift
