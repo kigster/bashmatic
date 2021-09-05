@@ -1,30 +1,27 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
-set +e
+export __debug=0
+[[ -n $BASHMATIC_DEBUG || -n $BASHMATIC_PATH_DEBUG ]] && export __debug=1
 
 function src() {
-  local file
-  local code
-
-  for file in "$@"; do
+  while true; do
+    local file="$1"
     [[ -z $file ]] && break
-    
-    if [[ -s "${file}" ]]; then
-      ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} sourcing ${txtgrn}%50s${clr}..." "${file}"
+    shift
+    [[ -f "${file}" ]] && {
+      ((__debug)) && printf "${BASHMATIC_PREFIX} sourcing ${txtgrn}%50s${clr}..." "${file}"
       source "${file}"
       code=$?
-      ((BASHMATIC_DEBUG)) && {
-        ((code)) && {
-           printf "${txtred} [ ${bldred}X${txtred}, exit code=${code} ]${clr}\n"
-           continue
-        }
-        printf "${txtgrn} [ ✔︎ OK] ${clr}\n"
+      ((__debug)) && {
+        ((code)) && printf "${txtred} [ ${bldred}X${txtred}, exit code=${code} ]${clr}\n"
+        ((code)) || printf "${txtgrn} [ ✔︎ OK] ${clr}\n"
       }
-    else
-      ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} sourcing ${txtylw}%50s${clr}... ${txtylw}[ ${bldylw}X${txtylw}, file not found ]${clr}\n" "${file}"
-    fi 
+      continue
+    }
+    ((__debug)) && printf "${BASHMATIC_PREFIX} sourcing ${txtylw}%50s${clr}... ${txtylw}[ ${bldylw}X${txtylw}, file not found ]${clr}\n" "${file}"
   done
+
   return 0
 }
 

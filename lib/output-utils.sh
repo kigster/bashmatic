@@ -46,7 +46,7 @@ function inf() {
 }
 
 function info-debug() {
-  [[ -z ${BASHMATIC_DEBUG} ]] && return
+  [[ -z ${__debug} ]] && return
   printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
 }
 
@@ -128,7 +128,6 @@ function dbg-on() {
 
 function dbg-off() {
   unset BASHMATIC_DEBUG
-  [[ -f ${BASHMATIC_HOME}/.envrc.no-debug ]] && source ${BASHMATIC_HOME}/.envrc.no-debug
 }
 
 # @description Checks if we have debug mode enabled

@@ -29,7 +29,7 @@ export ffmpeg_binary="ffmpeg"
 
 .video.ffmpeg-run() {
   local cmd="${ffmpeg_binary} $*"
-  ((BASHMATIC_DEBUG)) && h1 "Executing Command:" "${cmd}"
+  ((__debug)) && h1 "Executing Command:" "${cmd}"
   eval "${cmd}"
 }
 

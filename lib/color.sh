@@ -20,7 +20,7 @@ function color.current-background() {
 
 function color.enable() {
   if [[ ${BashMatic__ColorLoaded} -eq 1 ]]; then
-    [[ -n ${BASHMATIC_DEBUG} ]] && echo "colors are already loaded."
+    [[ -n ${__debug} ]] && echo "colors are already loaded."
   else
     export txtblk='\e[0;30m' # Black - Regular
     export txtred='\e[0;31m' # Red
