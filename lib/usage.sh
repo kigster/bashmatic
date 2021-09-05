@@ -230,7 +230,7 @@ function usage-widget() {
   ((cache_wipe)) && rm -f "$(.usage-cache-file)"
 
   local -a args=("$@")
-  ((__debug)) && {
+  ((BASHMATIC_DEBUG)) && {
     h1 "Got total of ${#args[@]} arguments."
   }
 
