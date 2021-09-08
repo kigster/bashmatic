@@ -102,7 +102,7 @@ function .bashmatic.pre-init() {
     fi
   }
 
-  export BASHMATIC_VERSION="$(/usr/bin/tr -d '\n' "${BASHMATIC_HOME}/.version")"
+  export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
   export BASHMATIC_PREFIX="${bakblu}${bldwht}[bashmatic® ${bldylw}${BASHMATIC_VERSION}]${clr} "
   export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
   export BASHMATIC_OS="$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
