@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+function bashmatic.path.resolver() {
+ export PATH="/usr/local/bin:/usr/bin:/bin:/sbin:${PATH}"
+
+ for _path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin ${HOME}/.rbenv/shims ${HOME}/.pyenv/shims ; do
+   [[ -n ${BASHMATIC_PATH_DEBUG} ]] && printf "${BASHMATIC_PREFIX}Checking [${txtylw}%30.30s${clr}]..." "${_path}" >&2
+   if [[ -d "${_path}" ]]; then
+     (echo ":${PATH}:" | ${GREP_CMD} -q ":${_path}:") || {
+       [[ -n ${BASHMATIC_PATH_DEBUG} ]] && \
+       printf "${bldgrn}[ ✔ ] -> ${bldcyn}prepending a new folder to ${bldylw}\$PATH${clr}.\n" >&2
+       export PATH="${_path/ /\\ /}:${PATH}"
+       continue
+     }
+     [[ -n ${BASHMATIC_PATH_DEBUG} ]] && \
+       printf "${bldgrn}[ ✔ ]${clr} ${italic}${txtgrn}already in the ${bldylw}\$PATH${clr}\n"
+   else
+     [[ -n ${BASHMATIC_PATH_DEBUG} ]] && \
+       printf "${bldred}[ x ]${clr} ${italic}${txtred}invalid path, does not exist.${clr}\n"
+   fi
+ done
+
+ [[ ${BASHMATIC_PATH_DEBUG} -gt 0 || ${BASHMATIC_DEBUG} -gt 0 ]] && {
+   printf "${BASHMATIC_PREFIX}${bldpur}The ${bldylw}\${PATH}${bldpur} resolves to:\n"
+   echo "${PATH}" | /usr/bin/tr ':' '\n  • '
+   printf "${BASHMATIC_PREFIX}${bldpur}Total of${bldylw}$(echo "${PATH}" |  /usr/bin/tr ':' '\n' | wc -l | sed 's/  //g')${bldpur} folders.\n"
+   echo
+ }
+
+ export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
+
+ [[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
+   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
+     ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
+     BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
+   elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
+     ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
+     BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
+   else
+     printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
+     BASHMATIC_HOME="$(cd -P -- "$(/usr/bin//usr/bin/dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
+   fi
+ }
+}
+
+[[ $1 == "resolve" ]] && bashmatic.path.resolver

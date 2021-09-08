@@ -123,11 +123,13 @@ function columnize() {
 }
 
 function dbg-on() {
-  export BASHMATIC_DEBUG=$(time.now.db)
+  export BASHMATIC_DEBUG=1
+  [[ -f ${BASHMATIC_HOME}/.envrc.debug ]] && source ${BASHMATIC_HOME}/.envrc.debug
 }
 
 function dbg-off() {
   unset BASHMATIC_DEBUG
+  unset BASHMATIC_PATH_DEBUG
   [[ -f ${BASHMATIC_HOME}/.envrc.no-debug ]] && source ${BASHMATIC_HOME}/.envrc.no-debug
 }
 

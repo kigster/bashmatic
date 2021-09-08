@@ -9,7 +9,7 @@
 #
 # The scripts that rely on Bashmatic, will typically have the following three lines at the top:
 #     [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
-#     [[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
+#     [[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install              "
 #     [[ -d ${BASHMATIC_HOME} ]] || {
 #       echo "Can't find Bashmatic, even after attempting an installation."
 #       echo "Please install Bashmatic with the following command line:"
@@ -18,39 +18,86 @@
 #     }
 # The meaning of this installation procedure is described in detail in the Bashmatic README:
 # https://github.com/kigster/bashmatic#4-installing-bashmatic
-#
+
 set +ex
 
-# @description
-# 
-function .bashmatic.pre-init() {
-  export BASHMATIC_HOME="${BASHMATIC_HOME}"
-  unalias grep tr ps 2>/dev/null >/dev/null
+export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
 
-  if [[ ! -d ${BASHMATIC_HOME} || ! -f "${BASHMATIC_HOME}/init.sh" ]]; then
-    export BASHMATIC_HOME="$(/usr/bin/dirname "$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)")"
+export PATH="/usr/local/bin:/usr/bin:/bin:/sbin:${PATH}"
+export BASHMATIC_HOME=${BASHMATIC_HOME:-${SCRIPT_SOURCE}}
+export BASHMATIC_MAIN=${BASHMATIC_HOME}/init.sh
+
+
+function bashmatic.home.valid() {
+  [[ -n $BASHMATIC_HOME && -d ${BASHMATIC_HOME} && -s ${BASHMATIC_HOME}/init.sh ]]
+}
+
+export BASHMATIC_PREFIX="[${bldpur}bashmatic® ${bldylw}${italic}${BASHMATIC_VERSION}]${clr} "
+
+# resolve BASHMATIC_HOME if necessary
+bashmatic.home.valid || {
+  log.inf "Resolving BASHMATIC_HOME as the current one is invalid: ${BASHMATIC_HOME}"
+  if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
+    ((BASHMATIC_DEBUG)) && \
+      printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
+    BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
+  elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
+    ((BASHMATIC_DEBUG)) && \
+      printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
+    BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
+  else
+    printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
+    BASHMATIC_HOME="$(cd -P -- "$(/usr/bin//usr/bin/dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
   fi
-  
-  if [[ ! -d ${BASHMATIC_HOME} || ! -f "${BASHMATIC_HOME}/init.sh" ]]; then
-    export BASHMATIC_HOME="${HOME}/.bashmatic"
-  fi
+
+  log.inf "Resolved BASHMATIC_HOME to [${BASHMATIC_HOME}]"
+}
+
+bashmatic.home.valid || { 
+  log.err "ERROR: Can't determine BASHMATIC installation path."
+  .bashmatic.print-path-config
+  return 1
+}
+
+source ${BASHMATIC_HOME}/.bash_path_resolver
+
+export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
+# shellcheck disable=SC2002
+export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
+export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
+export BASHMATIC_OS="$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
+
+# grab our shell command
+export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
+
+function log.err() {
+  ((BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG + DEBUG)) || return 0
+  printf "${blderr}[ERROR] --> ${bldylw}$*${clr}\n"
+}
+
+function log.inf() {
+  ((BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG + DEBUG)) || return 0
+  printf "${bldblu}[INFO]  --> ${bldgrn}$*${clr}\n"
+}
+
+
+function .bashmatic.print-path-config {
+  ((BASHMATIC_PATH_DEBUG)) || return 0
+  echo "BASHMATIC_HOME[${BASHMATIC_HOME}]"
+  echo "BASHMATIC_MAIN[${BASHMATIC_MAIN}]" 
+  command -v pstree >/dev/null  &&  $(command -v pstree) -p $$ -w
+}
+
+
+# @description
+function bashmatic.dealias() {
+  for cmd in printf eche grep tr ps kill ; do unalias ${cmd} 2>/dev/null >/dev/null || true; done
 
   if [[ -f "${BASHMATIC_HOME}/.bash_safe_source" ]] ; then 
     source "${BASHMATIC_HOME}/.bash_safe_source"
     cp -p  "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source" 2>/dev/null
   fi
 
-  export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
-
-  # Save the value of $DEBUG, but convert it to 1 in case its not.
-  export BASHMATIC_DEBUG="${BASHMATIC_DEBUG}"
-  [[ -n ${BASHMATIC_DEBUG} ]] && export BASHMATIC_DEBUG=1
-
-  export BASHMATIC_PATH_DEBUG="${BASHMATIC_PATH_DEBUG}"
-  [[ -n ${BASHMATIC_PATH_DEBUG} ]] && {
-    export BASHMATIC_PATH_DEBUG=1
-    printf "${itacyn}PATH before update: ${bldylw}$PATH${clr}\n"
-  }
   src "${BASHMATIC_HOME}/lib/is.sh"
   src "${BASHMATIC_HOME}/lib/color.sh"
   src "${BASHMATIC_HOME}/lib/output-repeat-char.sh"
@@ -58,54 +105,7 @@ function .bashmatic.pre-init() {
   src "${BASHMATIC_HOME}/lib/output-utils.sh"
   src "${BASHMATIC_HOME}/lib/output-boxes.sh"
   src "${BASHMATIC_HOME}/lib/util.sh"
-
-  export PATH="/usr/local/bin:/usr/bin:/bin:/sbin:${PATH}"
-  for _path in /usr/local/bin /usr/bin /bin /sbin /usr/sbin /opt/local/bin ${HOME}/.rbenv/shims ${HOME}/.pyenv/shims ; do
-    [[ -n ${BASHMATIC_PATH_DEBUG} ]] && printf "${BASHMATIC_PREFIX}Checking [${txtylw}%30.30s${clr}]..." "${_path}" >&2
-    if [[ -d "${_path}" ]]; then
-      (echo ":${PATH}:" | ${GREP_CMD} -q ":${_path}:") || {
-        [[ -n ${BASHMATIC_PATH_DEBUG} ]] && \
-        printf "${bldgrn}[ ✔ ] -> ${bldcyn}prepending a new folder to ${bldylw}\$PATH${clr}.\n" >&2
-        export PATH="${_path/ /\\ /}:${PATH}"
-        continue
-      }
-      [[ -n ${BASHMATIC_PATH_DEBUG} ]] && \
-        printf "${bldgrn}[ ✔ ]${clr} ${italic}${txtgrn}already in the ${bldylw}\$PATH${clr}\n"
-    else
-      [[ -n ${BASHMATIC_PATH_DEBUG} ]] && \
-        printf "${bldred}[ x ]${clr} ${italic}${txtred}invalid path, does not exist.${clr}\n"
-    fi
-  done
-
-  [[ ${BASHMATIC_PATH_DEBUG} -gt 0 || ${BASHMATIC_DEBUG} -gt 0 ]] && {
-    hr; echo
-    printf "${BASHMATIC_PREFIX}${bldpur}The ${bldylw}\${PATH}${bldpur} resolves to:\n"
-    echo "${PATH}" | /usr/bin/tr ':' '\n  • '
-    printf "${BASHMATIC_PREFIX}${bldpur}Total of${bldylw}$(echo "${PATH}" |  /usr/bin/tr ':' '\n' | wc -l | sed 's/  //g')${bldpur} folders.\n"
-    hr; echo
-  }
-
-  export SHELL_COMMAND
-  # deterministicaly figure out our currently loaded shell.
-  SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
-
-  [[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
-    if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
-      ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
-      BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
-    elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
-      ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
-      BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
-    else
-      printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
-      BASHMATIC_HOME="$(cd -P -- "$(/usr/bin//usr/bin/dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
-    fi
-  }
-
-  export BASHMATIC_VERSION="$(/usr/bin/tr -d '\n' "${BASHMATIC_HOME}/.version")"
-  export BASHMATIC_PREFIX="${bakblu}${bldwht}[bashmatic® ${bldylw}${BASHMATIC_VERSION}]${clr} "
-  export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
-  export BASHMATIC_OS="$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
+  src "${BASHMATIC_HOME}/lib/time.sh"
 }
 
 function .bashmatic.load-time() {
@@ -138,7 +138,8 @@ function bashmatic.set-is-not-loaded() {
 }
 
 function bashmatic.init-core() {
-  .bashmatic.pre-init
+  log.inf calling .bashhmatic.pre-init
+  bashmatic.dealias
 
   # DEFINE CORE VARIABLES
   export BASHMATIC_URL="https://github.com/kigster/bashmatic"
@@ -149,7 +150,7 @@ function bashmatic.init-core() {
   [[ -d ${BASHMATIC_TEMP} ]] || mkdir -p "${BASHMATIC_TEMP}"
 
   if [[ -f ${BASHMATIC_HOME}/init.sh ]]; then
-    export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
+    export BASHMATIC_INIT="${BASHMATIC_MAIN}"
   else
     printf "${BASHMATIC_PREFIX}${bldred}ERROR: —> Can't determine BASHMATIC_HOME, giving up sorry!${clr}\n"
     return 1
@@ -163,17 +164,18 @@ function bashmatic.init-core() {
   # If defined BASHMATIC_AUTOLOAD_FILES, we source these files together with BASHMATIC
   for _init in ${BASHMATIC_AUTOLOAD_FILES}; do
     [[ -s "${PWD}/${_init}" ]] && {
-      [[ -n ${BASHMATIC_DEBUG} ]] && printf "${BASHMATIC_PREFIX} sourcing in [${bldblu}${PWD}/${_init}${clr}]"
+      [[ -n ${BASHMATIC_DEBUG} ]] && \
+      printf "${BASHMATIC_PREFIX} sourcing in <—— [${bldblu}${PWD}/${_init}${clr}]"
       source "${PWD}/${_init}"
     }
   done
 
-  for _file in $(find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f); do
-    [[ -f "${_file}" ]] && {
-      [[ -n ${BASHMATIC_DEBUG} ]] && printf "${BASHMATIC_PREFIX} sourcing in [${bldgrn}${_file}${clr}]\n"
-      source "${_file}"
-    }
-  done
+  # Load BASHMATIC library
+  ((BASHMATIC_DEBUG)) && {
+     printf "${BASHMATIC_PREFIX} evaluating all shell files under ${bldylw}${BASHMATIC_HOME}/lib...${clr}\n"
+  }
+
+  find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -exec cat   {} \; | eval
 
   # shellcheck disable=SC2155
   [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH=${PATH}:${BASHMATIC_HOME}/bin
@@ -225,22 +227,31 @@ function bashmatic.init.paths() {
 
 
 function bashmatic.init() {
-  for file in "$1" "$2" "$3" "$4"; do
-    [[ $0 == "$1" ]] && continue 
+  local -a args=($@)
 
+  for file in "${args[@]}"; do
+    [[ $0 =~ "$1" ]] && {
+     log.inf "skipping the first file ${file}"
+      continue 
+    }
     local env_file="${BASHMATIC_HOME}/.envrc.${file}"
     if [[ -f $env_file ]]; then
+     log.inf "sourcing env file ${env_file}"
       source "$env_file"
     fi
-
     if [[ "$file" =~ (reload|force|refresh) ]]; then
+      log.inf "setting to is-not-loaded"
       bashmatic.set-is-not-loaded
     fi
   done
   
+  log.inf "calling bashhmatic.init-core"
   bashmatic.init-core  
-  bashmatic.is-loaded || bashmatic.init "$@"
-
+  log.inf "calling bashhmatic.is-loaded"
+  bashmatic.is-loaded || {
+    log.inf "calling bashhmatic.init"
+    bashmatic.init "$@"
+  } 
   local init_func=".bashmatic.init.${BASHMATIC_OS}"
 
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
@@ -253,14 +264,16 @@ function bashmatic.init() {
     local code=$?
     ((code)) && printf "${BASHMATIC_PREFIX} Function ${bldred}bashmatic.setup${clr} returned exit code [${code}]"
   else
-    echo "  ⛔️ ERROR:"
-    echo "  🙁 Bashmatic appears to be broken, file not found: ${setup_script}"
+    log.err "  ⛔️  Bashmatic appears to be broken:"
+    log.err "      File not found: ${setup_script}"
+
+    .bashmatic.print-path-config
     return 1
   fi
 
   if [[ -n ${BASHMATIC_DEBUG} ]]; then
     local __bashmatic_end_time=$(millis)
-    notice "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
+    ((BASHMATIC_DEBUG)) && notice "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
   fi
 
   unset __bashmatic_end_time

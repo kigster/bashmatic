@@ -497,7 +497,7 @@ _.dev-setup.action.grc() {
 
 declare -a components
 declare -a components_to_install
-declare -a DevSetup__Errors
+declare -a DevSetuplog.errors
 declare -a DevSetup__BrewPackages
 declare -a DevSetup__BrewCasks
 declare -a DevSetup__BrewServices
@@ -795,7 +795,7 @@ dev-setup.install.packages() {
 
     [[ ${code} -ne 0 ]] && {
       errors=$((errors + 1))
-      DevSetup__Errors=("${DevSetup__Errors[@]}" "${command} ${package}")
+      DevSetuplog.errors=("${DevSetuplog.errors[@]}" "${command} ${package}")
     }
   done
   echo
@@ -891,7 +891,7 @@ dev-setup.install() {
       "Setup completed, but with some failures." \
       "Total of ${failures} failures out of ${total} commands were detected and skipped."
         echo
-        h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
+        h.e "ATTENTION: the following commands failed:" "${DevSetuplog.errors[@]}"
   fi
 }
 

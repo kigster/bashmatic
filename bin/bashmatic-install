@@ -13,7 +13,7 @@
 #
 set -e
 
-# Configuration
+  # Configuration
 export HOME=${HOME:-"/"}
 declare -a CHOWN_DIRS
 declare -a BREW_PACKAGES
@@ -193,9 +193,8 @@ function .install.git-sync() {
     return 1
   else
     git checkout -q "${bootstrap__git_branch}" && git pull -q --rebase >/dev/null
+    git checkout -q "${bootstrap__git_branch}" && git pull -q --rebase >/dev/null
   fi
-
-  cd - >/dev/null
 }
 
 #——————————————————————————————————————————————————————————————————————————————————————

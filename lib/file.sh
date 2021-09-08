@@ -350,3 +350,7 @@ file.find() {
 dir.find() {
   find . -name "*$1*" -type d -print
 }
+
+ls.mb(){
+  du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
+}
