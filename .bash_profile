@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
-[[ -f ~/.bash_safe_source ]] && source ~/.bash_safe_source
 [[ -f ~/.bashmatic/.bash_safe_source ]] && source ~/.bashmatic/.bash_safe_source
-
 [[ -f /usr/local/etc/bash_completion ]] && src /usr/local/etc/bash_completion
 
 # Path to the bash it configuration
@@ -83,16 +81,6 @@ src "${BASH_IT}"/bash_it.sh
 
 export POWERLINE_LEFT_PROMPT="scm cwd"
 export POWERLINE_RIGHT_PROMPT="clock node"
-
-if [[ -f ${HOME}/.bashmatic_debug ]]; then
-  export BASHMATIC_DEBUG=1
-  export BASHMATIC_PATH_DEBUG=1
-  export DEBUG=1
-else
-  export BASHMATIC_DEBUG=0
-  export BASHMATIC_PATH_DEBUG=0
-  export DEBUG=0
-fi
 
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
 [[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"

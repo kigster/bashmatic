@@ -21,12 +21,12 @@ bashmatic.is-developer() {
 
 bashmatic.reload() {
   bashmatic.set-is-not-loaded
+  source "${BASHMATIC_HOME}/.envrc.no-debug"
   source "${BASHMATIC_INIT}"
 }
 
 bashmatic.reload-debug() {
   bashmatic.set-is-not-loaded
-  export BASHMATIC_PATH_DEBUG=1
   source "${BASHMATIC_HOME}/.envrc.debug"
   source "${BASHMATIC_INIT}"
 }
@@ -68,7 +68,7 @@ bashmatic.functions-from() {
     sedx 's/^(lib\/)?.*\.sh://g' |
     sedx 's/^function //g' |
     sedx 's/\(\) *\{.*$//g' |
-    tr -d '()' |
+    /usr/bin/tr -d '()' |
     sedx '/^ *$/d' |
     eval  "${GrepCommand} '^(_|\.)' -v" |
     sort |

@@ -1,0 +1,1 @@
+export PATH=$HOME/.bashmatic/bin:$HOME/.fzf/bin:$HOME/.rbenv/shims:$GOPATH/bin:/usr/local/bin:/bin:/sbin:/usr/bin:/usr/local/MacGPG2/bin:/usr/local/bin:/usr/sbin

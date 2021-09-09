@@ -211,7 +211,7 @@ util.functions-starting-with-csv() {
 util.functions-matching() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '"
+  set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '
 }
 
 util.functions-matching.diff() {
