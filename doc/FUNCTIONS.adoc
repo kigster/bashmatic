@@ -59,6 +59,7 @@
 * xref:#module-runtime[runtime]
 * xref:#module-runtime-config[runtime-config]
 * xref:#module-sedx[sedx]
+* xref:#module-serial[serial]
 * xref:#module-set[set]
 * xref:#module-settings[settings]
 * xref:#module-shasum[shasum]
@@ -1207,7 +1208,7 @@ bashmatic.bash.version-four-or-later ()
 bashmatic.cd-into () 
 { 
     [[ -d ${BASHMATIC_HOME} ]] || return 1
-    cd "${BASHMATIC_HOME}"
+    cd "${BASHMATIC_HOME}" || exit 1
 }
 
 ----
@@ -1308,6 +1309,20 @@ bashmatic.reload ()
 
 ----
 
+==== `bashmatic.reload-debug`
+
+[source,bash]
+----
+bashmatic.reload-debug () 
+{ 
+    bashmatic.set-is-not-loaded
+    export BASHMATIC_PATH_DEBUG=1
+    source "${BASHMATIC_HOME}/.envrc.debug"
+    source "${BASHMATIC_INIT}"
+}
+
+----
+
 ==== `bashmatic.setup`
 
 [source,bash]
@@ -1320,12 +1335,13 @@ bashmatic.setup ()
         .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
         return 1
     fi
-    bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
+    bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh
+    bashmatic.source is.sh output-boxes.sh user.sh
     bashmatic.shell-check || return 1
     bashmatic.source util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
     output.unconstrain-screen-width
-    [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+    [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update 1>&2 2> /dev/null
     return 0
 }
 
@@ -2046,7 +2062,7 @@ color.disable ()
 color.enable () 
 { 
     if [[ ${BashMatic__ColorLoaded} -eq 1 ]]; then
-        [[ -n ${DEBUG} ]] && echo "colors are already loaded."
+        [[ -n ${BASHMATIC_DEBUG} ]] && echo "colors are already loaded."
     else
         export txtblk='\e[0;30m'
         export txtred='\e[0;31m'
@@ -3175,7 +3191,8 @@ db.actions.commands ()
 ----
 db.cli-setup () 
 { 
-    color.enable
+    db.refresh.actions
+    color.enable > /dev/null
     output.constrain-screen-width 110
     if [[ $(screen.width) -lt 110 ]]; then
         error "Please resize your terminal to have at last 110 columns."
@@ -3192,6 +3209,8 @@ db.cli-setup ()
 db.commands-list () 
 { 
     h5 "Available Commands"
+    source "${BASHMATIC_HOME}/lib/util.sh"
+    db.refresh.actions
     printf "${bldgrn}"
     array.to.bullet-list "${db_actions[@]}" | sed 's/^/     /g'
     echo
@@ -3305,6 +3324,17 @@ db.main ()
         return 3
     }
     ${func} "$@"
+}
+
+----
+
+==== `db.refresh.actions`
+
+[source,bash]
+----
+db.refresh.actions () 
+{ 
+    export db_actions=($(util.functions-matching.diff db.actions.))
 }
 
 ----
@@ -3436,7 +3466,7 @@ db.top ()
             local vertical_shift_next=$((percent_total_height_next * screen_height / 100))
             local height=$((vertical_shift_next - vertical_shift - 7))
             cursor.at.y ${vertical_shift} >> "${tof}"
-            [[ -n ${DEBUG} ]] && { 
+            [[ -n ${BASHMATIC_DEBUG} ]] && { 
                 .output.set-indent 0
                 info "CURRENT ❯${bldylw} % = ${percent_total_height}, %++ = ${percent_total_height_next}" >> "${tof}"
                 h1 -- "Database: ${dbname}" "PSQL arguments:" "${connections_arguments[${index}]}" >> "${tof}"
@@ -3922,7 +3952,7 @@ dir.temp ()
 { 
     local dir="$(file.temp)/$$/${RANDOM/284/_-=}"
     mkdir -p "${dir}" 2> /dev/null
-    [[ -n $DEBUG ]] && { 
+    [[ -n ${BASHMATIC_DEBUG} ]] && { 
         info "temporary folder is: ${dir}"
         inf "it exists?  "
         [[ -d ${dir} ]] && ok:
@@ -4027,6 +4057,17 @@ file.extension.replace ()
 file.find () 
 { 
     find . -name "*$1*" -type f -print
+}
+
+----
+
+==== `file.first-is-newer-than-second`
+
+[source,bash]
+----
+file.first-is-newer-than-second () 
+{ 
+    [[ "$1" -nt "$2" ]]
 }
 
 ----
@@ -4925,7 +4966,7 @@ git.local-vs-remote ()
     local local_repo=$(git rev-parse @)
     local remote_repo=$(git rev-parse "$upstream")
     local base=$(git merge-base @ "$upstream")
-    if [[ -n ${DEBUG} ]]; then
+    if [[ -n ${BASHMATIC_DEBUG} ]]; then
         printf "
       pwd         = $(pwd)
       remote      = $(git.remotes)
@@ -5175,7 +5216,7 @@ git.sync ()
         cd "${dir}" > /dev/null
         return 1
     }
-    if ((DEBUG)); then
+    if ((BASHMATIC_DEBUG)); then
         git.update-repo-if-needed
     else
         git.update-repo-if-needed 1>&2 > /dev/null
@@ -5417,7 +5458,7 @@ is.a-directory ()
 ----
 is.a-function () 
 { 
-    if typeset -f "$1" > /dev/null; then
+    if [[ -n $1 ]] && typeset -f "$1" > /dev/null 2>&1; then
         return 0
     else
         return 1
@@ -6200,14 +6241,14 @@ change-underscan ()
     run "open /System/Library/PreferencePanes/Displays.prefPane"
     run.ui.ask "Have you changed the resolution and exited Display Prefs? "
     local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')
-    [[ -n $DEBUG ]] && info "diff line is at ${line}"
+    [[ -n ${BASHMATIC_DEBUG} ]] && info "diff line is at ${line}"
     value=
     if [[ "${line}" -gt 0 ]]; then
         line_pscn_key=$(($line - 4))
         line_pscn_value=$(($line - 3))
         ( awk "NR==${line_pscn_key}{print;exit}" "${file}" | grep -q pscn ) && { 
             value=$(awk "NR==${line_pscn_value}{print;exit}" "${file}" | awk 'BEGIN{FS="[<>]"}{print $3}')
-            [[ -n $DEBUG ]] && info "current value is ${value}"
+            [[ -n ${BASHMATIC_DEBUG} ]] && info "current value is ${value}"
         }
     else
         error "It does not appear that anything changed, sorry."
@@ -6508,6 +6549,17 @@ ascii-clean ()
 ascii-pipe () 
 { 
     cat | .output.clean.pipe
+}
+
+----
+
+==== `bashmatic.set-widget-width-to`
+
+[source,bash]
+----
+bashmatic.set-widget-width-to () 
+{ 
+    output.constrain-screen-width "$@"
 }
 
 ----
@@ -8213,7 +8265,7 @@ dbg ()
 ----
 dbg-off () 
 { 
-    unset DEBUG
+    unset BASHMATIC_DEBUG
 }
 
 ----
@@ -8224,7 +8276,7 @@ dbg-off ()
 ----
 dbg-on () 
 { 
-    export DEBUG=$(time.now.db)
+    export BASHMATIC_DEBUG=$(time.now.db)
 }
 
 ----
@@ -8336,7 +8388,7 @@ info ()
 ----
 info-debug () 
 { 
-    [[ -z ${DEBUG} ]] && return
+    [[ -z ${BASHMATIC_DEBUG} ]] && return
     printf -- "${LibOutput__LeftPrefix}${bakpur}[ debug ] $*  ${clr}\n"
 }
 
@@ -8360,7 +8412,7 @@ info: ()
 ----
 is-dbg () 
 { 
-    [[ -n $DEBUG ]]
+    [[ -n ${BASHMATIC_DEBUG} ]]
 }
 
 ----
@@ -9493,7 +9545,7 @@ repos.recursive-update ()
         for dir in $(find . -type d -name '.git')
         do
             local subdir=$(dirname "$dir")
-            [[ -n "${DEBUG}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
+            [[ -n "${BASHMATIC_DEBUG}" ]] && info "checking out sub-folder ${bldcyn}${subdir}..."
             repos.recursive-update "${subdir}"
             if [[ $? -eq 2 ]]; then
                 error "folder ${bldylw}${subdir}${bldred} return error!"
@@ -10792,6 +10844,39 @@ util.ensure-gnu-sed ()
 ----
 
 
+=== Module `serial`
+
+==== `serial.baud`
+
+[source,bash]
+----
+serial.baud () 
+{ 
+    if [[ -n $1 ]]; then
+        is.number "$1" && export BashmaticSerial__DefaultBaud="$1"
+    fi
+    h2 "Current Baud Rate:" "${bldylw}${BashmaticSerial__DefaultBaud} Bits/Second"
+}
+
+----
+
+==== `serial.device`
+
+[source,bash]
+----
+serial.device () 
+{ 
+    if [[ -n $1 && $1 =~ ^/dev ]]; then
+        export BashmaticSerial__DefaultDevice="$1"
+    else
+        export BashmaticSerial__DefaultDevice=$(ls -1 /dev/cu.* | grep -vi bluetooth | tail -1)
+    fi
+    h3 "Current Device is:" "${bldylw}${BashmaticSerial__DefaultDevice}"
+}
+
+----
+
+
 === Module `set`
 
 ==== `set-e-restore`
@@ -11044,7 +11129,7 @@ shell-set.pop-stack ()
     fi
     local pop=(${last})
     export SetOptsStack=("${SetOptsStack[@]/$pop/}")
-    [[ -n ${DEBUG} ]] && shell-set-show
+    [[ -n ${BASHMATIC_DEBUG} ]] && shell-set-show
     eval "set ${last}"
 }
 
@@ -11060,7 +11145,7 @@ shell-set.push-stack ()
     local is_set=${-//[^${value}]/}
     shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
     shell-set.is-set ${value} || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
-    [[ -n ${DEBUG} ]] && shell-set-show
+    [[ -n ${BASHMATIC_DEBUG} ]] && shell-set-show
 }
 
 ----
@@ -11169,7 +11254,7 @@ bashmatic.detect-subshell ()
     export BASH_SUBSHELL_DETECTED=true
     local len="${#BASH_SOURCE[@]}"
     local last_index=$((len - 1))
-    [[ -n ${DEBUG} ]] && { 
+    [[ -n ${BASHMATIC_DEBUG} ]] && { 
         echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2
         echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2
         echo "\$0            = $0" 1>&2
@@ -12145,6 +12230,48 @@ usage-box.sub-section ()
 
 ----
 
+==== `usage-widget`
+
+[source,bash]
+----
+usage-widget () 
+{ 
+    local width="$1"
+    local cache_wipe=0
+    [[ ${width} =~ ^- ]] && { 
+        cache_wipe=1
+        width=${width:1}
+    }
+    is.numeric "${width}" && { 
+        shift
+        bashmatic.set-widget-width-to "${width}"
+    }
+    ((cache_wipe)) && rm -f "$(.usage-cache-file)"
+    local -a args=("$@")
+    ((BASHMATIC_DEBUG)) && { 
+        h1 "Got total of ${#args[@]} arguments."
+    }
+    local -a details
+    local left_space
+    left_space="$(cursor.right 1) "
+    if [[ ${#args[@]} -gt 2 ]]; then
+        for i in $(seq 2 50)
+        do
+            [[ -z ${args[$i]} ]] && break
+            if [[ ${args[$i]} =~ ^® ]]; then
+                details+=("$(cursor.left 4)$(usage-box.section "${args[$i]/®/}")")
+                details+=(" ")
+            else
+                details+=("${left_space}")
+                details+=("$(cursor.left 6)${args[$i]}")
+            fi
+        done
+    fi
+    usage-box "${args[0]} © ${args[1]}" "$(cursor.up 1; cursor.left 5)" "$(cursor.right 10)" "${details[@]}"
+}
+
+----
+
 ==== `usage.set-min-flag-len`
 
 [source,bash]
@@ -12475,7 +12602,7 @@ util.append-to-init-files ()
     for init_file in "${shell_files[@]}"
     do
         file="${init_file}"
-        [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && { 
+        [[ -f ${file} ]] && grep -q "${search}" "${file}" && { 
             is_installed=${file}
             break
         }
@@ -12502,7 +12629,7 @@ util.append-to-init-files ()
 ----
 util.arch () 
 { 
-    echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr '[:upper:]' '[:lower:]'
+    echo -n "${AppCurrentOS}-$(/usr/bin/uname -m)-$(/usr/bin/uname -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
 }
 
 ----
@@ -12545,11 +12672,11 @@ util.eval-function-body ()
 { 
     local name="$1"
     shift
-    type ${name} | grep -qi function || { 
+    type "${name}" | grep -qi function || { 
         error "${name} is not a function."
         return 1
     }
-    eval "$(type ${name} | sedx '1,3d;$d')" "$@"
+    eval "$(type "${name}" | sedx '1,3d;$d')" "$@"
 }
 
 ----
@@ -12562,7 +12689,7 @@ util.functions-matching ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '"
+    eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '"
 }
 
 ----
@@ -12573,10 +12700,16 @@ util.functions-matching ()
 ----
 util.functions-matching.diff () 
 { 
-    for e in $(util.functions-matching "${1}")
+    for m in "$@"
     do
-        echo "${e/${1}/}"
+        [[ -z "$1" ]] && break
+        for e in $(util.functions-matching "${1}")
+        do
+            printf "${e/$1/}\n"
+        done
+        shift
     done
+    return 0
 }
 
 ----
@@ -12589,7 +12722,7 @@ util.functions-starting-with ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+    set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | /usr/bin/tr '\n ' ' '
 }
 
 ----
@@ -12725,7 +12858,7 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    export AppCurrentOS="${AppCurrentOS:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
+    export AppCurrentOS="${AppCurrentOS:-$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 ----
@@ -12758,7 +12891,7 @@ util.remove-from-init-files ()
     do
         run.config.detail-is-enabled && inf "verifying file ${init_file}..."
         file="${init_file}"
-        if [[ -f ${file} && -n "$(grep "${search}" "${file}")" ]]; then
+        if [[ -f ${file} ]] && grep -q "${search}" "${file}"; then
             run.config.detail-is-enabled && ui.closer.ok:
             local matches=$(grep -c "${search}" "${file}")
             run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"
@@ -13046,7 +13179,7 @@ vim.gvim-off ()
     ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
     ${GrepCommand} -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >> ${LibVim__initFile}
     eval "
-    [[ -n '${DEBUG}' ]] && set -x
+    [[ -n '${BASHMATIC_DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOff}
     unalias ${LibVim__editorVi} 2>/dev/null
     unalias ${LibVim__editorGvimOff} 2>/dev/null
@@ -13070,7 +13203,7 @@ vim.gvim-on ()
     ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
     ${GrepCommand} -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >> ${LibVim__initFile}
     eval "
-    [[ -n '${DEBUG}' ]] && set -x
+    [[ -n '${BASHMATIC_DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOn}
     alias ${LibVim__editorVi}=${LibVim__editorGvimOn}
     alias ${LibVim__editorGvimOff}=${LibVim__editorGvimOn}

@@ -24,7 +24,7 @@ function file.temp() {
 function dir.temp() {
   local dir="$(file.temp)/$$/${RANDOM/284/_-=}"
   mkdir -p "${dir}" 2>/dev/null
-  [[ -n $DEBUG ]] && {
+  [[ -n ${BASHMATIC_DEBUG} ]] && {
     info "temporary folder is: ${dir}"
     inf "it exists?  "
     [[ -d ${dir}  ]] && ok:
@@ -88,6 +88,11 @@ file.gsub() {
   [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options}
   # replace
   run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
+}
+
+# @description A super verbose shortcut to [[ file -nt file2 ]]
+function file.first-is-newer-than-second() {
+  [[ "$1" -nt "$2" ]]
 }
 
 # Usage:
@@ -344,4 +349,8 @@ file.find() {
 
 dir.find() {
   find . -name "*$1*" -type d -print
+}
+
+ls.mb(){
+  du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
 }

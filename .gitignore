@@ -20,3 +20,11 @@ libexec/
 share/
 shellcheck.log
 test/all.bats
+**/.DS_Store
+.envrc.local
+.fonts/
+*.pdf.reduced
+.bundle/
+doc/USAGE.adoc
+.developer-warned
+.history

@@ -20,7 +20,6 @@ declare -a BREW_PACKAGES
 export CHOWN_DIRS=(/usr/local/* /Library/Ruby /Library/Python)
 export BREW_PACKAGES=(coreutils gnu-sed)
 
-
 # Constants
 export clr='\e[0m' # Text Reset
 
@@ -204,11 +203,11 @@ function .install.git-sync() {
 #——————————————————————————————————————————————————————————————————————————————————————
 
 function .install.linux-requirements() {
-  command -v git >/dev/null || {
-   .err "Please install git on your system first." \
-      "Perhaps try apt-get install git?"
-    exit 1
-  }
+  for package in unzip git curl; do
+    command -v "${command}" >/dev/null || {
+      apt-get install "${command}" -yqq || sudo apt-get install "${command}" -yqq
+    }
+  done
 }
 
 #——————————————————————————————————————————————————————————————————————————————————————
@@ -314,7 +313,7 @@ function .install.os-requirements() {
 # Main Body
 #——————————————————————————————————————————————————————————————————————————————————————
 
-export bootstrap__debug=0
+export BASHMATIC_DEBUG=0
 export bootstrap__skip_git_check=0
 export bootstrap__skip_install=0
 export bootstrap__verbose=0
@@ -330,7 +329,7 @@ export bootstrap__git_method="https"
 export bootstrap__git_branch="master"
 
 function is-debug() {
-  ((bootstrap__debug))
+  ((BASHMATIC_DEBUG))
 }
 
 function is-verbose() {
@@ -382,7 +381,7 @@ ${bldylw}FLAGS:${clr}
   -v, --verbose                 See additional output as bootstrap is running.
   -f, --force                   Force a reinstall of any existing target.
   -q, --quiet                   See only.error output.
-  -d, --debug                   Turn on 'set -x' to see some of the commands running.
+  -d, --debug                   Print the values of configuration variables for debugging.
   -h, --help                    Show this help message.
 ${clr}\n\n"
 }
@@ -421,6 +420,7 @@ function .install.parse-opts() {
        .err "Invalid usage of -m, expected either https or git."
         exit 1
       }
+      [[ ${bootstrap__git_method} == "https" ]] && export bootstrap__skip_git_check=1
       shift
       ;;
     -b | --git-branch)
@@ -438,7 +438,8 @@ function .install.parse-opts() {
       ;;
     -d | --debug)
       shift
-      export bootstrap__debug=1
+      export BASHMATIC_DEBUG=1
+      export BASHMATIC_PATH_DEBUG=1
       ;;
     -v | --verbose)
       shift
@@ -487,9 +488,9 @@ function .install.parse-opts() {
     esac
   done
 
-  if [[ $bootstrap__git_method -eq "git" ]]; then
+  if [[ "${bootstrap__git_method}" == "git" ]]; then
     export BASHMATIC_URL="git@github.com:kigster/bashmatic"
-  elif [[ $bootstrap__git_method -eq "https" ]]; then
+  elif [[ "${bootstrap__git_method}" == "https" ]]; then
     export BASHMATIC_URL="https://github.com/kigster/bashmatic"
   else
     .err "Invalid git method, please set to either git or https."
@@ -508,9 +509,9 @@ function .install.download-and-install() {
       .wrn "Warning: removing existing ${BASHMATIC_HOME}..."
       rm -rf "${BASHMATIC_HOME}"
     }
-    ((bootstrap__debug)) && set -x
-    git clone --depth 1 \
-      --branch "${bootstrap__git_branch}" -q "${BASHMATIC_URL}" "${BASHMATIC_HOME}"
+    local cmd="git clone --depth 1 --branch \"${bootstrap__git_branch}\" -q \"${BASHMATIC_URL}\" \"${BASHMATIC_HOME}\""
+    ((bootstrap__verbose)) && eval "set -ex; ${cmd}; set +ex"
+    ((bootstrap__verbose)) || eval "${cmd}" >/dev/null
     code=$?
     set +x
   fi
@@ -526,6 +527,7 @@ function .install.download-and-install() {
       return 1
     }
     # shellcheck disable=SC1090
+    ((bootstrap_debug)) && source "${BASHMATIC_HOME}/.envrc.debug"
     source "${BASHMATIC_INIT}"
     ((bootstrap__skip_on_login)) || bashmatic.load-at-login
     is-quiet || success "Your BashMatic has been successfully installed."
@@ -540,20 +542,29 @@ function .install.run-not-source() {
 }
 
 function .install.current-shell() {
-  [[ -n ${current_shell} ]] && /bin/ps -p $$ -o args | /usr/bin/grep -q "${current_shell}" && {
+  if [[ -z $(which grep) || -z $(which sed) || -z $(which cut) ]]; then
+    # something is seriosly screwy with the system's PATH. 
+    # Perhaps we are in a Docker container.
+    export PATH="${PATH}:/bin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/usr/local/sbin:/opt/local/bin:/opt/bin"
+  fi
+
+  [[ -z ${LC_CTYPE} ]] && export LC_CTYPE=C 
+  [[ -z ${LANG} ]] && export LANG=C
+
+  [[ -n ${current_shell} ]] && /bin/ps -p $$ -o args | grep -q "${current_shell}" && {
     printf -- '%s' "${current_shell/ /}" | tr -d ' '
     return 0
   }
   (
     # deterministicaly figure out our currently loaded shell.
-    current_shell="$(/bin/ps -p $$ -o args | /usr/bin/grep -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | /usr/bin/sed -E 's/-//g')"
+    current_shell="$(basename $(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | cut -d ' ' -f 1 | sed -E 's/-//g'))"
     export current_shell
     if [[ "${current_shell}" =~ zsh ]]; then
       command -v zsh
     elif [[ "${current_shell}" =~ bash ]]; then
       command -v bash
     else
-    .wrn "Detected an unsupported shell type: ${current_shell}" >&2
+      .wrn "Detected an unsupported shell type: ${current_shell}" >&2
       command -v "${current_shell}"
     fi
   ) | tr -d ' '

@@ -4,10 +4,16 @@
 
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 
-source "${BASHMATIC_HOME}/init.sh"
+source "${BASHMATIC_HOME}/init.sh" refresh 1>/dev/null 2>/dev/null
 source "${BASHMATIC_HOME}/lib/db.sh"
-source "${BASHMATIC_HOME}/lib/db_cli.sh"
+source "${BASHMATIC_HOME}/lib/util.sh"
+source "${BASHMATIC_HOME}/lib/color.sh" 1>/dev/null 2>/dev/null
 source "${BASHMATIC_HOME}/lib/db_top.sh"
+source "${BASHMATIC_HOME}/lib/output.sh"
+source "${BASHMATIC_HOME}/lib/output-utils.sh"
+source "${BASHMATIC_HOME}/lib/output-repeat-char.sh"
+source "${BASHMATIC_HOME}/lib/output-boxes.sh"
+source "${BASHMATIC_HOME}/lib/is.sh"
 
 # see lib/db_cli.sh
 db.cli-setup && db.main "$@"

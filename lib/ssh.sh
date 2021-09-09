@@ -70,3 +70,4 @@ function ssh.keys.generate() {
   run.set-next show-output-on
   run "ssh-keygen -t rsa -b 4096 -C ${email}"
 }
+

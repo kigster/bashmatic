@@ -10,7 +10,7 @@ set +e
 # shellcheck disable=2046
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 source "${BASHMATIC_HOME}/init.sh"
-\
+
 # https://blog.phusion.nl/2017/10/13/why-ruby-app-servers-break-on-macos-high-sierra-and-what-can-be-done-about-it/
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 export RAILS_ENV="${RAILS_ENV:-"development"}"
@@ -101,6 +101,13 @@ puma.status.tree() {
 }
 
 # COMMANDS ——————————————————————————————————————————————————————————————————————
+
+puma.commands.start() {
+  puma.commands.stop || return 1
+  set -x
+  bundle exec puma -C config/puma.rb -w ${PUMA_WORKERS} -t ${PUMA_THREADS}
+  set +x
+}
 
 puma.commands.status() {
   puma.status.header

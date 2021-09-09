@@ -5,6 +5,7 @@ load test_helper
 set -e
 
 @test "bashmatic.detect-subshell - running a script that wants to be run" {
+  set +e
   /usr/bin/env bash ./test/helpers/test-subshell.sh
   [[ $? -eq 0 ]]
 }
@@ -22,6 +23,7 @@ set -e
 }
 
 @test "bashmatic.detect-subshell - sourcing a script that wants to be sourced in" {
+  set +e
   /usr/bin/env bash -c 'source ./test/helpers/test-source.sh'
   [[ $? -eq 0 ]]
 }

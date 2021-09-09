@@ -31,6 +31,10 @@ function output.constrain-screen-width() {
   return 0
 }
 
+function bashmatic.set-widget-width-to() {
+  output.constrain-screen-width "$@"
+}
+
 function output.unconstrain-screen-width() {
   export LibOutput__WidthDetectionStrategy="unconstrained"
   return 0
@@ -148,7 +152,7 @@ output.color.off() {
 }
 
 screen.width.actual() {
-  .output.current-screen-width.unconstrained  
+  .output.current-screen-width.unconstrained
 }
 
 .output.current-screen-width.constrained() {
@@ -371,7 +375,7 @@ ascii-clean() {
     .output.repeat-char " " "${width}"
     cursor.at.x 4
   }
-  printf "${color}%s${clr}" "${text}"  
+  printf "${color}%s${clr}" "${text}"
   echo
 }
 

@@ -11,7 +11,7 @@
 #
 # @requires A working Ruby installation.
 
-source ${BASHMATIC_HOME}/lib/sedx.sh
+source "${BASHMATIC_HOME}/lib/sedx.sh"
 
 util.rot13-stdin() {
   ruby -e 'puts STDIN.read.
@@ -64,11 +64,11 @@ util.i-to-ver() {
 }
 
 util.os() {
-  export AppCurrentOS="${AppCurrentOS:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
+  export AppCurrentOS="${AppCurrentOS:-$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 util.arch() {
-  echo -n "${AppCurrentOS}-$(uname -m)-$(uname -p)" | tr '[:upper:]' '[:lower:]'
+  echo -n "${AppCurrentOS}-$(/usr/bin/uname -m)-$(/usr/bin/uname -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
 }
 
 # shellcheck disable=SC2120
@@ -95,7 +95,7 @@ util.append-to-init-files() {
   declare -a shell_files=($(util.shell-init-files))
   for init_file in "${shell_files[@]}"; do
     file="${init_file}"
-    [[ -f ${file} && -n $(grep "${search}" ${file}) ]] && {
+    [[ -f ${file} ]] && grep -q "${search}" "${file}" && {
       is_installed=${file}
       break
     }
@@ -137,7 +137,7 @@ util.remove-from-init-files() {
   for init_file in "${shell_files[@]}"; do
     run.config.detail-is-enabled && inf "verifying file ${init_file}..."
     file="${init_file}"
-    if [[ -f ${file} && -n "$(grep "${search}" "${file}")" ]]; then
+    if [[ -f ${file} ]] && grep -q  "${search}" "${file}" ; then
       run.config.detail-is-enabled && ui.closer.ok:
       local matches=$(grep -c "${search}" "${file}")
       run.config.detail-is-enabled && info "file ${init_file} matches with ${bldylw}${matches} matches"
@@ -194,7 +194,7 @@ util.lines-in-folder() {
 util.functions-starting-with() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | tr '\n ' ' '
+  set | ${GrepCommand} '^[^ ].* \(\) $' | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | ${extra_command} | /usr/bin/tr '\n ' ' '
 }
 
 util.functions-starting-with-lines() {
@@ -211,13 +211,18 @@ util.functions-starting-with-csv() {
 util.functions-matching() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | tr -d ' ' | tr '\n' ' '"
+  eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '"
 }
 
 util.functions-matching.diff() {
-  for e in $(util.functions-matching "${1}"); do
-    echo "${e/${1}/}"
+  for m in "$@"; do
+    [[ -z "$1" ]] && break
+    for e in $(util.functions-matching "${1}"); do
+      printf "${e/$1/}\n"
+    done
+    shift
   done
+  return 0
 }
 
 util.install-direnv() {
@@ -227,12 +232,12 @@ util.install-direnv() {
 function util.eval-function-body() {
   local name="$1"; shift
 
-  type ${name} | grep -qi function || { 
+  type "${name}" | grep -qi function || { 
     error "${name} is not a function."
     return 1
   }
 
-  eval "$(type ${name} | sedx '1,3d;$d')" "$@"
+  eval "$(type "${name}" | sedx '1,3d;$d')" "$@"
 }
 
 export LibUtil__WatchRefreshSeconds="0.5"

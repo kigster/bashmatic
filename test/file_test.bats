@@ -23,6 +23,16 @@ source lib/time.sh
 source lib/util.sh
 source lib/bashmatic.sh
 
+@test 'file.first-is-newer-than-second()' {
+  local old_file="test/fixtures/a.sh"
+  local newer_file="test/fixtures/b.sh"
+  touch "${newer_file}"
+  
+  set -e
+
+  file.first-is-newer-than-second "${newer_file}" "${old_file}" && return 0
+}
+
 @test "file.temp()" {
   set -e
   local f="$(file.temp)"
@@ -45,7 +55,7 @@ source lib/bashmatic.sh
 
 @test "file.size()" {
   set -e
-  [[ $(file.size test/fixtures/b.sh) -eq 13 ]]
+  [[ $(file.size test/fixtures/b.sh) -eq 14 ]]
 }
 
 @test "file.extension()" {

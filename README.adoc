@@ -1,6 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
-:author: Version 2.4.2
+// vim: ft=asciidoc
+:author: Version v2.4.5
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -9,6 +10,7 @@
 :sectnums: 9
 :icons: font
 :license: MIT
+
 
 == CI Matrix
 
@@ -102,9 +104,43 @@ TIP: _Bashmatic_'s goal is to make BASH programming both fun, consistent, and pr
 
 == Installing Bashmatic
 
-Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script.
+Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script. However, to use it, you need a way to download it. Typically we use `curl` or `wget` to do so. But on modern containerized systems it's become increasingly difficult to rely on things being installed.
 
-=== Bootstrapping _Bashmatic®_ using `curl`
+=== When `curl` is not available
+
+Therefore for situawtion where `curl` may not be available, offer the following shell function that works on Linux/Ubuntu and OS-X-based systems. It can be easily extended with new operating systems:
+
+[source,bash]
+----
+# @description Installs bashmatic dependency into the ~/.bashmatic folder.
+function install_bashmatic() {
+  # install bashmatic using https:// URL instead of git@
+  command -v curl >/dev/null || {
+    local OS=$(uname -s)
+    local code
+    case ${OS} in
+    Linux)
+      apt-get update -yq && apt-get install curl -yqq
+      code=$?
+      ((code)) && sudo apt-get update -yq && sudo apt-get install curl -yqq
+      ;;
+    Darwin)
+      command -v brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      hash -r
+      brew install curl
+      ;;
+    *)
+      echo "OS ${OS} is not supported."
+      ;;
+    esac
+  }
+  [[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q -m https"
+  return 0
+}
+----
+
+
+=== When your have `curl` already installed — bootstrap _Bashmatic®_ in one line
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
 
@@ -146,7 +182,6 @@ If you have your SSH keys installed both locally, and the public key was configu
 Here is the complete list of options accepted by the installer:
 
 image::doc/img/bashmatic-install.png[Installer,width=99%,align=left]
-
 
 === Understanding what the Installer Does
 

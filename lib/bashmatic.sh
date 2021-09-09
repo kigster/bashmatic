@@ -10,7 +10,7 @@ __bashmatic_warning_notification=${HOME}/.bashmatic/.developer-warned
 
 bashmatic.cd-into() {
  [[ -d ${BASHMATIC_HOME} ]] || return 1
- cd "${BASHMATIC_HOME}"
+ cd "${BASHMATIC_HOME}" || exit 1
 }
 
 # @descripion True if .envrc.local file is present. We take it as a sign
@@ -21,6 +21,13 @@ bashmatic.is-developer() {
 
 bashmatic.reload() {
   bashmatic.set-is-not-loaded
+  source "${BASHMATIC_INIT}"
+}
+
+bashmatic.reload-debug() {
+  bashmatic.set-is-not-loaded
+  export BASHMATIC_PATH_DEBUG=1
+  source "${BASHMATIC_HOME}/.envrc.debug"
   source "${BASHMATIC_INIT}"
 }
 
@@ -85,15 +92,15 @@ bashmatic.functions.runtime() {
 }
 
 # Setup
-bashmatic.bash.version() {
+function bashmatic.bash.version() {
   echo "${BASH_VERSION/[^0-9]*/}"
 }
 
-bashmatic.bash.version-four-or-later() {
+function bashmatic.bash.version-four-or-later() {
   [[ $(bashmatic.bash.version) -gt 3 ]]
 }
 
-bashmatic.bash.exit-unless-version-four-or-later() {
+function bashmatic.bash.exit-unless-version-four-or-later() {
   bashmatic.bash.version-four-or-later || {
     error "Sorry, this functionality requires BASH version 4 or later."
     exit 1 >/dev/null
@@ -180,14 +187,15 @@ bashmatic.setup() {
     return 1
   fi
 
-  bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh user.sh
+  bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh 
+  bashmatic.source is.sh output-boxes.sh user.sh
   bashmatic.shell-check || return 1
   bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
 
   output.unconstrain-screen-width
 
-  [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update
+  [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update 1>&2 2>/dev/null
 
   return 0
 }

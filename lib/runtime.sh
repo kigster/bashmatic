@@ -249,7 +249,7 @@ run.post-command-with-output() {
 .run.exec() {
   local command="$*"
 
-  if ((INSPECT)) || [[ -n ${DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
+  if ((INSPECT)) || [[ -n ${BASHMATIC_DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
     run.inspect
   fi
 

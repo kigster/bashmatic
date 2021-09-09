@@ -1,5 +1,28 @@
 # Changelog
 
+## [v2.4.5](https://github.com/kigster/bashmatic/tree/v2.4.5) (2021-09-03)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/latest...v2.4.5)
+
+**Merged pull requests:**
+
+- Linux init [\#84](https://github.com/kigster/bashmatic/pull/84) ([kigster](https://github.com/kigster))
+- Kig/fix uname [\#82](https://github.com/kigster/bashmatic/pull/82) ([kigster](https://github.com/kigster))
+- Adding serial communication over minicom [\#81](https://github.com/kigster/bashmatic/pull/81) ([kigster](https://github.com/kigster))
+- Rename DEBUG to \_\_debug & fix a few issues. [\#80](https://github.com/kigster/bashmatic/pull/80) ([kigster](https://github.com/kigster))
+
+## [latest](https://github.com/kigster/bashmatic/tree/latest) (2021-08-05)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.3...latest)
+
+## [v2.4.3](https://github.com/kigster/bashmatic/tree/v2.4.3) (2021-07-23)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.2...v2.4.3)
+
+**Merged pull requests:**
+
+- New function "usage-widget", version bump to 2.4.3 [\#79](https://github.com/kigster/bashmatic/pull/79) ([kigster](https://github.com/kigster))
+
 ## [v2.4.2](https://github.com/kigster/bashmatic/tree/v2.4.2) (2021-07-16)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.1...v2.4.2)

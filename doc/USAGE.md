@@ -9,6 +9,7 @@
 
 * [file.temp()](#filetemp)
 * [file.normalize-files()](#filenormalize-files)
+* [file.first-is-newer-than-second()](#filefirst-is-newer-than-second)
 * [file.ask.if-exists()](#fileaskif-exists)
 * [file.install-with-backup()](#fileinstall-with-backup)
 
@@ -30,6 +31,10 @@ file.normalize-files "My Word Document.docx"
 # my-word-document.docx
        
 ```
+
+### `file.first-is-newer-than-second()`
+
+A super verbose shortcut to [[ file -nt file2 ]]
 
 ### `file.ask.if-exists()`
 
@@ -315,7 +320,7 @@ Checks if we have debug mode enabled
 
 ### `dbg()`
 
-Local debugging helper, activate it with DEBUG=1
+Local debugging helper, activate it with `export BASHMATIC_DEBUG=1`
 
 
 
@@ -445,6 +450,51 @@ Prints a "arrow-like" line using powerline characters
 
 * @arg1 Width (optional) — only intepretered as width if the first argument is a number.
 * @args Text to print
+
+
+
+---
+
+
+## File `lib/usage.sh`
+
+
+
+* [usage-widget()](#usage-widget)
+
+### `usage-widget()`
+
+This is a massive hack and I am ashemed to have written it.
+With that out of the way, here we go. This command generates a pretty usage box
+for a tool or another command.
+
+#### Example
+
+```bash
+usage-widget [-]<width> \                         # box width. If it starts with "-" forces cache wipe.
+    "command [flags] <arg1 ... >" \               # <-- USAGE
+    "This command is beyond description." \       # <-- DESCRIPTION
+    "[®]string" \                                 # <-- This and subsequent lines may optionally start with "®" symbol,
+    "[®]string" \                                 #     which will turn them into sub-headings:
+    "[®]string" \
+    "[®]string"
+ usage-widget 90 \
+    "command [flags] <arg1 ... >" \
+    "This command is beyond description." \
+    "®examples" \
+    "Some examples will follow" \
+    "And others won't."
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│  USAGE:           command [flags] <arg1 ... >                                        │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│  DESCRIPTION:     This command is beyond description.                                │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│  EXAMPLES:                                                                           │
+│                   Some examples will follow                                          │
+│                   And others won't.                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 
 

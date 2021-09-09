@@ -227,7 +227,7 @@ db.top() {
       local height=$((vertical_shift_next - vertical_shift - 7))
 
       cursor.at.y ${vertical_shift} >>"${tof}"
-      [[ -n ${DEBUG} ]] && {
+      [[ -n ${BASHMATIC_DEBUG} ]] && {
         .output.set-indent 0
         info "CURRENT ❯${bldylw} % = ${percent_total_height}, %++ = ${percent_total_height_next}" >>"${tof}"
         h1 -- "Database: ${dbname}" \
