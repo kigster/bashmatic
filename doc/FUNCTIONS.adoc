@@ -10,6 +10,7 @@
 == Bashmatic Modules
 
 * xref:#module-.audio[.audio]
+* xref:#module-.vscode/notes.txt[.vscode/notes.txt]
 * xref:#module-7z[7z]
 * xref:#module-array[array]
 * xref:#module-asciidoc[asciidoc]
@@ -30,6 +31,7 @@
 * xref:#module-docker[docker]
 * xref:#module-file[file]
 * xref:#module-file-helpers[file-helpers]
+* xref:#module-flatten[flatten]
 * xref:#module-ftrace[ftrace]
 * xref:#module-gem[gem]
 * xref:#module-git[git]
@@ -84,6 +86,9 @@
 
 
 === Module `.audio`
+
+
+=== Module `.vscode/notes.txt`
 
 
 === Module `7z`
@@ -1238,7 +1243,7 @@ bashmatic.functions-from ()
     if [[ -n $(echo ${pattern} | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
         pattern="${pattern}.sh"
     fi
-    eval "${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern}" | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | tr -d '()' | sedx '/^ *$/d' | eval "${GrepCommand} '^(_|\.)' -v" | sort | uniq | columnize "$@"
+    eval "${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern}" | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | /usr/bin/tr -d '()' | sedx '/^ *$/d' | eval "${GrepCommand} '^(_|\.)' -v" | sort | uniq | columnize "$@"
     cd - > /dev/null || return 1
 }
 
@@ -1304,6 +1309,7 @@ bashmatic.load-at-login ()
 bashmatic.reload () 
 { 
     bashmatic.set-is-not-loaded
+    source "${BASHMATIC_HOME}/.envrc.no-debug"
     source "${BASHMATIC_INIT}"
 }
 
@@ -1316,7 +1322,6 @@ bashmatic.reload ()
 bashmatic.reload-debug () 
 { 
     bashmatic.set-is-not-loaded
-    export BASHMATIC_PATH_DEBUG=1
     source "${BASHMATIC_HOME}/.envrc.debug"
     source "${BASHMATIC_INIT}"
 }
@@ -4398,8 +4403,55 @@ files.map.shell-scripts ()
 
 ----
 
+==== `ls.mb`
+
+[source,bash]
+----
+ls.mb () 
+{ 
+    du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
+}
+
+----
+
 
 === Module `file-helpers`
+
+
+=== Module `flatten`
+
+==== `flatten-file`
+
+[source,bash]
+----
+flatten-file () 
+{ 
+    local path="$1"
+    local dest="${2}"
+    [[ ${dest[-1]} == "/" ]] && dest="${dest:0:-1}"
+    errors=()
+    [[ -f "${path}" ]] || errors+=("File [${path}] was not found.")
+    [[ -d "${dest}" ]] || errors+=("Directory [${dest}] does not exist.")
+    [[ ${#errors[@]} -eq 0 ]] || { 
+        error "${errors[@]}" 1>&2
+        return 1
+    }
+    local target
+    local space=" "
+    local enclosing="$(dirname "$(dirname "${path}")")"
+    target="$(echo "$(dirname "${path}")"—"$(basename "${path}")" | sed -E "s/[${space}_]/-/g;")"
+    target="${dest} ${bldred}${target/${enclosing/\/}}"
+    if ((flag_verbose)); then
+        inf "COPY: ${bldgrn}\"${path}\" ➔ [${bldylw}\"${target}${bldgrns}\"]" 1>&2
+    else
+        printf "${txtblu}" 1>&2
+    fi
+    local command="cp -v \"${path}\" ${bldylw}\"${target}\""
+    printf -- "${command}"
+    return 0
+}
+
+----
 
 
 === Module `ftrace`
@@ -8266,6 +8318,8 @@ dbg ()
 dbg-off () 
 { 
     unset BASHMATIC_DEBUG
+    unset BASHMATIC_PATH_DEBUG
+    [[ -f ${BASHMATIC_HOME}/.envrc.no-debug ]] && source ${BASHMATIC_HOME}/.envrc.no-debug
 }
 
 ----
@@ -8276,7 +8330,8 @@ dbg-off ()
 ----
 dbg-on () 
 { 
-    export BASHMATIC_DEBUG=$(time.now.db)
+    export BASHMATIC_DEBUG=1
+    [[ -f ${BASHMATIC_HOME}/.envrc.debug ]] && source ${BASHMATIC_HOME}/.envrc.debug
 }
 
 ----
@@ -10708,6 +10763,29 @@ run.with.ruby-bundle-and-output ()
 
 === Module `runtime-config`
 
+==== `is.dry-run.off`
+
+[source,bash]
+----
+is.dry-run.off () 
+{ 
+    ((LibRun__DryRun)) || return 0
+    return 1
+}
+
+----
+
+==== `is.dry-run.on`
+
+[source,bash]
+----
+is.dry-run.on () 
+{ 
+    ((LibRun__DryRun))
+}
+
+----
+
 ==== `run.inspect`
 
 [source,bash]
@@ -10772,6 +10850,28 @@ run.set-next ()
 run.set-next.list () 
 { 
     set | ${GrepCommand} '^____run.set.next' | awk 'BEGIN{FS="."}{print $4}' | sedx 's/[() ]//g'
+}
+
+----
+
+==== `set.dry-run.off`
+
+[source,bash]
+----
+set.dry-run.off () 
+{ 
+    export LibRun__DryRun=0
+}
+
+----
+
+==== `set.dry-run.on`
+
+[source,bash]
+----
+set.dry-run.on () 
+{ 
+    export LibRun__DryRun=1
 }
 
 ----
@@ -12689,7 +12789,7 @@ util.functions-matching ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    eval "set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '"
+    set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '
 }
 
 ----

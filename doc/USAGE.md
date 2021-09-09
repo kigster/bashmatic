@@ -1075,6 +1075,64 @@ cc35aad389e61942c75e111f1eddbe634d74b4b1
 ---
 
 
+## File `lib/runtime-config.sh`
+
+
+
+* [is.dry-run.on()](#isdry-runon)
+* [is.dry-run.off()](#isdry-runoff)
+* [set.dry-run.on()](#setdry-runon)
+* [set.dry-run.off()](#setdry-runoff)
+
+### `is.dry-run.on()`
+
+Returns 0 when dry-run flag was set, 1 otherwise.
+
+#### Example
+
+```bash
+set.dry-run.on
+is.dry-run.on || rm -f ${temp}
+```
+
+### `is.dry-run.off()`
+
+Returns 0 when dry-run flag was set, 1 otherwise.
+
+#### Example
+
+```bash
+set.dry-run.off
+is.dry-run.on || rm -f ${temp}
+```
+
+### `set.dry-run.on()`
+
+Returns 0 when dry-run flag was set, 1 otherwise.
+
+#### Example
+
+```bash
+set.dry-run.on
+is.dry-run.on || run "ls -al"
+```
+
+### `set.dry-run.off()`
+
+Returns 1 when dry-run flag was set, 0 otherwise.
+
+#### Example
+
+```bash
+set.dry-run.on
+is.dry-run.on || run "ls -al"
+```
+
+
+
+---
+
+
 ## File `lib/color.sh`
 
 
@@ -1172,6 +1230,39 @@ Reads the value from a two-level configuration hash
 ### `config.dig.pretty()`
 
 Uses `jq` utility to format JSON with color, supports partial
+
+
+
+---
+
+
+## File `lib/flatten.sh`
+
+
+
+* [flatten-file()](#flatten-file)
+
+### `flatten-file()`
+
+Given a long path to a file, possibly with spaces in cluded
+and a desintation as a second argument, generates a flat pathname and
+copies the first argument there.
+
+#### Example
+
+```bash
+    ❯ tree -Q "33 Retro Synth/"
+    "33 Retro Synth/"
+    ├── "001 Retro Synth - A Synth Primer.en.srt"
+    ├── "001 Retro Synth - A Synth Primer.mp4"
+    ├── "002 Retro Synth - Oscillator.en.srt"
+    └── "002 Retro Synth - Oscillator.mp4"
+    ❯
+    flatten-file "33 Retro Synth/001 Retro Synth - A Synth Primer.mp4"
+@arg1 -n | --dry-run (optional)
+@arg2 source path
+@arg3 dest paths
+```
 
 
 

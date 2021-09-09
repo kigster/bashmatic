@@ -1,5 +1,15 @@
 # Changelog
 
+## [v2.4.6](https://github.com/kigster/bashmatic/tree/v2.4.6) (2021-09-09)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.5...v2.4.6)
+
+**Merged pull requests:**
+
+- Cleanup of the init.sh [\#87](https://github.com/kigster/bashmatic/pull/87) ([kigster](https://github.com/kigster))
+- Refactor and debug cleaup [\#85](https://github.com/kigster/bashmatic/pull/85) ([kigster](https://github.com/kigster))
+- WIP: flatten-tree\(\) script [\#78](https://github.com/kigster/bashmatic/pull/78) ([kigster](https://github.com/kigster))
+
 ## [v2.4.5](https://github.com/kigster/bashmatic/tree/v2.4.5) (2021-09-03)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/latest...v2.4.5)
