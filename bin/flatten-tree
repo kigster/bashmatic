@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
+output.unconstrain-screen-width 100
+export flag_verbose=0
+export flag_dry_run=0
+export flag_force=0
+
+export flag_source=
+export flag_dest=
+
+declare -a errors
+export errors=()
+
+
+function flatten-tree-usage() {
+  usage-box "flatten-tree [ options ] dest-dir [ source-dir | pwd ] © Copies all regular files from source to dest, as a flat structure" \
+      "-n | --dry-run" "Enable dry-run mode and avoid getting wet." \
+      "-v | --verbose" "Print file names as we flattent the tree structure."
+  exit 0
+}
+
+function flatten-tree-parse-opts() {
+  if [[ -z "$1" ]]; then
+    flatten-tree-usage
+  fi
+
+  # Parse additional flags
+  while :; do
+    case $1 in
+    -n | --dry-run)
+      shift
+      run.set-all dry-run-on
+      set.dry-run.on
+      ;;
+    -f | --force)
+      shift
+      export flag_force=1
+      ;;
+    -v | --verbose)
+      export flag_verbose=1
+      shift
+      ;;
+    -h | -\? | --help)
+      shift
+      flatten-tree-usage
+      ;;
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    *) # destination?    
+      if [[ -z $1 ]] ; then
+        break
+      elif [[ -z ${flag_dest} ]]; then
+        export flag_dest="$1"
+        shift
+      elif [[ -z ${flag_source} ]]; then
+        export flag_source="$1"
+        shift
+      else
+        shift
+        errors+=("Both source and destination are arleady set. Unkown flag detected?")
+        errors+=("Source=[${flag_source}]; Destination=[${flag_dest}]")
+        break
+      fi
+      ;;
+    esac
+  done
+
+  return 0
+}
+
+function flatten-tree-main() {
+  local dest="${flag_dest}"
+  local root="${flag_source}"
+
+  [[ -z ${root} || ! -d ${root} || ${root} == "." ]] && root="$(pwd -P)"
+
+  is.a-directory "${dest}" || errors+=("Directory [${dest}] does not exist.")
+  [[ ${#errors[@]} -eq 0 ]] || {
+    error "${errors[@]}"
+    return 1
+  }
+
+  ((flag_verbose)) && run.inspect-vars flag_
+
+  run.set-all show-output-on
+  # roblematic code:
+  # find . -name '*.mp3' -exec sh -c 'i="{}"; sox "$i" "${i%.mp3}.wav"' \;
+  # Correct code:
+  # find . -name '*.mp3' -exec sh -c 'i="$1"; sox "$i" "${i%.mp3}.wav"' _ {} \;
+  if is.dry-run.on; then
+    find "${root}" -type f -exec bash -c 'f="$1"; echo $f; source ${BASHMATIC_HOME}/init.sh; echo flatten-file "$1" "${dest}"' _ {} \; 
+  else
+    find "${root}" -type f -exec /usr/local/bin/bash -c 'f="$1"; source ${BASHMATIC_HOME}/init.sh; flatten-file "$f" "${dest}"' _ {} \; 
+  fi
+}
+
+flatten-tree-parse-opts "$@" && flatten-tree-main
