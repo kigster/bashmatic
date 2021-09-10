@@ -71,12 +71,12 @@ export BASHMATIC_OS="$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
 export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
 function log.err() {
-  ((BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG + DEBUG)) || return 0
+  ((BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) || return 0
   printf "${blderr}[ERROR] --> ${bldylw}$*${clr}\n"
 }
 
 function log.inf() {
-  ((BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG + DEBUG)) || return 0
+  ((BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) || return 0
   printf "${bldblu}[INFO]  --> ${bldgrn}$*${clr}\n"
 }
 

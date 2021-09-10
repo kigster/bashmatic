@@ -28,3 +28,4 @@ test/all.bats
 doc/USAGE.adoc
 .developer-warned
 .history
+.vscode/*.log
