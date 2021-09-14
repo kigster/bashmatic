@@ -23,10 +23,9 @@ set +ex
 
 export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
 
-export PATH="/usr/local/bin:/usr/bin:/bin:/sbin:${PATH}"
+export PATH="${PATH}:/usr/local/bin:/usr/bin:/bin:/sbin"
 export BASHMATIC_HOME=${BASHMATIC_HOME:-${SCRIPT_SOURCE}}
 export BASHMATIC_MAIN=${BASHMATIC_HOME}/init.sh
-
 
 function bashmatic.home.valid() {
   [[ -n $BASHMATIC_HOME && -d ${BASHMATIC_HOME} && -s ${BASHMATIC_HOME}/init.sh ]]
@@ -58,8 +57,6 @@ bashmatic.home.valid || {
   .bashmatic.print-path-config
   return 1
 }
-
-source ${BASHMATIC_HOME}/.bash_path_resolver
 
 export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
 # shellcheck disable=SC2002
@@ -227,11 +224,9 @@ function bashmatic.init.paths() {
 
 
 function bashmatic.init() {
-  local -a args=($@)
-
-  for file in "${args[@]}"; do
-    [[ $0 =~ "$1" ]] && {
-     log.inf "skipping the first file ${file}"
+  for file in "$@"; do
+    [[ $0 =~ $file ]] && {
+      log.inf "skipping the first file ${file}"
       continue 
     }
     local env_file="${BASHMATIC_HOME}/.envrc.${file}"
@@ -252,9 +247,10 @@ function bashmatic.init() {
     log.inf "calling bashhmatic.init"
     bashmatic.init "$@"
   } 
+
   local init_func=".bashmatic.init.${BASHMATIC_OS}"
 
-  [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
+  [[ -n $(typle "${init_func}" 2>/dev/null) ]] && ${init_func}
 
   local setup_script="${BASHMATIC_LIBDIR}/bashmatic.sh"
 

@@ -111,3 +111,13 @@ shasum.all-files-in-dir() {
   # shellcheck disable=2046
   shasum.sha $(eval "find \"${dir}\" -type f ${name_pattern}" ) | awk '{print $2 " " $1}' | sort | .sha-only
 }
+
+# @description sha256 
+function sha() {
+  if output.has-stdin; then
+    shasum -a 256 "$@" | cut -d ' ' -f 1
+  else
+    shasum -a 256 "$@" | cut -d ' ' -f 1
+  fi
+}
+

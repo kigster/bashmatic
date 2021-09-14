@@ -43,4 +43,20 @@ set -e
   [[ ${sha1} == "f9f90c8b04fa1bb7cbe04f6e8e468d163a87e66c" ]]
 }
 
+export sha="5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"
 
+@test "sha() file" {
+  set -e
+  local t="/tmp/hello.txt"
+  echo "hello" > $t
+  local sha_file="$(sha $t)"
+  [[ "${sha}" == "${sha_file}"  ]]
+}
+
+
+@test "sha() pipe" {
+  set -e
+  local sha="5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"
+  local sha_pipe="$(echo hello | sha)"
+  [[ "${sha}" == "${sha_pipe}" ]]
+}
