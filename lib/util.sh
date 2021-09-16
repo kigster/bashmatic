@@ -34,6 +34,10 @@ util.rot13() {
 }
 
 alias rot13=util.rot13
+__grep="${GrepCommand/ */}"
+[[ -n ${__grep} && -x ${__grep} ]] || {
+  export GrepCommand="$(command -v grep) -E"
+}
 
 util.is-variable-defined() {
   local var_name="$1"
@@ -211,11 +215,11 @@ util.functions-starting-with-csv() {
 util.functions-matching() {
   local prefix="${1}"
   local extra_command=${2:-"cat"}
-  set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '
+  declare -f | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '
 }
 
 util.functions-matching.diff() {
-  for m in "$@"; do
+  while true; do
     [[ -z "$1" ]] && break
     for e in $(util.functions-matching "${1}"); do
       printf "${e/$1/}\n"
