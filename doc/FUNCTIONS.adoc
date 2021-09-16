@@ -42,6 +42,7 @@
 * xref:#module-json[json]
 * xref:#module-maths[maths]
 * xref:#module-net[net]
+* xref:#module-nvm[nvm]
 * xref:#module-openssl[openssl]
 * xref:#module-osx[osx]
 * xref:#module-output[output]
@@ -80,6 +81,7 @@
 * xref:#module-video[video]
 * xref:#module-vim[vim]
 * xref:#module-yaml[yaml]
+* xref:#module-yarn[yarn]
 * xref:#module-zsh[zsh]
 
 == List of Bashmatic Functions
@@ -6181,6 +6183,110 @@ net.local-subnet ()
 ----
 
 
+=== Module `nvm`
+
+==== `nvm.activate`
+
+[source,bash]
+----
+nvm.activate () 
+{ 
+    nvm.load
+}
+
+----
+
+==== `nvm.detect`
+
+[source,bash]
+----
+nvm.detect () 
+{ 
+    for dir in "${__bashmatic_nvm_dirs[@]}"
+    do
+        nvm.is-valid-dir "${dir}" && { 
+            export NVM_DIR="${dir}"
+            source "${NVM_DIR}/nvm.sh"
+            return 0
+        }
+    done
+    return 1
+}
+
+----
+
+==== `nvm.install`
+
+[source,bash]
+----
+nvm.install () 
+{ 
+    h.blue "Installing nvm_.."
+    local temp="/tmp/nvm_$$"
+    ( curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh 2> /dev/null | bash 2> /dev/null ) | grep NVM_DIR > "${temp}"
+    source "${temp}"
+    rm -f "${temp}"
+    return 0
+}
+
+----
+
+==== `nvm.is-valid-dir`
+
+[source,bash]
+----
+nvm.is-valid-dir () 
+{ 
+    [[ -z $1 ]] && return 1
+    local d="$1"
+    [[ -d "${d}" && -s "${d}/nvm.sh" ]]
+}
+
+----
+
+==== `nvm.load`
+
+[source,bash]
+----
+nvm.load () 
+{ 
+    nvm.detect || nvm.install
+    is.a-function nvm || { 
+        [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+        [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+    }
+    [[ -f .nvmrc ]] && { 
+        nvm use > /dev/null 2>&1 || { 
+            h3 "NVM must install Node version $(cat .nvmrc), please wait..."
+            run "nvm install && nvm use"
+        }
+    }
+}
+
+----
+
+==== `nvm.use`
+
+[source,bash]
+----
+nvm.use () 
+{ 
+    [[ -s .nvmrc ]] || return 1
+    is.a-function nvm || nvm.load
+    local node_version="$(cat .nvmrc | head -1)"
+    info "Activating NodeJS ${bldred}${node_version}..."
+    nvm use "${node_version}" && return 0
+    warning "No version ${node_version} was detected, installing"
+    run.set-next show-output-on
+    run "nvm install ${node_version}"
+    nvm use "${node_version}" && return 0
+    error "Unable to install node version ${node_version}"
+    return 1
+}
+
+----
+
+
 === Module `openssl`
 
 ==== `openssl.certs.generate-csr`
@@ -11030,6 +11136,21 @@ set-e-status ()
 
 === Module `shasum`
 
+==== `sha`
+
+[source,bash]
+----
+sha () 
+{ 
+    if output.has-stdin; then
+        shasum -a 256 "$@" | cut -d ' ' -f 1
+    else
+        shasum -a 256 "$@" | cut -d ' ' -f 1
+    fi
+}
+
+----
+
 ==== `shasum.all-files`
 
 [source,bash]
@@ -12789,7 +12910,7 @@ util.functions-matching ()
 { 
     local prefix="${1}"
     local extra_command=${2:-"cat"}
-    set | ${GrepCommand} '^${prefix}' | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '
+    declare -f | ${GrepCommand} "^${prefix}" | sedx 's/[\(\)]//g;' | /usr/bin/tr -d ' ' | /usr/bin/tr '\n' ' '
 }
 
 ----
@@ -12800,8 +12921,7 @@ util.functions-matching ()
 ----
 util.functions-matching.diff () 
 { 
-    for m in "$@"
-    do
+    while true; do
         [[ -z "$1" ]] && break
         for e in $(util.functions-matching "${1}")
         do
@@ -13407,6 +13527,37 @@ yaml.dump ()
 yaml.expand-aliases () 
 { 
     ruby -e "require 'yaml'; require 'json'; puts YAML.dump(JSON.parse(JSON.pretty_generate(YAML.load(File.read('${1}')))))"
+}
+
+----
+
+
+=== Module `yarn`
+
+==== `yarn_install`
+
+[source,bash]
+----
+yarn_install () 
+{ 
+    command -v yarn > /dev/null || npm install -g yarn
+    if [[ ! -f .yarn.sha || "$(cat .yarn.sha)" != "$(yarn_sha)" ]]; then
+        set -x
+        yarn install
+        set +x
+        yarn_sha > .yarn.sha
+    fi
+}
+
+----
+
+==== `yarn_sha`
+
+[source,bash]
+----
+yarn_sha () 
+{ 
+    [[ -f package.json && -f yarn.lock ]] && cat package.json yarn.lock | sha
 }
 
 ----

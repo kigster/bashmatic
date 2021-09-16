@@ -9,7 +9,7 @@
    "compile-hero.disable-compile-files-on-did-save-code": true,
    "shellcheck.enableQuickFix": true,
    "workbench.colorTheme": "Popping and Locking",
-   "window.zoomLevel": 0,
+   "window.zoomLevel": 1,
    "customPresentationMode.backup": {},
    "gruvboxMaterial.jsson1Comments": false,
    "git-graph.markdown": false

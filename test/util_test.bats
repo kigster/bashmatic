@@ -5,6 +5,10 @@ load test_helper
 source lib/util.sh
 source lib/user.sh
 source lib/is.sh
+source lib/db.sh
+source lib/db_cli.sh
+source lib/db_rails.sh
+source lib/db_top.sh
 
 set -e
 
@@ -66,4 +70,12 @@ moo() {
   code=$?
   set -e
   [ $code -ne 0 ]
+}
+
+@test "util.functions-matching.diff" {
+  set -e
+  local -a actions=($(util.functions-matching.diff db.actions. | sort))
+  local num=${#actions[@]}
+  [[ $num -gt 10 ]] &&
+  [[ "${actions[0]}" == "commands" ]]
 }

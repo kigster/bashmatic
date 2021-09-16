@@ -3,6 +3,28 @@
 ---
 
 
+## File `lib/yarn.sh`
+
+
+
+* [yarn_install()](#yarn_install)
+* [yarn_sha()](#yarn_sha)
+
+### `yarn_install()`
+
+Installs YARN via npm if not found; then runs yarn install
+Note that yarn install is skipped if package.json and yarn.lock haven't
+changed since the last run of yarn install.
+
+### `yarn_sha()`
+
+Prints to STDOUT the SHA based on package.json and yarn.lock
+
+
+
+---
+
+
 ## File `lib/file.sh`
 
 
@@ -998,6 +1020,7 @@ collection of files, or entire directories.
 * [shasum.to-hash()](#shasumto-hash)
 * [shasum.all-files()](#shasumall-files)
 * [shasum.all-files-in-dir()](#shasumall-files-in-dir)
+* [sha()](#sha)
 
 ### `shasum.set-command()`
 
@@ -1069,6 +1092,10 @@ and return a single SHA
 $ shasum.all-files-in-dir . '*.pdf'
 cc35aad389e61942c75e111f1eddbe634d74b4b1
 ```
+
+### `sha()`
+
+sha256 
 
 
 
@@ -1263,6 +1290,38 @@ copies the first argument there.
 @arg2 source path
 @arg3 dest paths
 ```
+
+
+
+---
+
+
+## File `lib/nvm.sh`
+
+
+
+* [nvm.is-valid-dir()](#nvmis-valid-dir)
+* [nvm.detect()](#nvmdetect)
+* [nvm.install()](#nvminstall)
+* [nvm.load()](#nvmload)
+
+### `nvm.is-valid-dir()`
+
+Returns true if NVM_DIR is correctly set, OR if
+a directory passed as an argument contains nvm.sh
+
+### `nvm.detect()`
+
+Returns success and exports NVM_DIR whenver nvm.sh is found underneath any
+of the possible locations tried.
+
+### `nvm.install()`
+
+Installs NVM via Curl if not already installed.
+
+### `nvm.load()`
+
+Loadd
 
 
 
