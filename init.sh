@@ -250,7 +250,7 @@ function bashmatic.init() {
 
   local init_func=".bashmatic.init.${BASHMATIC_OS}"
 
-  [[ -n $(typle "${init_func}" 2>/dev/null) ]] && ${init_func}
+  [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
 
   local setup_script="${BASHMATIC_LIBDIR}/bashmatic.sh"
 

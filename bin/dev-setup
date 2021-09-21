@@ -1,4 +1,4 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
 # vim: ft=bash
 
 # shellcheck disable=2046
@@ -13,12 +13,9 @@
 }
 
 source "${BASHMATIC_HOME}/init.sh"
-source "${BASHMATIC_HOME}/lib/util.sh"
-source "${BASHMATIC_HOME}/lib/is.sh"
-
 output.constrain-screen-width 100
 
-export DEFAULT_RUBY_VERSION="$(test -f .ruby-version && cat .ruby-version || echo '3.0.0')"
+export DEFAULT_RUBY_VERSION="$(test -f .ruby-version && cat .ruby-version || echo '3.0.2')"
 
 export DEFAULT_POSTGRESQL_VERSION="latest"
 export DEFAULT_MYSQL_VERSION="11"
@@ -28,7 +25,7 @@ export opt_terse=
 export ruby_version=
 declare -a pg_versions
 declare -a mysql_versions
-export DevSetup__Version="0.4.0"
+export DevSetup__Version="0.4.1"
 
 .dev-setup.detect.pg-version() {
   export pg_versions=($(brew.package.available-versions postgresql))
@@ -63,7 +60,7 @@ export DevSetup__Version="0.4.0"
   [[ -f .ruby-version ]] && {
     export ruby_version="$(cat .ruby-version | tr -d '\n')"
   }
-  [[ -z ${ruby_version} ]] && export ruby_version=$(ruby.top-versions | grep -v dev | tail -1)
+  [[ -z ${ruby_version} ]] && export ruby_version=$(ruby.top-versions 3 | grep -v dev | tail -1)
   [[ -z ${ruby_version} ]] && export ruby_version=${DEFAULT_RUBY_VERSION}
 }
 
@@ -112,9 +109,9 @@ export DevSetup__Version="0.4.0"
     }
   done
 
-  [[ -f ${script} ]] && { 
+  [[ -f ${script} ]] && {
     info "Loading z.sh script"
-    source "${script}" 
+    source "${script}"
     success "z.sh installed successfully"
   }
 
@@ -497,21 +494,22 @@ _.dev-setup.action.grc() {
 
 declare -a components
 declare -a components_to_install
-declare -a DevSetuplog.errors
+declare -a DevSetup__Errors
 declare -a DevSetup__BrewPackages
 declare -a DevSetup__BrewCasks
 declare -a DevSetup__BrewServices
 declare -a DevSetup__BrewFonts
+declare DevSetup__Initialized
 
 function dev-setup.initialize() {
-  export DevSetup__Initialized=${DevSetup__Initialized:-0}
+  export DevSetup__Initialized="${DevSetup__Initialized:-0}"
 
   ((DevSetup__Initialized)) && return 0
 
   export DevSetup__Initialized=1
 
   # TODO: replace this array with the callback auto-detection
-  #       on the function namaing convention. For instance,
+  #       on the function naming convention. For instance,
   #       for a group gpg, if a function .dev-setup.callback.gpg exists
   #       then run it.
   declare -a DevSetup__Callbacks
@@ -536,7 +534,7 @@ function dev-setup.initialize() {
 }
 
 dev-setup.print-components() {
-  local -a list="$@"
+  local -a list=("$@")
   if [[ ${#list[@]} -eq 0 ]]; then
     warning "Warning: empty component list."
     return 1
@@ -795,7 +793,7 @@ dev-setup.install.packages() {
 
     [[ ${code} -ne 0 ]] && {
       errors=$((errors + 1))
-      DevSetuplog.errors=("${DevSetuplog.errors[@]}" "${command} ${package}")
+      DevSetup__Errors=("${DevSetup__Errors[@]}" "${command} ${package}")
     }
   done
   echo
@@ -891,7 +889,7 @@ dev-setup.install() {
       "Setup completed, but with some failures." \
       "Total of ${failures} failures out of ${total} commands were detected and skipped."
         echo
-        h.e "ATTENTION: the following commands failed:" "${DevSetuplog.errors[@]}"
+        h.e "ATTENTION: the following commands failed:" "${DevSetup__Errors[@]}"
   fi
 }
 

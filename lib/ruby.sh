@@ -27,8 +27,7 @@ ruby.ensure-rbenv-or-complain() {
 # This function can be used to generate a YAML array of the latest minor ruby versions
 # against each major version. The output should be compatible with .travis.yml format
 ruby.top-versions-as-yaml() {
-  ruby.top-versions |
-    sed 's/^/ - /g'
+  ruby.top-versions | sed 's/^/ - /g'
 }
 
 .ruby.ruby-build-updated() {
@@ -51,11 +50,13 @@ ruby.top-versions-as-yaml() {
 #    eg: ruby.top-versions jruby
 #    eg: ruby.top-versions rbx
 ruby.top-versions() {
-  local platform="${1:-"\[2-3\]\."}"
+  local platform="${1}"
   local arg="$(.ruby.ruby-build.list-argument)"
+  local filter="cat"
+  [[ -n ${platform} ]] && filter="grep -E '^${platform}'"
 
-  eval "rbenv install ${arg}" |
-    ${GrepCommand} "^${platform}" |
+  eval "rbenv install ${arg}" | \
+    eval "${filter}" | \
     ruby -e '
       last_v = nil;
       last_m = nil;
