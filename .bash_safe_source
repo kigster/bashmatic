@@ -1,31 +1,36 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+# © Copyright 2021 Konstantin Gredeskoul
+# Part of BASHMATIC framework.
 
 set +e
 
-function src() {
-  local file
-  local code
+((DEBUG + __debug + debug)) && BASHMATIC_DEBUG=1
 
+function source_if_exists() {
+  local errors=0
   for file in "$@"; do
-    [[ -z $file ]] && break
-    
     if [[ -s "${file}" ]]; then
-      ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} sourcing ${txtgrn}%50s${clr}..." "${file}"
+      ((BASHMATIC_DEBUG)) && printf "[debug] ——> ${bldgrn}%-60.60s${clr}" "${file}"
       source "${file}"
-      code=$?
-      ((BASHMATIC_DEBUG)) && {
-        ((code)) && {
-           printf "${txtred} [ ${bldred}X${txtred}, exit code=${code} ]${clr}\n"
-           continue
-        }
-        printf "${txtgrn} [ ✔︎ OK] ${clr}\n"
-      }
-    else
-      ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} sourcing ${txtylw}%50s${clr}... ${txtylw}[ ${bldylw}X${txtylw}, file not found ]${clr}\n" "${file}"
-    fi 
-  done
-  return 0
-}
+      local code=$?
 
-alias safe-source="src"
+      if ((code)); then
+        if ((BASHMATIC_DEBUG)); then
+          printf " (exit code: ${code} [ 💣 ])\n"
+          code=$((code + 1))
+        else
+          code=$((code + 1))
+          echo "WARNING: sourced file ${file} returned non-zero code ${code}" >&2
+        fi
+      else
+        if ((BASHMATIC_DEBUG)); then
+          printf " (${bldgrn}[  ✔︎ ]${clr})\n"
+        fi
+      fi
+    else
+      echo "WARNING: sourced file ${file} does not exist" >&2
+    fi
+  done
+  return ${code}
+}

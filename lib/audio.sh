@@ -44,7 +44,7 @@ audio.file.frequency() {
   local frequency=$(mdls "${file}" | grep kMDItemAudioSampleRate | sed 's/.*= //g')
   [[ -z ${frequency} ]] && frequency=48000
   local kHz=$(maths.eval "${frequency} / 1000.0" 0)
-  printf ${kHz}
+  printf "${kHz}"
 }
 
 audio.make.mp3.usage() {
