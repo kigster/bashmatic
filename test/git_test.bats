@@ -3,11 +3,14 @@
 
 load test_helper
 
+source lib/output.sh
+source lib/output-utils.sh
 source lib/user.sh
 source lib/output.sh
 source lib/is.sh
 source lib/bashmatic.sh
 source lib/git.sh
+source lib/github.sh
 source lib/util.sh
 
 set -e
