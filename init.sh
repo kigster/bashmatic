@@ -27,6 +27,10 @@ export PATH="${PATH}:/usr/local/bin:/usr/bin:/bin:/sbin"
 export BASHMATIC_HOME=${BASHMATIC_HOME:-${SCRIPT_SOURCE}}
 export BASHMATIC_MAIN=${BASHMATIC_HOME}/init.sh
 
+if ! declare -f -F source_if_exists >/dev/null; then
+  source "${BASHMATIC_HOME}/.bash_safe_source"
+fi
+
 function bashmatic.home.valid() {
   [[ -n $BASHMATIC_HOME && -d ${BASHMATIC_HOME} && -s ${BASHMATIC_HOME}/init.sh ]]
 }
@@ -95,14 +99,14 @@ function bashmatic.dealias() {
     cp -p  "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source" 2>/dev/null
   fi
 
-  src "${BASHMATIC_HOME}/lib/is.sh"
-  src "${BASHMATIC_HOME}/lib/color.sh"
-  src "${BASHMATIC_HOME}/lib/output-repeat-char.sh"
-  src "${BASHMATIC_HOME}/lib/output.sh"
-  src "${BASHMATIC_HOME}/lib/output-utils.sh"
-  src "${BASHMATIC_HOME}/lib/output-boxes.sh"
-  src "${BASHMATIC_HOME}/lib/util.sh"
-  src "${BASHMATIC_HOME}/lib/time.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/is.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/color.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/output-repeat-char.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/output.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/output-utils.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/output-boxes.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/util.sh"
+  source_if_exists "${BASHMATIC_HOME}/lib/time.sh"
 }
 
 function .bashmatic.load-time() {
@@ -113,8 +117,8 @@ function .bashmatic.load-time() {
 }
 
 function source-if-exists() {
-  [[ -n $(type src 2>/dev/null) ]] || source "${BASHMATIC_HOME}/.bash_safe_source"
-  src "$@"
+  [[ -n $(type source_if_exists 2>/dev/null) ]] || source "${BASHMATIC_HOME}/.bash_safe_source"
+  source_if_exists "$@"
 }
 
 # Set initial state to 0

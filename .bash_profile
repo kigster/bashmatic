@@ -1,8 +1,43 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+[[ -z ${BASHMATIC_HOME} ]] && {
+  [[ -d ~/.bashmatic ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+}
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
+[[ -d ${BASHMATIC_HOME} ]] || {
+  echo "Can't find Bashmatic, even after attempting an installation."
+  echo "Please install Bashmatic with the following command line:"
+  echo 'bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"'
+} >&2
 
-[[ -f ~/.bashmatic/.bash_safe_source ]] && source ~/.bashmatic/.bash_safe_source
-[[ -f /usr/local/etc/bash_completion ]] && src /usr/local/etc/bash_completion
+[[ -s "${BASHMATIC_HOME}/.bash_safe_source" ]] &&
+  source "${BASHMATIC_HOME}/.bash_safe_source"
+
+# shellcheck source="./bash_safe_source"
+if [[ ! -f "${BASHMATIC_HOME}/.bash_safe_source" ]]; then
+
+  function source_if_exists() {
+    for file in "$@"; do
+      if [[ -s "${file}" ]]; then
+        source "${file}"
+        local code=$?
+        ((BASHMATIC_DEBUG)) && printf "[debug] loading file: [${bldgrn}%40.40s${clr}]"
+        if ((code)); then
+          if ((BASHMATIC_DEBUG)); then
+            printf " (exit code: ${code} [ 💣 ])\n"
+          else
+            echo "WARNING: sourced file ${file} returned non-zero code ${code}" >&2
+          fi
+        fi
+      else
+        echo "WARNING: sourced file ${file} does not exist" >&2
+      fi
+    done
+  }
+
+fi
+
+source_if_exists /usr/local/etc/bash_completion
 
 # Path to the bash it configuration
 export BASH_IT="/Users/kig/.bash_it"
@@ -56,7 +91,6 @@ export SHORT_TERM_LINE=true
 # source ~/.powerline
 # Load Bash It
 
-
 export BASH_IT_P4_DISABLED=true
 
 #export SCM_GIT_SHOW_MINIMAL_INFO=false
@@ -77,19 +111,10 @@ export SCM_GIT_SHOW_COMMIT_COUNT=false
 export SCM_GIT_SHOW_REMOTE_INFO=true
 export SCM_GIT_SHOW_STASH_INFO=true
 
-src "${BASH_IT}"/bash_it.sh
+source_if_exists  "${BASH_IT}"/bash_it.sh
 
 export POWERLINE_LEFT_PROMPT="scm cwd"
 export POWERLINE_RIGHT_PROMPT="clock node"
 
-[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
-[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
-[[ -d ${BASHMATIC_HOME} ]] || {
-  echo "Can't find Bashmatic, even after attempting an installation."
-  echo "Please install Bashmatic with the following command line:"
-  echo 'bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"'
-}
-
-src ~/.bash_it/colorschemes/tango*
-src "${HOME}"/.bashrc
-
+source_if_exists  ~/.bash_it/colorschemes/tango*
+source_if_exists  "${HOME}"/.bashrc
