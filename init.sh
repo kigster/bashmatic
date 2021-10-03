@@ -66,7 +66,8 @@ export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -
 # shellcheck disable=SC2002
 export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
-export BASHMATIC_OS="$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
+export BASHMATIC_UNAME=$(command -v uname)
+export BASHMATIC_OS="$($BASHMATIC_UNAME -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
 
 # grab our shell command
 export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
