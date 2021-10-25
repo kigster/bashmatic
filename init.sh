@@ -43,14 +43,14 @@ bashmatic.home.valid || {
   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
     ((BASHMATIC_DEBUG)) && \
       printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
-    BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
+    export BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
   elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
     ((BASHMATIC_DEBUG)) && \
       printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
-    BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
+      export BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
   else
-    printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
-    BASHMATIC_HOME="$(cd -P -- "$(/usr/bin//usr/bin/dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
+      printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
+      export BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
   fi
 
   log.inf "Resolved BASHMATIC_HOME to [${BASHMATIC_HOME}]"
@@ -64,7 +64,9 @@ bashmatic.home.valid || {
 
 export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
 # shellcheck disable=SC2002
-export BASHMATIC_VERSION="$(cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
+VERSION_FILE="${BASHMATIC_HOME}/.version"
+
+export BASHMATIC_VERSION="$(/bin/cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
 export BASHMATIC_UNAME=$(command -v uname)
 export BASHMATIC_OS="$($BASHMATIC_UNAME -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
@@ -93,26 +95,16 @@ function .bashmatic.print-path-config {
 
 # @description
 function bashmatic.dealias() {
-  for cmd in printf eche grep tr ps kill ; do unalias ${cmd} 2>/dev/null >/dev/null || true; done
+  for cmd in printf echo grep tr ps kill ; do unalias ${cmd} 2>/dev/null >/dev/null || true; done
 
   if [[ -f "${BASHMATIC_HOME}/.bash_safe_source" ]] ; then 
     source "${BASHMATIC_HOME}/.bash_safe_source"
     cp -p  "${BASHMATIC_HOME}/.bash_safe_source" "${HOME}/.bash_safe_source" 2>/dev/null
   fi
-
-  source_if_exists "${BASHMATIC_HOME}/lib/is.sh"
-  source_if_exists "${BASHMATIC_HOME}/lib/color.sh"
-  source_if_exists "${BASHMATIC_HOME}/lib/output-repeat-char.sh"
-  source_if_exists "${BASHMATIC_HOME}/lib/output.sh"
-  source_if_exists "${BASHMATIC_HOME}/lib/output-utils.sh"
-  source_if_exists "${BASHMATIC_HOME}/lib/output-boxes.sh"
-  source_if_exists "${BASHMATIC_HOME}/lib/util.sh"
-  source_if_exists "${BASHMATIC_HOME}/lib/time.sh"
 }
 
 function .bashmatic.load-time() {
   [[ -n $(type millis 2>/dev/null) ]] && return 0
-
   [[ -f ${BASHMATIC_HOME}/lib/time.sh ]] && source "${BASHMATIC_HOME}/lib/time.sh"
   export __bashmatic_start_time="$(millis)"
 }
@@ -166,18 +158,54 @@ function bashmatic.init-core() {
   # If defined BASHMATIC_AUTOLOAD_FILES, we source these files together with BASHMATIC
   for _init in ${BASHMATIC_AUTOLOAD_FILES}; do
     [[ -s "${PWD}/${_init}" ]] && {
-      [[ -n ${BASHMATIC_DEBUG} ]] && \
-      printf "${BASHMATIC_PREFIX} sourcing in <—— [${bldblu}${PWD}/${_init}${clr}]"
-      source "${PWD}/${_init}"
+      [[ -n ${BASHMATIC_DEBUG} ]] &&
+         printf "${BASHMATIC_PREFIX} sourcing in <—— [${bldblu}${PWD}/${_init}${clr}]"
+         source "${PWD}/${_init}"
     }
   done
 
   # Load BASHMATIC library
   ((BASHMATIC_DEBUG)) && {
-     printf "${BASHMATIC_PREFIX} evaluating all shell files under ${bldylw}${BASHMATIC_HOME}/lib...${clr}\n"
+    printf "${BASHMATIC_PREFIX} evaluating all shell files under ${bldylw}${BASHMATIC_HOME}/lib...${clr}\n"
   }
+  
+  for f in $(find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -print); do
+    ((BASHMATIC_DEBUG)) && {
+      printf "${BASHMATIC_PREFIX} loading ${bldylw}%-50s${clr}\n" "$f"
+    }
+    source $f
+  done
 
-  find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -exec cat   {} \; | eval
+  for f in $(find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -print); do
+    source $f
+  done
+
+  # shellcheck disable=SC2155
+  [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH=${PATH}:${BASHMATIC_HOME}/bin
+  unalias grep 2>/dev/null || true
+  export GrepCommand="$(command -v grep) -E "
+  export True=1
+  export False=0
+  export LoadedShown=${LoadedShown:-1}
+
+  # Future CLI flags, but for now just vars
+  export LibGit__QuietUpdate=${LibGit__QuietUpdate:-1}
+  export LibGit__ForceUpdate=${LibGit__ForceUpdate:-0}
+}
+
+function .bashmatic.init.darwin() {
+  local -a required_binares
+  required_binares=(brew gdate gsed)
+  local some_missing=0
+  for binary in "${required_binares[@]}"; do
+    command -v "${binary}" >/dev/null && continue
+    some_missing=$((some_mising + 1))
+  done
+
+  if [[ ${some_missing} -gt 0 ]]; then
+    set +e
+    source "${BASHMATIC_HOME}/bin/bashmatic-install"
+  fi
 
   # shellcheck disable=SC2155
   [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH=${PATH}:${BASHMATIC_HOME}/bin
@@ -230,21 +258,21 @@ function bashmatic.init.paths() {
 
 function bashmatic.init() {
   for file in "$@"; do
-    [[ $0 =~ $file ]] && {
-      log.inf "skipping the first file ${file}"
-      continue 
-    }
-    local env_file="${BASHMATIC_HOME}/.envrc.${file}"
-    if [[ -f $env_file ]]; then
-     log.inf "sourcing env file ${env_file}"
-      source "$env_file"
-    fi
-    if [[ "$file" =~ (reload|force|refresh) ]]; then
-      log.inf "setting to is-not-loaded"
-      bashmatic.set-is-not-loaded
-    fi
-  done
-  
+      [[ $0 =~ $file ]] && {
+        log.inf "skipping the first file ${file}"
+          continue 
+        }
+      local env_file="${BASHMATIC_HOME}/.envrc.${file}"
+      if [[ -f $env_file ]]; then
+        log.inf "sourcing env file ${env_file}"
+        source "$env_file"
+      fi
+      if [[ "$file" =~ (reload|force|refresh) ]]; then
+        log.inf "setting to is-not-loaded"
+        bashmatic.set-is-not-loaded
+      fi
+   done
+
   log.inf "calling bashhmatic.init-core"
   bashmatic.init-core  
   log.inf "calling bashhmatic.is-loaded"

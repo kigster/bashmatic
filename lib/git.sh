@@ -296,8 +296,7 @@ function git.upstream() {
 #
 
 bashmatic.bash.version-four-or-later && {
-  declare -A git_remote_map
-  export git_remote_map=()
+  declare -A git_remote_hash
 }
 
 function git.parse-remote() {
@@ -316,12 +315,11 @@ function git.parse-remote() {
   local repo="${BASH_REMATCH[5]}"
 
   if bashmatic.bash.version-four-or-later ; then
-    declare -A git_remote_map=()
-    git_remote_map[protocol]="${protocol}"
-    git_remote_map[hostname]="${hostname}"
-    git_remote_map[user]="${user}"
-    git_remote_map[repo]="${repo}"
-    export git_remote_map
+    git_remote_hash[protocol]="${protocol}"
+    git_remote_hash[hostname]="${hostname}"
+    git_remote_hash[user]="${user}"
+    git_remote_hash[repo]="${repo}"
+    export git_remote_hash
   fi
 
   printf "%s %s %s %s %s\n" "${protocol}" "${separator}" "${hostname}" "${user}" "${repo}"
