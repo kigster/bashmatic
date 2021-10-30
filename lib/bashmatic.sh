@@ -117,7 +117,7 @@ bashmatic.source() {
       .err "Can't source file ${file} — fils is invalid."
       return 1
     }
-    [[ -n ${SOURCE_DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
+    [[ -n ${SOURCE_DEBUG} || ${DEBUG} -eq 1 ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
     source "${file}"
   done
   return 0
