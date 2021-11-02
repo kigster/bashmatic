@@ -295,10 +295,6 @@ function git.upstream() {
 #    export remote_elements=($(git.remote))
 #
 
-bashmatic.bash.version-four-or-later && {
-  declare -A git_remote_hash
-}
-
 function git.parse-remote() {
   local url="${1:-$(git.remote)}"
   local re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)(\.git)?$"
@@ -313,14 +309,6 @@ function git.parse-remote() {
   local hostname="${BASH_REMATCH[3]}"
   local user="${BASH_REMATCH[4]}"
   local repo="${BASH_REMATCH[5]}"
-
-  if bashmatic.bash.version-four-or-later ; then
-    git_remote_hash[protocol]="${protocol}"
-    git_remote_hash[hostname]="${hostname}"
-    git_remote_hash[user]="${user}"
-    git_remote_hash[repo]="${repo}"
-    export git_remote_hash
-  fi
 
   printf "%s %s %s %s %s\n" "${protocol}" "${separator}" "${hostname}" "${user}" "${repo}"
 }
