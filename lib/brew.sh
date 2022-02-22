@@ -11,10 +11,66 @@ export LibBrew__PackageCacheList
 LibBrew__CaskCacheList="${BASHMATIC_TEMP}/brew-cask-cache.txt"
 export LibBrew__CaskCacheList
 
+
+#================================================================================
+# Global Brew Functions
+#================================================================================
+
+function brew.binary() {
+  brew.is-installed && command -v brew
+}
+
+function brew.is-installed() {
+  command -v brew 2>&1 1>/dev/null && return 0 
+  return 1
+}
+
+function brew.upgrade() {
+  brew.is-installed || brew.install
+  local brew_cmd=$(command -v brew 2>/dev/null)
+
+  if [[ -z ${brew_cmd} ]]; then
+    warn "brew is not installed...., brew_command is blank..."
+    return 1
+  fi
+
+  run "${brew_cmd} update --force"
+  run "${brew_cmd} upgrade"
+  run "${brew_cmd} cleanup -s"
+}
+
+function brew.install() {
+  inf "Checking if a local brew command exists already ..." >&2
+  if brew.is-installed; then
+    ok:
+    local brew=$(brew.binary)
+    info "Excellent: an existing Homebrew Version: ${bldylw}$(${brew} --version 2>/dev/null | head -1) exists"
+    run "${brew} update"
+  else
+    not-ok:
+    info "Brew wasn't found — installing Homebrew, ${bldgrn}please wait..."
+    hl.yellow "Please enter your SUDO password, if prompted:"    
+    sudo echo
+    run "/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+  fi
+}
+
+function brew.uninstall() {
+  run.set-next show-output-on
+  run "$(brew.binary) install --cask uninstallpkg"
+}
+
+function brew.setup() {
+  brew.upgrade
+}
+
+#================================================================================
+# Package & Cask Brew Functions
+#================================================================================
+
 # This returns the sorted list of versions that are specified
 # for a given package in Brew using @<version>, for instance: "mysql@5.5" or
 # postgres@9.4 etc.
-
 function brew.package.available-versions() {
   local package="$1"
   [[ -z "$1" ]] && return 1
@@ -37,7 +93,7 @@ function brew.cache-reset.delayed() {
 }
 
 function brew.upgrade.packages() {
-  [[ -z "$(which brew)" ]] || brew.install
+  brew.is-installed || brew.install
   [[ -z $1 ]] && {
     error "usage: brew.upgrade.packages package1 package2 ..."
     return 1
@@ -45,41 +101,6 @@ function brew.upgrade.packages() {
 
   run "brew upgrade $*"
 }
-
-function brew.upgrade() {
-  brew.install
-  if [[ -z "$(which brew)" ]]; then
-    warn "brew is not installed...."
-    return 1
-  fi
-  run "brew update --force"
-  run "brew upgrade"
-  run "brew cleanup -s"
-}
-
-function brew.install() {
-  inf "Checking if a local brew command exists already ..." >&2
-  local brew=$(command -v brew >/dev/null)
-  if [[ -z "${brew}" ]]; then
-    not-ok:
-
-    info "Brew wasn't found — installing Homebrew, ${bldgrn}please wait..."
-    run "/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)""
-  else
-    ok:
-    info "Excellent: an existing Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1) exists"
-    run "brew update"
-  fi
-}
-
-function brew.uninstall() {
-  echo y | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
-}
-
-function brew.setup() {
-  brew.upgrade
-}
-
 function brew.package.link() {
   local package="${1}"
   shift
