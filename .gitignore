@@ -29,3 +29,4 @@ doc/USAGE.adoc
 .developer-warned
 .history
 .vscode/*.log
+.ruby-version
