@@ -23,8 +23,8 @@ export LibRun__ShowCommandOutput__Default=${False}
 export LibRun__AskOnError__Default=${False}
 export LibRun__ShowCommand__Default=${True}
 
-export LibRun__CommandColorBg__Default="${bakblk}"
-export LibRun__CommandColorFg__Default="${txtylw}"
+export LibRun__CommandColorBg__Default="${bakgrn}"
+export LibRun__CommandColorFg__Default="${txtblk}"
 export LibRun__CommandColor__Default="${LibRun__CommandColorFg__Default}${LibRun__CommandColorBg__Default}"
 
 
