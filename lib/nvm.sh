@@ -46,7 +46,7 @@ function nvm.install() {
 }
 
 function nvm.use() {
-  [[ -s .nvmrc ]] || return 1
+  [[ -f .nvmrc ]] || return 1
   is.a-function nvm || nvm.load
   local node_version="$(cat .nvmrc | head -1)"
   info "Activating NodeJS ${bldred}${node_version}..."
@@ -82,4 +82,13 @@ function nvm.activate() {
   nvm.load
 }
 
-[[ -f .nvmrc ]] && nvm.activate
+declare node_version
+is.an-existing-file .nvmrc && { 
+  export node_version=$(cat .nvmrc | tr -d 'v')
+  if is.command volta; then
+    volta install "node@${node_version}"
+    volta pin "node@${node_version}"
+  else
+    nvm.activate
+  fi
+}
