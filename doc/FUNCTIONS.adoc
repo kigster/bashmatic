@@ -29,6 +29,7 @@
 * xref:#module-deploy[deploy]
 * xref:#module-dir[dir]
 * xref:#module-docker[docker]
+* xref:#module-dropbox[dropbox]
 * xref:#module-file[file]
 * xref:#module-file-helpers[file-helpers]
 * xref:#module-flatten[flatten]
@@ -648,7 +649,7 @@ audio.file.frequency ()
     local frequency=$(mdls "${file}" | grep kMDItemAudioSampleRate | sed 's/.*= //g')
     [[ -z ${frequency} ]] && frequency=48000
     local kHz=$(maths.eval "${frequency} / 1000.0" 0)
-    printf ${kHz}
+    printf "${kHz}"
 }
 
 ----
@@ -1386,7 +1387,7 @@ bashmatic.source ()
             .err "Can't source file ${file} — fils is invalid."
             return 1
         }
-        [[ -n ${SOURCE_DEBUG} ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
+        [[ -n ${SOURCE_DEBUG} || ${DEBUG} -eq 1 ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
         source "${file}"
     done
     return 0
@@ -1444,6 +1445,17 @@ bashmatic.version ()
 
 
 === Module `brew`
+
+==== `brew.binary`
+
+[source,bash]
+----
+brew.binary () 
+{ 
+    brew.is-installed && command -v brew
+}
+
+----
 
 ==== `brew.cache-reset`
 
@@ -1535,15 +1547,17 @@ brew.cask.tap ()
 brew.install () 
 { 
     inf "Checking if a local brew command exists already ..." 1>&2
-    local brew=$(command -v brew >/dev/null)
-    if [[ -z "${brew}" ]]; then
+    if brew.is-installed; then
+        ok:
+        local brew=$(brew.binary)
+        info "Excellent: an existing Homebrew Version: ${bldylw}$(${brew} --version 2>/dev/null | head -1) exists"
+        run "${brew} update"
+    else
         not-ok:
         info "Brew wasn't found — installing Homebrew, ${bldgrn}please wait..."
-        run "/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)""
-    else
-        ok:
-        info "Excellent: an existing Homebrew Version: ${bldylw}$(brew --version 2>/dev/null | head -1) exists"
-        run "brew update"
+        hl.yellow "Please enter your SUDO password, if prompted:"
+        sudo echo
+        run "/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
     fi
 }
 
@@ -1640,6 +1654,18 @@ brew.install.packages ()
     do
         brew.install.package "${package}"
     done
+}
+
+----
+
+==== `brew.is-installed`
+
+[source,bash]
+----
+brew.is-installed () 
+{ 
+    command -v brew 2>&1 > /dev/null && return 0
+    return 1
 }
 
 ----
@@ -1819,7 +1845,8 @@ brew.setup ()
 ----
 brew.uninstall () 
 { 
-    echo y | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
+    run.set-next show-output-on
+    run "$(brew.binary) install --cask uninstallpkg"
 }
 
 ----
@@ -1866,14 +1893,15 @@ brew.uninstall.packages ()
 ----
 brew.upgrade () 
 { 
-    brew.install
-    if [[ -z "$(which brew)" ]]; then
-        warn "brew is not installed...."
+    brew.is-installed || brew.install
+    local brew_cmd=$(command -v brew 2>/dev/null)
+    if [[ -z ${brew_cmd} ]]; then
+        warn "brew is not installed...., brew_command is blank..."
         return 1
     fi
-    run "brew update --force"
-    run "brew upgrade"
-    run "brew cleanup -s"
+    run "${brew_cmd} update --force"
+    run "${brew_cmd} upgrade"
+    run "${brew_cmd} cleanup -s"
 }
 
 ----
@@ -1884,7 +1912,7 @@ brew.upgrade ()
 ----
 brew.upgrade.packages () 
 { 
-    [[ -z "$(which brew)" ]] || brew.install
+    brew.is-installed || brew.install
     [[ -z $1 ]] && { 
         error "usage: brew.upgrade.packages package1 package2 ..."
         return 1
@@ -3938,6 +3966,29 @@ docker.set-repo ()
 ----
 
 
+=== Module `dropbox`
+
+==== `dropbox.unignore`
+
+[source,bash]
+----
+dropbox.unignore () 
+{ 
+    local file="$(path.absolute "$1")"
+    util.os
+    case "${AppCurrentOS}" in 
+        darwin)
+            run "xattr -d com.dropbox.ignored \"${file}\""
+        ;
+        linux)
+            run "attr -r com.dropbox.ignored \"${file}\""
+        ;
+    esac
+}
+
+----
+
+
 === Module `file`
 
 ==== `dir.find`
@@ -4627,7 +4678,7 @@ gem.configure-cache ()
     export LibGem__GemInstallFlags=" -N --force --quiet "
     local ruby_version=$(ruby.numeric-version)
     export LibGem__GemListCache="${LibGem__GemListCacheBase}.${ruby_version}"
-    local dir=$(dirname ${LibGem__GemListCache})
+    local dir=$(dirname "${LibGem__GemListCache}")
     [[ -d ${dir} ]] || run "mkdir -p ${dir}" > /dev/null
 }
 
@@ -4643,9 +4694,9 @@ gem.ensure-gem-version ()
     local gem_version=$2
     [[ -z ${gem} || -z ${gem_version} ]] && return
     gem.cache-installed
-    if [[ -z $(cat ${LibGem__GemListCache} | grep "${gem} (${gem_version})") ]]; then
-        gem.uninstall ${gem}
-        gem.install ${gem} ${gem_version}
+    if [[ -z $(grep "${gem} (${gem_version}) < ${LibGem__GemListCache}") ]]; then
+        gem.uninstall "${gem}"
+        gem.install "${gem}" "${gem_version}"
     else
         info "gem ${gem} version ${gem_version} is already installed."
     fi
@@ -4671,10 +4722,13 @@ gem.gemfile.bundler-version ()
 gem.gemfile.version () 
 { 
     local gem=$1
+    local gemfile="${2:-"Gemfile.lock"}"
     [[ -z ${gem} ]] && return
-    if [[ -f Gemfile.lock ]]; then
-        grep -E -e "^    ${gem} \([0-9]+\.[0-9]+\.[0-9](\.[a-zA-Z0-9]+)?\)" Gemfile.lock | awk '{print $2}' | sed 's/[()]//g'
-    fi
+    [[ -f ${gemfile} ]] || { 
+        error "Can't find Gemfile ${gemfile} in the current directory" 1>&2
+        return 1
+    }
+    grep -E -e " ${gem} \([0-9]" "${gemfile}" | awk '{print $2}' | sed 's/[()]//g'
 }
 
 ----
@@ -4687,7 +4741,7 @@ gem.global.latest-version ()
 { 
     local gem="$1"
     [[ -z ${gem} ]] && return
-    declare -a versions=($(gem.global.versions ${gem}))
+    declare -a versions=($(gem.global.versions "${gem}"))
     local max=0
     local max_version=${versions[0]}
     for v in "${versions[@]}"
@@ -4712,7 +4766,7 @@ gem.global.versions ()
     local gem=$1
     [[ -z ${gem} ]] && return
     gem.cache-installed
-    cat "${LibGem__GemListCache}" | grep -E -e "^${gem} " | sedx "s/^${gem} //g;s/[(),]//g"
+    grep -E -e "^${gem} " < "${LibGem__GemListCache}" | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
 ----
@@ -4728,7 +4782,7 @@ gem.install ()
     local gem_version="$2"
     local gem_version_flags=
     local gem_version_name=
-    gem_version=${gem_version:-$(gem.version ${gem_name})}
+    gem_version=${gem_version:-$(gem.version "${gem_name}")}
     if [[ -z ${gem_version} ]]; then
         gem_version_name=latest
         gem_version_flags=
@@ -4736,7 +4790,7 @@ gem.install ()
         gem_version_name="${gem_version}"
         gem_version_flags="--version ${gem_version}"
     fi
-    if gem.is-installed ${gem_name} ${gem_version}; then
+    if gem.is-installed "${gem_name}" "${gem_version}"; then
         info: "gem ${bldylw}${gem_name} (${bldgrn}${gem_version_name}${bldylw})${txtblu} is already installed"
     else
         info "installing ${bldylw}${gem_name} ${bldgrn}(${gem_version_name})${txtblu}..."
@@ -4747,7 +4801,7 @@ gem.install ()
         else
             error "Unable to install gem ${bldylw}${gem_name}"
         fi
-        return ${LibRun__LastExitCode}
+        return "${LibRun__LastExitCode}"
     fi
 }
 
@@ -4804,7 +4858,7 @@ gem.uninstall ()
     fi
     run "gem uninstall ${gem_name} ${gem_flags}"
     gem.clear-cache
-    return ${LibRun__LastExitCode}
+    return "${LibRun__LastExitCode}"
 }
 
 ----
@@ -5082,14 +5136,6 @@ git.parse-remote ()
     local hostname="${BASH_REMATCH[3]}"
     local user="${BASH_REMATCH[4]}"
     local repo="${BASH_REMATCH[5]}"
-    if bashmatic.bash.version-four-or-later; then
-        declare -A git_remote_map=()
-        git_remote_map[protocol]="${protocol}"
-        git_remote_map[hostname]="${hostname}"
-        git_remote_map[user]="${user}"
-        git_remote_map[repo]="${repo}"
-        export git_remote_map
-    fi
     printf "%s %s %s %s %s\n" "${protocol}" "${separator}" "${hostname}" "${user}" "${repo}"
 }
 
@@ -6271,7 +6317,7 @@ nvm.load ()
 ----
 nvm.use () 
 { 
-    [[ -s .nvmrc ]] || return 1
+    [[ -f .nvmrc ]] || return 1
     is.a-function nvm || nvm.load
     local node_version="$(cat .nvmrc | head -1)"
     info "Activating NodeJS ${bldred}${node_version}..."
@@ -8777,6 +8823,30 @@ PATH_add ()
 
 ----
 
+==== `path.absolute`
+
+[source,bash]
+----
+path.absolute () 
+{ 
+    if [[ -d "$1" ]]; then
+        pushd "$1" > /dev/null
+        pwd
+        popd > /dev/null
+    else
+        if [[ -e "$1" ]]; then
+            pushd "$(dirname "$1")" > /dev/null
+            echo "$(pwd)/$(basename "$1")"
+            popd > /dev/null
+        else
+            echo "$1" does not exist! 1>&2
+            return 127
+        fi
+    fi
+}
+
+----
+
 ==== `path.append`
 
 [source,bash]
@@ -10232,9 +10302,11 @@ ruby.stop ()
 ----
 ruby.top-versions () 
 { 
-    local platform="${1:-"\[2-3\]\."}"
+    local platform="${1}"
     local arg="$(.ruby.ruby-build.list-argument)"
-    eval "rbenv install ${arg}" | ${GrepCommand} "^${platform}" | ruby -e '
+    local filter="cat"
+    [[ -n ${platform} ]] && filter="grep -E '^${platform}'"
+    eval "rbenv install ${arg}" | eval "${filter}" | ruby -e '
       last_v = nil
       last_m = nil
       ARGF.each do |line|

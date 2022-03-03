@@ -25,6 +25,34 @@ Prints to STDOUT the SHA based on package.json and yarn.lock
 ---
 
 
+## File `lib/dropbox.sh`
+
+
+
+* [function dropbox.ignore {](#function-dropboxignore-)
+* [dropbox.unignore()](#dropboxunignore)
+
+### function dropbox.ignore {
+
+Set file to be ignored by Dropbox
+
+#### See also
+
+* [https://help.dropbox.com/files-folders/restore-delete/ignored-files](#httpshelpdropboxcomfiles-foldersrestore-deleteignored-files)
+
+### `dropbox.unignore()`
+
+Set a file or directorhy to be ignored by Dropbox
+
+#### See also
+
+* [https://help.dropbox.com/files-folders/restore-delete/ignored-files](#httpshelpdropboxcomfiles-foldersrestore-deleteignored-files)
+
+
+
+---
+
+
 ## File `lib/file.sh`
 
 
@@ -633,6 +661,7 @@ Utilities for managing the $PATH variable
 * [path.mutate.append()](#pathmutateappend)
 * [path.mutate.prepend()](#pathmutateprepend)
 * [PATH_add()](#path_add)
+* [path.absolute()](#pathabsolute)
 
 ### `path.strip-slash()`
 
@@ -710,6 +739,10 @@ exports the new value of the PATH
 This function exists within direnv, but since we
 are sourcing in .envrc we need to have this defined
 to avoid errors.
+
+### `path.absolute()`
+
+Returns an absolute version of a given path
 
 
 
@@ -1527,5 +1560,5 @@ Manually Download and Install ShellCheck
 
 ## Copyright & License
 
- * Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved.
+ * Copyright © 2017-2022 Konstantin Gredeskoul, All rights reserved.
  * Distributed under the MIT License.

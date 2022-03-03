@@ -1,5 +1,16 @@
 # Changelog
 
+## [v2.6.0](https://github.com/kigster/bashmatic/tree/v2.6.0) (2022-03-03)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.5.1...v2.6.0)
+
+**Merged pull requests:**
+
+- Adding dropbox ignore/unignore functions [\#91](https://github.com/kigster/bashmatic/pull/91) ([kigster](https://github.com/kigster))
+- Kig/fixes safe source [\#90](https://github.com/kigster/bashmatic/pull/90) ([kigster](https://github.com/kigster))
+- Commiting fixes [\#89](https://github.com/kigster/bashmatic/pull/89) ([kigster](https://github.com/kigster))
+- Fixing utils.functions-matching.diff\(\); v2.5.1 [\#88](https://github.com/kigster/bashmatic/pull/88) ([kigster](https://github.com/kigster))
+
 ## [v2.5.1](https://github.com/kigster/bashmatic/tree/v2.5.1) (2021-09-16)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.4.6...v2.5.1)
