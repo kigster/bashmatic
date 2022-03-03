@@ -556,7 +556,8 @@ function .install.current-shell() {
   }
   (
     # deterministicaly figure out our currently loaded shell.
-    current_shell="$(basename $(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | cut -d ' ' -f 1 | sed -E 's/-//g'))"
+    local bash_process="$(/bin/ps -p $$ -o args | grep -v -E 'ARGS|COMMAND' | cut -d ' ' -f 1 | sed -E 's/-//g')"
+    current_shell="$(basename "${bash_process:-bash}")"
     export current_shell
     if [[ "${current_shell}" =~ zsh ]]; then
       command -v zsh
@@ -597,7 +598,8 @@ function .install.canonical-dir() {
 function .install.print-directories() {
   local dir="$(.install.canonical-dir)"
   local source="$(.install.canonical-source)"
-  local source_script="$(basename "${source}")"
+  local source_script
+  [[ -n "${source}" ]] && source_script="$(basename "${source}")"
   printf -- "BASH-install's directory : ${bldgrn}%-40s${clr}\n" "${dir}"
   printf -- "BASH-install's full path : ${bldgrn}%-40s${clr}\n" "${dir}/${source_script}"
   printf -- "Active shell right now   : ${bldgrn}%-20s${clr}\n" "$(.install.current-shell | sed -E 's/[ ]//g' | tr -d ' ')"
