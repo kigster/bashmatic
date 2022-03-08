@@ -49,3 +49,4 @@ function serial.console {
     echo "No USB modem device found in /dev"
   fi
 }
+

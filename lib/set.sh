@@ -30,3 +30,4 @@ set-e-restore() {
   set -o errexit ${status}
   rm -f ${__bash_set_errexit_status} 2>/dev/null
 }
+

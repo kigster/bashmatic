@@ -28,3 +28,4 @@ function package.ensure.commmand-available() {
   error "After installing package ${package}, binary ${binary} still is not found."
 }
 
+

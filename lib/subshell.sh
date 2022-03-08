@@ -101,3 +101,4 @@ function bashmatic.run-if-subshell() {
     return 1
   fi
 }
+

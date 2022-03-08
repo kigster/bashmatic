@@ -65,3 +65,4 @@ trapped() {
   fi
   return 1
 }
+

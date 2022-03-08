@@ -256,3 +256,4 @@ function usage-widget() {
     "$(cursor.up 1; cursor.left 5)" "$(cursor.right 10)" \
     "${details[@]}"
 }
+

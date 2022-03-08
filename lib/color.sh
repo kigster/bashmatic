@@ -153,3 +153,4 @@ function color.disable() {
 }
 
 [[ ${BashMatic__ColorLoaded} -eq 1 ]] || color.enable
+

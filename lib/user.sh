@@ -146,3 +146,4 @@ user.current-shell-init-file() {
   touch "${init_file}"
   echo "${init_file}"
 }  
+

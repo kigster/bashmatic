@@ -558,3 +558,4 @@ run.on-error.ask-is-enabled() {
 run.was-successful() {
   [[ ${LibRun__LastExitCode} -eq 0 ]]
 }
+

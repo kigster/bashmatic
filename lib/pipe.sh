@@ -17,3 +17,4 @@ pipe.remove-hash-comments() {
 pipe.remove-blank-lines() {
   sedx '/^$/D'
 }
+

@@ -44,3 +44,4 @@ function pdf.combine() {
 
   return ${LibRun__LastExitCode}
 }
+

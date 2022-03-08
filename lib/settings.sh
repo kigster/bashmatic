@@ -66,3 +66,4 @@ declare -a AppBrewPackages=(
 
 export AppBrewPackages
 export AppDefaultBackupDir='tmp/pgdump'
+

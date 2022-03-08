@@ -13,7 +13,7 @@
 #
 set -e
 
-  # Configuration
+# Configuration
 export HOME=${HOME:-"/"}
 declare -a CHOWN_DIRS
 declare -a BREW_PACKAGES

@@ -42,3 +42,4 @@ function gpgit.install() {
   sudo make -C "gpgit-${VERSION}" PREFIX=/usr/local install
   gpgit --helpp
 }
+

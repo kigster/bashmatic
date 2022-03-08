@@ -646,3 +646,4 @@ ui.closer.kind-of-ok:() {
   ui.closer.kind-of-ok $@
   echo
 }
+

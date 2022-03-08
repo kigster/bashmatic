@@ -71,3 +71,4 @@ function ssh.keys.generate() {
   run "ssh-keygen -t rsa -b 4096 -C ${email}"
 }
 
+

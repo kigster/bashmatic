@@ -354,3 +354,4 @@ dir.find() {
 ls.mb(){
   du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
 }
+

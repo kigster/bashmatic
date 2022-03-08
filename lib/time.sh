@@ -164,3 +164,4 @@ millis() {
 today() {
   date +'%Y-%m-%d'
 }
+

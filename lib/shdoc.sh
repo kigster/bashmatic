@@ -12,3 +12,4 @@ function gawk.install() {
   local gawk_path="$(command -v gawk 2>/dev/null)"
   [[ -n "${gawk_path}" && -x "${gawk_path}" ]] || brew.install.package gawk
 }
+

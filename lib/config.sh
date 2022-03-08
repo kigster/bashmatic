@@ -93,3 +93,4 @@ function config.dig.pretty() {
   config.set-format "${format}"
   return 0
 }
+

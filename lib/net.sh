@@ -49,3 +49,4 @@ function net.is-host-port-protocol-open() {
   ${command} -Pn -p ${port} ${host} 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
 }
 
+

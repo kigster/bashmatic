@@ -355,3 +355,4 @@ function brew.service.restart() {
   local svc="$1"
   run "brew services restart ${svc}"
 }
+

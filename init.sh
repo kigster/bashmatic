@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#/usr/bin/env bash
 # vim: ft=bash
 # file: lib/init.bash
 # 
@@ -20,7 +20,6 @@
 # https://github.com/kigster/bashmatic#4-installing-bashmatic
 
 set +ex
-
 export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
 
 export PATH="${PATH}:/usr/local/bin:/usr/bin:/bin:/sbin"
@@ -169,16 +168,18 @@ function bashmatic.init-core() {
     printf "${BASHMATIC_PREFIX} evaluating all shell files under ${bldylw}${BASHMATIC_HOME}/lib...${clr}\n"
   }
   
-  for f in $(find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -print); do
-    ((BASHMATIC_DEBUG)) && {
-      printf "${BASHMATIC_PREFIX} loading ${bldylw}%-50s${clr}\n" "$f"
-    }
-    source $f
-  done
+  # for f in $(find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -print); do
+  #   ((BASHMATIC_DEBUG)) && {
+  #     printf "${BASHMATIC_PREFIX} loading ${bldylw}%-50s${clr}\n" "$f"
+  #   }
+  #   source $f
+  # done
+  #
+  # for f in $(find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -print); do
+  #  source $f
+  # done
 
-  for f in $(find "${BASHMATIC_HOME}/lib" -name '[a-z]*.sh' -type f -print); do
-    source $f
-  done
+  eval "$(/bin/cat "${BASHMATIC_HOME}"/lib/*.sh)"
 
   # shellcheck disable=SC2155
   [[ ${PATH} =~ ${BASHMATIC_HOME}/bin ]] || export PATH=${PATH}:${BASHMATIC_HOME}/bin
@@ -204,7 +205,7 @@ function .bashmatic.init.darwin() {
 
   if [[ ${some_missing} -gt 0 ]]; then
     set +e
-    source "${BASHMATIC_HOME}/bin/bashmatic-install"
+    source "${BASHMATIC_HOME}/bin/bashmatic-install" >/dev/null
   fi
 
   # shellcheck disable=SC2155
@@ -231,8 +232,10 @@ function .bashmatic.init.darwin() {
 
   if [[ ${some_missing} -gt 0 ]]; then
     set +e
-    source "${BASHMATIC_HOME}/bin/bashmatic-install"
-    darwin-requirements
+    # eval "$(curl -fsSL https://bashmatic.re1.re)" >/dev/null
+    source "${BASHMATIC_HOME}/bin/bashmatic-install" >/dev/null
+    local func=".install.darwin-requirements"
+    [[ -z $(type -f ${func}) ]] || eval "${func}"
   fi
 }
 
@@ -315,4 +318,3 @@ function bashmatic.init() {
 }
 
 bashmatic.init "$@"
-

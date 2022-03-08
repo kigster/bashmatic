@@ -159,3 +159,4 @@ progress.bar.configure.symbol-bar() {
   progress.bar.config BarChar="█"
 }
 
+

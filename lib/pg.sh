@@ -27,3 +27,4 @@ pg.server-in-path.version() {
   is.command postgres || return 1
   $(which postgres) -V | sed -E 's/[^0-9.]//g;s/\..*$//g'
 }
+
