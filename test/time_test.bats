@@ -11,7 +11,7 @@ source lib/user.sh
 # 0 minutes 1.100 seconds
 @test 'time.a-command' {
   set -e
-  time.a-command 'sleep 1.1' | grep -E -q "0 minutes 1.\d\d\d seconds"
+  time.a-command 'sleep 1.2' | grep -E -q "0 minutes 1.[0-9]{3} seconds"
 }
 
 @test "time.with-duration()" {
