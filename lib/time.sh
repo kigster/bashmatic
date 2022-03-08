@@ -1,3 +1,4 @@
+# vim: set ft=bash
 #——————————————————————————————————————————————————————————————————————————————
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
@@ -88,6 +89,21 @@ function time.with-duration() {
   time.with-duration.end "$@"
 }
 
+# @description 
+#   This function receives a command to execute as an argument.
+#   The command is executed as 'eval "$@"'; meanwhile the start/end
+#   times are measured, and the following string is printed at the end:
+#   eg. "4 minutes 24.345 seconds"
+# @args Command to run
+function time.a-command() {
+  local start="$(millis)"
+  eval "$@"
+  local end="$(millis)"
+  local ruby_expr="secs=(0.0 + ${end} - ${start}).to_f/1000.0; mins=secs/60; secs=( secs - secs/60 ) if mins > 0 ; printf('%d minutes %2.3f seconds', mins, secs)"
+  local duration=$(ruby -e "${ruby_expr}")
+  echo -en "${duration}"
+}
+  
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on linux vs OSX.
 time.date-from-epoch() {

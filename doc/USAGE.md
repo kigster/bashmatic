@@ -1013,6 +1013,7 @@ Oherwise we install the package and retry, and return if not found
 
 
 * [time.with-duration.start()](#timewith-durationstart)
+* [time.a-command()](#timea-command)
 
 ### `time.with-duration.start()`
 
@@ -1028,6 +1029,17 @@ time.with-duration.end   moofie 'Moofie is now this old: '
 time.with-duration.end   moofie 'Moofie is now very old: '
 time.with-duration.clear moofie
 ```
+
+### `time.a-command()`
+
+This function receives a command to execute as an argument.
+The command is executed as 'eval "$@"'; meanwhile the start/end
+times are measured, and the following string is printed at the end:
+eg. "4 minutes 24.345 seconds"
+
+#### Arguments
+
+* @args Command to run
 
 
 

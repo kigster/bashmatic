@@ -27,6 +27,8 @@ ${clr}
   exit ${1:-1}
 }
 
+export GITHUB_TOKEN="${GITHUB_TOKEN:-$(git config user.token)}"
+
 if [[ -z ${GITHUB_TOKEN} ]]; then
   if [[ -n "$1" ]]; then
     [[ "${#1}" -eq  40 ]] || {

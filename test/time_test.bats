@@ -7,6 +7,13 @@ source lib/time.sh
 source lib/util.sh
 source lib/user.sh
 
+# duration 'sleep 1.1'
+# 0 minutes 1.100 seconds
+@test 'time.a-command' {
+  set -e
+  time.a-command 'sleep 1.2' | grep -E -q "0 minutes 1.[0-9]{3} seconds"
+}
+
 @test "time.with-duration()" {
  time.with-duration.start
  sleep 0.1
@@ -79,3 +86,5 @@ source lib/user.sh
   [[ $(time.duration.humanize 1644)      ==      "27m:24s" ]]
   [[ $(time.duration.humanize 1646324)   == "457h:18m:44s" ]]
 }
+
+
