@@ -10,7 +10,6 @@
 == Bashmatic Modules
 
 * xref:#module-.audio[.audio]
-* xref:#module-.vscode/notes.txt[.vscode/notes.txt]
 * xref:#module-7z[7z]
 * xref:#module-array[array]
 * xref:#module-asciidoc[asciidoc]
@@ -89,9 +88,6 @@
 
 
 === Module `.audio`
-
-
-=== Module `.vscode/notes.txt`
 
 
 === Module `7z`
@@ -12027,6 +12023,22 @@ epoch ()
 millis () 
 { 
     .run.millis
+}
+
+----
+
+==== `time.a-command`
+
+[source,bash]
+----
+time.a-command () 
+{ 
+    local start="$(millis)"
+    eval "$@"
+    local end="$(millis)"
+    local ruby_expr="secs=(0.0 + ${end} - ${start}).to_f/1000.0; mins=secs/60; secs=( secs - secs/60 ) if mins > 0 ; printf('%d minutes %2.3f seconds', mins, secs)"
+    local duration=$(ruby -e "${ruby_expr}")
+    echo -en "${duration}"
 }
 
 ----
