@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # vim: ft=bash
 #
 # The purpose of this script is to bootstrap Bashmatic on a
@@ -11,13 +11,13 @@
 #
 # bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -v"
 #
-set -e
+set +e
 
 # Configuration
 export HOME=${HOME:-"/"}
 declare -a CHOWN_DIRS
 declare -a BREW_PACKAGES
-export CHOWN_DIRS=(/usr/local/* /Library/Ruby /Library/Python)
+export CHOWN_DIRS=(/usr/local/Cellar /usr/local/Homebrew /usr/local/Caskroom /opt/homebrew)
 export BREW_PACKAGES=(coreutils gnu-sed)
 
 # Constants
@@ -55,7 +55,7 @@ function .puts() {
 
 function .err() {
   for str in "$@"; do
-    printf "${clr}${bldwht}${bakred}.errOR       ➜ ${clr}  ${bldred}${str}${clr}\n"
+    printf "${clr}${bldwht}${bakred} ERROR       ➜ ${clr}  ${bldred}${str}${clr}\n"
   done
 }
 
@@ -213,11 +213,20 @@ function .install.linux-requirements() {
 # OS-X
 #——————————————————————————————————————————————————————————————————————————————————————
 function .install.osx-permissions() {
-  .sudo-ask&& .sudo-enable
+  .sudo-ask && .sudo-enable
+  local -a dirs
   for dir in "${CHOWN_DIRS[@]}"; do
     is-verbose &&.puts "Checking (and possibly changing) permissions of ${bldylw}${dir}..."
     [[ $(stat -f %u "${dir}") -eq $(id -u) ]] && continue
-    sudo chown -R "${USER}" "${dir}"
+    dirs+=( "${dir}" )
+  done
+  
+  [[ ${#dirs[@]} -eq 0 ]] && return 0
+
+  for d in "${dirs[@]}"; do
+    set -x
+    sudo chown -R "${USER}" "${d}"
+    set +x
   done
 }
 
@@ -227,8 +236,7 @@ function .install.brew-install() {
   is-verbose &&.puts "Installing HomeBrew if not already there..."
   command -v brew >/dev/null || {
    .puts "Installing Homebrew, please wait..."
-    /usr/bin/ruby -e \
-      "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   }
 }
 
@@ -246,7 +254,8 @@ function .install.brew-deps() {
 
 # Uninstall Brew (just for completeness, we never actually use this)
 function .install.brew-uninstall() {
-  echo y | /usr/bin/env bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
+  echo y | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
+
 }
 
 function .install.darwin-requirements-xcode() {
@@ -619,14 +628,16 @@ function .install.bashmatic-install() {
   ((bootstrap__skip_install)) || .install.download-and-install
 }
 
+function bashmatic-install() {
+  .install.bashmatic-install "$@"
+}
+
 function .install.abort() {
   echo
   .err 'Aborting due to user action.'
   trap '' INT
   exit 127
 }
-
-trap .install.abort INT
 
 len=${#BASH_SOURCE[@]}
 last_index=$((len - 1))
@@ -637,14 +648,14 @@ set +e
 
 # Allow sourcing in bin/bashmatic-install and using it's shell functions, eg:
 # source bin/bashmatic-install init
-if
-  [[ ${current_shell} =~ "bash" ]] && [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]
+if [[ ${current_shell} =~ "bash" ]] && [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
+  echo >/dev/null
+elif [[ ${current_shell} =~ "zsh" ]] && [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]]
+  bashmatic-install "$@"
 then
-  .install.run-not-source
-elif
-  [[ ${current_shell} =~ "zsh" ]] && [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]]
-then
-  .install.run-not-source
+  echo >/dev/null
 else
-  .install.bashmatic-install "$@"
+  bashmatic-install "$@"
 fi
+
+
