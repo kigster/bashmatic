@@ -213,16 +213,17 @@ function .install.linux-requirements() {
 # OS-X
 #——————————————————————————————————————————————————————————————————————————————————————
 function .install.osx-permissions() {
-  .sudo-ask && .sudo-enable
   local -a dirs
   for dir in "${CHOWN_DIRS[@]}"; do
     is-verbose &&.puts "Checking (and possibly changing) permissions of ${bldylw}${dir}..."
-    [[ $(stat -f %u "${dir}") -eq $(id -u) ]] && continue
     [[ -d "${dir}" ]] || continue
+    [[ $(stat -f %u "${dir}") -eq $(id -u) ]] && continue
     dirs+=( "${dir}" )
   done
   
   [[ ${#dirs[@]} -eq 0 ]] && return 0
+
+  .sudo-ask && .sudo-enable
 
   for d in "${dirs[@]}"; do
     set -x
@@ -260,9 +261,9 @@ function .install.brew-uninstall() {
 }
 
 function .install.darwin-requirements-xcode() {
-  is-verbose &&.puts "Verifying and installing XCode Dependencies..."
+  is-verbose && .puts "Verifying and installing XCode Dependencies..."
 
-  command -v git >/dev/null && return
+  command -v git >/dev/null && return 0
 
   local xcode_app="/Applications/Xcode.app"
   local xcode_tools="${xcode_app}/Contents/Developer"
