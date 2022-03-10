@@ -218,6 +218,7 @@ function .install.osx-permissions() {
   for dir in "${CHOWN_DIRS[@]}"; do
     is-verbose &&.puts "Checking (and possibly changing) permissions of ${bldylw}${dir}..."
     [[ $(stat -f %u "${dir}") -eq $(id -u) ]] && continue
+    [[ -d "${dir}" ]] || continue
     dirs+=( "${dir}" )
   done
   
