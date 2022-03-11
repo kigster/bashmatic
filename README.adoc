@@ -1,7 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
 // vim: ft=asciidoc
-:author: Version v2.6.1
+:author: Version v2.7.0
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -19,8 +19,7 @@
 |==========================
 |                    | Badges  |  FOSSA Scanning
 | FOSSSA             | image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield] .7+<.>| image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large] 
-| CI Tests Parallel  | image:https://github.com/kigster/bashmatic/actions/workflows/parallel.yml/badge.svg[Parallel,link=https://github.com/kigster/bashmatic/actions/workflows/parallel.yml]     
-| CI Tests Serial    | image:https://github.com/kigster/bashmatic/actions/workflows/tests.yml/badge.svg[Test,link=https://github.com/kigster/bashmatic/actions/workflows/tests.yml]                 
+| CI Tests           | image:https://github.com/kigster/bashmatic/actions/workflows/tests.yml/badge.svg[Test,link=https://github.com/kigster/bashmatic/actions/workflows/tests.yml]                 
 | ShellCheck         | image:https://github.com/kigster/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/kigster/bashmatic/actions/workflows/lint.yml]                 
 | Gitter             | image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 |==========================
@@ -76,8 +75,7 @@ You can also download the **https://github.com/kigster/bashmatic/blob/master/REA
 * Additionally please checkout the https://github.com/kigster/bashmatic/blob/master/doc/CHANGELOG.md[CHANGELOG] and the https://github.com/kigster/bashmatic/blob/master/doc/LICENSE.adoc[LICENSE].
 ====
 
-
-### Compatibility
+=== Compatibility
 
 * BASH version 4+
 * BASH version 3 (partial compatibility, some functions are disabled)
@@ -104,52 +102,29 @@ TIP: _Bashmatic_'s goal is to make BASH programming both fun, consistent, and pr
 
 == Installing Bashmatic
 
-Perhaps the easiest way to install _Bashmatic®_ is using this boot-strapping script. However, to use it, you need a way to download it. Typically we use `curl` or `wget` to do so. But on modern containerized systems it's become increasingly difficult to rely on things being installed.
-
-=== When `curl` is not available
-
-Therefore for situawtion where `curl` may not be available, offer the following shell function that works on Linux/Ubuntu and OS-X-based systems. It can be easily extended with new operating systems:
-
-[source,bash]
-----
-# @description Installs bashmatic dependency into the ~/.bashmatic folder.
-function install_bashmatic() {
-  # install bashmatic using https:// URL instead of git@
-  command -v curl >/dev/null || {
-    local OS=$(uname -s)
-    local code
-    case ${OS} in
-    Linux)
-      apt-get update -yq && apt-get install curl -yqq
-      code=$?
-      ((code)) && sudo apt-get update -yq && sudo apt-get install curl -yqq
-      ;;
-    Darwin)
-      command -v brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      hash -r
-      brew install curl
-      ;;
-    *)
-      echo "OS ${OS} is not supported."
-      ;;
-    esac
-  }
-  [[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q -m https"
-  return 0
-}
-----
-
-
-=== When your have `curl` already installed — bootstrap _Bashmatic®_ in one line
+Perhaps the easiest way to install _Bashmatic®_ is using `curl` as shown below. 
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
 
 [source,bash]
 ----
+# -q stands for "quiet"; use -v for "verbose", or -h for help.
 bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
 ----
 
 TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo.
+
+Here is a small variation:
+
+[source,bash]
+----
+export install="/tmp/install"
+curl -fsSL https://bashmatic.re1.re > "${install}"
+chmod 755 "${install}
+${install} [ --help | --quiet | --verbose | .... ]
+----
+
+This method allows you to examine the `/tmp/install` script before running it.
 
 ==== Installing a Particular Version or a Branch
 
@@ -277,6 +252,40 @@ hello|goodbye
 ----
 
 If you get an error, perhaps _Bashmatic®_ did not properly install.
+
+
+=== When `curl` is not available
+
+Therefore for situawtion where `curl` may not be available, offer the following shell function that works on Linux/Ubuntu and OS-X-based systems. It can be easily extended with new operating systems:
+
+[source,bash]
+----
+# @description Installs bashmatic dependency into the ~/.bashmatic folder.
+function install_bashmatic() {
+  # install bashmatic using https:// URL instead of git@
+  command -v curl >/dev/null || {
+    local OS=$(uname -s)
+    local code
+    case ${OS} in
+    Linux)
+      apt-get update -yq && apt-get install curl -yqq
+      code=$?
+      ((code)) && sudo apt-get update -yq && sudo apt-get install curl -yqq
+      ;;
+    Darwin)
+      command -v brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      hash -r
+      brew install curl
+      ;;
+    *)
+      echo "OS ${OS} is not supported."
+      ;;
+    esac
+  }
+  [[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q -m https"
+  return 0
+}
+----
 
 ==== Discovering Available Functions
 
