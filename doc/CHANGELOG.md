@@ -1,5 +1,17 @@
 # Changelog
 
+## [v2.7.0](https://github.com/kigster/bashmatic/tree/v2.7.0) (2022-03-11)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.6.2...v2.7.0)
+
+## [v2.6.2](https://github.com/kigster/bashmatic/tree/v2.6.2) (2022-03-10)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.6.1...v2.6.2)
+
+**Merged pull requests:**
+
+- New time-based function to measure command runtime [\#93](https://github.com/kigster/bashmatic/pull/93) ([kigster](https://github.com/kigster))
+
 ## [v2.6.1](https://github.com/kigster/bashmatic/tree/v2.6.1) (2022-03-08)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.6.0...v2.6.1)
