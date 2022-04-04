@@ -44,16 +44,23 @@ util.is-variable-defined() {
   [[ ${!var_name+x} ]]
 }
 
+# @description Generates a random number up to 1000000
 util.random-number() {
   local limit="${1:-"1000000"}" # maxinum number
   printf $(((RANDOM % limit)))
 }
 
+# @description Generates a password of a given length
 util.generate-password() {
   local len=${1:-32}
   local val=$(($(date '+%s') - 100000 * RANDOM))
   [[ ${val:0:1} == "-" ]] && val=${val/-//}
   printf "$(echo ${val} | shasum -a 512 | awk '{print $1}' | base64 | head -c "${len}")"
+}
+
+# @description Generates a random string of a given length
+util.random-string.of-length() {
+  util.generate-password "$@"
 }
 
 util.ver-to-i() {

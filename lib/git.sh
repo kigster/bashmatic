@@ -320,6 +320,20 @@ function git.is-valid-repo() {
   fi
 }
 
+# @description Prints the value from github config
+# @arg1 [ local | global ] which config to look at (defaults to global)
+# @arg2... tokens to print 
+# @example
+#   git.cfg.get github.token user.name user.email
+# dsf09098f09ds8f0s98df09809
+# John Doe
+# jonny@hotmail.com
+function git.cfg.get() {
+  for token in "$@"; do
+    git config --global --get "${token}"
+  done
+}
+
 function git.generate-changelog() {
   [[ -z  ${GITHUB_TOKEN} ]] && {
     error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."

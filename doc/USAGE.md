@@ -946,6 +946,7 @@ Installs gawk into /usr/local/bin/gawk
 
 * [git.cfgu()](#gitcfgu)
 * [git.open()](#gitopen)
+* [git.cfg.get()](#gitcfgget)
 
 ### `git.cfgu()`
 
@@ -977,6 +978,24 @@ git.open origin # same thing
 #### Arguments
 
 * **$1** (optional): name of the remote to open, defaults to "orogin"
+
+### `git.cfg.get()`
+
+Prints the value from github config
+
+#### Example
+
+```bash
+  git.cfg.get github.token user.name user.email
+dsf09098f09ds8f0s98df09809
+John Doe
+jonny@hotmail.com
+```
+
+#### Arguments
+
+* @arg1 [ local | global ] which config to look at (defaults to global)
+* @arg2... tokens to print 
 
 
 
@@ -1013,6 +1032,7 @@ Oherwise we install the package and retry, and return if not found
 
 
 * [time.with-duration.start()](#timewith-durationstart)
+* [time.with-duration()](#timewith-duration)
 * [time.a-command()](#timea-command)
 
 ### `time.with-duration.start()`
@@ -1029,6 +1049,23 @@ time.with-duration.end   moofie 'Moofie is now this old: '
 time.with-duration.end   moofie 'Moofie is now very old: '
 time.with-duration.clear moofie
 ```
+
+### `time.with-duration()`
+
+Runs the given command and prints the time it took
+
+#### Example
+
+```bash
+time.with-duration quiet "{ sleep 1; ls -al; sleep 2; date; sleep 1; }"
+time.with-duration quiet verbose "{ sleep 1; ls -al; sleep 2; date; sleep 1; }"
+```
+
+#### Arguments
+
+* @arg1 [quiet] to silence command output
+* @arg2 [verbose] to print the command before running the
+* @arg3 [secret] do not print the command before running it (in case sensitive)
 
 ### `time.a-command()`
 
@@ -1461,6 +1498,22 @@ whenever /var/log/postgresql.log is.an-empty-file && {
 Miscellaneous utilities.
 
 
+
+* [util.random-number()](#utilrandom-number)
+* [util.generate-password()](#utilgenerate-password)
+* [util.random-string.of-length()](#utilrandom-stringof-length)
+
+### `util.random-number()`
+
+Generates a random number up to 1000000
+
+### `util.generate-password()`
+
+Generates a password of a given length
+
+### `util.random-string.of-length()`
+
+Generates a random string of a given length
 
 
 
