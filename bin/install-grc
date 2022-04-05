@@ -45,7 +45,7 @@ function grc.install.extras() {
   run "cp -rpnv ${BASHMATIC_HOME}/conf/grc/conf.* /usr/local/share/grc | sed 's/^/       ❯ /g' || true"
   run "cp -rpv ${BASHMATIC_HOME}/conf/grc/.[a-z]* ${HOME}             | sed 's/^/       ❯ /g' || true"
 
-  for file in "$(find ${BASHMATIC_HOME}/conf/grc -type f -maxdepth 1 -name 'conf.*' -print)"; do
+  for file in "$(find "${BASHMATIC_HOME}"/conf/grc -type f -maxdepth 1 -name 'conf.*' -print)"; do
     command=$(basename "${file}" | sed 's/conf\.//')
     if grep -q "colourify ${command}" "${shellrc}"; then
       info "command ${command} is already aliased, skipping."
@@ -58,7 +58,7 @@ function grc.install.extras() {
 
 function grc.install.core() {
   # Setup Shell Integration
-  export SHELL_NAME=$(basename ${SHELL})
+  export SHELL_NAME=$(basename "${SHELL}")
   export DEST="~/.grc.${SHELL_NAME}"
   export SOURCE="grc.${SHELL}"
   export INIT_PATH="/usr/local/etc"
@@ -73,7 +73,7 @@ function grc.install.core() {
 
   local shellrc="${HOME}/.${SHELL_NAME}rc"
   run "cd ~/ && ln -nfs ${INIT_PATH}/${SOURCE} ~/.${SOURCE}"
-  grep -q ${SOURCE} ${shellrc} || run "echo 'source ~/.${SOURCE}' >> ${shellrc}"
+  grep -q ${SOURCE} "${shellrc}" || run "echo 'source ~/.${SOURCE}' >> ${shellrc}"
 
   grc.install.extras "${shellrc}"
 

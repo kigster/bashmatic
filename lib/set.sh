@@ -13,8 +13,8 @@ set-e-status() {
 
 set-e-save() {
   export __bash_set_errexit_status=$(mktemp -t 'errexit')
-  rm -f ${__bash_set_errexit_status} 2>/dev/null
-  set-e-status >${__bash_set_errexit_status}
+  rm -f "${__bash_set_errexit_status}" 2>/dev/null
+  set-e-status >"${__bash_set_errexit_status}"
 }
 
 set-e-restore() {
@@ -22,12 +22,12 @@ set-e-restore() {
     error "You must first save it with the function:s ${bldgrn}set-e-save"
     return 1
   }
-  local status=$(cat ${__bash_set_errexit_status} | tr -d '\n')
+  local status=$(cat "${__bash_set_errexit_status}" | tr -d '\n')
   if [[ ${status} != 'on' && ${status} != 'off' ]]; then
-    error "Invalid data in the set -e tempfile:" "$(cat ${__bash_set_errexit_status})"
+    error "Invalid data in the set -e tempfile:" "$(cat "${__bash_set_errexit_status}")"
     return 1
   fi
-  set -o errexit ${status}
-  rm -f ${__bash_set_errexit_status} 2>/dev/null
+  set -o errexit "${status}"
+  rm -f "${__bash_set_errexit_status}" 2>/dev/null
 }
 

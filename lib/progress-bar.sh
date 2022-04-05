@@ -23,7 +23,7 @@ export LibProgress__BarChar="${LibProgress__BarChar__Default}"
   local width=${1:-"9"}
   cursor.rewind
   printf "["
-  for j in $(seq 0 ${width}); do
+  for j in $(seq 0 "${width}"); do
     printf ' '
   done
   printf "]"
@@ -34,8 +34,8 @@ export LibProgress__BarChar="${LibProgress__BarChar__Default}"
   local loops=${1:-"1"}; shift
   local width=$1
 
-  is.integer ${width} && shift
-  is.integer ${width} || width=$(($(.output.screen-width) - 2))
+  is.integer "${width}" && shift
+  is.integer "${width}" || width=$(($(.output.screen-width) - 2))
 
   local delay_seconds=$(ruby -e "printf('%.6f', ${full_cycle_seconds}.to_f / ${width}.to_f)")
 
@@ -48,11 +48,11 @@ export LibProgress__BarChar="${LibProgress__BarChar__Default}"
 
   printf "${LibProgress__BarColor}"
 
-  for count in $(seq 1 ${loops}); do
+  for count in $(seq 1 "${loops}"); do
     .progress.draw-emtpy-bar ${width}
     cursor.rewind 2
     for j in $(seq 0 ${width}); do
-      sleep ${delay_seconds}
+      sleep "${delay_seconds}"
       printf "${LibProgress__BarChar}"
       [[ ${abort_progress_bar} -eq 1 ]] && {
         cursor.rewind
@@ -132,15 +132,15 @@ progress.bar.config() {
 }
 
 progress.bar.configure.color-green() {
-  progress.bar.config BarColor=${bldgrn}
+  progress.bar.config BarColor="${bldgrn}"
 }
 
 progress.bar.configure.color-red() {
-  progress.bar.config BarColor=${bldred}
+  progress.bar.config BarColor="${bldred}"
 }
 
 progress.bar.configure.color-yellow() {
-  progress.bar.config BarColor=${bldylw}
+  progress.bar.config BarColor="${bldylw}"
 }
   
 progress.bar.configure.symbol-block() {

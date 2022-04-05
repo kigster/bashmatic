@@ -116,7 +116,7 @@ function columnize() {
   local columns="${1:-2}"
   local sw="${SCREEN_WIDTH:=$(.output.screen-width)}"
   [[ ${sw} -lt 90 ]] && sw=100
-  pr -l 10000 -${columns} -e4 -w ${sw} |
+  pr -l 10000 -"${columns}" -e4 -w ${sw} |
     expand -8 |
     sed -E '/^ *$/d' |
     grep -v 'Page '
@@ -124,13 +124,13 @@ function columnize() {
 
 function dbg-on() {
   export BASHMATIC_DEBUG=1
-  [[ -f ${BASHMATIC_HOME}/.envrc.debug ]] && source ${BASHMATIC_HOME}/.envrc.debug
+  [[ -f ${BASHMATIC_HOME}/.envrc.debug ]] && source "${BASHMATIC_HOME}"/.envrc.debug
 }
 
 function dbg-off() {
   unset BASHMATIC_DEBUG
   unset BASHMATIC_PATH_DEBUG
-  [[ -f ${BASHMATIC_HOME}/.envrc.no-debug ]] && source ${BASHMATIC_HOME}/.envrc.no-debug
+  [[ -f ${BASHMATIC_HOME}/.envrc.no-debug ]] && source "${BASHMATIC_HOME}"/.envrc.no-debug
 }
 
 # @description Checks if we have debug mode enabled

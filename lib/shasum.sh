@@ -50,7 +50,7 @@ shasum.sha-only-stdin() {
   echo "$*" | eval "${__bashmatic__sha_command}"  | cut -d' ' -f 1
 }
 
-is.a-function bashmatic.bash.version-four-or-later || source ${BASHMATIC_HOME}/lib/bashmatic.sh
+is.a-function bashmatic.bash.version-four-or-later || source "${BASHMATIC_HOME}"/lib/bashmatic.sh
 
 if bashmatic.bash.version-four-or-later; then
 

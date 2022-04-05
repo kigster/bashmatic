@@ -44,7 +44,7 @@ function serial.console {
     hr 
     h3 "minicom -D $modem  -b $baud $*"
     sleep 1
-    minicom -D $modem  -b $baud "$@"
+    minicom -D "$modem"  -b "$baud" "$@"
   else
     echo "No USB modem device found in /dev"
   fi

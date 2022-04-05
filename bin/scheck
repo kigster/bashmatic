@@ -72,14 +72,14 @@ function is.shellcheck-current() {
 # @description Manually Download and Install ShellCheck
 function manual-install() {
   local temp="${TEMP_DIR}"
-  cd "${temp}" >/dev/null
+  cd "${temp}" >/dev/null || exit
   local os=$(uname -s | tr '[:upper:]' '[:lower:]')
   curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.${os}.x86_64.tar.xz" -O
   is.a-command 7z || package.install p7zip
   run "7z x *.xz"
   run "7z x *.tar"
   arrow.blk-on-ylw "PWD: ${PWD}"
-  cd "shellcheck-v0.7.1"
+  cd "shellcheck-v0.7.1" || exit
   
   [[ -x /usr/local/bin/shellcheck ]] && run "rm -f /usr/local/bin/shellcheck || sudo rm -f /usr/local/bin/shellcheck || true"
   

@@ -14,7 +14,7 @@ net.local-subnet() {
     sort |
     uniq |
     head -1).0/24"
-  printf '%s' ${subnet}
+  printf '%s' "${subnet}"
 }
 
 net.fast-scan() {
@@ -24,7 +24,7 @@ net.fast-scan() {
   local colored=/tmp/colored.$$
   run "sudo nmap --min-parallelism 15 -O --host-timeout 5 -F ${subnet} > ${out}"
   run "echo 'printf \"' > ${colored}"
-  cat ${out} | sed -E "s/Nmap scan report for (.*)$/\n\${bldylw}Nmap scan report for \1\${clr}\n/g" >>${colored}
+  cat "${out}" | sed -E "s/Nmap scan report for (.*)$/\n\${bldylw}Nmap scan report for \1\${clr}\n/g" >>${colored}
   run "echo '\"' >> ${colored}"
   bash ${colored}
   #rm -f ${colored}
@@ -46,7 +46,7 @@ function net.is-host-port-protocol-open() {
   [[ ${protocol} =~ udp ]] && command="sudo nmap -sU"
 
   command -v nmap>/dev/null || brew.install.package nmap >&2
-  ${command} -Pn -p ${port} ${host} 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
+  ${command} -Pn -p "${port}" "${host}" 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
 }
 
 

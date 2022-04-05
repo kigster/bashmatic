@@ -104,7 +104,7 @@ function pdf.do.shrink() {
   fi
 
   ((finished)) && \
-    success "File ${infile} has been reduced in size, and is now $(file.size.mb ${outfile}) — a ${delta}%% reduction."
+    success "File ${infile} has been reduced in size, and is now $(file.size.mb "${outfile}") — a ${delta}%% reduction."
 
   ((finished)) || { error "Did not properly finish."; return 1; } 
 }
@@ -126,7 +126,7 @@ function pdf.do.check_smaller() {
 
 # +pdf.do.usage
 function pdf.do.usage() {
-  usage-box "$(basename $1) infile [outfile] [resolution-in-dpi] © Reduces PDF filesize by lossy recompressing with Ghostscript." \
+  usage-box "$(basename "$1") infile [outfile] [resolution-in-dpi] © Reduces PDF filesize by lossy recompressing with Ghostscript." \
     "$(cursor.up 1)$(cursor.left 10)                   " "$(cursor.left 2)Not guaranteed to succeed, but usually works.$(cursor.right 26)" \
     " " " " \
     " " "$(cursor.left 17)${txtgrn}Copyright © 2014-2019, Alfred Klomp, All rights reserved.$(cursor.right 20)" \

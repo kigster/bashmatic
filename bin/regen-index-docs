@@ -37,7 +37,7 @@ HEADER
     printf "\n${txtylw}(${module}) ${bldgrn}"
 
     printf "\n=== Module \`%s\`\n\n" "${module}" >>"${temp}"
-    for function in $(bashmatic.functions-from ${module} 1); do
+    for function in $(bashmatic.functions-from "${module}" 1); do
       printf "•"
       (
         printf "==== \`%s\`\n" "${function}"
@@ -66,7 +66,7 @@ generate-shdoc() {
   
   for file in $(find bin -name '[a-z]*' -type f); do
     info "Extracting shdoc from ${bldylw}${file}..."
-    bin/shdoc ${file} >> ${usage} 
+    bin/shdoc "${file}" >> ${usage} 
   done
   hr ; echo
   info "shdoc generated, converting USAGE.md to asciiidoc..."

@@ -141,7 +141,7 @@ function usage-box() {
   if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
     cat "${backup}"
   else
-    .usage.box "$@" | tee ${backup}
+    .usage.box "$@" | tee "${backup}"
   fi
 }
 

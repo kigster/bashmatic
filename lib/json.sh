@@ -27,7 +27,7 @@ json.end-array() {
 
 json.file-to-array() {
   json.begin-array "$1"
-  cat $2 |
+  cat "$2" |
     tr -d '\r' |
     tr -d '\015' |
     sed 's/^/"/g;s/$/",/g' |
@@ -35,7 +35,7 @@ json.file-to-array() {
     awk -F, '{if (FNR!=1) print; else print $1} ' |
     tail -r
 
-  json.end-array $3
+  json.end-array "$3"
 }
 
 json.begin-key() {

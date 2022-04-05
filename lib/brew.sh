@@ -228,7 +228,7 @@ function brew.install.package() {
       run "brew install ${force} ${verbose} ${package}"
       code="${LibRun__LastExitCode}"
     else
-      brew install ${force} ${verbose} ${package} 1>/dev/null 2>&1
+      brew install ${force} ${verbose} "${package}" 1>/dev/null 2>&1
       code=$?
     fi
 

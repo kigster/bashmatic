@@ -69,8 +69,8 @@ shell-set.push-stack() {
   local value="$1"
   local is_set=${-//[^${value}]/}
 
-  shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
-  shell-set.is-set ${value} || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
+  shell-set.is-set "${value}" && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
+  shell-set.is-set "${value}" || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
 
   [[ -n ${BASHMATIC_DEBUG} ]] && shell-set-show
 }

@@ -36,12 +36,12 @@ bash.append_path() {
   local file=${1}
   local new_path=${2:-"/usr/local/bin"}
   local string="export PATH=\"${new_path}:\${PATH}\""
-  if [[ -z $(${GrepCommand} "export PATH=\"${new_path}" ${file}) ]]; then
+  if [[ -z $(${GrepCommand} "export PATH=\"${new_path}" "${file}") ]]; then
     echo "adding ${txtblue}${new_path}${clr} to ${txtgrn}${file}${clr}"
     set -e
-    echo >>${file}
-    echo "${string}" >>${file}
-    echo >>${file}
+    echo >>"${file}"
+    echo "${string}" >>"${file}"
+    echo >>"${file}"
     set +e
     ok:
   else
@@ -59,9 +59,9 @@ bash.install.path.rc() {
 
 bash.current.shell() {
   if [[ -n $(which finger) ]]; then
-    finger ${USER} | grep Shell | awk '{print $4}'
+    finger "${USER}" | grep Shell | awk '{print $4}'
   else
-    echo $SHELL
+    echo "$SHELL"
   fi
 }
 
@@ -78,13 +78,13 @@ bash.user.chsh() {
   fi
 
   if [[ -x ${new_shell} ]]; then
-    if [[ -z $(grep ${new_shell} /etc/shells) ]]; then
+    if [[ -z $(grep "${new_shell}" /etc/shells) ]]; then
       echo "Please enter your password if asked, as the following command may require sudo:"
-      echo ${new_shell} | sudo tee -a /etc/shells
+      echo "${new_shell}" | sudo tee -a /etc/shells
     fi
 
     set -ex
-    chsh -s ${new_shell}
+    chsh -s "${new_shell}"
     set +ex
     echo "Great, shell change was successful."
     echo
