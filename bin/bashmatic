@@ -26,7 +26,7 @@ shift
 if is.a-function "${__func}"; then
   ${__func} "$@"
 elif is.a-function "bashmatic.${__func}"; then
-  bashmatic.${__func} "$@"
+  bashmatic."${__func}" "$@"
 else
   error "Can't find a valid function based on the argument ${bldylw}${__func}"
   exit 1

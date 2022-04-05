@@ -19,8 +19,8 @@ yaml.diff() {
 
   [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
 
-  local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
-  local t2="/tmp/${RANDOM}.$(basename ${f2}).$$.yml"
+  local t1="/tmp/${RANDOM}.$(basename "${f1}").$$.yml"
+  local t2="/tmp/${RANDOM}.$(basename "${f2}").$$.yml"
 
   yaml.expand-aliases "$f1" >"$t1"
   yaml.expand-aliases "$f2" >"$t2"
@@ -46,7 +46,7 @@ yaml.dump() {
   }
 
   [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
-  local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
+  local t1="/tmp/${RANDOM}.$(basename "${f1}").$$.yml"
   yaml.expand-aliases "$f1" >"$t1"
   vim "$t1"
   run "rm -rf ${t1}"

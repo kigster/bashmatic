@@ -67,18 +67,18 @@ output.set-min-width() {
 .output.cursor-move-to-y() {
   output.is-terminal || return
   .output.cursor-up-by 1000
-  .output.cursor-down-by ${1:-0}
+  .output.cursor-down-by "${1:-0}"
 }
 
 .output.cursor-move-to-x() {
   output.is-terminal || return
   .output.cursor-left-by 1000
-  [[ -n $1 && "$1" -ne 0 ]] && .output.cursor-right-by ${1}
+  [[ -n $1 && "$1" -ne 0 ]] && .output.cursor-right-by "${1}"
 }
 
 cursor.rewind() {
   local x=${1:-0}
-  .output.cursor-move-to-x ${x}
+  .output.cursor-move-to-x "${x}"
 }
 
 cursor.left() {
@@ -333,7 +333,7 @@ ascii-clean() {
 
   output.is-terminal || {
     for line in "$@"; do
-      printf ">>> %80.80s <<< \n" ${line}
+      printf ">>> %80.80s <<< \n" "${line}"
     done
     return
   }
@@ -572,7 +572,7 @@ stdout() {
   local file=$1
   hl.subtle STDOUT
   printf "${clr}"
-  [[ -s ${file} ]] && cat ${file}
+  [[ -s ${file} ]] && cat "${file}"
   reset-color
 }
 
@@ -580,7 +580,7 @@ stderr() {
   local file=$1
   hl.subtle STDERR
   printf "${txtred}"
-  [[ -s ${file} ]] && cat ${file}
+  [[ -s ${file} ]] && cat "${file}"
   reset-color
 }
 
@@ -596,8 +596,8 @@ duration() {
   fi
 
   if [[ -n ${exit_code} ]]; then
-    [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" ${exit_code}
-    [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" ${exit_code}
+    [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" "${exit_code}"
+    [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" "${exit_code}"
   fi
 }
 

@@ -34,7 +34,7 @@ puma.pids.count() {
   local extra_flag="${1}"
   shift
 
-  printf "%d" "$(ps -ef | ${GrepCommand} '[p]uma[: ]' | ${GrepCommand} ${extra_flag} "${extra_filter}" | grep -v puma-ctl | wc -l | sed 's/\ //g')"
+  printf "%d" "$(ps -ef | ${GrepCommand} '[p]uma[: ]' | ${GrepCommand} "${extra_flag}" "${extra_filter}" | grep -v puma-ctl | wc -l | sed 's/\ //g')"
 }
 
 # STATE ——————————————————————————————————————————————————————————————————————
@@ -96,7 +96,7 @@ puma.status.listing() {
 puma.status.tree() {
   local mpid=$(puma.pids.master)
   if [[ -n ${mpid} ]]; then
-    pstree -g 3 -p ${mpid}
+    pstree -g 3 -p "${mpid}"
   fi
 }
 

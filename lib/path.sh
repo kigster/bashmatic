@@ -169,13 +169,13 @@ function PATH_add() {
 # @description Returns an absolute version of a given path
 function path.absolute() {
   if [[ -d "$1" ]]; then
-      pushd "$1" >/dev/null
+      pushd "$1" >/dev/null || exit
       pwd
-      popd >/dev/null
+      popd >/dev/null || exit
   elif [[ -e "$1" ]]; then
-      pushd "$(dirname "$1")" >/dev/null
+      pushd "$(dirname "$1")" >/dev/null || exit
       echo "$(pwd)/$(basename "$1")"
-      popd >/dev/null
+      popd >/dev/null || exit
   else
       echo "$1" does not exist! >&2
       return 127

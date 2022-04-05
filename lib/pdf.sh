@@ -42,6 +42,6 @@ function pdf.combine() {
 
   run "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${merged} ${files}"
 
-  return ${LibRun__LastExitCode}
+  return "${LibRun__LastExitCode}"
 }
 

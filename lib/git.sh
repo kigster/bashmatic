@@ -3,7 +3,7 @@
 
 function git.repo.latest-remote-tag() {
   local repo_url="$1"
-  git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}'| tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+  git ls-remote --tags --sort="v:refname" "${repo_url}" | grep -E \-v '(latest|stable)' | grep -E -v '\^{}'| tail -1 | awk 'BEGIN{FS="/"}{print $3}'
 }
 
 function git.repo.latest-local-tag() {
@@ -18,8 +18,8 @@ function git.repo.next-local-tag() {
 
 function git.configure-auto-updates() {
   export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-  export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
-  mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
+  export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo "${USER}" | shasum.sha-only-stdin)"
+  mkdir -p "$(dirname "${LibGit__LastUpdateTimestampFile}")"
 }
 
 # @description Sets or gets user values from global gitconfig.
@@ -31,7 +31,6 @@ function git.configure-auto-updates() {
 #
 # @example Print all global values
 #     git.cfgu
-#
 function git.cfgu() {
   [[ -z $1 ]] && {
     git config --global -l
@@ -39,12 +38,12 @@ function git.cfgu() {
   }
   if [[ -n $2 ]]; then
     rm -f ~/.gitconfig.lock
-    git config --global --replace-all user.$1 $2
+    git config --global --replace-all user."$1" "$2"
   else
     if [[ $1 =~ - ]]; then
-      git config --global $1
+      git config --global "$1"
     else
-      git config --global user.$1
+      git config --global user."$1"
     fi
   fi
 }
@@ -88,7 +87,7 @@ function git.sync-dirs() {
   run.set-all abort-on-error
   for dir in $(find . -type d -maxdepth 1 -name "${pattern}*"); do
     hl.yellow-on-gray "syncing [$dir]..."
-    cd $dir >/dev/null
+    cd "$dir" >/dev/null
     run "git pull --rebase"
     cd - >/dev/null
   done
@@ -100,7 +99,7 @@ function git.last-update-at() {
   local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
   local last_update=0
   if [[ ${LibGit__ForceUpdate} -eq 0 && -f ${file} ]]; then
-    last_update="$(cat $file | tr -d '\n')"
+    last_update="$(cat "$file" | tr -d '\n')"
   else
     last_update=0
   fi
@@ -115,7 +114,7 @@ function git.seconds-since-last-pull() {
 
 function git.is-it-time-to-update() {
   local last_update_at=$(git.last-update-at)
-  local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
+  local second_since_update=$(git.seconds-since-last-pull "${last_update_at}")
   local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
   [[ ${second_since_update} -gt ${update_period_seconds} ]]
 }
@@ -125,7 +124,7 @@ function git.update-repo-if-needed() {
 }
 
 function git.save-last-update-at() {
-  echo $(epoch) >${LibGit__LastUpdateTimestampFile}
+  echo $(epoch) >"${LibGit__LastUpdateTimestampFile}"
 }
 
 function git.sync-remote() {
@@ -240,7 +239,7 @@ function git.open() {
   local remote="${1:-"origin"}"
   local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
   info "Opening URL ${bldylw}${url}"
-  open -a 'Google Chrome' ${url}
+  open -a 'Google Chrome' "${url}"
 }
 
 # Convert a local git remote URL from https:// ... to git@ format.
@@ -267,7 +266,7 @@ function git.repo.remote-to-git@() {
 
 function git.squash() {
   local number="${1}"
-  is.numeric ${number} || {
+  is.numeric "${number}" || {
     info "USAGE: git.squash <number> # of commits to go back"
     return
   }
@@ -318,6 +317,39 @@ function git.is-valid-repo() {
     error "Please run this script at the root of your project / git repo." >&2
     return 1
   fi
+}
+
+# @description Prints the value from github config
+# @arg1 [ local | global ] which config to look at (defaults to global)
+# @arg2... tokens to print 
+# @example
+#   git.cfg.get github.token user.name user.email
+# dsf09098f09ds8f0s98df09809
+# John Doe
+# jonny@hotmail.com
+function git.cfg.get() {
+  local section="global"
+
+  if [[ "$1" == "local" || "$1" == "global" ]] ; then
+    section="$1"
+    shift
+  fi
+
+  local command="get"
+  local cmd
+  if [[ -z "$*" ]] ; then
+    cmd="git config --${section} --list"
+  elif [[ "$*" =~ ^[a-z\.]*$ ]]; then
+    for token in "$@"; do
+      # shellcheck disable=SC2086
+      cmd="git config --${section} --${command} ${token}"
+    done
+  else
+    cmd="git config --${section} --get-all '$*'"
+  fi
+
+  h1 "${cmd}"
+  eval "${cmd}"
 }
 
 function git.generate-changelog() {

@@ -60,7 +60,7 @@ function osx.cookie-dump() {
     local size=$(file.size "${file}")
     if [[ ${size} -lt 4 ]]; then
       error "Pasted data is too small to be a valid cookie?"
-      info "Here is what we got in your clipboard:\n\n$(cat ${file})\n"
+      info "Here is what we got in your clipboard:\n\n$(cat "${file}")\n"
       return 1
     fi
   fi
@@ -77,7 +77,7 @@ function osx.cookie-dump() {
     info "and rerun this function."
   fi
 
-  [[ -z ${tmp} ]] || rm -f ${tmp}
+  [[ -z ${tmp} ]] || rm -f "${tmp}"
 
 }
 
@@ -228,8 +228,8 @@ osx.ramdisk.unmount() {
 # full fqdn.
 osx.set-fqdn() {
   local fqdn="$1"
-  local domain=$(echo ${fqdn} | sed -E 's/^[^.]*\.//g')
-  local host=$(echo ${fqdn} | sed -E 's/\..*//g')
+  local domain=$(echo "${fqdn}" | sed -E 's/^[^.]*\.//g')
+  local host=$(echo "${fqdn}" | sed -E 's/\..*//g')
 
   h1 "Current HostName: ${bldylw}${HOSTNAME}"
 
@@ -275,12 +275,12 @@ osx.set-fqdn() {
 
 osx.scutil-print() {
   local var="$1"
-  printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} $(sudo scutil --get ${var} | tr -d '\n')
+  printf "${bldylw}%20s: ${bldgrn}%s\n" "${var}" $(sudo scutil --get "${var}" | tr -d '\n')
 }
 
 osx.env-print() {
   local var="$1"
-  printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} ${!var}
+  printf "${bldylw}%20s: ${bldgrn}%s\n" "${var}" "${!var}"
 }
 
 bashmatic-set-fqdn() {

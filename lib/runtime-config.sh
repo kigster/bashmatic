@@ -38,7 +38,7 @@ run.set-all.list() {
 }
 
 run.inspect() {
-  run.inspect
+  command run.inspect
 }
 
 ### ASK decline function, can be either exit or return
@@ -200,15 +200,15 @@ ____run.configure() {
   shift
 
   [[ -z "$*" ]] && {
-    ____run.list-options ${type}
+    ____run.list-options "${type}"
     return
   }
 
   for feature in $@; do
     local func="____run.set.${type}.${feature}"
-    if [[ -z $(type ${func} 2>/dev/null) ]]; then
+    if [[ -z $(type "${func}" 2>/dev/null) ]]; then
       error "LibRun feature was not recognized:" "${feature}"
-      ____run.list-options ${type}
+      ____run.list-options "${type}"
       return 1
     fi
     ${func}

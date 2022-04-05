@@ -7,7 +7,7 @@ sym.dev.install-shell-helpers() {
   for file in "${init_files[@]}"; do
     f="${file}"
     [[ ! -f "${f}" ]] && continue
-    [[ -n $(grep sym.symit ${f}) ]] && {
+    [[ -n $(grep sym.symit "${f}") ]] && {
       found=${f}
       break
     }
@@ -74,7 +74,7 @@ sym.dev.have-key() {
 __pause() {
   local skip_sleep=${1:-0}
   local sleep_duration=${2:-2}
-  ((${skip_sleep})) || sleep ${sleep_duration}
+  ((${skip_sleep})) || sleep "${sleep_duration}"
 }
 
 sym.dev.import() {
@@ -154,7 +154,7 @@ sym.dev.files() {
 
 # Runs sym and prepends the key name for Chef
 dev.crypt.chef() {
-  sym -ck APP_CHEF_SYM_KEY $*
+  sym -ck APP_CHEF_SYM_KEY "$*"
 }
 
 # Runs sym and prepends the key name for the App
@@ -163,7 +163,7 @@ dev.crypt.chef() {
 #     sym.sym -e -f file.txt -o file.enc
 #
 dev.sym() {
-  sym -cqk APP_SYM_KEY $*
+  sym -cqk APP_SYM_KEY "$*"
 }
 
 dev.encrypt.str() {

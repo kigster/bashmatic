@@ -28,7 +28,7 @@
   7z.install
 
   local archive="${folder}"
-  [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sed -E 's/\./-/g').tar.7z"
+  [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename "${folder}" | sed -E 's/\./-/g').tar.7z"
 
   [[ -f ${archive} ]] && { 
     run.set-next on-decline-return
@@ -77,7 +77,7 @@
     error "Neither $1 nor ${archive} were found."
     return 1
   }
-  info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size ${archive}) bytes."
+  info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size "${archive}") bytes."
 
   run.set-next show-output-on
   run "7za x -so ${archive} | tar xfv -"

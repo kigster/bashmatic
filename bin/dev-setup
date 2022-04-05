@@ -103,9 +103,9 @@ export DevSetup__Version="0.4.1"
   [[ -d "${dir}" ]] || run "git clone https://github.com/rupa/z ${dir}"
 
   for init in ${HOME}/.bash_profile ${HOME}/.zshrc; do
-    grep -q "${script}" ${init} || {
+    grep -q "${script}" "${init}" || {
       info "Appending ${script} to ${init}..."
-      echo "[[ -s ${script} ]] && source ${script}" >>${init}
+      echo "[[ -s ${script} ]] && source ${script}" >>"${init}"
     }
   done
 
@@ -766,7 +766,7 @@ dev-setup.run-action() {
   local action=".dev-setup.action.${action_name}"
   set +e
 
-  is.a-function ${action} || {
+  is.a-function "${action}" || {
     error "Invalid Dev Setup action ${action_name}" "function ${action} is not defined."
     return 1
   }

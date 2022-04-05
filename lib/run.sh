@@ -5,7 +5,7 @@ export LibRun__AskDeclineFunction__Default="exit"
 
 run() {
   .run $@
-  return ${LibRun__LastExitCode}
+  return "${LibRun__LastExitCode}"
 }
 
 # Waits until the user presses any key to continue.

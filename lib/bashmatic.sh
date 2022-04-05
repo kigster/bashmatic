@@ -60,7 +60,7 @@ bashmatic.functions-from() {
 
   export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
 
-  if [[ -n $(echo ${pattern} | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
+  if [[ -n $(echo "${pattern}" | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
     pattern="${pattern}.sh"
   fi
 
@@ -144,7 +144,7 @@ bashmatic.source-dir() {
   fi
 
   for file in "${files[@]}"; do
-    local n="$(basename ${file})"
+    local n="$(basename "${file}")"
     [[ ${n:0:1} == . ]] && continue
 
     bashmatic.source "${file}" && loaded=true
@@ -208,25 +208,25 @@ function bashmatic.auto-update() {
     unset -f _direnv_hook >/dev/null 2>&1
     [[ ${Bashmatic__Test} -eq 1 ]] && return 0
     local pwd="$(pwd -P)"
-    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}"
+    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}" || exit
     git.configure-auto-updates
     git.repo-is-clean || {
       output.is-ssh || {
         output.is-terminal && bashmatic.auto-update-error
-        cd "${pwd}" >/dev/null
+        cd "${pwd}" >/dev/null || exit
         return 1
       }
     }
 
     git.update-repo-if-needed
-    cd "${pwd}" >/dev/null
+    cd "${pwd}" >/dev/null || exit
   )
 }
 
 function bashmatic.auto-update-error() {
   bashmatic.is-developer || return
-  file.exists-and-newer-than ${__bashmatic_warning_notification} 10 || return 
-  touch ${__bashmatic_warning_notification}
+  file.exists-and-newer-than "${__bashmatic_warning_notification}" 10 || return 
+  touch "${__bashmatic_warning_notification}"
 
   if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
     cat "${__bashmatic_auto_update_help_file}" >&2

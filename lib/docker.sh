@@ -189,7 +189,7 @@ docker.images-named() {
   hl.subtle "Processing Docker images matching ${name} with function ${func}..."
 
   local images="$(docker images | grep "^${name}" | sed 's/  */ /g' | cut -d ' ' -f 3 | tr '\n' ' ')"
-  ${func} ${images}
+  ${func} "${images}"
 }
 
 # Removes stopped containers. Pass "-f" as argument to force.
