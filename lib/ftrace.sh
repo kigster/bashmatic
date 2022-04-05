@@ -45,7 +45,7 @@ ftrace-in() {
   [[ -z ${TraceON} ]] && return
 
   export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} + 1 ))
-  printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' ${func} "${args}" >&2
+  printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' "${func}" "${args}" >&2
 }
 
 ftrace-out() {
@@ -58,7 +58,7 @@ ftrace-out() {
   local color="${bldgrn}"
   [[ ${code} -ne 0 ]] && color="${bldred}"
 
-  printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' ${func} ${code} "${msg}" >&2
+  printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' "${func}" "${code}" "${msg}" >&2
   export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} - 1 ))
 }
 

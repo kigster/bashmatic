@@ -239,7 +239,7 @@ downloader.extract-image-urls() {
   }
 
   if [[ -f ${__downloader_tempfile} ]]; then
-    grep -E -i 'src="[^"].*\.(png|jpg|jpe?g|gif|tiff|svg|pdf|bmp)"' ${__downloader_tempfile} |
+    grep -E -i 'src="[^"].*\.(png|jpg|jpe?g|gif|tiff|svg|pdf|bmp)"' "${__downloader_tempfile}" |
       sedx 's/^\s+//g; s/\s+$//g; s/.*src="?//g; s/".*$//g' |
       grep -E "${flags}" |
       sort |

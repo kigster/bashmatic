@@ -57,7 +57,7 @@ function direnv.register() {
   inf "Ensuring direnv hook is registered..."
  
   local C
-  local shell="${ZSH_NAME:-$(basename ${SHELL})}"
+  local shell="${ZSH_NAME:-$(basename "${SHELL}")}"
 
   if [[ ${shell} == bash || ${shell} == zsh ]] ; then
     C="${HOME}/.${shell}rc"

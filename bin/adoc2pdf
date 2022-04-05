@@ -27,7 +27,7 @@ EOF
   if [[ -f "${attrfile}" ]]; then
     attributes="$(cat "${attrfile}")"
     info  "Adding attributes from local file ${bldylw}${attrfile}:">&2
-    cat ${attrfile}
+    cat "${attrfile}"
   else
     info "No local attribute file was found: ${bldylw}${attrfile}." >&2
   fi
@@ -35,9 +35,9 @@ EOF
 
 function install-fonts() {
   ( 
-    cd ${BASHMATIC_HOME}
+    cd "${BASHMATIC_HOME}" || exit
     [[ -d .fonts ]] || run "tar xvzf .fonts.tar.gz"
-    cd -
+    cd - || exit
   ) >/dev/null
 }
 
@@ -86,7 +86,7 @@ function install-gems-manually() {
     if [[ ${gem} =~ / ]]; then
       run "gem specific_install ${gem} --silent"
     else
-      gem.install ${gem}
+      gem.install "${gem}"
     fi
   done
 }
@@ -116,9 +116,9 @@ main() {
     info "Pre-pending PDF font configuration..."
     ( 
       sed -n '1p' "${file}"
-      adoc-header ${file}
+      adoc-header "${file}"
       sed -n '2,$p' "${file}"
-    ) >${temp}
+    ) >"${temp}"
   fi
 
   info "Rendering ADOC file: ${bldylw}${temp}"
@@ -144,22 +144,22 @@ bundle exec --gemfile="${bashmatic_gemfile}" asciidoctor-pdf \\
       --out-file ${target} \\
       ${temp} $*
 EOF
-  ) >${script}
+  ) >"${script}"
 
   info "Printing the complete asciidoctor-pdf command for debugging:\n"
-  printf -- "${txtylw}$(cat ${script})${clr}\n\n${txtgrn}"
+  printf -- "${txtylw}$(cat "${script}")${clr}\n\n${txtgrn}"
   hr
   local out=$(file.temp)
   echo
   inf "Generating PDF from ${file} to ${bldylw}${target}... please wait..."
   local s=$(millis)
-  ( bash ${script} ) >${out} 2>&1
+  ( bash "${script}" ) >"${out}" 2>&1
   local code=$?
   local e=$(millis)
   ((code)) && { 
     not-ok:
     error "Command exited with status code ${code}."
-    cat ${out}
+    cat "${out}"
     return ${code}
   }
   duration $((e - s))
@@ -170,7 +170,7 @@ EOF
   rm -f "${out} ${temp}"
   echo
   [[ -s ${target} ]] && \
-    success "File ${target} has been re-generated, and is of size $(file.size.mb ${target})"
+    success "File ${target} has been re-generated, and is of size $(file.size.mb "${target}")"
 
   info "HINT: to reduce size of the PDF run ${bldgrn}pdf-reduce ${target}"
   echo

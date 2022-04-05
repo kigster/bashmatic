@@ -85,7 +85,7 @@ file.gsub() {
   # fix any EDITOR assignments in ~/.bashrc
   ${GrepCommand} -q "${find}" "${file}" || return 0
 
-  [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options}
+  [[ -z "${runtime_options}" ]] || run.set-next "${runtime_options}"
   # replace
   run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
 }
@@ -224,7 +224,7 @@ file.size.mb() {
   shift
   local s=$(file.size "${file}")
   local mb=$(echo $((s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
-  printf "%.2f MB" ${mb}
+  printf "%.2f MB" "${mb}"
 }
 
 file.list.filter-existing() {
@@ -327,7 +327,7 @@ file.extension.replace() {
     return 1
   }
 
-  ext=".$(echo ${ext} | tr -d '.')"
+  ext=".$(echo "${ext}" | tr -d '.')"
 
   local first=true
   for file in "$@"; do

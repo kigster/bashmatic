@@ -35,7 +35,7 @@ function db.refresh.actions() {
 }
 
 function db.usage() {
-  local config="~/$(basename $(dirname ${bashmatic_db_config}))/$(basename  ${bashmatic_db_config})"
+  local config="~/$(basename $(dirname "${bashmatic_db_config}"))/$(basename  "${bashmatic_db_config}")"
   usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" \
     "-q / --quiet" "Suppress the colorful header messages" \
     "-v / --verbose" "Show additional output" \

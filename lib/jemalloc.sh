@@ -58,7 +58,7 @@ jm.jemalloc.detect-loud() {
 jm.usage() {
   printf "
 ${ColorBlue}USAGE:${ColorReset}
-  $(basename $0) [ -q/--quiet ]
+  $(basename "$0") [ -q/--quiet ]
                  [ -r/--ruby  ]
                  [ -s/--stats ]
                  [ -h/--help  ]

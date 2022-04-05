@@ -137,7 +137,7 @@ url.http-code() {
       return 1
     fi
   else
-    [[ -n "${result}" ]] && printf ${result} || printf "404"
+    [[ -n "${result}" ]] && printf "${result}" || printf "404"
   fi
 }
 

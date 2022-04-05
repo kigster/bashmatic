@@ -122,7 +122,7 @@ ruby.handle-missing() {
 ruby.rbenv() {
   ruby.ensure-rbenv-or-complain || return 1
   if [[ -n "$*" ]]; then
-    rbenv $*
+    rbenv "$*"
   else
     eval "$(rbenv init -)"
   fi
@@ -311,7 +311,7 @@ ruby.install-ruby-with-readline-and-openssl() {
     return 1
   }
   shift
-  ruby.install-ruby ${version} openssl readline "$@"
+  ruby.install-ruby "${version}" openssl readline "$@"
 }
 
 ##—————————————————————————————————————————————————————————————
@@ -482,7 +482,7 @@ ruby.stop() {
 
   h2 "Detected ${#pids[@]} Ruby Processes..., here is the tree:"
   printf "${txtcyn}"
-  pstree ${pids[*]}
+  pstree "${pids[*]}"
   printf "${clr}"
   hr
 

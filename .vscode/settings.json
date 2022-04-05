@@ -8,8 +8,8 @@
    ],
    "compile-hero.disable-compile-files-on-did-save-code": true,
    "shellcheck.enableQuickFix": true,
-   "workbench.colorTheme": "Kimbie Dark",
-   "window.zoomLevel": 0,
+   "workbench.colorTheme": "Frontier (rainglow)",
+   "window.zoomLevel": 1,
    "customPresentationMode.backup": {},
    "gruvboxMaterial.jsson1Comments": false,
    "git-graph.markdown": false

@@ -254,7 +254,7 @@ audio.dir.rename-wavs() {
       "or the folder where *.wav files to be renamed are."
       return 1
     }
-    cd "${dir}"
+    cd "${dir}" || exit
   fi
 
   local nfile

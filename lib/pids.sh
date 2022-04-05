@@ -14,7 +14,7 @@ function pid.alive() {
     return 1
   }
 
-  is.numeric ${pid} || {
+  is.numeric "${pid}" || {
     error "The argument to pid.alive() must be a numeric Process ID"
     return 1
   }
@@ -37,19 +37,19 @@ USAGE:
     return 1
   }
 
-  is.numeric ${pid} || {
+  is.numeric "${pid}" || {
     error "First argument to pid.sig must be numeric."
     return 1
   }
 
-  is.numeric ${signal} || sig.is-valid ${signal} || {
+  is.numeric "${signal}" || sig.is-valid "${signal}" || {
     error "First argument to pid.sig must be numeric."
     return 1
   }
 
-  if pid.alive ${pid}; then
+  if pid.alive "${pid}"; then
     info "sending ${bldred}${signal}$(txt-info) to ${bldylw}${pid}..."
-    /bin/kill -s ${signal} ${pid} 2>&1 | cat >/dev/null
+    /bin/kill -s "${signal}" "${pid}" 2>&1 | cat >/dev/null
   else
     warning "pid ${pid} was dead by the time we tried sending ${sig} to it."
     return 1
@@ -73,7 +73,7 @@ sig.list() {
 # validate if it's a valid signal name, eg:
 # sig.is-valid HUP && echo yes
 sig.is-valid() {
-  [[ -n $(kill -l ${1} 2>/dev/null) ]]
+  [[ -n $(kill -l "${1}" 2>/dev/null) ]]
 }
 
 pid.stop-and-kill() {
@@ -81,14 +81,14 @@ pid.stop-and-kill() {
   delta=1
   sig=STOP
   while true; do
-    pid.alive $pid || return 0
-    kill -${sig} ${pid} 2>&1 >/dev/null
+    pid.alive "$pid" || return 0
+    kill -${sig} "${pid}" 2>&1 >/dev/null
     delta=$((delta * 2))
     [[ ${delta} -gt 16 ]] && sig="KILL"
     sleep "0.${delta}"
   done
 
-  pid.alive $pid && {
+  pid.alive "$pid" && {
     error "PID ${pid} is miraculously still alive..." >&2
     return 1
   }
@@ -122,7 +122,7 @@ EXAMPLES:
 
   pid.alive "${pid}" &&
     (pid.sig "${pid}" "TERM" || true) &&
-    sleep ${delay}
+    sleep "${delay}"
 
   pid.alive "${pid}" &&
     pid.sig "${pid}" "KILL"
@@ -154,7 +154,7 @@ EXAMPLES:
     return 0
   fi
 
-  pattern="$(pids.normalize.search-string ${pattern})"
+  pattern="$(pids.normalize.search-string "${pattern}")"
   pids.matching.regexp "${pattern}"
 }
 
@@ -248,7 +248,7 @@ EXAMPLES:
   shift
   local func=${1:-"echo"}
 
-  if [[ -z $(which ${func}) && -z $(type ${func} 2>/dev/null) ]]; then
+  if [[ -z $(which "${func}") && -z $(type "${func}" 2>/dev/null) ]]; then
     errror "Function ${func} does not exist."
     return 1
   fi
@@ -269,7 +269,7 @@ EXAMPLES:
 #
 pids.stop-by-listen-tcp-ports() {
   for port in "$@"; do
-    pid.stop-if-listening-on-port ${port}
+    pid.stop-if-listening-on-port "${port}"
   done
 }
 
@@ -283,7 +283,7 @@ pid.stop-if-listening-on-port() {
   local protocol="${2:-"tcp"}"
 
   local -a pids
-  pids=($(lsof -i ${protocol}:${port} | grep -v PID | awk '{print $2}'))
+  pids=($(lsof -i "${protocol}":"${port}" | grep -v PID | awk '{print $2}'))
   local pids_string="${pids[*]}" 
   if [[ ${#pids[@]} -eq 0 ]] ; then
     return 0
@@ -315,8 +315,8 @@ EXAMPLES:
   fi
 
   for pid in $@; do
-    if is.numeric ${pid}; then
-      pid.stop ${pid}
+    if is.numeric "${pid}"; then
+      pid.stop "${pid}"
     else
       pids.for-each "${pid}" "pid.stop"
     fi

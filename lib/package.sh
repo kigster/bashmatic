@@ -1,8 +1,8 @@
 # @description fr
 function package.ensure.is-installed() {
   for pkg in "$@"; do 
-    package.is-installed ${pkg} || package.install
-    package.is-installed ${pkg} || {
+    package.is-installed "${pkg}" || package.install
+    package.is-installed "${pkg}" || {
       error "Package ${pkg} does not appear installed, broken package or version?"
       return 1
     }

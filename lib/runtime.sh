@@ -85,7 +85,7 @@ export commands_completed=0
     export LibRun__LastExitCode=
     .run.exec "$@"
 
-    return ${LibRun__LastExitCode}
+    return "${LibRun__LastExitCode}"
   fi
 }
 
@@ -225,7 +225,7 @@ run.print-long-command() {
   local command_width=$((w - 10))
 
   printf "${prefix}❯ ${bldylw}"
-  printf "${command}" | fold -s -w${w} |
+  printf "${command}" | fold -s -w"${w}" |
     awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
 
 }
@@ -234,7 +234,7 @@ run.post-command-with-output() {
   local duration="$1"
   if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
     command-spacer
-    duration ${duration} ${LibRun__LastExitCode}
+    duration "${duration}" ${LibRun__LastExitCode}
   fi
 }
 
@@ -288,12 +288,12 @@ run.post-command-with-output() {
   export LibRun__ShowCommandOutput=${__Previous__ShowCommandOutput}
 
   if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
-    run.post-command-with-output ${duration}
+    run.post-command-with-output "${duration}"
     ui.closer.ok
     commands_completed=$((commands_completed + 1))
     echo
   else
-    run.post-command-with-output ${duration}
+    run.post-command-with-output "${duration}"
     ui.closer.not-ok
     echo
     local stderr_printed=false
@@ -350,7 +350,7 @@ run.with.minimum-duration() {
   local duration=$(((now - started) / 1000))
 
   if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
-    local cmd="$(echo ${command} | sedx 's/\"//g')"
+    local cmd="$(echo "${command}" | sedx 's/\"//g')"
     error "An operation finished too quickly. The threshold was set to ${bldylw}${min_duration} sec." \
       "The command took ${bldylw}${duration}${txtred} secs." \
       "${bldylw}${cmd}${txtred}"
@@ -390,7 +390,7 @@ run.inspect-variable() {
   local print_value=
   local max_len=120
   local avail_len=$(($(screen.width) - 45))
-  local lcase_var_name="$(echo ${var_name} | tr 'A-Z' 'a-z')"
+  local lcase_var_name="$(echo "${var_name}" | tr 'A-Z' 'a-z')"
 
   local print_value=1
   local color="${bldblu}"
@@ -455,7 +455,7 @@ run.inspect-variable() {
 }
 
 run.print-variable() {
-  run.inspect-variable $1
+  run.inspect-variable "$1"
 }
 
 run.inspect-variables() {
@@ -490,8 +490,8 @@ run.variables-ending-with() {
 run.inspect-variables-that-are() {
   local pattern_type="${1}" # starting-with or ending-with
   local pattern="${2}"      # actual pattern
-  run.inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" \
-    "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"
+  run.inspect-variables "VARIABLES $(echo "${pattern_type}" | tr 'a-z' 'A-Z') ${pattern}" \
+    "$(run.variables-"${pattern_type}" "${pattern}" | tr '\n' ' ')"
 }
 
 # @description Prints values of all variables starting with prefixes in args

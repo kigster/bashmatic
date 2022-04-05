@@ -214,7 +214,7 @@ db.psql.explain() {
 db.psql.run() {
   local dbname="$1"; shift
   local query="$1"; shift
-  db.psql.connect.just-data ${dbname} -c "${query}" "@"
+  db.psql.connect.just-data "${dbname}" -c "${query}" "@"
 }
 
 db.psql.run-multiple() {
@@ -543,12 +543,12 @@ db.actions.pga() {
   local args=$(db.psql.args.config "${name}")
   db.psql.args.config "${name}">/dev/null
 
-  pg_activity ${args} --verbose-mode=1 --rds --no-app --no-database --no-user
+  pg_activity "${args}" --verbose-mode=1 --rds --no-app --no-database --no-user
 }
 
 db.actions.list-tables() {
   local dbname="$1"; shift
-  db.psql.connect -q ${dbname} $(db.psql.args-data-only) -c 'select relname from pg_stat_user_tables order by relname asc' "$@"
+  db.psql.connect -q "${dbname}" $(db.psql.args-data-only) -c 'select relname from pg_stat_user_tables order by relname asc' "$@"
 }
 
 db.actions.table-settings-show() {

@@ -156,7 +156,7 @@ function main() {
 
   [[ -d "${ramdiskPath}" ]] || {
     info "Mounting ${ramdiskSizeMB}MB ramdisk..."
-    echo 'y' | osx.ramdisk.mount ${ramdiskSizeMB} >/dev/null
+    echo 'y' | osx.ramdisk.mount "${ramdiskSizeMB}" >/dev/null
   }
 
   [[ -d "${ramdiskPath}/mysql" && ${force} -eq 0 ]] || {
@@ -166,8 +166,8 @@ function main() {
 
     # This returns the path component inside the archive preceeding mysql/
     # So, eg, for Volume/ramdisk/mysql it will return /Volume/ramdisk
-    local stripPath=$(gtar tvzf ${mysqlBackup} --wildcards '*/ib_logfile1' | awk '{print $6}' | sed 's#mysql/.*$##g')
-    local stripComponents=$(echo ${stripPath} | sed 's/[^/]*//g' | tr -d '\n' | wc -c | tr -d ' ')
+    local stripPath=$(gtar tvzf "${mysqlBackup}" --wildcards '*/ib_logfile1' | awk '{print $6}' | sed 's#mysql/.*$##g')
+    local stripComponents=$(echo "${stripPath}" | sed 's/[^/]*//g' | tr -d '\n' | wc -c | tr -d ' ')
     run.set-next show-output-on
     run "gtar --strip-components=${stripComponents} -xzf ${mysqlBackup}"
   }
