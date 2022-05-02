@@ -125,7 +125,8 @@ file.ask.if-exists() {
 }
 
 # @description Installs a given file into a provided destination, while
-#              making a copy of the destination if it already exists.
+#              making a backup of the destination if it already exists.
+#
 # @arg1 File to backup
 # @arg2 Destination
 # @arg3 [optional] Shortname of the optional backup strategy: 'bak' or 'folder'. 

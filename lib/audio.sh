@@ -20,7 +20,7 @@ function audio.m4a.to.mp3() {
   }
 
   h1 "From: ${bldylw}${file} " "To:   ${bldblu}${output}"
-  command -v ffmpeg >/dev/null || .video.install-deps
+  command -v ffmpeg >/dev/null || video.install.dependencies
   local cmd="ffmpeg -i \"${file}\" -codec:a libmp3lame -qscale:a 1 \"${output}\""
   h2 "${cmd}"
   run "${cmd}"

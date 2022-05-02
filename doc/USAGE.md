@@ -576,7 +576,7 @@ Video conversions routines.
 
 
 
-* [.video.install-deps()](#videoinstall-deps)
+* [video.install.dependencies()](#videoinstall-deps)
 * [.video.convert.compress-shrinkwrap()](#videoconvertcompress-shrinkwrap)
 * [.video.convert.compress-11()](#videoconvertcompress-11)
 * [.video.convert.compress-12()](#videoconvertcompress-12)
@@ -587,7 +587,7 @@ Video conversions routines.
 * [.video.convert.compress-3()](#videoconvertcompress-3)
 * [video.convert.compress()](#videoconvertcompress)
 
-### `.video.install-deps()`
+### `video.install.dependencies()`
 
 Installs ffmpeg
 
