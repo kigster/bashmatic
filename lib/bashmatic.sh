@@ -13,6 +13,12 @@ bashmatic.cd-into() {
  cd "${BASHMATIC_HOME}" || exit 1
 }
 
+bashmatic.current-os() {
+  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  printf "%s" "${AppCurrentOS}"
+}
+
+
 # @descripion True if .envrc.local file is present. We take it as a sign
 #             you may be developing bashmatic.
 bashmatic.is-developer() {

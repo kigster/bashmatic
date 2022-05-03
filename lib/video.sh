@@ -159,7 +159,7 @@ video-squeeze() {
     printf --  "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-squeeze *.mp4 *.m4v${clr}\n"
     return 0
   }
-
+ 
   for file in "$@"; do
     [[ -s "${file}" ]] || { 
       warning "Skipping ${file}..."
