@@ -701,7 +701,7 @@ audio.m4a.to.mp3 ()
         return 0
     }
     h1 "From: ${bldylw}${file} " "To:   ${bldblu}${output}"
-    command -v ffmpeg > /dev/null || .video.install-deps
+    command -v ffmpeg > /dev/null || video.install.dependencies
     local cmd="ffmpeg -i \"${file}\" -codec:a libmp3lame -qscale:a 1 \"${output}\""
     h2 "${cmd}"
     run "${cmd}"
@@ -13476,7 +13476,7 @@ video.convert.compress ()
         run "mv \"${output}\" \"${backup_output}\""
     }
     h2 "Starting \"${ffmpeg_binary}\" conversion, source file size is ${bldred}$(file.size.mb "${file}")" " • Source:      [${file}]" " • Destination: [${output}]" " • Algorithm:   [${algo}]"
-    .video.install-deps
+    video.install.dependencies
     local func=".video.convert.compress-${algo}"
     is.a-function "${func}" || { 
         error "${func} is not a valid function name."
