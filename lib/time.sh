@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # vim: set ft=bash
 #——————————————————————————————————————————————————————————————————————————————
 # © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
@@ -43,9 +44,11 @@ function time.now.with-ms() {
   ${date_runnable} '+%T.%3N'
 }
 
-# milliseconds
+# @description Prints the complete date with time up to milliseconds
+# @example 
+#      2022-05-03 14:29:52.302
 function date.now.with-time() {
-  date '+%F.%T'
+  date '+%F ' | tr -d '\n' ; time.now.with-ms
 }
 
 # @description Starts a time for a given name space
@@ -196,10 +199,10 @@ time.duration.millis-to-secs() {
 
 time.duration.humanize() {
   local seconds=${1}
-  local hours=$((${seconds} / 3600))
-  local remainder=$((${seconds} - ${hours} * 3600))
-  local mins=$((${remainder} / 60))
-  local secs=$((${seconds} - ${hours} * 3600 - ${mins} * 60))
+  local hours=$((seconds / 3600))
+  local remainder=$((seconds - hours * 3600))
+  local mins=$((remainder / 60))
+  local secs=$((seconds - hours * 3600 - mins * 60))
   local prefixed=0
   [[ ${hours} -gt 0 ]] && {
     printf "%02dh:" ${hours}

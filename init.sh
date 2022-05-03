@@ -63,8 +63,6 @@ bashmatic.home.valid || {
 
 export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
 # shellcheck disable=SC2002
-VERSION_FILE="${BASHMATIC_HOME}/.version"
-
 export BASHMATIC_VERSION="$(/bin/cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
 export BASHMATIC_UNAME=$(command -v uname)

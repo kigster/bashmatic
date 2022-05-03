@@ -7,6 +7,7 @@ export __bashmatic_nvm_dirs=(
   /usr/local/Cellar/nvm
   /usr/local/opt/nvm
 )
+
 export __default_nvm_home="${__bashmatic_nvm_dirs[0]}"
 
 # @description Returns true if NVM_DIR is correctly set, OR if
@@ -77,14 +78,8 @@ function nvm.load() {
   }
 }
 
-
-function nvm.activate() {
-  nvm.load
-}
-
-declare node_version
-is.an-existing-file .nvmrc && { 
-  export node_version=$(cat .nvmrc | tr -d 'v')
+function node.install.pin.version() {
+  local node_version="${1:-${node_version}}"
   if is.command volta; then
     volta install "node@${node_version}"
     volta pin "node@${node_version}"
@@ -92,4 +87,14 @@ is.an-existing-file .nvmrc && {
     nvm.activate
   fi
 }
+
+function nvm.activate() {
+  nvm.load
+}
+
+declare node_version
+
+is.an-existing-file .nvmrc && { 
+  export node_version=$(cat .nvmrc | tr -d 'v')
+} 
 
