@@ -93,7 +93,7 @@ Ask the user whether to overwrite the file
 ### `file.install-with-backup()`
 
 Installs a given file into a provided destination, while
-making a copy of the destination if it already exists.
+making a backup of the destination if it already exists.
 
 #### Example
 
@@ -576,7 +576,7 @@ Video conversions routines.
 
 
 
-* [video.install.dependencies()](#videoinstall-deps)
+* [.destination-file-name()](#destination-file-name)
 * [.video.convert.compress-shrinkwrap()](#videoconvertcompress-shrinkwrap)
 * [.video.convert.compress-11()](#videoconvertcompress-11)
 * [.video.convert.compress-12()](#videoconvertcompress-12)
@@ -585,11 +585,14 @@ Video conversions routines.
 * [.video.convert.compress-22()](#videoconvertcompress-22)
 * [.video.convert.compress-23()](#videoconvertcompress-23)
 * [.video.convert.compress-3()](#videoconvertcompress-3)
-* [video.convert.compress()](#videoconvertcompress)
+* [video.filename.encoded()](#videofilenameencoded)
+* [video.install.dependencies()](#videoinstalldependencies)
+* [video.encode()](#videoencode)
+* [video.squeeze()](#videosqueeze)
 
-### `video.install.dependencies()`
+### `.destination-file-name()`
 
-Installs ffmpeg
+Generate a destination file name for the compressed items.
 
 ### `.video.convert.compress-shrinkwrap()`
 
@@ -623,7 +626,16 @@ Given two arguments (from), (to), performs a video recompression
 
 Given two arguments (from), (to), performs a video recompression
 
-### `video.convert.compress()`
+### `video.filename.encoded()`
+
+Given the source file passed as an argument, and the name of the encoding algorithm,
+prints the name of the destination file (which will be lower-caseed, no spaces, and contain the algorithm)
+
+### `video.install.dependencies()`
+
+Installs ffmpeg and other dependencies
+
+### `video.encode()`
 
 Given two arguments (from), (to), performs a video recompression
 according to the algorithm in the second argument.
@@ -631,8 +643,15 @@ according to the algorithm in the second argument.
 #### Example
 
 ```bash
-video.convert.compress bigfile.mov 13
+             video.encode bigfile.mov 13 smallerfile.mkv
+@arg1 File to convert
+@arg2 Name of the algorithm, defaults to 11
+@arg3 Optional output file
 ```
+
+### `video.squeeze()`
+
+
 
 
 
@@ -1031,9 +1050,20 @@ Oherwise we install the package and retry, and return if not found
 
 
 
+* [date.now.with-time()](#datenowwith-time)
 * [time.with-duration.start()](#timewith-durationstart)
 * [time.with-duration()](#timewith-duration)
 * [time.a-command()](#timea-command)
+
+### `date.now.with-time()`
+
+Prints the complete date with time up to milliseconds
+
+#### Example
+
+```bash
+2022-05-03 14:29:52.302
+```
 
 ### `time.with-duration.start()`
 
@@ -1445,6 +1475,29 @@ and be explicit in a DSL-like way.
 * [is-validations()](#is-validations)
 * [__is.validation.ignore-error()](#__isvalidationignore-error)
 * [__is.validation.report-error()](#__isvalidationreport-error)
+* [is.not-blank()](#isnot-blank)
+* [is.blank()](#isblank)
+* [is.empty()](#isempty)
+* [is.not-a-blank-var()](#isnot-a-blank-var)
+* [is.a-non-empty-file()](#isa-non-empty-file)
+* [is.an-empty-file()](#isan-empty-file)
+* [is.a-directory()](#isa-directory)
+* [is.an-existing-file()](#isan-existing-file)
+* [is.a-function.invoke()](#isa-functioninvoke)
+* [is.a-function()](#isa-function)
+* [is.a-variable()](#isa-variable)
+* [is.a-non-empty-array()](#isa-non-empty-array)
+* [is.sourced-in()](#issourced-in)
+* [is.a-script()](#isa-script)
+* [is.integer()](#isinteger)
+* [is.an-integer()](#isan-integer)
+* [is.numeric()](#isnumeric)
+* [is.command()](#iscommand)
+* [is.a-command()](#isa-command)
+* [is.missing()](#ismissing)
+* [is.alias()](#isalias)
+* [is.zero()](#iszero)
+* [is.non.zero()](#isnonzero)
 * [whenever()](#whenever)
 
 ### `__is.validation.error()`
@@ -1473,6 +1526,102 @@ Private function that ignores errors
 ### `__is.validation.report-error()`
 
 Private function that ignores errors
+
+### `is.not-blank()`
+
+is.not-blank <arg> 
+
+### `is.blank()`
+
+is.blank <arg> 
+
+### `is.empty()`
+
+is.empty <arg> 
+
+### `is.not-a-blank-var()`
+
+is.not-a-blank-var <var-name> 
+
+### `is.a-non-empty-file()`
+
+is.a-non-empty-file <file>
+
+### `is.an-empty-file()`
+
+is.an-empty-file <file>
+
+### `is.a-directory()`
+
+is.a-directory <dir>
+
+### `is.an-existing-file()`
+
+is.an-existing-file <file>
+
+### `is.a-function.invoke()`
+
+if the argument passed is a value function, invoke it
+
+### `is.a-function()`
+
+verifies that the argument is a valid shell function
+
+### `is.a-variable()`
+
+verifies that the argument is a valid and defined variable
+
+### `is.a-non-empty-array()`
+
+verifies that the argument is a non-empty array
+
+### `is.sourced-in()`
+
+verifies that the argument is a valid and defined variable
+
+### `is.a-script()`
+
+returns success if the current script is executing in a subshell
+
+### `is.integer()`
+
+returns success if the argument is an integer
+
+#### See also
+
+* [https://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash](#httpsstackoverflowcomquestions806906how-do-i-test-if-a-variable-is-a-number-in-bash)
+
+### `is.an-integer()`
+
+returns success if the argument is an integer
+
+### `is.numeric()`
+
+returns success if the argument is numeric, eg. float
+
+### `is.command()`
+
+returns success if the argument is a valid command found in the $PATH
+
+### `is.a-command()`
+
+returns success if the argument is a valid command found in the $PATH
+
+### `is.missing()`
+
+returns success if the command passed as an argument is not in $PATH
+
+### `is.alias()`
+
+returns success if the argument is a current alias
+
+### `is.zero()`
+
+returns success if the argument is a numerical zero
+
+### `is.non.zero()`
+
+returns success if the argument is not a zero
 
 ### `whenever()`
 
