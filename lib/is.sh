@@ -126,41 +126,65 @@ function validations.end() {
 # Part 2. "is" validations — no output, just return code
 #------------------------------------------------------------------
 
+# @description is.not-blank <arg> 
+# @return true if the first argument is not blank
 function is.not-blank() {
   [[ -n "${1}" ]]
 }
 
+# @description is.blank <arg> 
+# @return true if the first argument is blank
 function is.blank() {
   [[ -z "${1}" ]]
 }
 
+# @description is.empty <arg> 
+# @return true if the first argument is blank or empty
+function is.empty() {
+  is.blank "$@"
+}
+
+# @description is.not-a-blank-var <var-name> 
+# @return true if varaible passed by name is not blank
 function is.not-a-blank-var() {
   local var="$1"
   [[ -n "${!var}" ]]
 }
 
+# @description is.a-non-empty-file <file>
+# @return true if the file passed is non epmpty
 function is.a-non-empty-file() {
   [[ -s "${1}" ]]
 }
 
+# @description is.an-empty-file <file>
+# @return true if the file passed is epmpty
 function is.an-empty-file() {
   [[ ! -s "${1}" ]]
 }
 
+# @description is.a-directory <dir>
+# @return true if the argument is a propery
 function is.a-directory() {
   [[ -d "${1}" ]]
 }
 
+
+# @description is.an-existing-file <file>
+# @return true if the file exits
 function is.an-existing-file() {
   [[ -f "${1}" ]]
 }
 
+# @description if the argument passed is a value function, invoke it
+# @return exit status of the function
 function is.a-function.invoke() {
   local func="$1"
   shift
-  is.a-function "${func}" && eval "${func} $*"
+  is.a-function "${func}" && eval "${func} \"$@\""
 }
 
+# @description verifies that the argument is a valid shell function
 function is.a-function() {
   if [[ -n $1 ]] && typeset -f "$1" >/dev/null 2>&1; then
     return 0
@@ -169,7 +193,7 @@ function is.a-function() {
   fi
 }
 
-
+# @description verifies that the argument is a valid and defined variable
 function is.a-variable() {
   local var_name="$1"
   local shell="$(user.current-shell)"
@@ -185,22 +209,12 @@ function is.a-variable() {
     ;;
   esac
 }
-function is.avariable() {
-  local var_name="$1"
-  local shell="$(user.current-shell)"
-  case $shell in
-  bash)
-    [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${!var_name+x} ]] && return 0
-    ;;
-  zsh)
-    eval "[[ -v ${var_name} ]]" && return 0
-    ;; 
-  *)
-    return 1
-    ;;
-  esac
+
+function is.variable() {
+  is.a-variable "$@"
 }
 
+# @description verifies that the argument is a non-empty array
 function is.a-non-empty-array() {
   local var_name="$1"
   local -a array
@@ -209,39 +223,63 @@ function is.a-non-empty-array() {
   [[ -n ${array[*]} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && ${#array[@]} -gt 0 ]]
 }
 
+# @description verifies that the argument is a valid and defined variable
 function is.sourced-in() {
   bashmatic.detect-subshell
   [[ ${BASH_IN_SUBSHELL} -eq 0 ]]
 }
 
+
+# @description returns success if the current script is executing in a subshell
 function is.a-script() {
   bashmatic.detect-subshell
   [[ ${BASH_IN_SUBSHELL} -eq 1 ]]
 }
 
-# https://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
+# @description returns success if the argument is an integer
+# @see https://stackoverflow.com/questions/806906/how-do-i-test-if-a-variable-is-a-number-in-bash
 function is.integer() {
   [[ $1 =~ ^[+-]?[0-9]+$ ]]
 }
 
+# @description returns success if the argument is an integer
+function is.an-integer() {
+  is.integer "$@"
+}
+
+# @description returns success if the argument is numeric, eg. float
 function is.numeric() { 
   [[ $1 =~ ^[+-]?([0-9]+([.][0-9]*)?|\.[0-9]+)$ ]]
 }
 
+# @description returns success if the argument is a valid command found in the $PATH
 function is.command() {
   command -v "$1" >/dev/null
 }
 
+# @description returns success if the argument is a valid command found in the $PATH
 function is.a-command() {
   is.command "$@"
 }
 
+# @description returns success if the command passed as an argument is not in $PATH
 function is.missing() {
   ! is.command "$@"
 }
 
+# @description returns success if the argument is a current alias
 function is.alias() {
   alias "$1" 2>/dev/null
+}
+
+# @description returns success if the argument is a numerical zero
+function is.zero() {
+  [[ $1 -eq 0 ]] 
+}
+
+# @description returns success if the argument is not a zero
+function is.non.zero() {
+  [[ $1 -ne 0 ]] 
 }
 
 #------------------------------------------------------------------

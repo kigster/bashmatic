@@ -132,7 +132,7 @@
         error "Neither $1 nor ${archive} were found."
         return 1
     }
-    info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size ${archive}) bytes."
+    info "Unpacking archive ${txtylw}${archive}$(txt-info), total of $(file.size "${archive}") bytes."
     run.set-next show-output-on
     run "7za x -so ${archive} | tar xfv -"
 }
@@ -160,7 +160,7 @@
     shift
     7z.install
     local archive="${folder}"
-    [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename ${folder} | sed -E 's/\./-/g').tar.7z"
+    [[ -f "${folder}" || -d "${folder}" ]] && archive="$(basename "${folder}" | sed -E 's/\./-/g').tar.7z"
     [[ -f ${archive} ]] && { 
         run.set-next on-decline-return
         run.ui.ask "File ${archive} already exists. Press Y to remove it and continue." || return 1
@@ -620,7 +620,7 @@ audio.dir.rename-wavs ()
             error "First argument is either blank (current directory)" "or the folder where *.wav files to be renamed are."
             return 1
         }
-        cd "${dir}"
+        cd "${dir}" || exit
     fi
     local nfile
     for file in $(ls -1 '*.wav')
@@ -897,7 +897,7 @@ aws.s3.upload ()
     run "aws s3 cp \"${pathname}\" \"${remote}\""
     if [[ ${LibRun__LastExitCode} -eq 0 ]]; then
         local remoteUrl="https://s3-${LibAws__DefaultRegion}.amazonaws.com/${LibAws__DefaultUploadBucket}/${LibAws__DefaultUploadFolder}/${year}/${remote_file}"
-        [[ -n "${LibAws__ObjectUrlFile}" ]] && echo ${remoteUrl} > "${LibAws__ObjectUrlFile}"
+        [[ -n "${LibAws__ObjectUrlFile}" ]] && echo "${remoteUrl}" > "${LibAws__ObjectUrlFile}"
         echo
         info "NOTE: You should now be able to access your resource at the following URL:"
         hr
@@ -906,7 +906,7 @@ aws.s3.upload ()
     else
         error "AWS S3 upload failed with code ${LibRun__LastExitCode}"
     fi
-    return ${LibRun__LastExitCode}
+    return "${LibRun__LastExitCode}"
 }
 
 ----
@@ -1135,17 +1135,17 @@ bashmatic.auto-update ()
     ( unset -f _direnv_hook > /dev/null 2>&1
     [[ ${Bashmatic__Test} -eq 1 ]] && return 0
     local pwd="$(pwd -P)"
-    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}"
+    cd "${BASHMATIC_HOME:="${HOME}/.bashmatic"}" || exit
     git.configure-auto-updates
     git.repo-is-clean || { 
         output.is-ssh || { 
             output.is-terminal && bashmatic.auto-update-error
-            cd "${pwd}" > /dev/null
+            cd "${pwd}" > /dev/null || exit
             return 1
         }
     }
     git.update-repo-if-needed
-    cd "${pwd}" > /dev/null )
+    cd "${pwd}" > /dev/null || exit )
 }
 
 ----
@@ -1157,8 +1157,8 @@ bashmatic.auto-update ()
 bashmatic.auto-update-error () 
 { 
     bashmatic.is-developer || return
-    file.exists-and-newer-than ${__bashmatic_warning_notification} 10 || return
-    touch ${__bashmatic_warning_notification}
+    file.exists-and-newer-than "${__bashmatic_warning_notification}" 10 || return
+    touch "${__bashmatic_warning_notification}"
     if [[ -f ${__bashmatic_auto_update_help_file} ]]; then
         cat "${__bashmatic_auto_update_help_file}" 1>&2
     else
@@ -1217,6 +1217,18 @@ bashmatic.cd-into ()
 
 ----
 
+==== `bashmatic.current-os`
+
+[source,bash]
+----
+bashmatic.current-os () 
+{ 
+    export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+    printf "%s" "${AppCurrentOS}"
+}
+
+----
+
 ==== `bashmatic.functions`
 
 [source,bash]
@@ -1239,7 +1251,7 @@ bashmatic.functions-from ()
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
     cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
     export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
-    if [[ -n $(echo ${pattern} | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
+    if [[ -n $(echo "${pattern}" | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
         pattern="${pattern}.sh"
     fi
     eval "${GrepCommand} '^[_a-zA-Z0-9]+.*\(\)' ${pattern}" | sedx 's/^(lib\/)?.*\.sh://g' | sedx 's/^function //g' | sedx 's/\(\) *\{.*$//g' | /usr/bin/tr -d '()' | sedx '/^ *$/d' | eval "${GrepCommand} '^(_|\.)' -v" | sort | uniq | columnize "$@"
@@ -1409,7 +1421,7 @@ bashmatic.source-dir ()
     fi
     for file in "${files[@]}"
     do
-        local n="$(basename ${file})"
+        local n="$(basename "${file}")"
         [[ ${n:0:1} == . ]] && continue
         bashmatic.source "${file}" && loaded=true
     done
@@ -1611,7 +1623,7 @@ brew.install.package ()
             run "brew install ${force} ${verbose} ${package}"
             code="${LibRun__LastExitCode}"
         else
-            brew install ${force} ${verbose} ${package} > /dev/null 2>&1
+            brew install ${force} ${verbose} "${package}" > /dev/null 2>&1
             code=$?
         fi
         brew.cache-reset package
@@ -2536,7 +2548,7 @@ db.actions.pga ()
     }
     local args=$(db.psql.args.config "${name}")
     db.psql.args.config "${name}" > /dev/null
-    pg_activity ${args} --verbose-mode=1 --rds --no-app --no-database --no-user
+    pg_activity "${args}" --verbose-mode=1 --rds --no-app --no-database --no-user
 }
 
 ----
@@ -3068,7 +3080,7 @@ db.psql.run ()
     shift
     local query="$1"
     shift
-    db.psql.connect.just-data ${dbname} -c "${query}" "@"
+    db.psql.connect.just-data "${dbname}" -c "${query}" "@"
 }
 
 ----
@@ -3376,7 +3388,7 @@ db.refresh.actions ()
 ----
 db.usage () 
 { 
-    local config="~/$(basename $(dirname ${bashmatic_db_config}))/$(basename  ${bashmatic_db_config})"
+    local config="~/$(basename $(dirname "${bashmatic_db_config}"))/$(basename  "${bashmatic_db_config}")"
     usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "-C / --commands" "List all sub-commands to the db script" "-c / --connectons" "List all available database connections" "-e / --examples" "Show script usage examples" "-h / --help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
 }
 
@@ -3889,7 +3901,7 @@ docker.images-named ()
     docker.abort-if-down false || return 127
     hl.subtle "Processing Docker images matching ${name} with function ${func}..."
     local images="$(docker images | grep "^${name}" | sed 's/  */ /g' | cut -d ' ' -f 3 | tr '\n' ' ')"
-    ${func} ${images}
+    ${func} "${images}"
 }
 
 ----
@@ -4092,7 +4104,7 @@ file.extension.replace ()
         info "USAGE: file.extension.replace <new-extension> file1 file2 ... "
         return 1
     }
-    ext=".$(echo ${ext} | tr -d '.')"
+    ext=".$(echo "${ext}" | tr -d '.')"
     local first=true
     for file in "$@"
     do
@@ -4145,7 +4157,7 @@ file.gsub ()
         return 1
     }
     ${GrepCommand} -q "${find}" "${file}" || return 0
-    [[ -z "${runtime_options}" ]] || run.set-next ${runtime_options}
+    [[ -z "${runtime_options}" ]] || run.set-next "${runtime_options}"
     run "sed -i'' -E -e 's/${find}/${replace}/g' \"${file}\""
 }
 
@@ -4312,7 +4324,7 @@ file.size.mb ()
     shift
     local s=$(file.size "${file}")
     local mb=$(echo $((s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
-    printf "%.2f MB" ${mb}
+    printf "%.2f MB" "${mb}"
 }
 
 ----
@@ -4516,7 +4528,7 @@ ftrace-in ()
     local args="$*"
     [[ -z ${TraceON} ]] && return
     export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} + 1 ))
-    printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' ${func} "${args}" 1>&2
+    printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' "${func}" "${args}" 1>&2
 }
 
 ----
@@ -4557,7 +4569,7 @@ ftrace-out ()
     [[ -z ${TraceON} ]] && return
     local color="${bldgrn}"
     [[ ${code} -ne 0 ]] && color="${bldred}"
-    printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' ${func} ${code} "${msg}" 1>&2
+    printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' "${func}" "${code}" "${msg}" 1>&2
     export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} - 1 ))
 }
 
@@ -4903,10 +4915,27 @@ git.branch.current ()
 ----
 git.cfg.get () 
 { 
-    for token in "$@"
-    do
-        git config --global --get "${token}"
-    done
+    local section="global"
+    if [[ "$1" == "local" || "$1" == "global" ]]; then
+        section="$1"
+        shift
+    fi
+    local command="get"
+    local cmd
+    if [[ -z "$*" ]]; then
+        cmd="git config --${section} --list"
+    else
+        if [[ "$*" =~ ^[a-z\.]*$ ]]; then
+            for token in "$@"
+            do
+                cmd="git config --${section} --${command} ${token}"
+            done
+        else
+            cmd="git config --${section} --get-all '$*'"
+        fi
+    fi
+    h1 "${cmd}"
+    eval "${cmd}"
 }
 
 ----
@@ -4923,12 +4952,12 @@ git.cfgu ()
     }
     if [[ -n $2 ]]; then
         rm -f ~/.gitconfig.lock
-        git config --global --replace-all user.$1 $2
+        git config --global --replace-all user."$1" "$2"
     else
         if [[ $1 =~ - ]]; then
-            git config --global $1
+            git config --global "$1"
         else
-            git config --global user.$1
+            git config --global user."$1"
         fi
     fi
 }
@@ -4977,8 +5006,8 @@ git.config.kigster ()
 git.configure-auto-updates () 
 { 
     export LibGit__StaleAfterThisManyHours="${LibGit__StaleAfterThisManyHours:-"1"}"
-    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo ${USER} | shasum.sha-only-stdin)"
-    mkdir -p "$(dirname ${LibGit__LastUpdateTimestampFile})"
+    export LibGit__LastUpdateTimestampFile="${BASHMATIC_TEMP}/.config/$(echo "${USER}" | shasum.sha-only-stdin)"
+    mkdir -p "$(dirname "${LibGit__LastUpdateTimestampFile}")"
 }
 
 ----
@@ -5034,7 +5063,7 @@ git.generate-changelog ()
 git.is-it-time-to-update () 
 { 
     local last_update_at=$(git.last-update-at)
-    local second_since_update=$(git.seconds-since-last-pull ${last_update_at})
+    local second_since_update=$(git.seconds-since-last-pull "${last_update_at}")
     local update_period_seconds=$((LibGit__StaleAfterThisManyHours * 60 * 60))
     [[ ${second_since_update} -gt ${update_period_seconds} ]]
 }
@@ -5065,7 +5094,7 @@ git.last-update-at ()
     local file="${1:-"${LibGit__LastUpdateTimestampFile}"}"
     local last_update=0
     if [[ ${LibGit__ForceUpdate} -eq 0 && -f ${file} ]]; then
-        last_update="$(cat $file | tr -d '\n')"
+        last_update="$(cat "$file" | tr -d '\n')"
     else
         last_update=0
     fi
@@ -5124,7 +5153,7 @@ git.open ()
     local remote="${1:-"origin"}"
     local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
     info "Opening URL ${bldylw}${url}"
-    open -a 'Google Chrome' ${url}
+    open -a 'Google Chrome' "${url}"
 }
 
 ----
@@ -5225,7 +5254,7 @@ git.repo.latest-local-tag ()
 git.repo.latest-remote-tag () 
 { 
     local repo_url="$1"
-    git ls-remote --tags --sort="v:refname" ${repo_url} | grep -E \-v '(latest|stable)' | grep -E -v '\^{}' | tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+    git ls-remote --tags --sort="v:refname" "${repo_url}" | grep -E \-v '(latest|stable)' | grep -E -v '\^{}' | tail -1 | awk 'BEGIN{FS="/"}{print $3}'
 }
 
 ----
@@ -5277,7 +5306,7 @@ git.repo.remote-to-git@ ()
 ----
 git.save-last-update-at () 
 { 
-    echo $(epoch) > ${LibGit__LastUpdateTimestampFile}
+    echo $(epoch) > "${LibGit__LastUpdateTimestampFile}"
 }
 
 ----
@@ -5302,7 +5331,7 @@ git.seconds-since-last-pull ()
 git.squash () 
 { 
     local number="${1}"
-    is.numeric ${number} || { 
+    is.numeric "${number}" || { 
         info "USAGE: git.squash <number> # of commits to go back"
         return
     }
@@ -5349,7 +5378,7 @@ git.sync-dirs ()
     for dir in $(find . -type d -maxdepth 1 -name "${pattern}*")
     do
         hl.yellow-on-gray "syncing [$dir]..."
-        cd $dir > /dev/null
+        cd "$dir" > /dev/null
         run "git pull --rebase"
         cd - > /dev/null
     done
@@ -5585,7 +5614,7 @@ is.a-function.invoke ()
 { 
     local func="$1"
     shift
-    is.a-function "${func}" && eval "${func} $*"
+    is.a-function "${func}" && eval "${func} \"$@\""
 }
 
 ----
@@ -5684,25 +5713,13 @@ is.an-existing-file ()
 
 ----
 
-==== `is.avariable`
+==== `is.an-integer`
 
 [source,bash]
 ----
-is.avariable () 
+is.an-integer () 
 { 
-    local var_name="$1"
-    local shell="$(user.current-shell)"
-    case $shell in 
-        bash)
-            [[ -n ${var_name} && ${var_name} =~ ^[0-9a-zA-Z_]+$ && -n ${!var_name+x} ]] && return 0
-        ;
-        zsh)
-            eval "[[ -v ${var_name} ]]" && return 0
-        ;
-        *)
-            return 1
-        ;
-    esac
+    is.integer "$@"
 }
 
 ----
@@ -5729,6 +5746,17 @@ is.command ()
 
 ----
 
+==== `is.empty`
+
+[source,bash]
+----
+is.empty () 
+{ 
+    is.blank "$@"
+}
+
+----
+
 ==== `is.integer`
 
 [source,bash]
@@ -5747,6 +5775,17 @@ is.integer ()
 is.missing () 
 { 
     ! is.command "$@"
+}
+
+----
+
+==== `is.non.zero`
+
+[source,bash]
+----
+is.non.zero () 
+{ 
+    [[ $1 -ne 0 ]]
 }
 
 ----
@@ -5793,6 +5832,28 @@ is.sourced-in ()
 { 
     bashmatic.detect-subshell
     [[ ${BASH_IN_SUBSHELL} -eq 0 ]]
+}
+
+----
+
+==== `is.variable`
+
+[source,bash]
+----
+is.variable () 
+{ 
+    is.a-variable "$@"
+}
+
+----
+
+==== `is.zero`
+
+[source,bash]
+----
+is.zero () 
+{ 
+    [[ $1 -eq 0 ]]
 }
 
 ----
@@ -6024,7 +6085,7 @@ jm.usage ()
 { 
     printf "
 ${ColorBlue}USAGE:${ColorReset}
-  $(basename $0) [ -q/--quiet ]
+  $(basename "$0") [ -q/--quiet ]
                  [ -r/--ruby  ]
                  [ -s/--stats ]
                  [ -h/--help  ]
@@ -6118,8 +6179,8 @@ json.end-hash ()
 json.file-to-array () 
 { 
     json.begin-array "$1"
-    cat $2 | tr -d '\r' | tr -d '\015' | sed 's/^/"/g;s/$/",/g' | tail -r | awk -F, '{if (FNR!=1) print; else print $1} ' | tail -r
-    json.end-array $3
+    cat "$2" | tr -d '\r' | tr -d '\015' | sed 's/^/"/g;s/$/",/g' | tail -r | awk -F, '{if (FNR!=1) print; else print $1} ' | tail -r
+    json.end-array "$3"
 }
 
 ----
@@ -6183,7 +6244,7 @@ net.fast-scan ()
     local colored=/tmp/colored.$$
     run "sudo nmap --min-parallelism 15 -O --host-timeout 5 -F ${subnet} > ${out}"
     run "echo 'printf \"' > ${colored}"
-    cat ${out} | sed -E "s/Nmap scan report for (.*)$/\n\${bldylw}Nmap scan report for \1\${clr}\n/g" >> ${colored}
+    cat "${out}" | sed -E "s/Nmap scan report for (.*)$/\n\${bldylw}Nmap scan report for \1\${clr}\n/g" >> ${colored}
     run "echo '\"' >> ${colored}"
     bash ${colored}
 }
@@ -6202,7 +6263,7 @@ net.is-host-port-protocol-open ()
     local command="nmap"
     [[ ${protocol} =~ udp ]] && command="sudo nmap -sU"
     command -v nmap > /dev/null || brew.install.package nmap 1>&2
-    ${command} -Pn -p ${port} ${host} 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
+    ${command} -Pn -p "${port}" "${host}" 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
 }
 
 ----
@@ -6233,13 +6294,30 @@ net.local-subnet ()
     sort |
     uniq |
     head -1).0/24"
-    printf '%s' ${subnet}
+    printf '%s' "${subnet}"
 }
 
 ----
 
 
 === Module `nvm`
+
+==== `node.install.pin.version`
+
+[source,bash]
+----
+node.install.pin.version () 
+{ 
+    local node_version="${1:-${node_version}}"
+    if is.command volta; then
+        volta install "node@${node_version}"
+        volta pin "node@${node_version}"
+    else
+        nvm.activate
+    fi
+}
+
+----
 
 ==== `nvm.activate`
 
@@ -6556,7 +6634,7 @@ osx.cookie-dump ()
         local size=$(file.size "${file}")
         if [[ ${size} -lt 4 ]]; then
             error "Pasted data is too small to be a valid cookie?"
-            info "Here is what we got in your clipboard:\n\n$(cat ${file})\n"
+            info "Here is what we got in your clipboard:\n\n$(cat "${file}")\n"
             return 1
         fi
     fi
@@ -6567,7 +6645,7 @@ osx.cookie-dump ()
         info "Copy the value of the ${bldylw}Set-Cookie:${txtblu} header into the clipboard,"
         info "and rerun this function."
     fi
-    [[ -z ${tmp} ]] || rm -f ${tmp}
+    [[ -z ${tmp} ]] || rm -f "${tmp}"
 }
 
 ----
@@ -6607,7 +6685,7 @@ osx.dropbox.exclude-pwd ()
 osx.env-print () 
 { 
     local var="$1"
-    printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} ${!var}
+    printf "${bldylw}%20s: ${bldgrn}%s\n" "${var}" "${!var}"
 }
 
 ----
@@ -6686,7 +6764,7 @@ osx.ramdisk.unmount ()
 osx.scutil-print () 
 { 
     local var="$1"
-    printf "${bldylw}%20s: ${bldgrn}%s\n" ${var} $(sudo scutil --get ${var} | tr -d '\n')
+    printf "${bldylw}%20s: ${bldgrn}%s\n" "${var}" $(sudo scutil --get "${var}" | tr -d '\n')
 }
 
 ----
@@ -6698,8 +6776,8 @@ osx.scutil-print ()
 osx.set-fqdn () 
 { 
     local fqdn="$1"
-    local domain=$(echo ${fqdn} | sed -E 's/^[^.]*\.//g')
-    local host=$(echo ${fqdn} | sed -E 's/\..*//g')
+    local domain=$(echo "${fqdn}" | sed -E 's/^[^.]*\.//g')
+    local host=$(echo "${fqdn}" | sed -E 's/\..*//g')
     h1 "Current HostName: ${bldylw}${HOSTNAME}"
     echo
     info "• You provided the following FQDN : ${bldylw}${fqdn}"
@@ -6851,7 +6929,7 @@ cursor.restore ()
 cursor.rewind () 
 { 
     local x=${1:-0}
-    .output.cursor-move-to-x ${x}
+    .output.cursor-move-to-x "${x}"
 }
 
 ----
@@ -6921,8 +6999,8 @@ duration ()
         printf "${txtblu}${pattern}" "${millis}"
     fi
     if [[ -n ${exit_code} ]]; then
-        [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" ${exit_code}
-        [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" ${exit_code}
+        [[ ${exit_code} -eq 0 ]] && printf " ${txtblk}${bakgrn} %3d ${clr}" "${exit_code}"
+        [[ ${exit_code} -gt 0 ]] && printf " ${bldwht}${bakred} %3d ${clr}" "${exit_code}"
     fi
 }
 
@@ -7267,7 +7345,7 @@ stderr ()
     local file=$1
     hl.subtle STDERR
     printf "${txtred}"
-    [[ -s ${file} ]] && cat ${file}
+    [[ -s ${file} ]] && cat "${file}"
     reset-color
 }
 
@@ -7282,7 +7360,7 @@ stdout ()
     local file=$1
     hl.subtle STDOUT
     printf "${clr}"
-    [[ -s ${file} ]] && cat ${file}
+    [[ -s ${file} ]] && cat "${file}"
     reset-color
 }
 
@@ -8456,7 +8534,7 @@ columnize ()
     local columns="${1:-2}"
     local sw="${SCREEN_WIDTH:=$(.output.screen-width)}"
     [[ ${sw} -lt 90 ]] && sw=100
-    pr -l 10000 -${columns} -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
+    pr -l 10000 -"${columns}" -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
 }
 
 ----
@@ -8481,7 +8559,7 @@ dbg-off ()
 { 
     unset BASHMATIC_DEBUG
     unset BASHMATIC_PATH_DEBUG
-    [[ -f ${BASHMATIC_HOME}/.envrc.no-debug ]] && source ${BASHMATIC_HOME}/.envrc.no-debug
+    [[ -f ${BASHMATIC_HOME}/.envrc.no-debug ]] && source "${BASHMATIC_HOME}"/.envrc.no-debug
 }
 
 ----
@@ -8493,7 +8571,7 @@ dbg-off ()
 dbg-on () 
 { 
     export BASHMATIC_DEBUG=1
-    [[ -f ${BASHMATIC_HOME}/.envrc.debug ]] && source ${BASHMATIC_HOME}/.envrc.debug
+    [[ -f ${BASHMATIC_HOME}/.envrc.debug ]] && source "${BASHMATIC_HOME}"/.envrc.debug
 }
 
 ----
@@ -8797,8 +8875,8 @@ package.ensure.is-installed ()
 { 
     for pkg in "$@"
     do
-        package.is-installed ${pkg} || package.install
-        package.is-installed ${pkg} || { 
+        package.is-installed "${pkg}" || package.install
+        package.is-installed "${pkg}" || { 
             error "Package ${pkg} does not appear installed, broken package or version?"
             return 1
         }
@@ -8840,14 +8918,14 @@ PATH_add ()
 path.absolute () 
 { 
     if [[ -d "$1" ]]; then
-        pushd "$1" > /dev/null
+        pushd "$1" > /dev/null || exit
         pwd
-        popd > /dev/null
+        popd > /dev/null || exit
     else
         if [[ -e "$1" ]]; then
-            pushd "$(dirname "$1")" > /dev/null
+            pushd "$(dirname "$1")" > /dev/null || exit
             echo "$(pwd)/$(basename "$1")"
-            popd > /dev/null
+            popd > /dev/null || exit
         else
             echo "$1" does not exist! 1>&2
             return 127
@@ -9095,7 +9173,7 @@ pdf.combine ()
     info "Please wait while GhostScript combines your PDFs into"
     info "destination file: ${bldylw}${merged}"
     run "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=${merged} ${files}"
-    return ${LibRun__LastExitCode}
+    return "${LibRun__LastExitCode}"
 }
 
 ----
@@ -9173,7 +9251,7 @@ pid.alive ()
         error "usage: pid.alive PID"
         return 1
     }
-    is.numeric ${pid} || { 
+    is.numeric "${pid}" || { 
         error "The argument to pid.alive() must be a numeric Process ID"
         return 1
     }
@@ -9199,17 +9277,17 @@ USAGE:
 "
         return 1
     }
-    is.numeric ${pid} || { 
+    is.numeric "${pid}" || { 
         error "First argument to pid.sig must be numeric."
         return 1
     }
-    is.numeric ${signal} || sig.is-valid ${signal} || { 
+    is.numeric "${signal}" || sig.is-valid "${signal}" || { 
         error "First argument to pid.sig must be numeric."
         return 1
     }
-    if pid.alive ${pid}; then
+    if pid.alive "${pid}"; then
         info "sending ${bldred}${signal}$(txt-info) to ${bldylw}${pid}..."
-        /bin/kill -s ${signal} ${pid} 2>&1 | cat > /dev/null
+        /bin/kill -s "${signal}" "${pid}" 2>&1 | cat > /dev/null
     else
         warning "pid ${pid} was dead by the time we tried sending ${sig} to it."
         return 1
@@ -9243,7 +9321,7 @@ EXAMPLES:
 "
         return 1
     fi
-    pid.alive "${pid}" && ( pid.sig "${pid}" "TERM" || true ) && sleep ${delay}
+    pid.alive "${pid}" && ( pid.sig "${pid}" "TERM" || true ) && sleep "${delay}"
     pid.alive "${pid}" && pid.sig "${pid}" "KILL"
 }
 
@@ -9259,13 +9337,13 @@ pid.stop-and-kill ()
     delta=1
     sig=STOP
     while true; do
-        pid.alive $pid || return 0
-        kill -${sig} ${pid} 2>&1 > /dev/null
+        pid.alive "$pid" || return 0
+        kill -${sig} "${pid}" 2>&1 > /dev/null
         delta=$((delta * 2))
         [[ ${delta} -gt 16 ]] && sig="KILL"
         sleep "0.${delta}"
     done
-    pid.alive $pid && { 
+    pid.alive "$pid" && { 
         error "PID ${pid} is miraculously still alive..." 1>&2
         return 1
     }
@@ -9282,7 +9360,7 @@ pid.stop-if-listening-on-port ()
     local port="$1"
     local protocol="${2:-"tcp"}"
     local -a pids
-    pids=($(lsof -i ${protocol}:${port} | grep -v PID | awk '{print $2}'))
+    pids=($(lsof -i "${protocol}":"${port}" | grep -v PID | awk '{print $2}'))
     local pids_string="${pids[*]}"
     if [[ ${#pids[@]} -eq 0 ]]; then
         return 0
@@ -9367,7 +9445,7 @@ EXAMPLES:
     local pattern="$(pids.normalize.search-string "$1")"
     shift
     local func=${1:-"echo"}
-    if [[ -z $(which ${func}) && -z $(type ${func} 2>/dev/null) ]]; then
+    if [[ -z $(which "${func}") && -z $(type "${func}" 2>/dev/null) ]]; then
         errror "Function ${func} does not exist."
         return 1
     fi
@@ -9401,7 +9479,7 @@ EXAMPLES:
 "
         return 0
     fi
-    pattern="$(pids.normalize.search-string ${pattern})"
+    pattern="$(pids.normalize.search-string "${pattern}")"
     pids.matching.regexp "${pattern}"
 }
 
@@ -9467,8 +9545,8 @@ EXAMPLES:
     fi
     for pid in $@
     do
-        if is.numeric ${pid}; then
-            pid.stop ${pid}
+        if is.numeric "${pid}"; then
+            pid.stop "${pid}"
         else
             pids.for-each "${pid}" "pid.stop"
         fi
@@ -9485,7 +9563,7 @@ pids.stop-by-listen-tcp-ports ()
 { 
     for port in "$@"
     do
-        pid.stop-if-listening-on-port ${port}
+        pid.stop-if-listening-on-port "${port}"
     done
 }
 
@@ -9508,7 +9586,7 @@ pstop ()
 ----
 sig.is-valid () 
 { 
-    [[ -n $(kill -l ${1} 2>/dev/null) ]]
+    [[ -n $(kill -l "${1}" 2>/dev/null) ]]
 }
 
 ----
@@ -9605,7 +9683,7 @@ progress.bar.config ()
 ----
 progress.bar.configure.color-green () 
 { 
-    progress.bar.config BarColor=${bldgrn}
+    progress.bar.config BarColor="${bldgrn}"
 }
 
 ----
@@ -9616,7 +9694,7 @@ progress.bar.configure.color-green ()
 ----
 progress.bar.configure.color-red () 
 { 
-    progress.bar.config BarColor=${bldred}
+    progress.bar.config BarColor="${bldred}"
 }
 
 ----
@@ -9627,7 +9705,7 @@ progress.bar.configure.color-red ()
 ----
 progress.bar.configure.color-yellow () 
 { 
-    progress.bar.config BarColor=${bldylw}
+    progress.bar.config BarColor="${bldylw}"
 }
 
 ----
@@ -10179,7 +10257,7 @@ ruby.install-ruby-with-readline-and-openssl ()
         return 1
     }
     shift
-    ruby.install-ruby ${version} openssl readline "$@"
+    ruby.install-ruby "${version}" openssl readline "$@"
 }
 
 ----
@@ -10258,7 +10336,7 @@ ruby.rbenv ()
 { 
     ruby.ensure-rbenv-or-complain || return 1
     if [[ -n "$*" ]]; then
-        rbenv $*
+        rbenv "$*"
     else
         eval "$(rbenv init -)"
     fi
@@ -10296,7 +10374,7 @@ ruby.stop ()
     local -a pids=$(ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | tr '\n' ' -p ')
     h2 "Detected ${#pids[@]} Ruby Processes..., here is the tree:"
     printf "${txtcyn}"
-    pstree ${pids[*]}
+    pstree "${pids[*]}"
     printf "${clr}"
     hr
     printf "To abort, press Ctrl-C. To kill them all press any key.."
@@ -10605,7 +10683,7 @@ run.inspect-variable ()
     local print_value=
     local max_len=120
     local avail_len=$(($(screen.width) - 45))
-    local lcase_var_name="$(echo ${var_name} | tr 'A-Z' 'a-z')"
+    local lcase_var_name="$(echo "${var_name}" | tr 'A-Z' 'a-z')"
     local print_value=1
     local color="${bldblu}"
     local value_off=" ✘   "
@@ -10694,7 +10772,7 @@ run.inspect-variables-that-are ()
 { 
     local pattern_type="${1}"
     local pattern="${2}"
-    run.inspect-variables "VARIABLES $(echo ${pattern_type} | tr 'a-z' 'A-Z') ${pattern}" "$(run.variables-${pattern_type} ${pattern} | tr '\n' ' ')"
+    run.inspect-variables "VARIABLES $(echo "${pattern_type}" | tr 'a-z' 'A-Z') ${pattern}" "$(run.variables-"${pattern_type}" "${pattern}" | tr '\n' ' ')"
 }
 
 ----
@@ -10746,7 +10824,7 @@ run.post-command-with-output ()
     local duration="$1"
     if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
         command-spacer
-        duration ${duration} ${LibRun__LastExitCode}
+        duration "${duration}" ${LibRun__LastExitCode}
     fi
 }
 
@@ -10809,7 +10887,7 @@ run.print-long-command ()
     local command_prompt="${prefix}❯ $(run.dry-run-prefix)"
     local command_width=$((w - 10))
     printf "${prefix}❯ ${bldylw}"
-    printf "${command}" | fold -s -w${w} | awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
+    printf "${command}" | fold -s -w"${w}" | awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
 }
 
 ----
@@ -10820,7 +10898,7 @@ run.print-long-command ()
 ----
 run.print-variable () 
 { 
-    run.inspect-variable $1
+    run.inspect-variable "$1"
 }
 
 ----
@@ -10913,7 +10991,7 @@ run.with.minimum-duration ()
     local now=$(millis)
     local duration=$(((now - started) / 1000))
     if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
-        local cmd="$(echo ${command} | sedx 's/\"//g')"
+        local cmd="$(echo "${command}" | sedx 's/\"//g')"
         error "An operation finished too quickly. The threshold was set to ${bldylw}${min_duration} sec." "The command took ${bldylw}${duration}${txtred} secs." "${bldylw}${cmd}${txtred}"
         ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
     else
@@ -11177,13 +11255,13 @@ set-e-restore ()
         error "You must first save it with the function:s ${bldgrn}set-e-save"
         return 1
     }
-    local status=$(cat ${__bash_set_errexit_status} | tr -d '\n')
+    local status=$(cat "${__bash_set_errexit_status}" | tr -d '\n')
     if [[ ${status} != 'on' && ${status} != 'off' ]]; then
-        error "Invalid data in the set -e tempfile:" "$(cat ${__bash_set_errexit_status})"
+        error "Invalid data in the set -e tempfile:" "$(cat "${__bash_set_errexit_status}")"
         return 1
     fi
-    set -o errexit ${status}
-    rm -f ${__bash_set_errexit_status} 2> /dev/null
+    set -o errexit "${status}"
+    rm -f "${__bash_set_errexit_status}" 2> /dev/null
 }
 
 ----
@@ -11195,8 +11273,8 @@ set-e-restore ()
 set-e-save () 
 { 
     export __bash_set_errexit_status=$(mktemp -t 'errexit')
-    rm -f ${__bash_set_errexit_status} 2> /dev/null
-    set-e-status > ${__bash_set_errexit_status}
+    rm -f "${__bash_set_errexit_status}" 2> /dev/null
+    set-e-status > "${__bash_set_errexit_status}"
 }
 
 ----
@@ -11446,8 +11524,8 @@ shell-set.push-stack ()
 { 
     local value="$1"
     local is_set=${-//[^${value}]/}
-    shell-set.is-set ${value} && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
-    shell-set.is-set ${value} || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
+    shell-set.is-set "${value}" && export SetOptsStack=(${SetOptsStack[@]} "-${value}")
+    shell-set.is-set "${value}" || export SetOptsStack=(${SetOptsStack[@]} "+${value}")
     [[ -n ${BASHMATIC_DEBUG} ]] && shell-set-show
 }
 
@@ -11681,7 +11759,7 @@ decrypt.secrets ()
 ----
 dev.crypt.chef () 
 { 
-    sym -ck APP_CHEF_SYM_KEY $*
+    sym -ck APP_CHEF_SYM_KEY "$*"
 }
 
 ----
@@ -11767,7 +11845,7 @@ dev.encrypt.str ()
 ----
 dev.sym () 
 { 
-    sym -cqk APP_SYM_KEY $*
+    sym -cqk APP_SYM_KEY "$*"
 }
 
 ----
@@ -11889,7 +11967,7 @@ sym.dev.install-shell-helpers ()
     do
         f="${file}"
         [[ ! -f "${f}" ]] && continue
-        [[ -n $(grep sym.symit ${f}) ]] && { 
+        [[ -n $(grep sym.symit "${f}") ]] && { 
             found=${f}
             break
         }
@@ -12014,7 +12092,8 @@ text.ord ()
 ----
 date.now.with-time () 
 { 
-    date '+%F.%T'
+    date '+%F ' | tr -d '\n'
+    time.now.with-ms
 }
 
 ----
@@ -12080,10 +12159,10 @@ time.date-from-epoch ()
 time.duration.humanize () 
 { 
     local seconds=${1}
-    local hours=$((${seconds} / 3600))
-    local remainder=$((${seconds} - ${hours} * 3600))
-    local mins=$((${remainder} / 60))
-    local secs=$((${seconds} - ${hours} * 3600 - ${mins} * 60))
+    local hours=$((seconds / 3600))
+    local remainder=$((seconds - hours * 3600))
+    local mins=$((remainder / 60))
+    local secs=$((seconds - hours * 3600 - mins * 60))
     local prefixed=0
     [[ ${hours} -gt 0 ]] && { 
         printf "%02dh:" ${hours}
@@ -12405,7 +12484,7 @@ url.http-code ()
             return 1
         fi
     else
-        [[ -n "${result}" ]] && printf ${result} || printf "404"
+        [[ -n "${result}" ]] && printf "${result}" || printf "404"
     fi
 }
 
@@ -12559,7 +12638,7 @@ usage-box ()
     if [[ "${EXPIRE_USAGE_CACHE}" -eq 0 && -s "${backup}" ]]; then
         cat "${backup}"
     else
-        .usage.box "$@" | tee ${backup}
+        .usage.box "$@" | tee "${backup}"
     fi
 }
 
@@ -13408,72 +13487,28 @@ watch.set-refresh ()
 
 === Module `video`
 
-==== `video-shrink`
+==== `video.encode`
 
 [source,bash]
 ----
-video-shrink () 
+video.encode () 
 { 
-    [[ -z "$*" ]] && { 
-        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mp4${clr}\n"
-        return 0
-    }
-    for file in "$@"
-    do
-        [[ -s "${file}" ]] || { 
-            warning "Skipping ${file}..."
-            continue
-        }
-        dest="$(.destination-file-name "${file}")"
-        h1 "Compressing \"${file}\"" "To \"${dest}\""
-        video.convert.compress "${file}" "shrinkwrap" "${dest}"
-    done
-}
-
-----
-
-==== `video-squeeze`
-
-[source,bash]
-----
-video-squeeze () 
-{ 
-    [[ -z "$*" ]] && { 
-        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-squeeze *.mp4 *.m4v${clr}\n"
-        return 0
-    }
-    for file in "$@"
-    do
-        [[ -s "${file}" ]] || { 
-            warning "Skipping ${file}..."
-            continue
-        }
-        arrow.blk-on-blu "Compressing \"${file}\""
-        video.convert.compress "${file}"
-    done
-}
-
-----
-
-==== `video.convert.compress`
-
-[source,bash]
-----
-video.convert.compress () 
-{ 
+    set +e
     local file="$1"
     shift
     local algo="${1:-"11"}"
     shift
-    local output="${1:-"${file/\.*/.mkv}"}"
+    local output="${1}"
     shift
-    [[ "${file}" == "${output}" ]] && output="${output/\.*/-converted-${ratio}.mkv}"
+    [[ -z "${output}" ]] && output=$(video.filename.encoded "${file}" "${algo}")
+    output="${output/\.*/\.mkv}"
+    [[ "${file}" == "${output}" ]] && output="${output/.mkv/-converted.mkv}"
     is.an-existing-file "${output}" && { 
         info "File ${output} already exists, making a backup..."
         local t="$(time.now.db | tr -d ' ')"
         local backup_output="$(echo "${output}" | sed "s/\.\(.*\)$/-${t}.\1/g")"
         info "Backing up a name clashing file to ${backup_output}..."
-        run "mv \"${output}\" \"${backup_output}\""
+        mv -v "${output}" "${backup_output}"
     }
     h2 "Starting \"${ffmpeg_binary}\" conversion, source file size is ${bldred}$(file.size.mb "${file}")" " • Source:      [${file}]" " • Destination: [${output}]" " • Algorithm:   [${algo}]"
     video.install.dependencies
@@ -13497,13 +13532,103 @@ video.convert.compress ()
     local reduction=
     local duration=$(time.with-duration.end "${token}")
     if [[ ${before} -lt ${after} ]]; then
-        reduction=$(( 100 * ( after - before ) / before ))
+        reduction=$((100 * (after - before) / before))
         warning "${output} was generated with ${reduction}%% increase in file size" "from ${before} to ${after}" "and took ${duration}"
     else
-        reduction=$(( 100 * ( before - after ) / before ))
+        reduction=$((100 * (before - after) / before))
         success "${output} was generated with ${reduction}%% reduction in file size" "from ${before} to ${after}" "and took ${duration}"
     fi
     return 0
+}
+
+----
+
+==== `video.filename.encoded`
+
+[source,bash]
+----
+video.filename.encoded () 
+{ 
+    local source="$1"
+    local algo="${2:-"compressed"}"
+    local dest
+    dest="$(echo "${source}" | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | sed -E 's/\.(.*)$/-'"${algo}"'.\1/g' | tr -d ' ')"
+    printf -- "%s" "${dest}"
+}
+
+----
+
+==== `video.install.dependencies`
+
+[source,bash]
+----
+video.install.dependencies () 
+{ 
+    brew.cache-reset
+    run.set-all verbose-on show-output-on
+    set +e
+    for package in "${required_packages[@]}"
+    do
+        brew.package.is-installed "${package}" > /dev/null || brew.install.package "${package}"
+    done
+    command -v ffmpeg > /dev/null || brew.install.package ffmpeg
+    command -v npm > /dev/null || brew.install.package node
+    command -v ffmpeg-bar > /dev/null || run "npm install -g ffmpeg-progressbar-cli"
+    if ( command -v ffmpeg-bar > /dev/null ); then
+        export ffmpeg_binary="ffmpeg-bar"
+    else
+        export ffmpeg_binary="ffmpeg-y -loglevel error -stats "
+    fi
+    printf "%s" "${ffmpeg_binary}"
+    return 0
+}
+
+----
+
+==== `video.shrink`
+
+[source,bash]
+----
+video.shrink () 
+{ 
+    [[ -z "$*" ]] && { 
+        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mp4${clr}\n"
+        return 0
+    }
+    for file in "$@"
+    do
+        [[ -s "${file}" ]] || { 
+            warning "File ${file} does not exist..."
+            continue
+        }
+        dest="$(.destination-file-name "${file}")"
+        h1 "Compressing \"${file}\"" "To \"${dest}\""
+        video.encode "${file}" "shrinkwrap" "${dest}"
+    done
+}
+
+----
+
+==== `video.squeeze`
+
+[source,bash]
+----
+video.squeeze () 
+{ 
+    [[ -z "$*" ]] && { 
+        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-squeeze *.mp4 *.m4v${clr}\n"
+        return 0
+    }
+    for file in "$@"
+    do
+        [[ -s "${file}" ]] || { 
+            warning "Skipping ${file}..."
+            continue
+        }
+        dest="$(.destination-file-name "${file}")"
+        arrow.blk-on-blu "Compressing \"${file}\""
+        video.encode "${file}" "11" "${dest}"
+    done
 }
 
 ----
@@ -13545,8 +13670,8 @@ vim.gvim-off ()
     local regex_to='export EDITOR=vim'
     file.gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
     file.gsub "${LibVim__initFile}" '^gvim.on$' 'gvim.off'
-    ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
-    ${GrepCommand} -q "^gvim\.o" ${LibVim__initFile} || echo "gvim.off" >> ${LibVim__initFile}
+    ${GrepCommand} -q "${regex_from}" "${LibVim__initFile}" || echo "${regex_to}" >> "${LibVim__initFile}"
+    ${GrepCommand} -q "^gvim\.o" "${LibVim__initFile}" || echo "gvim.off" >> "${LibVim__initFile}"
     eval "
     [[ -n '${BASHMATIC_DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOff}
@@ -13569,8 +13694,8 @@ vim.gvim-on ()
     local regex_to='export EDITOR=gvim'
     file.gsub "${LibVim__initFile}" "${regex_from}" "${regex_to}"
     file.gsub "${LibVim__initFile}" '^gvim.off$' 'gvim.on'
-    ${GrepCommand} -q "${regex_from}" ${LibVim__initFile} || echo "${regex_to}" >> ${LibVim__initFile}
-    ${GrepCommand} -q "^gvim\.o.*" ${LibVim__initFile} || echo "gvim.on" >> ${LibVim__initFile}
+    ${GrepCommand} -q "${regex_from}" "${LibVim__initFile}" || echo "${regex_to}" >> "${LibVim__initFile}"
+    ${GrepCommand} -q "^gvim\.o.*" "${LibVim__initFile}" || echo "gvim.on" >> "${LibVim__initFile}"
     eval "
     [[ -n '${BASHMATIC_DEBUG}' ]] && set -x
     export EDITOR=${LibVim__editorGvimOn}
@@ -13635,8 +13760,8 @@ yaml.diff ()
         return 1
     }
     [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
-    local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
-    local t2="/tmp/${RANDOM}.$(basename ${f2}).$$.yml"
+    local t1="/tmp/${RANDOM}.$(basename "${f1}").$$.yml"
+    local t2="/tmp/${RANDOM}.$(basename "${f2}").$$.yml"
     yaml.expand-aliases "$f1" > "$t1"
     yaml.expand-aliases "$f2" > "$t2"
     run.set-next show-output-on
@@ -13661,7 +13786,7 @@ yaml.dump ()
         return 1
     }
     [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
-    local t1="/tmp/${RANDOM}.$(basename ${f1}).$$.yml"
+    local t1="/tmp/${RANDOM}.$(basename "${f1}").$$.yml"
     yaml.expand-aliases "$f1" > "$t1"
     vim "$t1"
     run "rm -rf ${t1}"
