@@ -15,17 +15,25 @@ source lib/util.sh
 
 set -e
 
+export git_skip=skip
+if [[ -n $(git tag -l 2>/dev/null) ]]; then
+  export git_skip=
+fi
+
 @test "git.repo.latest-local-tag regex" {
+  ${git_skip}
   tag=$(git.repo.latest-local-tag)
   [[ ${tag} =~ ^v[0-9]+.[0-9]+.[0-9]+$  ]] 
 }
 
 @test "git.repo.next-local-tag regex" {
+  ${git_skip}
   ntag=$(git.repo.next-local-tag)
   [[ ${ntag} =~ ^v[0-9]+.[0-9]+.[0-9]+$  ]] 
 }
 
 @test "git.repo.next-local-tag increment" {
+  ${git_skip}
   otag=$(git.repo.latest-local-tag)
   ntag=$(git.repo.next-local-tag)
   over=$(util.ver-to-i ${otag}) 
@@ -56,6 +64,7 @@ set -e
 
 
 @test "git.repo-is-clean() when clean" {
+  ${git_skip}
   if [[ -n $CI ]]; then
     git.config.kigster 2>/dev/null
     pwd=$(pwd)

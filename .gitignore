@@ -8,7 +8,6 @@
 .idea/
 .last-rebase
 .ruby-version
-/Gemfile.lock
 /test/tmp/
 /test/version_tmp/
 /tmp/
