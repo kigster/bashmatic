@@ -17,21 +17,15 @@
 #    $ encrypt word
 #    
 
-FROM ubuntu:20.10
+FROM ruby:3.1.2-slim
 
 RUN apt-get update -y && \
     apt-get install -yqq \
     build-essential \
-    git \
-    ruby \
-    python3-pip
-
+    git
 
 ENV TERM=xterm-256color \
     BASHMATIC_HOME=/app/bashmatic \
-    LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
     USER=root \
     HOME=/root \
     DEBIAN_FRONTEND=noninteractive \
@@ -53,6 +47,9 @@ RUN apt-get update -y && apt-get install -yqq \
     fish \
     rbenv \
     sudo
+
+RUN apt-get install -yqq \
+    python3-pip
 
 ENV SHELL_INIT="${HOME}/.bashrc"
 
@@ -85,4 +82,8 @@ RUN rm -f ~/.zshrc && \
 RUN sed -i'' -E 's/robbyrussell/agnoster/g' ${HOME}/.zshrc
 RUN echo system > .ruby-version
 
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+
 ENTRYPOINT /bin/bash -l
+

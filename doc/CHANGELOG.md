@@ -1,5 +1,9 @@
 # Changelog
 
+## [v3.0.0](https://github.com/kigster/bashmatic/tree/v3.0.0) (2022-05-03)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v2.7.2...v3.0.0)
+
 ## [v2.7.2](https://github.com/kigster/bashmatic/tree/v2.7.2) (2022-05-03)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.7.0...v2.7.2)
@@ -10,6 +14,7 @@
 
 **Merged pull requests:**
 
+- Adding documentaion to is.sh; verison 2.7.2 [\#98](https://github.com/kigster/bashmatic/pull/98) ([kigster](https://github.com/kigster))
 - Various tweaks for the installation [\#97](https://github.com/kigster/bashmatic/pull/97) ([kigster](https://github.com/kigster))
 - Fixes to video functions [\#96](https://github.com/kigster/bashmatic/pull/96) ([kigster](https://github.com/kigster))
 - Various new helpers and improvements [\#94](https://github.com/kigster/bashmatic/pull/94) ([kigster](https://github.com/kigster))

@@ -89,12 +89,11 @@ function node.install.pin.version() {
 }
 
 function nvm.activate() {
+  is.an-existing-file .nvmrc && { 
+    export node_version=$(cat .nvmrc | tr -d 'v')
+    info "Detected node version ${node_version}"  
+  } 
   nvm.load
 }
 
-declare node_version
-
-is.an-existing-file .nvmrc && { 
-  export node_version=$(cat .nvmrc | tr -d 'v')
-} 
 

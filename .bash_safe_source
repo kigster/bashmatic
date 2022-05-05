@@ -5,26 +5,33 @@
 
 set +e
 
-((DEBUG + __debug + debug)) && BASHMATIC_DEBUG=1
+function is-debug() {
+  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]] 
+}
+
+is-debug && BASHMATIC_DEBUG=1
+is-debug || unset BASHMATIC_DEBUG
 
 function source_if_exists() {
   local errors=0
+  local files="${#@}"
   for file in "$@"; do
     if [[ -s "${file}" ]]; then
-      ((BASHMATIC_DEBUG)) && printf "[debug] ——> ${bldgrn}%-60.60s${clr}" "${file}"
+      is-debug && printf "[debug] ——> ${bldgrn}%-60.60s${clr}" "${file}"
       source "${file}"
       local code=$?
 
       if ((code)); then
-        if ((BASHMATIC_DEBUG)); then
+        if is-debug; then
           printf " (exit code: ${code} [ 💣 ])\n"
           code=$((code + 1))
+          errors=$((errors + 1))
         else
           code=$((code + 1))
           echo "WARNING: sourced file ${file} returned non-zero code ${code}" >&2
         fi
       else
-        if ((BASHMATIC_DEBUG)); then
+        if is-debug; then
           printf " (${bldgrn}[  ✔︎ ]${clr})\n"
         fi
       fi
@@ -32,6 +39,9 @@ function source_if_exists() {
       echo "WARNING: sourced file ${file} does not exist" >&2
     fi
   done
+
+  is-debug && echo "source_if_exists: attempted to source ${files} files, ${errors} returned errors."
+  
   return ${code}
 }
 

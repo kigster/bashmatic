@@ -3,13 +3,11 @@
 .bats-*
 .bundle
 .bundle/
-.developer-warned
 .envrc.local
 .fonts/
 .idea/
 .last-rebase
 .ruby-version
-/Gemfile.lock
 /test/tmp/
 /test/version_tmp/
 /tmp/
@@ -30,3 +28,5 @@ doc/USAGE.adoc
 .history
 .vscode/*.log
 .ruby-version
+.last-loaded
+.developer-warned

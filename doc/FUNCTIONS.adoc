@@ -1229,6 +1229,32 @@ bashmatic.current-os ()
 
 ----
 
+==== `bashmatic.debug-off`
+
+[source,bash]
+----
+bashmatic.debug-off () 
+{ 
+    unset DEBUG
+    unset BASHMATIC_DEBUG
+    unset BASHMATIC_PATH_DEBUG
+}
+
+----
+
+==== `bashmatic.debug-on`
+
+[source,bash]
+----
+bashmatic.debug-on () 
+{ 
+    export DEBUG=1
+    export BASHMATIC_DEBUG=1
+    export BASHMATIC_PATH_DEBUG=1
+}
+
+----
+
 ==== `bashmatic.functions`
 
 [source,bash]
@@ -1319,7 +1345,7 @@ bashmatic.load-at-login ()
 ----
 bashmatic.reload () 
 { 
-    bashmatic.set-is-not-loaded
+    __bashmatic.set-is-not-loaded
     source "${BASHMATIC_HOME}/.envrc.no-debug"
     source "${BASHMATIC_INIT}"
 }
@@ -1332,9 +1358,24 @@ bashmatic.reload ()
 ----
 bashmatic.reload-debug () 
 { 
-    bashmatic.set-is-not-loaded
+    __bashmatic.set-is-not-loaded
     source "${BASHMATIC_HOME}/.envrc.debug"
     source "${BASHMATIC_INIT}"
+}
+
+----
+
+==== `bashmatic.reset.cache`
+
+[source,bash]
+----
+bashmatic.reset.cache () 
+{ 
+    unset load_cache
+    bashmatic.bash.version-four-or-later && { 
+        declare -g -A load_cache=()
+    }
+    rm -f "${__bashmatic_library_last_sourced}"
 }
 
 ----
@@ -1351,10 +1392,9 @@ bashmatic.setup ()
         .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
         return 1
     fi
-    bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh
-    bashmatic.source is.sh output-boxes.sh user.sh
+    declare -a preload_modules=(time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh is.sh user.sh util.sh git.sh file.sh color.sh brew.sh)
+    bashmatic.source "${preload_modules[@]}"
     bashmatic.shell-check || return 1
-    bashmatic.source util.sh git.sh file.sh color.sh brew.sh
     bashmatic.source-dir "${BASHMATIC_LIBDIR}"
     output.unconstrain-screen-width
     [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update 1>&2 2> /dev/null
@@ -1388,16 +1428,57 @@ bashmatic.source ()
 { 
     local __path="${BASHMATIC_LIBDIR}"
     local file
+    local total=0
+    local files=0
+    local last_loaded_at=0
+    [[ -f ${__bashmatic_library_last_sourced} ]] && last_loaded_at=$(cat "${__bashmatic_library_last_sourced}")
     for file in "${@}"
     do
+        local t1=$(millis)
         [[ "${file}" =~ "/" ]] || file="${__path}/${file}"
+        bashmatic.bash.version-four-or-later && { 
+            local cached_at=${load_cache[${file}]}
+            cached_at=${cached_at:-0}
+            local modified_at="$(file.last-modified-millis "${file}")"
+            [[ ${modified_at} -le ${cached_at} && ${modified_at} -le ${last_loaded_at} ]] && { 
+                is-debug && printf -- "${bldred} (cached)    ${txtgrn} ▶︎ %s${clr}\n" "${file/\/*\//}"
+                continue
+            }
+        }
         [[ -s "${file}" ]] || { 
             .err "Can't source file ${file} — fils is invalid."
             return 1
         }
-        [[ -n ${SOURCE_DEBUG} || ${DEBUG} -eq 1 ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" 1>&2
-        source "${file}"
+        if [[ -n ${SOURCE_DEBUG} || ${DEBUG} -eq 1 ]]; then
+            is-debug && printf -- "             ${txtylw} ▶︎ %s${clr}" "${file/\/*\//}"
+            source "${file}" > /dev/null
+            is-debug && { 
+                cursor.rewind -120
+                local code=$?
+                local t2=$(millis)
+                local duration=$(( t2 - t1 ))
+                total=$(( total + duration ))
+                files=$(( files + 1 ))
+            }
+            bashmatic.bash.version-four-or-later && { 
+                ((code)) || load_cache[${file}]=${t1}
+            }
+            is-debug && { 
+                local color=${txtblu}
+                [[ ${duration} -gt 20 ]] && color="${bldred}"
+                printf "${color}${duration}ms [%3d]" "${code}"
+                printf "\n"
+                unset t1
+                unset t2
+            }
+        else
+            source "${file}"
+        fi
     done
+    bashmatic.bash.version-four-or-later && { 
+        [[ ${#load_cache[@]} -gt 0 ]] && millis > "${__bashmatic_library_last_sourced}"
+    }
+    is-debug && printf "${files} sourced in, taking ${total}ms total.\n"
     return 0
 }
 
@@ -1419,12 +1500,15 @@ bashmatic.source-dir ()
         .err "No files were returned from files.map in " "\n  ${bldylw}${folder}"
         return 1
     fi
+    local -a sources=()
     for file in "${files[@]}"
     do
         local n="$(basename "${file}")"
         [[ ${n:0:1} == . ]] && continue
-        bashmatic.source "${file}" && loaded=true
+        sources+=("${file}")
     done
+    bashmatic.source "${sources[@]}"
+    loaded=true
     unset files
     ${loaded} || { 
         .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIBDIR}"
@@ -4224,6 +4308,17 @@ file.last-modified-date ()
 
 ----
 
+==== `file.last-modified-millis`
+
+[source,bash]
+----
+file.last-modified-millis () 
+{ 
+    echo -n "$(/usr/bin/stat -f %m "$1")000"
+}
+
+----
+
 ==== `file.last-modified-year`
 
 [source,bash]
@@ -5355,7 +5450,7 @@ git.sync ()
         cd "${dir}" > /dev/null
         return 1
     }
-    if ((BASHMATIC_DEBUG)); then
+    if is-debug; then
         git.update-repo-if-needed
     else
         git.update-repo-if-needed 1>&2 > /dev/null
@@ -6325,6 +6420,10 @@ node.install.pin.version ()
 ----
 nvm.activate () 
 { 
+    is.an-existing-file .nvmrc && { 
+        export node_version=$(cat .nvmrc | tr -d 'v')
+        info "Detected node version ${node_version}"
+    }
     nvm.load
 }
 
@@ -12686,7 +12785,7 @@ usage-widget ()
     }
     ((cache_wipe)) && rm -f "$(.usage-cache-file)"
     local -a args=("$@")
-    ((BASHMATIC_DEBUG)) && { 
+    is-debug && { 
         h1 "Got total of ${#args[@]} arguments."
     }
     local -a details

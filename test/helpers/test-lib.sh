@@ -312,7 +312,7 @@ export flag_file_count_failed=0
 export flag_keep_going_on_error=0
 export flag_bats_args="-p"
 export flag_bats_reinstall=0
-export flag_parallel_tests=0
+export flag_parallel_tests=1
 
 function specs.parse-opts() {
   trap 'printf "\n\n\n${bldred}Ctrl-C detected, aborting tests.${clr}\n\n"; exit 1' SIGINT
@@ -333,10 +333,9 @@ function specs.parse-opts() {
       shift
       export flag_bats_reinstall=1
       ;;
-    -p | --parallel)
+    -P | --no-parallel)
       shift
-      export flag_parallel_tests=1
-      export flag_bats_args="-p"
+      export flag_parallel_tests=0
       ;;
     -t | --taps)
       shift
@@ -409,8 +408,7 @@ function specs.usage() {
   hr
   echo
   printf "${bldylw}OPTIONS\n${txtpur}"
-  printf "    -p | --parallel         Runs all tests in parallel using ${bldylw}parallel${txtpur} dependency.\n"
-  printf "                            This may speed up your test suite by 2-3x\n\n"
+  printf "    -P | --no-parallel      Runs all tests sequentially instead of ${bldylw}parallel${txtpur}.\n"
   printf "    -i | --install METHOD   Install Bats using the provided methjod.\n"
   printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtpur}\n\n"
   printf "    -r | --reinstall        Reinstall Bats framework before running\n"

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+
+function is-debug() {
+  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]] 
+}
+
 [[ -z ${BASHMATIC_HOME} ]] && {
   [[ -d ~/.bashmatic ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
 }
@@ -21,9 +26,9 @@ if [[ ! -f "${BASHMATIC_HOME}/.bash_safe_source" ]]; then
       if [[ -s "${file}" ]]; then
         source "${file}"
         local code=$?
-        ((BASHMATIC_DEBUG)) && printf "[debug] loading file: [${bldgrn}%40.40s${clr}]"
+        is-debug && printf "[debug] loading file: [${bldgrn}%40.40s${clr}]"
         if ((code)); then
-          if ((BASHMATIC_DEBUG)); then
+          if is-debug; then
             printf " (exit code: ${code} [ 💣 ])\n"
           else
             echo "WARNING: sourced file ${file} returned non-zero code ${code}" >&2

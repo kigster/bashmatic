@@ -1,7 +1,7 @@
 #!/usr/local/bin/env bash
 # vim: ft=bash
 
-source "${BASHMATIC_LIBDIR}/file-helpers.sh"
+source "${BASHMATIC_HOME}/lib/file-helpers.sh"
 
 # @description Creates a temporary file and returns it as STDOUT
 # shellcheck disable=SC2120
@@ -187,6 +187,10 @@ file.last-modified-date() {
 
 file.last-modified-year() {
   stat -f "%Sm" -t "%Y" "$1"
+}
+
+file.last-modified-millis() { 
+  echo -n "$(/usr/bin/stat -f %m "$1")000"
 }
 
 # Return one field of stat -s call on a given file.

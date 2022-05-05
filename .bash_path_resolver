@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 
+function is-debug() {
+  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]] 
+}
+
 function bashmatic.path.resolver() {
  export PATH="/usr/local/bin:/usr/bin:/bin:/sbin:${PATH}"
 
@@ -32,10 +36,10 @@ function bashmatic.path.resolver() {
 
  [[ -n "${BASHMATIC_HOME}" && -d "${BASHMATIC_HOME}" && -f "${BASHMATIC_HOME}/init.sh" ]] || {
    if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
-     ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
+     is-debug && printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
      BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
    elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
-     ((BASHMATIC_DEBUG)) && printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
+     is-debug && printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
      BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
    else
      printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
