@@ -3,7 +3,6 @@
 .bats-*
 .bundle
 .bundle/
-.developer-warned
 .envrc.local
 .fonts/
 .idea/
@@ -30,3 +29,5 @@ doc/USAGE.adoc
 .history
 .vscode/*.log
 .ruby-version
+.last-loaded
+.developer-warned

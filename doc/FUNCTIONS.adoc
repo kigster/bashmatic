@@ -1319,7 +1319,7 @@ bashmatic.load-at-login ()
 ----
 bashmatic.reload () 
 { 
-    bashmatic.set-is-not-loaded
+    __bashmatic.set-is-not-loaded
     source "${BASHMATIC_HOME}/.envrc.no-debug"
     source "${BASHMATIC_INIT}"
 }
@@ -1332,7 +1332,7 @@ bashmatic.reload ()
 ----
 bashmatic.reload-debug () 
 { 
-    bashmatic.set-is-not-loaded
+    __bashmatic.set-is-not-loaded
     source "${BASHMATIC_HOME}/.envrc.debug"
     source "${BASHMATIC_INIT}"
 }
@@ -5355,7 +5355,7 @@ git.sync ()
         cd "${dir}" > /dev/null
         return 1
     }
-    if ((BASHMATIC_DEBUG)); then
+    if is-debug; then
         git.update-repo-if-needed
     else
         git.update-repo-if-needed 1>&2 > /dev/null
@@ -12686,7 +12686,7 @@ usage-widget ()
     }
     ((cache_wipe)) && rm -f "$(.usage-cache-file)"
     local -a args=("$@")
-    ((BASHMATIC_DEBUG)) && { 
+    is-debug && { 
         h1 "Got total of ${#args[@]} arguments."
     }
     local -a details

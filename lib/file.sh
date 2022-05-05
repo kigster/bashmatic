@@ -189,6 +189,10 @@ file.last-modified-year() {
   stat -f "%Sm" -t "%Y" "$1"
 }
 
+file.last-modified-millis() { 
+  echo -n "$(/usr/bin/stat -f %m "$1")000"
+}
+
 # Return one field of stat -s call on a given file.
 file.stat() {
   local file="$1"

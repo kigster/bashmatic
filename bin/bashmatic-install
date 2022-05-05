@@ -323,7 +323,8 @@ function .install.os-requirements() {
 # Main Body
 #——————————————————————————————————————————————————————————————————————————————————————
 
-export BASHMATIC_DEBUG=0
+unset BASHMATIC_DEBUG
+
 export bootstrap__skip_git_check=0
 export bootstrap__skip_install=0
 export bootstrap__verbose=0
@@ -339,7 +340,7 @@ export bootstrap__git_method="https"
 export bootstrap__git_branch="master"
 
 function is-debug() {
-  ((BASHMATIC_DEBUG))
+  ((BASHMASTIC_DEBUG))
 }
 
 function is-verbose() {
@@ -448,6 +449,7 @@ function .install.parse-opts() {
       ;;
     -d | --debug)
       shift
+      export DEBUG=1
       export BASHMATIC_DEBUG=1
       export BASHMATIC_PATH_DEBUG=1
       ;;
@@ -652,12 +654,10 @@ set +e
 # source bin/bashmatic-install init
 if [[ ${current_shell} =~ "bash" ]] && [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
   echo >/dev/null
-elif [[ ${current_shell} =~ "zsh" ]] && [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]]
-  bashmatic-install "$@"
-then
+elif [[ ${current_shell} =~ "zsh" ]] && [[ -n ${ZSH_EVAL_CONEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]]; then
   echo >/dev/null
 else
-  bashmatic-install "$@"
+  .install.bashmatic-install "$@"
 fi
 
 

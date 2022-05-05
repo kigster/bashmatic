@@ -6,42 +6,57 @@
 # True if .envrc.local file is present. We take it as a sign
 # you may be developing bashmatic.
 
-__bashmatic_warning_notification=${HOME}/.bashmatic/.developer-warned
+export __bashmatic_warning_notification=${BASHMATIC_HOME}/.developer-warned
+export __bashmatic_library_last_sourced=${BASHMATIC_HOME}/.last-loaded
 
-bashmatic.cd-into() {
+[[ -n $(type millis 2>/dev/null) ]] || source "${BASHMATIC_HOME}"/lib/time.sh
+[[ -n $(type file.last-modified-millis 2>/dev/null) ]] || source "${BASHMATIC_HOME}"/lib/file.sh
+
+function bashmatic.cd-into() {
  [[ -d ${BASHMATIC_HOME} ]] || return 1
  cd "${BASHMATIC_HOME}" || exit 1
 }
 
-bashmatic.current-os() {
+function bashmatic.current-os() {
   export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
   printf "%s" "${AppCurrentOS}"
 }
 
-
 # @descripion True if .envrc.local file is present. We take it as a sign
 #             you may be developing bashmatic.
-bashmatic.is-developer() {
+function bashmatic.is-developer() {
   [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
 }
 
-bashmatic.reload() {
-  bashmatic.set-is-not-loaded
+function bashmatic.debug-on() {
+  export DEBUG=1
+  export BASHMATIC_DEBUG=1
+  export BASHMATIC_PATH_DEBUG=1
+}
+
+function bashmatic.debug-off() {
+  unset DEBUG
+  unset BASHMATIC_DEBUG
+  unset BASHMATIC_PATH_DEBUG
+}
+
+function bashmatic.reload() {
+  __bashmatic.set-is-not-loaded
   source "${BASHMATIC_HOME}/.envrc.no-debug"
   source "${BASHMATIC_INIT}"
 }
 
-bashmatic.reload-debug() {
-  bashmatic.set-is-not-loaded
+function bashmatic.reload-debug() {
+  __bashmatic.set-is-not-loaded
   source "${BASHMATIC_HOME}/.envrc.debug"
   source "${BASHMATIC_INIT}"
 }
 
-bashmatic.version() {
+function bashmatic.version() {
   cat "$(dirname "${BASHMATIC_INIT}")/.version"
 }
 
-bashmatic.load-at-login() {
+function bashmatic.load-at-login() {
   local file="${1}"
   [[ -z ${file} ]] && file="$(user.login-shell-init-file)"
 
@@ -56,7 +71,7 @@ bashmatic.load-at-login() {
   }
 }
 
-bashmatic.functions-from() {
+function bashmatic.functions-from() {
   local pattern="${1}"
 
   [[ -n ${pattern} ]] && shift
@@ -85,15 +100,15 @@ bashmatic.functions-from() {
 }
 
 # pass number of columns to print, default is 2
-bashmatic.functions() {
+function bashmatic.functions() {
   bashmatic.functions-from '*.sh' "$@"
 }
 
-bashmatic.functions.output() {
+function bashmatic.functions.output() {
   bashmatic.functions-from 'output.sh' "$@"
 }
 
-bashmatic.functions.runtime() {
+function bashmatic.functions.runtime() {
   bashmatic.functions-from 'run*.sh' "$@"
 }
 
@@ -110,22 +125,91 @@ function bashmatic.bash.exit-unless-version-four-or-later() {
   bashmatic.bash.version-four-or-later || {
     error "Sorry, this functionality requires BASH version 4 or later."
     exit 1 >/dev/null
+  } 
+}
+
+function __rnd() {
+  echo -n $(( (1009 * RANDOM) % 44311 + (917 * RANDOM) % 34411 ))
+}
+
+bashmatic.bash.version-four-or-later && {
+  [[ ${#load_cache[@]} -gt 0 ]] || {
+    declare -g -A load_cache=()
   }
 }
 
+function bashmatic.reset.cache() {
+  unset load_cache
+  bashmatic.bash.version-four-or-later && {
+    declare -g -A load_cache=()
+  }
+  rm -f "${__bashmatic_library_last_sourced}"
+}
 
-bashmatic.source() {
+function bashmatic.source() {
   local __path="${BASHMATIC_LIBDIR}"
   local file
+  local total=0
+  local files=0
+
+  local last_loaded_at=0
+  [[ -f ${__bashmatic_library_last_sourced} ]] && last_loaded_at=$(cat "${__bashmatic_library_last_sourced}")
+
   for file in "${@}"; do
+    local t1=$(millis)
+
     [[ "${file}" =~ "/" ]] || file="${__path}/${file}"
+    
+    bashmatic.bash.version-four-or-later && {
+      local cached_at=${load_cache[${file}]}
+      cached_at=${cached_at:-0}
+      local modified_at="$(file.last-modified-millis "${file}")"
+      [[ ${modified_at} -le ${cached_at} && ${modified_at} -le ${last_loaded_at} ]] && {
+        is-debug && printf -- "${bldred} (cached)    ${txtgrn} ▶︎ %s${clr}\n" "${file/\/*\//}"     
+        continue
+      }
+    }
+
     [[ -s "${file}" ]] || {
       .err "Can't source file ${file} — fils is invalid."
       return 1
     }
-    [[ -n ${SOURCE_DEBUG} || ${DEBUG} -eq 1 ]] && printf "${txtred}[source] ${bldylw}${file}${clr}...\n" >&2
-    source "${file}"
+
+    if [[ -n ${SOURCE_DEBUG} || ${DEBUG} -eq 1 ]]; then
+      is-debug && printf -- "             ${txtylw} ▶︎ %s${clr}" "${file/\/*\//}"     
+      source "${file}" >/dev/null
+      is-debug && {
+        cursor.rewind -120
+        local code=$?
+        local t2=$(millis)
+        local duration=$(( t2 - t1 ))
+        total=$(( total + duration ))
+        files=$(( files + 1 ))
+      }
+
+      bashmatic.bash.version-four-or-later && {
+        ((code)) || load_cache[${file}]=${t1}
+      }
+
+      is-debug && {
+        local color=${txtblu}
+        [[ ${duration} -gt 20 ]] && color="${bldred}"
+        printf "${color}${duration}ms [%3d]" "${code}"
+        printf "\n"
+        unset t1 
+        unset t2
+      }
+    else
+      source "${file}"
+    fi
   done
+
+  bashmatic.bash.version-four-or-later && {
+    # save the current timestamp into the cache marker
+    [[ ${#load_cache[@]} -gt 0 ]] && millis > "${__bashmatic_library_last_sourced}"
+  }
+
+  is-debug && printf "${files} sourced in, taking ${total}ms total.\n"
   return 0
 }
 
@@ -135,7 +219,7 @@ bashmatic.source() {
   printf "${bldred}  ERROR:\n${txtred}  $*%s\n" "" >&2
 }
 
-bashmatic.source-dir() {
+function bashmatic.source-dir() {
   local folder="${1}"
   local loaded=false
   local file
@@ -149,12 +233,16 @@ bashmatic.source-dir() {
     return 1
   fi
 
+  local -a sources=()
   for file in "${files[@]}"; do
     local n="$(basename "${file}")"
     [[ ${n:0:1} == . ]] && continue
 
-    bashmatic.source "${file}" && loaded=true
+    sources+=("${file}")
   done
+
+  bashmatic.source "${sources[@]}"
+  loaded=true
 
   unset files
 
@@ -181,7 +269,7 @@ function bashmatic.shell-check() {
   fi
 }
 
-bashmatic.setup() {
+function bashmatic.setup() {
   [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] &&
     export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
 
@@ -193,10 +281,23 @@ bashmatic.setup() {
     return 1
   fi
 
-  bashmatic.source time.sh output.sh output-utils.sh output-repeat-char.sh 
-  bashmatic.source is.sh output-boxes.sh user.sh
+  declare -a preload_modules=(
+    time.sh 
+    output.sh 
+    output-utils.sh 
+    output-repeat-char.sh 
+    output-boxes.sh 
+    is.sh 
+    user.sh 
+    util.sh 
+    git.sh 
+    file.sh 
+    color.sh 
+    brew.sh
+  )
+
+  bashmatic.source "${preload_modules[@]}"
   bashmatic.shell-check || return 1
-  bashmatic.source util.sh git.sh file.sh color.sh brew.sh
   bashmatic.source-dir "${BASHMATIC_LIBDIR}"
 
   output.unconstrain-screen-width
