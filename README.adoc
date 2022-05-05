@@ -1,7 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
 // vim: ft=asciidoc
-:author: Version v2.7.2
+:author: Version v3.0.0
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -35,15 +35,16 @@ icon:arrow-circle-down[3x, color="purple"]
 
 [source,bash]
 ----
+# An example of a DSL-like function 
 function bashmatic.auto-update() {
-  local dir
-  dir=${1:-${BASHMATIC_HOME}}
+  local dir="${1:-"${BASHMATIC_HOME"}}"
   is.a-directory "${dir}" && {
     file.exists-and-newer-than "${dir}/.last-update" 30 && return 0
-
-    ( cd ${BASHMATIC_HOME} && \
+    ( 
+      cd ${BASHMATIC_HOME} && \
       git.is-it-time-to-update && \
-      git.sync-remote )
+      git.sync-remote 
+    )
   }
 }
 
@@ -57,16 +58,16 @@ Final note, - once Bashmatic is installed and loaded by your shell init files, y
 
 _Bashmatic®_ offers a huge range of ever-growing helper functions for running commands, auto-retrying, repeatable, runtime-measuring execution framework with the key function `run`. There are helpers for every occasion, from drawing boxes, lines, headers, to showing progress bars, getting user input, installing packages, and much more.
 
-NOTE: A good portion of the helpers within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specifc functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
+NOTE: A good portion of the helpers within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specific functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
 
 Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[functions index page].
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* :) 
 
 
-[CAUTION]
+[TIP]
 ====
-You can also download the **https://github.com/kigster/bashmatic/blob/master/README.pdf[PDF version of this document]** which is better for print. 
+We suggest that you learn about Bashmatic from the **https://github.com/kigster/bashmatic/blob/master/README.pdf[PDF version of this document]** which is much better for print. 
 
 * We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/master/doc/USAGE.md[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/master/doc/USAGE.pdf[PDF] version.
 
@@ -81,7 +82,7 @@ You can also download the **https://github.com/kigster/bashmatic/blob/master/REA
 * BASH version 3 (partial compatibility, some functions are disabled)
 * ZSH – as of recent update, Bashmatic is almost 90% compatible with ZSH.   
 
-**Not  Supported**
+**Not Currently Supported**
 
 * FISH (although you could use Bashmatic via `bin/bashmatic` script helper, or its executables)
 
@@ -90,6 +91,7 @@ You can also download the **https://github.com/kigster/bashmatic/blob/master/REA
 This project was born out of a simple realization made by several very senior and highly experienced engineers, that:
 
 * It is often easier to use BASH for writing things like universal *installers*, a.k.a. *setup scripts*, *uploaders*, wrappers for all sorts of functionality, such as *NPM*, *rbenv*, installing gems, rubies, using AWS, deploying code, etc.
+
 * BASH function's return values lend themselves nicely to a compact DSL (https://en.wikipedia.org/wiki/Domain-specific_language[domain specific language]) where multiple functions can be chained by logical AND `&&` and OR `||` to provide a very compact execution logic. Most importantly, we think that this logic is *extremely easy to read and understand.*
 
 Despite the above points, it is also generally accepted that:
@@ -106,25 +108,44 @@ Perhaps the easiest way to install _Bashmatic®_ is using `curl` as shown below.
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
 
+=== 1. Automated Install
+
+icon:arrow-down[3x, color="yellow"]
+
 [source,bash]
 ----
-# -q stands for "quiet"; use -v for "verbose", or -h for help.
 bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
 ----
 
-TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo.
+icon:arrow-up[3x, color="yellow"]
 
-Here is a small variation:
+Where: 
+
+* -q stands for "quiet"; 
+* -v for "verbose"
+
+TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo. We use this URL so that we retain the ability to redirect the installation to a different script in the future, if need be.
+
+=== 2. Automated Install, More Explicit
+
+If you prefer to be able to examine the script before executing code piped straight off the Internet, I don't blame you. You are cautious and smart. 
+
+For folks like you, here is a slightly more secure way of doing the same thing:
 
 [source,bash]
 ----
-export install="/tmp/install"
-curl -fsSL https://bashmatic.re1.re > "${install}"
-chmod 755 "${install}
-${install} [ --help | --quiet | --verbose | .... ]
+export script="/tmp/install"
+curl -fsSL https://bashmatic.re1.re > /tmp/install
+chmod 755  /tmp/install
+
+# At this point you can examine /tmp/install
+/tmp/install --help
+/tmp/install --verbose --debug # install with extra info
 ----
 
 This method allows you to examine the `/tmp/install` script before running it.
+
+Below are some of the explanations 
 
 ==== Installing a Particular Version or a Branch
 
@@ -148,15 +169,17 @@ For instance, here we are installing Bashmatic into a non-default destination, w
 [source,bash]
 ----
 bash -c "$(curl -fsSL https://bashmatic.re1.re); \
-           bashmatic-install -d -v -f -b v2.4.1 -H ~/workspace/bashmatic"
+    bashmatic-install -d -v -f -b v2.4.1 -H ~/workspace/bashmatic"
 ----
+
 ====
 
-If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:kigster/bashmatic` origin, instead of the default `https://github.com/kigster/bashmatic':
+If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:kigster/bashmatic` origin, instead of the default `https://github.com/kigster/bashmatic`:
+
 
 Here is the complete list of options accepted by the installer:
 
-image::doc/img/bashmatic-install.png[Installer,width=99%,align=left]
+image::doc/img/bashmatic-install.png[Installer,width=99%,align=left,border=5,margin=10]
 
 === Understanding what the Installer Does
 
@@ -191,8 +214,21 @@ $ grep bashmatic ~/.bashrc
 
 [ATTENTION]
 ====
-icon:check-circle[fw, color="green"] Pros of loading at login:: Instant access to 800+ convenience functions Bashmtic offers and helpers. Bashmatic will auto-update whenever its loaded from the master branch.
-icon:times-circle[fw, color="red"] Cons of loading at login:: About 600ms delay at login, and a potential security attack vector (eg, if someone hacks the repo).
+icon:check-circle[fw, color="green"] Pros of loading at login:: Instant access to 800+ convenience functions Bashmatic© offers and helpers. Bashmatic will auto-update whenever its loaded from the master branch.
+
+icon:times-circle[fw, color="red"] Cons of loading at login:: About __134ms__ delay at login, and a potential security attack vector (eg, if someone hacks the repo).
+
+TIP: We recently dramatically improved the loading time of the entirety of Bashmatic© functions. Previously it took nearly 900ms, almost a full second to load 854 functions. Today it's no more than 180ms:
+
+[source,bash]
+----
+❯ time source init.sh
+
+real  0m0.134s
+user  0m0.078s
+sys	  0m0.074s
+----
+
 ====
 
 If the above command shows the output you see above, when you grep your `bashrc` or `zshrc`, then all Bashmatic Functions will be loaded into your shell. This could be very convenient, for instance, 
@@ -295,11 +331,11 @@ To discover the breadth of available functions, type the following command to se
 ----
 # List all functions using 4-column mode; print top 5 lines.  
 ❯ bashmatic functions 4 | head -5
-7z.a                   db.psql.connect.db-set hl.yellow-on-gray      run.inspect-variables
-7z.install             db.psql.connect.db-set hr                     run.inspect-variables-
-7z.unzip               db.psql.connect.just-d hr.colored             run.inspect.set-skip-f
-7z.x                   db.psql.connect.table- http.servers           run.on-error.ask-is-en
-7z.zip                 db.psql.connect.table- https.servers          run.print-command
+7z.a         db.psql.connect.db-set hl.yellow-on-gray  run.inspect-variables
+7z.install   db.psql.connect.db-set hr                 run.inspect-variables-
+7z.unzip     db.psql.connect.just-d hr.colored         run.inspect.set-skip-f
+7z.x         db.psql.connect.table- http.servers       run.on-error.ask-is-en
+7z.zip       db.psql.connect.table- https.servers      run.print-command
 
 # or, to get the count of all functions, use 1 column output:
 $ bashmatic functions 1 | wc -l
@@ -443,7 +479,7 @@ Run `make docker-build` to create an docker image `bashmatic:latest`.
 
 Run `make docker-run-bash` (or `...-zsh` or `...-fish`) to start a container with your favorite shell, and then validate if your functions work as expected.
 
-image::doc/img/docker-bash.png[Docker Build,width=80%,align=center]
+image::doc/img/docker-bash.png[Docker Build,width=100%,align=center]
 
 Note how this dropped me straight into the Linux environment prompt with Bashmatic already installed.
 
@@ -473,7 +509,7 @@ gem.install "sym" && brew.install.package "curl" && \
 
 Results in this detailed and, let's be honest, _gorgeous_ ASCII output:
 
-image::doc/img/bashmatic-example.png[example,width=90%,border=2]
+image::doc/img/bashmatic-example.png[example,width=100%,border=2]
 
 Tell me you are not at all excited to start writing complex installation flows in BASH right away?
 
@@ -491,7 +527,7 @@ We provided an example script in link:examples/k8s-installer.sh[`examples/k8s-in
 
 Here is the output of running this script:
 
-image::doc/img/k8installer.png[K8 Minicube Installer,width=80%,align=center]
+image::doc/img/k8installer.png[K8 Minicube Installer,width=100%,align=center]
 
 Why do we think this type of installer is pretty awesome, compared to a silent but deadly shell script that "Jim-in-the-corner" wrote and now nobody understands?
 
@@ -516,7 +552,7 @@ NOTE: the script relies on Homebrew behind the scenes, and therefore would not w
 
 It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
-image::doc/img/dev-setup.png[Developer Setup,width=80%,align=center]
+image::doc/img/dev-setup.png[Developer Setup,width=100%,align=center]
 
 In the example below we'll use `dev-setup` script to install the following:
  
@@ -570,7 +606,7 @@ Just like with the regular `top` you can see the "top" resource-consuming proces
 
 Here is the pixelated screenshot of `dbtop` running against two live databases:
 
-image::doc/img/dbtop.png[DBTop Example,width=80%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
+image::doc/img/dbtop.png[DBTop Example,width=100%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
 
 In order for this to work, you must first define database connection parameters in a YAML file located at the following PATH: `~/.db/database.yml`.
 
@@ -625,7 +661,7 @@ You can configure the following settings for `db top`:
 
 If you run `db` without any arguments, or with `-h` you will see the following:
 
-image::doc/img/db.png[db usage,border=2,width=80%,align=center]
+image::doc/img/db.png[db usage,border=2,width=100%,align=center]
 
 As you might notice, there is an ever-growing list of "actions" — the sub-commands to the `db` script.
 
@@ -633,11 +669,11 @@ As you might notice, there is an ever-growing list of "actions" — the sub-comm
 
 You can view the full list by passing `--commands` flag:
 
-image::doc/img/db-commands.png[db usage,border=2,width=80%,align=center]
+image::doc/img/db-commands.png[db usage,border=2,width=100%,align=center]
 
 Altgernatively, here is the `--examples` view:
 
-image::doc/img/db-examples.png[db examples,border=2,width=80%,align=center]
+image::doc/img/db-examples.png[db examples,border=2,width=100%,align=center]
 
 ==== Sub-Command `db connections`
 
@@ -650,7 +686,7 @@ db connections
 db --connections
 ----
 
-image::doc/img/db-connections.png[db usage,border=2,width=80%,align=center]
+image::doc/img/db-connections.png[db usage,border=2,width=100%,align=center]
 
 ==== Sub-Command `db pga` (eg. `pg_activity`)
 
@@ -658,7 +694,7 @@ For instance, a recent addition is the ability to invoke https://github.com/dali
 
 You can invoke `db pga <connection>` where the connection is taken from the database connection definitions shown above. This is what `pg-activity` looks like in action:
 
-image::doc/img/db-pga.png[pg_activity,border=2,width=80%,align=center]
+image::doc/img/db-pga.png[pg_activity,border=2,width=100%,align=center]
 
 ==== Other Sub-Commands
 
@@ -708,7 +744,7 @@ The script is meant to be run against one database, and perform a table-level op
 
 Below is the screenshot of the help screen from this script:
 
-image::doc/img/bashmatic-tablet.png[Tablet Script in Action,border=2,width=80%,align=center]
+image::doc/img/bashmatic-tablet.png[Tablet Script in Action,border=2,width=100%,align=center]
 
 == Usage
 
@@ -859,18 +895,18 @@ These collectively offer the following functions:
 ----
 $ bashmatic.functions-from 'run*'
 
-run                                            run.set-next
-run.config.detail-is-enabled                   run.set-next.list
-run.config.verbose-is-enabled                  run.ui.ask
-run.inspect                                    run.ui.ask-user-value
-run.inspect-variable                           run.ui.get-user-value
-run.inspect-variables                          run.ui.press-any-key
-run.inspect-variables-that-are                 run.ui.retry-command
-run.inspect.set-skip-false-or-blank            run.variables-ending-with
-run.on-error.ask-is-enabled                    run.variables-starting-with
-run.print-variable                             run.with.minimum-duration
-run.print-variables                            run.with.ruby-bundle
-run.set-all                                    run.with.ruby-bundle-and-output
+run                                  run.set-next
+run.config.detail-is-enabled         run.set-next.list
+run.config.verbose-is-enabled        run.ui.ask
+run.inspect                          run.ui.ask-user-value
+run.inspect-variable                 run.ui.get-user-value
+run.inspect-variables                run.ui.press-any-key
+run.inspect-variables-that-are       run.ui.retry-command
+run.inspect.set-skip-false-or-blank  run.variables-ending-with
+run.on-error.ask-is-enabled          run.variables-starting-with
+run.print-variable                   run.with.minimum-duration
+run.print-variables                  run.with.ruby-bundle
+run.set-all                          run.with.ruby-bundle-and-output
 run.set-all.list
 ----
 
@@ -916,37 +952,37 @@ Here is the list of functions in this module:
 [source,bash]
 ----
 $ bashmatic.functions-from output 3
-abort                          error:                         left-prefix
-ascii-clean                    h.black                        ok
-box.blue-in-green              h.blue                         okay
-box.blue-in-yellow             h.green                        output.color.off
-box.green-in-cyan              h.red                          output.color.on
-box.green-in-green             h.yellow                       output.is-pipe
-box.green-in-magenta           h1                             output.is-redirect
-box.green-in-yellow            h1.blue                        output.is-ssh
-box.magenta-in-blue            h1.green                       output.is-terminal
-box.magenta-in-green           h1.purple                      output.is-tty
-box.red-in-magenta             h1.red                         puts
-box.red-in-red                 h1.yellow                      reset-color
-box.red-in-yellow              h2                             reset-color:
-box.yellow-in-blue             h2.green                       screen-width
-box.yellow-in-red              h3                             screen.height
-box.yellow-in-yellow           hdr                            screen.width
-br                             hl.blue                        shutdown
-center                         hl.desc                        stderr
-columnize                      hl.green                       stdout
-command-spacer                 hl.orange                      success
-cursor.at.x                    hl.subtle                      test-group
-cursor.at.y                    hl.white-on-orange             ui.closer.kind-of-ok
-cursor.down                    hl.white-on-salmon             ui.closer.kind-of-ok:
-cursor.left                    hl.yellow                      ui.closer.not-ok
-cursor.rewind                  hl.yellow-on-gray              ui.closer.not-ok:
-cursor.right                   hr                             ui.closer.ok:
-cursor.up                      hr.colored                     warn
-debug                          inf                            warning
-duration                       info                           warning:
-err                            info:
-error                          left
+abort                 error:               left-prefix
+ascii-clean           h.black              ok
+box.blue-in-green     h.blue               okay
+box.blue-in-yellow    h.green              output.color.off
+box.green-in-cyan     h.red                output.color.on
+box.green-in-green    h.yellow             output.is-pipe
+box.green-in-magenta  h1                   output.is-redirect
+box.green-in-yellow   h1.blue              output.is-ssh
+box.magenta-in-blue   h1.green             output.is-terminal
+box.magenta-in-green  h1.purple            output.is-tty
+box.red-in-magenta    h1.red               puts
+box.red-in-red        h1.yellow            reset-color
+box.red-in-yellow     h2                   reset-color:
+box.yellow-in-blue    h2.green             screen-width
+box.yellow-in-red     h3                   screen.height
+box.yellow-in-yellow  hdr                  screen.width
+br                    hl.blue              shutdown
+center                hl.desc              stderr
+columnize             hl.green             stdout
+command-spacer        hl.orange            success
+cursor.at.x           hl.subtle            test-group
+cursor.at.y           hl.white-on-orange   ui.closer.kind-of-ok
+cursor.down           hl.white-on-salmon   ui.closer.kind-of-ok:
+cursor.left           hl.yellow            ui.closer.not-ok
+cursor.rewind         hl.yellow-on-gray    ui.closer.not-ok:
+cursor.right          hr                   ui.closer.ok:
+cursor.up             hr.colored           warn
+debug                 inf                  warning
+duration              info                 warning:
+err                   info:
+error                 left
 ----
 
 Note that some function names end with `:` – this indicates that the function outputs a new-line in the end. These functions typically exist together with their non-`:`-terminated counter-parts.  If you use one, eg, `inf`, you are then supposed to finish the line by providing an additional output call, most commonly it will be one of `ok:`, `ui.closer.not-ok:` and `ui.closer.kind-of-ok:`.
@@ -1041,7 +1077,7 @@ success "installed Sym version $(gem.version sym)"
 
 When you run the above script, you shyould seee the following output:
 
-image::doc/img/bashmatic-example.png[example,align=center,width=80%]
+image::doc/img/bashmatic-example.png[example,align=center,width=100%]
 
 ==== Shortening URLs and Github Access
 
@@ -1160,7 +1196,7 @@ util.call-if-function          util.shell-init-files
 shasum.sha-only                util.shell-name
 shasum.sha-only-stdin          util.ver-to-i
 util.functions-starting-with   util.whats-installed
-util.generate-password       `  watch.ls-al
+util.generate-password         watch.ls-al
 ----
 
 For example, version helpers can be very handy in automated version detection, sorting and identifying the latest or the oldest versions:
@@ -1183,18 +1219,18 @@ Additional Ruby helpers abound:
 ----
 $ bashmatic.functions-from ruby
 
-bundle.gems-with-c-extensions                 ruby.install-ruby-with-deps
-interrupted                                   ruby.install-upgrade-bundler
-ruby.bundler-version                          ruby.installed-gems
-ruby.compiled-with                            ruby.kigs-gems
-ruby.default-gems                             ruby.linked-libs
-ruby.full-version                             ruby.numeric-version
-ruby.gemfile-lock-version                     ruby.rbenv
-ruby.gems                                     ruby.rubygems-update
-ruby.gems.install                             ruby.stop
-ruby.gems.uninstall                           ruby.top-versions
-ruby.init                                     ruby.top-versions-as-yaml
-ruby.install                                  ruby.validate-version
+bundle.gems-with-c-extensions  ruby.install-ruby-with-deps
+interrupted                    ruby.install-upgrade-bundler
+ruby.bundler-version           ruby.installed-gems
+ruby.compiled-with             ruby.kigs-gems
+ruby.default-gems              ruby.linked-libs
+ruby.full-version              ruby.numeric-version
+ruby.gemfile-lock-version      ruby.rbenv
+ruby.gems                      ruby.rubygems-update
+ruby.gems.install              ruby.stop
+ruby.gems.uninstall            ruby.top-versions
+ruby.init                      ruby.top-versions-as-yaml
+ruby.install                   ruby.validate-version
 ruby.install-ruby
 ----
 
@@ -1280,7 +1316,7 @@ video.convert.compress
 
 These commands auto-install ffmpeg and other utilities, and then use best in class compression. For instance, here is 80% compressed video file:
 
-image::doc/img/video-squeeze.png[Video Squeeze, width="70%",align="center"]
+image::doc/img/video-squeeze.png[Video Squeeze, width="100%",align="center"]
 
 ==== Additional Helpers
 
@@ -1402,60 +1438,46 @@ We use Bats framework for testing, however we provided a convenient wrapper `bin
 
 The script can be run:
 
-1. Without any arguments to run all tests in the `test` folder, or 
+1. Without any arguments to run all tests in the `test` folder in parallel by default
 2. You can pass one or more existing test file paths as arguments, eg `bin/specs test/time_test.bats`
 3. Finally, you can pass an abbreviated test file name — eg "time" will resolve to `test/time_test.bats`
 
 The script accepts a bunch of CLI arguments and flags shown below:
 
-image::doc/img/specs.png[example,align=center,width=60%]
+image::doc/img/specs-parallel.png[example,align=center,width=100%]
 
+==== Running Specs Sequentially with `bin/spec -P`
+
+By the default, `bin/spec` runs tests in parallel, and takes about 20 seconds.
+
+If you pass the `-P/--no-parallel` flag, it will run sequentially and take about twice as long.
+
+Below is the screenshot of the tests running in the parallel mode. The script automatically detects that my machine has 16 CPU cores and uses this as a parallization factor.
+
+image::doc/img/specs.png[example,align=center,width=100%]
+
+==== Run Tests Parallel using the `Makefile`
+
+Note that you can run all tests in parallel using the following make target:
+
+[source,bash]
+make test
+
+While not every single function is tested (far from it), we do try to add tests to the critical ones.
+
+Please see https://github.com/kigster/bashmatic/blob/master/test/array_test.bats[existing tests] for the examples.
 
 ==== Run Tests Sequentially using the `Makefile`
 
 Alternatively, you can run the entire test suite via the Makefile, using one of two targets:
 
 [source,bash]
-----
-# Sequential 
-make test
-
-# Parallel
-make test-parallel
-----
+make test-sequential
 
 
-==== Running Specs in Parallel with `bin/spec -p`
+== Copyright & License
 
-One of the very useful flags to `bin/specs` script is the `-p/--parallel`. 
-
-If you invoke it with this flag, the script will install **GNU Parallel** utility, which is in itself worth reading about. We refer you to the following set of https://www.youtube.com/playlist?list=PL284C9FF2488BC6D1[YouTube Introductory Videos] on taking advantage of GNU Parallel projects and it's executable.
-
-Below is the screenshot of the tests running with the parallel flag. The script automatically detects that my machine has 16 CPU cores and uses this as a parallization factor.
-
-image::doc/img/specs-parallel.png[example,align=center,width=60%]
-
-
-
-==== Run Tests Parallel using the `Makefile`
-
-Note that you can run all tests in less than 15 seconds by using GNU parallel. Just run the following make target, and it will install any dependencies.
-
-[source,bash]
-----
-make test-parallel
-----
-
-
-
-While not every single function is tested (far from it), we do try to add tests to the critical ones.
-
-Please see https://github.com/kigster/bashmatic/blob/master/test/array_test.bats[existing tests] for the examples.
-
-
-## Copyright &  License
-
-NOTE: © 2016-2021 Konstantin Gredeskoul +
+NOTE: © 2016-2022 Konstantin Gredeskoul +
 This project is distributed under the **MIT License.**
 
 

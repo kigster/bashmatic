@@ -105,23 +105,6 @@ function __bashmatic.load-time() {
 }
 
 
-# Set initial state to 0
-# This can not be exported, because then subshells don't initialize correctly
-export __bashmatic_load_state=${__bashmatic_load_state:=0}
-
-function __bashmatic.already-loaded() {
-  ((__bashmatic_load_state))
-}
-
-function __bashmatic.set-is-loaded() {
-  export __bashmatic_load_state=1
-}
-
-function __bashmatic.set-is-not-loaded() {
-  export __bashmatic_load_state=0
-  unset load_cache
-}
-
 function __bashmatic.init.darwin() {
   local -a required_binares=(gdate gsed)
   for binary in "${required_binares[@]}"; do
@@ -171,12 +154,9 @@ function __bashmatic.init-core() {
   export LibGit__QuietUpdate=${LibGit__QuietUpdate:-1}
   export LibGit__ForceUpdate=${LibGit__ForceUpdate:-0}
 
-  __bashmatic.already-loaded || {
-    # LOAD ALL BASHMATIC SCRIPTS AT ONCE
-    # This is the fastest method that only takes about 110ms
-    eval "$(/bin/cat "${BASHMATIC_HOME}"/lib/*.sh)"
-    __bashmatic.set-is-loaded
-  }
+  # LOAD ALL BASHMATIC SCRIPTS AT ONCE
+  # This is the fastest method that only takes about 110ms
+  eval "$(/bin/cat "${BASHMATIC_HOME}"/lib/*.sh)"
 
   is-debug && {
     local __bashmatic_end_time=$(millis)
@@ -203,7 +183,6 @@ function __bashmatic.parse-arguments() {
     fi
     if [[ "$file" =~ (reload|force|refresh) ]]; then
       log.inf "setting to is-not-loaded"
-      __bashmatic.set-is-not-loaded
     fi
   done
 }
@@ -220,9 +199,7 @@ function source-if-exists() {
 function bashmatic.load() {
   __bashmatic.parse-arguments "$@"
   __bashmatic.init-core
-
-  __bashmatic.set-is-loaded
-
+ 
   return 0
 }
 

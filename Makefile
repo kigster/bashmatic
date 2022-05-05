@@ -128,11 +128,11 @@ setup: 				## Run the comprehensive development setup on this machine
 					-g postgres    \
 					-g ruby
 			
-test: 				## Run fully automated test suite based on Bats
+test: 				## Run fully automated test suite based on Bats in paralle
 				@$(BASHMATIC_HOME)/bin/specs
 
-test-parallel: 			## Run the fully auto-g mated test suite
-				@$(BASHMATIC_HOME)/bin/specs -p
+test-sequential: 		## Run the fully automated test suite sequentially
+				@$(BASHMATIC_HOME)/bin/specs -P
 
 test-install-quiet:		
 				@bash -c "cd $(BASHMATIC_HOME); source bin/bashmatic-install; bashmatic-install -q"
