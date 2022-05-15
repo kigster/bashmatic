@@ -777,6 +777,7 @@ OSX Specific Helpers and Utilities
 
 
 * [osx.app.is-installed()](#osxappis-installed)
+* [osx.detect-cpu()](#osxdetect-cpu)
 
 ### `osx.app.is-installed()`
 
@@ -806,6 +807,19 @@ installed
 
 * **0**: if match was found
 * **1**: if not
+
+### `osx.detect-cpu()`
+
+This function checks the architecture of the CPU, but
+also is able to detect when M1 system is running under Rosetta.
+
+#### Example
+
+```bash
+local -a ostype=( $(osx.detect-cpu) )
+local cpu=${ostype[0]}
+local emulation="${ostype[1]}"
+```
 
 
 
