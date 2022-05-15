@@ -86,7 +86,7 @@ cookie-dump() {
 }
 
 change-underscan() {
-  set + 
+  set +
   local amount_percentage="$1"
   if [[ -z "${amount_percentage}" ]]; then
     printf "%s\n\n" "USAGE: change-underscan percent"
@@ -99,7 +99,7 @@ change-underscan() {
   local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"
 
   # Compute new value as a percentage of 10000
-  local new_value=$(ruby -   "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
+  local new_value=$(ruby - "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
 
   h1 'This utility allows you to change underscan/overscan' \
     'on monitors that do not offer that option via GUI.'
@@ -112,7 +112,7 @@ change-underscan() {
 
   info "Making a backup of your current graphics settings..."
   inf "Please enter your password, if asked: "
-  set - 
+  set -
   bash -c 'set -  ; sudo ls -1 > /dev/null; set +  '
   ok
   run "sudo rm -f \"${backup}\""
@@ -311,4 +311,27 @@ ssh.servers() { osx.local-servers ssh; }
 afp.servers() { osx.local-servers afp; }
 http.servers() { osx.local-servers http; }
 https.servers() { osx.local-servers https; }
+
+# @description This function checks the architecture of the CPU, but
+#       also is able to detect when M1 system is running under Rosetta.
+# @return an array of two items:  [ intel | m1 ] [ native | rosetta 
+# @example
+#     local -a ostype=( $(osx.detect-cpu) )
+#     local cpu=${ostype[0]}
+#     local emulation="${ostype[1]}"
+function osx.detect-cpu() {
+  local arch_name="$(uname -m)"
+
+  if [[ "${arch_name}" = "x86_64" ]]; then
+    if [[ "$(sysctl -in sysctl.proc_translated)" = "1" ]]; then
+      echo m1 rosetta
+    else
+      echo intel native
+    fi
+  elif [ "${arch_name}" = "arm64" ]; then
+    echo m1 native
+  else
+    echo unknown unknown 
+  fi
+}
 
