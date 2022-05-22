@@ -24,7 +24,7 @@ gem.configure-cache() {
   export LibGem__GemListCache="${LibGem__GemListCacheBase}.${ruby_version}"
 
   local dir=$(dirname "${LibGem__GemListCache}")
-  [[ -d ${dir} ]] || run "mkdir -p ${dir}" >/dev/null
+  [[ -d ${dir} ]] || mkdir -p "${dir}" >/dev/null
 }
 
 gem.version() {
@@ -100,8 +100,9 @@ gem.gemfile.version() {
 # this ensures the cache is only at most 30 minutes old
 gem.cache-installed() {
   gem.configure-cache
-  if [[ ! -s "${LibGem__GemListCache}" || -z $(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null) ]]; then
-    run "gem list > ${LibGem__GemListCache}" >/dev/null
+  if [[ ! -s "${LibGem__GemListCache}" || \
+    -z "$(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null)" ]]; then
+    gem list > "${LibGem__GemListCache}" >/dev/null
   fi
 }
 

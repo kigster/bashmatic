@@ -8,27 +8,31 @@ setup() {
   source lib/output.sh
   source lib/ruby.sh
   source lib/gem.sh
-  alias ${GrepCommand} ="grep -E -e "
+  export TMP="$(mktemp -d)"
+  alias ${GrepCommand}="grep -E -e "
 }
 
 teardown() {
-  rm -f Gemfile.lock
+  rm -f ${TMP}/Gemfile.lock
 }
 
 @test "gem.gemfile.version returns correct 4-part version" {
   gem.cache-refresh
   set -e
-  cp test/Gemfile.lock .
-  result="$(gem.gemfile.version activesupport)"
-  [ "${result}" == "6.0.3.1" ]
+  cp test/Gemfile.lock ${TMP}
+  ( cd ${TMP} &&
+    result="$(gem.gemfile.version activesupport)" &&
+    [ "${result}" == "6.0.3.1" ]
+  )
 }
 
 @test "gem.gemfile.version returns correct 3-part version" {
   gem.cache-refresh
   set -e
-  cp test/Gemfile.lock .
-  result="$(gem.gemfile.version simple-feed)"
-  [ "${result}" == "3.0.1" ]
+  cp test/Gemfile.lock ${TMP}
+  ( cd ${TMP} &&
+    result="$(gem.gemfile.version simple-feed)" &&
+    [ "${result}" == "3.0.1" ] )
 }
 
 @test "gem.gemfile.version simple-feed == 3.0.1" {
