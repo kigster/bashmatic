@@ -112,6 +112,49 @@ file.install-with-backup conf/.psqlrc ~/.psqlrc backup-strategy-function
 ---
 
 
+## File `lib/url.sh`
+
+
+
+* [url.cert.is-valid()](#urlcertis-valid)
+* [url.cert.domain()](#urlcertdomain)
+* [url.host.is-valid()](#urlhostis-valid)
+* [url.cert.info()](#urlcertinfo)
+
+### `url.cert.is-valid()`
+
+Returns 0 if the certificate is valid of the domain
+passed as an argument.
+
+#### Arguments
+
+* @arg0 domain or a complete https url
+
+### `url.cert.domain()`
+
+Prints the common name for which the SSL certificate is registered
+
+#### Example
+
+```bash
+❯ url.cert.domain google.com
+*.google.com
+```
+
+### `url.host.is-valid()`
+
+Returns 0 when the argument is a valid Internet host
+resolvable via DNS. Otherwise returns 255 and prints an error to STDERR.
+
+### `url.cert.info()`
+
+Returns the SSL information about the remote certificate
+
+
+
+---
+
+
 ## File `lib/pids.sh`
 
 

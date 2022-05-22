@@ -1,8 +1,20 @@
 # Changelog
 
-## [v3.0.0](https://github.com/kigster/bashmatic/tree/v3.0.0) (2022-05-03)
+## [v3.0.1](https://github.com/kigster/bashmatic/tree/v3.0.1) (2022-05-22)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.0...v3.0.1)
+
+**Merged pull requests:**
+
+- Adding osx.detect-cpu function [\#100](https://github.com/kigster/bashmatic/pull/100) ([kigster](https://github.com/kigster))
+
+## [v3.0.0](https://github.com/kigster/bashmatic/tree/v3.0.0) (2022-05-05)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.7.2...v3.0.0)
+
+**Merged pull requests:**
+
+- Major speed up of loading init.sh \(900ms -\> 90ms\) [\#99](https://github.com/kigster/bashmatic/pull/99) ([kigster](https://github.com/kigster))
 
 ## [v2.7.2](https://github.com/kigster/bashmatic/tree/v2.7.2) (2022-05-03)
 

@@ -6614,7 +6614,7 @@ change-underscan ()
     fi
     local file="/var/db/.com.apple.iokit.graphics"
     local backup="/var/db/.com.apple.iokit.graphics.bak.$(date '+%F.%X')"
-    local new_value=$(ruby -   "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
+    local new_value=$(ruby - "puts (10000.0 + 10000.0 * ${amount_percentage}.to_f / 100.0).to_i")
     h1 'This utility allows you to change underscan/overscan' 'on monitors that do not offer that option via GUI.'
     run.ui.ask "Continue?"
     info "Great! First we need to identify your monitor."
@@ -6745,6 +6745,30 @@ osx.cookie-dump ()
         info "and rerun this function."
     fi
     [[ -z ${tmp} ]] || rm -f "${tmp}"
+}
+
+----
+
+==== `osx.detect-cpu`
+
+[source,bash]
+----
+osx.detect-cpu () 
+{ 
+    local arch_name="$(uname -m)"
+    if [[ "${arch_name}" = "x86_64" ]]; then
+        if [[ "$(sysctl -in sysctl.proc_translated)" = "1" ]]; then
+            echo m1 rosetta
+        else
+            echo intel native
+        fi
+    else
+        if [ "${arch_name}" = "arm64" ]; then
+            echo m1 native
+        else
+            echo unknown unknown
+        fi
+    fi
 }
 
 ----
@@ -10036,6 +10060,22 @@ interrupted ()
 
 ----
 
+==== `ruby.aliases`
+
+[source,bash]
+----
+ruby.aliases () 
+{ 
+    alias b="bundle"
+    alias be="bundle exec"
+    alias ber="bundle exec rake"
+    alias bert="bundle exec rake -T"
+    alias berr="bundle exec rspec"
+    alias rdb="set -ex; bundle exec rake db:drop:all; bundle exec rake db:create:all; bundle exec rake db:migrate db:seed; bundle exec rake db:test:prepare; set +ex"
+}
+
+----
+
 ==== `ruby.bundle-install`
 
 [source,bash]
@@ -12533,6 +12573,47 @@ trapped ()
 
 === Module `url`
 
+==== `url.cert.domain`
+
+[source,bash]
+----
+url.cert.domain () 
+{ 
+    url.cert.info "$@" | grep 'subject: CN=' | cut -d '=' -f 2
+}
+
+----
+
+==== `url.cert.info`
+
+[source,bash]
+----
+url.cert.info () 
+{ 
+    local url="$1"
+    local quiet="${2:-false}"
+    [[ ${url} =~ https:// ]] || url="https://${url}"
+    url.host.is-valid "${url}" || return 1
+    curl --insecure -vvI "${url}" 2>&1 | awk 'BEGIN { cert=0 } 
+        /^\* SSL connection/ { cert=1 } /^\*/ { if (cert) print }'
+}
+
+----
+
+==== `url.cert.is-valid`
+
+[source,bash]
+----
+url.cert.is-valid () 
+{ 
+    local url="$1"
+    shift
+    [[ ${url} =~ https:// ]] || url="https://${url}"
+    curl -L -q -I "${url}" "$@" > /dev/null 2>&1
+}
+
+----
+
 ==== `url.downloader`
 
 [source,bash]
@@ -12550,6 +12631,22 @@ url.downloader ()
         export LibUrl__Downloader="${downloader}"
     fi
     printf "${LibUrl__Downloader}"
+}
+
+----
+
+==== `url.host.is-valid`
+
+[source,bash]
+----
+url.host.is-valid () 
+{ 
+    local host="$1"
+    local host="${host/https:\/\//}"
+    host "${host}" > /dev/null || { 
+        error "${host} does not appear to be a valid host." 1>&2
+        return 255
+    }
 }
 
 ----
