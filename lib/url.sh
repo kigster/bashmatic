@@ -141,3 +141,52 @@ url.http-code() {
   fi
 }
 
+
+
+# @description Returns 0 if the certificate is valid of the domain
+# passed as an argument.
+# @arg0 domain or a complete https url
+# @return 0 if certificate is valid, other codes if not
+function url.cert.is-valid() {
+  local url="$1"; shift
+  [[ ${url} =~ https:// ]] || url="https://${url}"
+  curl -L -q -I "${url}" "$@" 1>/dev/null 2>&1
+}
+
+# @description Prints the common name for which the SSL certificate is registered
+# @example 
+#   ❯ url.cert.domain google.com
+#   *.google.com
+#
+#   ❯ url.cert.domain fnf.org
+#   *.wordpress.com
+function url.cert.domain() {
+  url.cert.info "$@" | grep 'subject: CN=' | cut -d '=' -f 2
+}
+
+# @description Returns 0 when the argument is a valid Internet host
+# resolvable via DNS. Otherwise returns 255 and prints an error to STDERR.
+function url.host.is-valid() {
+  local host="$1"
+  local host="${host/https:\/\//}"
+  host "${host}" >/dev/null || {
+    error "${host} does not appear to be a valid host.">&2
+    return 255
+  }
+}
+
+# @description Returns the SSL information about the remote certificate
+function url.cert.info() {
+  local url="$1"
+  local quiet="${2:-false}"
+
+  [[ ${url} =~ https:// ]] || url="https://${url}"
+
+  url.host.is-valid "${url}" || return 1
+
+  curl --insecure -vvI "${url}" 2>&1 | \
+    awk 'BEGIN { cert=0 } 
+        /^\* SSL connection/ { cert=1 } /^\*/ { if (cert) print }'
+}
+
+

@@ -492,9 +492,13 @@ ruby.stop() {
   ps -ef | ${GrepCommand} "${regex}" | ${GrepCommand} -v grep | awk '{print $2}' | sort | uniq | xargs kill -9
 }
 
-##——————————————————————————————————————————————————————————————————————————————————
-alias b="bundle exec"
-alias brake="rbenv exec bundl exec rake"
-alias bcap="rbenv exec bundle exec cap"
-##——————————————————————————————————————————————————————————————————————————————————
+ruby.aliases() {
+  alias b="bundle"
+  alias be="bundle exec"
+  alias ber="bundle exec rake"
+  alias bert="bundle exec rake -T"
+  alias berr="bundle exec rspec"
+  alias rdb="set -ex; bundle exec rake db:drop:all; bundle exec rake db:create:all; bundle exec rake db:migrate db:seed; bundle exec rake db:test:prepare; set +ex"
+}
+
 

@@ -31,3 +31,31 @@ load test_helper
   local code=$(url.http-code zhopa-egorovna 2>&1)
   [[ ${code} =~ 'The URL provided is not a valid URL' ]]
 }
+
+@test "url.cert.domain with a valid domain" {
+  source lib/url.sh
+  local cert_domain=$(url.cert.domain google.com)
+  [[ ${cert_domain} == '*.google.com' ]]
+}
+
+@test "url.cert.is-valid with a valid domain" {
+  source lib/url.sh
+  set -e
+  url.cert.is-valid google.com
+}
+
+@test "url.cert.is-valid with an invalid domain" {
+  source lib/url.sh
+  set +e
+  url.cert.is-valid www.makeabox.io 2>/dev/null
+  code=$?
+  [[ ${code} -ne 0 ]]
+}
+
+@test "url.host.is-valid with an invalid host" {
+  source lib/url.sh
+  set +e
+  url.host.is-valid www.makeabox.io 2>/dev/null
+  code=$?
+  [[ ${code} -ne 0 ]]
+}
