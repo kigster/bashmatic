@@ -1,5 +1,41 @@
 #!/usr/bin/env bash
 
+# @descroption
+#   Returns the first folder above the given that contains
+#   a file.
+# @arg1 file without the path to search for, eg ".evnrc"
+# @arg2 Starting file path to seartch
+# @output File path that's a sub-phat of the @arg2 contaning the file.
+#   if no file is found, 1 or 2 is returned."
+dir.with-file() {
+  local file="$1"
+  local dir="${2:-$(pwd -P)}"
+
+  if [[ ${dir:0:1} != "/" ]]; then
+    dir="$(pwd -P)/${dir}"
+  fi
+
+  local _d="${dir}"
+
+  while true; do
+    local try="${_d}/${file}"
+    [[ -f "${try}" ]] && {
+      echo "${_d}"
+      return 0
+    }
+    _d="$(dirname "${_d}")"
+    if [[ "${_d}" == "/" || "${_d}" == "" ]] ; then
+      [[ -f "${_d}/${file}" ]] || {
+        echo "No file ${file} was found in the path.">&2
+        return 1
+      } 
+      echo "${_d}"
+      exit 0
+    fi
+   done
+  return 2
+}
+
 dir.count-slashes() {
   local dir="${1}"
   echo "${dir}" |

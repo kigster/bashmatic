@@ -1381,7 +1381,15 @@ Grab the version from `postgres` binary in the PATH and remove fractional sub-ve
 
 
 
+* [dir.with-file()](#dirwith-file)
 * [dir.short-home()](#dirshort-home)
+
+### `dir.with-file()`
+
+#### Arguments
+
+* @arg1 file without the path to search for, eg ".evnrc"
+* @arg2 Starting file path to seartch
 
 ### `dir.short-home()`
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 load test_helper
 
+source lib/time.sh
 source lib/dir.sh
 source lib/file.sh
 
@@ -10,6 +11,26 @@ set -e
 
 setup() {
   export TEMP_DIR=$(file.temp -d)
+}
+
+@test "dir.with-file()" {
+  local TEMP_DIR="$(mktemp -d)"
+  local path="${TEMP_DIR}/a/b/c/d"
+  mkdir -p "${path}"
+
+  local a=".a-file"
+  local a_path="${TEMP_DIR}/a/b/${a}"
+  touch ${a_path}
+
+  local b=".b-file"
+  local b_path="${TEMP_DIR}/a/b/c/d/${b}"
+  touch ${b_path}
+
+  local a_dir=$(dir.with-file "${a}" "${path}")
+  local b_dir=$(dir.with-file "${b}" "${path}")
+
+  [[ ${a_dir} == "${TEMP_DIR}/a/b" && "${b_dir}" == "${TEMP_DIR}/a/b/c/d" ]] 
+   
 }
 
 @test "dir.short-home ${HOME}/workspace/project" {
