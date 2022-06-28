@@ -228,8 +228,16 @@ file.size.mb() {
   local file="$1"
   shift
   local s=$(file.size "${file}")
-  local mb=$(echo $((s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
+  local mb=$(echo $((s / 10/ 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
   printf "%.2f MB" "${mb}"
+}
+
+file.size.gb() {
+  local file="$1"
+  shift
+  local s=$(file.size "${file}")
+  local gb=$(echo $((s / 10 / 1024 / 1024 )) | sedx 's/([0-9][0-9])$/.\1/g')
+  printf "%.1f Gb" "${gb}"
 }
 
 file.list.filter-existing() {
