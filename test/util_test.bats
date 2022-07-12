@@ -12,6 +12,12 @@ source lib/db_top.sh
 
 set -e
 
+@test "system.uname" {
+  set -e
+  local executable=$(system.uname)
+  [[ -x ${executable} ]]
+}
+
 @test "util.rot13() encryptor" {
   phrase="The quick brown fox jumps over the lazy dog"
   rotated=$(util.rot13 "${phrase}")
@@ -79,3 +85,4 @@ moo() {
   [[ $num -gt 10 ]] &&
   [[ "${actions[0]}" == "commands" ]]
 }
+

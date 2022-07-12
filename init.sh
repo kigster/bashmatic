@@ -17,9 +17,10 @@ set +ex
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
 export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
-export PATH="${PATH}:/usr/local/bin:/usr/bin:/bin:/sbin"
-export BASHMATIC_HOME="${BASHMATIC_HOME:-${SCRIPT_SOURCE}}"
+export PATH="${PATH}:/usr/local/bin:/usr/bin:/bin:/sbin:${SCRIPT_SOURCE}/bin"
+export BASHMATIC_HOME="${SCRIPT_SOURCE}"
 export BASHMATIC_MAIN="${BASHMATIC_HOME}/init.sh"
+export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
 if ! declare -f -F source_if_exists >/dev/null; then
   source "${BASHMATIC_HOME}/.bash_safe_source"
@@ -60,7 +61,10 @@ export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -
 # shellcheck disable=SC2002
 export BASHMATIC_VERSION="$(/bin/cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
 export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
-export BASHMATIC_UNAME=$(command -v uname)
+
+source ${BASHMATIC_LIBDIR}/util.sh
+
+export BASHMATIC_UNAME=$(system.uname)
 export BASHMATIC_OS="$($BASHMATIC_UNAME -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
 
 # grab our shell command
