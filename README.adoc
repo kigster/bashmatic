@@ -193,7 +193,7 @@ When you run `bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install
 * On OS-X the script will install Homebrew on OS-X, if not already there.
 ** Once Brew is installed, brew packages `coreutils` and `gnu-sed` are installed, as both are required and are relied upon by Bashmatic.
 * The script will then attempt to `git clone` the bashmatic repo into the Bashmatic home folder, or - if it already exists - it will `git pull` latest changes.
-* Finally, unless you specify `-l` or `--skip-on-login` the script will check your bash dot files, and will add the hook to load Bashmatic from either `~/.bashrc` or `~/.bash_profile`.
+* Finally, unless you specify `-l` or `--skip-on-login` the script will check your bash dot files, and will add the hook to load Bashmatic from either `~/.bashrc` or `${HOME}/.bash_profile`.
 
 The last part my require some explanation.
 
@@ -382,9 +382,9 @@ You can always reload _Bashmatic®_ with `bashmatic.reload` function. This simpl
 
 === Loading Bashmatic at Startup
 
-When you install Bashmatic it automatically adds a hook to your `~/.bash_profile`, but if you are on ZSH you may need to add it manually (for now).
+When you install Bashmatic it automatically adds a hook to your `${HOME}/.bash_profile`, but if you are on ZSH you may need to add it manually (for now).
 
-Add the following to your `~/.zshrc` file:
+Add the following to your `${HOME}/.zshrc` file:
 
 [source,zsh]
 [[ -f ~/.bashmatic/init.sh ]] && source "~/.bashmatic/init.sh"

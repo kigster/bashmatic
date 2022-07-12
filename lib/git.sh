@@ -26,7 +26,7 @@ function git.configure-auto-updates() {
 # @example Print current user's email
 #     git.cfgu email
 #
-# @example Set currrent email
+# @example Set current email
 #     git.cfgu email kigster@gmail.com
 #
 # @example Print all global values

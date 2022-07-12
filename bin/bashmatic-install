@@ -382,8 +382,8 @@ ${bldylw}FLAGS:${clr}
                                 ${bldgrn}$ ~/.bashmatic/bin/bashmatic load-at-login ${clr}
 
                                 This above will install the Bashmatic hook into your shell 
-                                dotfile, eg ${txtcyn}~/.bash_profile.${clr} if you are on BASH,
-                                or ${txtcyn}~/.zshrc${clr} if you are on ZSH..
+                                dotfile, eg ${txtcyn}${HOME}/.bash_profile.${clr} if you are on BASH,
+                                or ${txtcyn}${HOME}/.zshrc${clr} if you are on ZSH..
 
   -g, --skip-git                Do not abort if the destination has local changes
   -i, --skip-install            Only install/verify prerequisites, skip install.

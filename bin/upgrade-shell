@@ -53,7 +53,7 @@ bash.install.path.rc() {
   if [[ ${PATH} != /usr/local/bin:* ]]; then
     export PATH="/usr/local/bin:$PATH"
     bash.append_path ~/.bashrc
-    bash.append_path ~/.bash_profile
+    bash.append_path ${HOME}/.bash_profile
   fi
 }
 

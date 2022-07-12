@@ -9,7 +9,7 @@ ruby.ensure-rbenv() {
   brew.install
   brew.install.package rbenv ruby-build
 
-  grep -q "rbenv init" ~/.bash_profile && echo 'eval "$(rbenv init -)"' >>~/.bash_profile
+  grep -q "rbenv init" ${HOME}/.bash_profile && echo 'eval "$(rbenv init -)"' >>${HOME}/.bash_profile
 
   [[ -n $(command -V rbenv) ]] && return 0
 

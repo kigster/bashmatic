@@ -75,7 +75,7 @@ RUN cd ${BASHMATIC_HOME} && \
     pwd -P && \
     ls -al
 
-RUN rm -f ~/.zshrc && \
+RUN rm -f ${HOME}/.zshrc && \
     /bin/sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
     touch ${HOME}/.zshrc
 
