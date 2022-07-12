@@ -82,6 +82,11 @@ util.arch() {
   echo -n "${AppCurrentOS}-$($(system.uname) -m)-$($(system.uname) -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
 }
 
+# @description 
+#   Finds the exact absolute path of the `uname` utility on a unix file system.
+#
+# @returns
+#   Aborts the process if none are found.
 system.uname() {
   command -v uname && return 0
 

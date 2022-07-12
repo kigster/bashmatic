@@ -1716,6 +1716,7 @@ Miscellaneous utilities.
 * [util.random-number()](#utilrandom-number)
 * [util.generate-password()](#utilgenerate-password)
 * [util.random-string.of-length()](#utilrandom-stringof-length)
+* [system.uname()](#systemuname)
 
 ### `util.random-number()`
 
@@ -1728,6 +1729,10 @@ Generates a password of a given length
 ### `util.random-string.of-length()`
 
 Generates a random string of a given length
+
+### `system.uname()`
+
+Finds the exact absolute path of the `uname` utility on a unix file system.
 
 
 
