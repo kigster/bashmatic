@@ -23,6 +23,18 @@ source lib/time.sh
 source lib/util.sh
 source lib/bashmatic.sh
 
+@test 'file.count.lines()' {
+  local lines=$(file.count.lines test/fixtures/Gemfile.lock.1)
+  set -e
+  [[ ${lines} -eq 799 ]]
+}
+
+@test 'file.count.words()' {
+  local words=$(file.count.words test/fixtures/Gemfile.lock.1)
+  set -e
+  [[ ${words} -eq 1991 ]]
+}
+
 @test 'file.first-is-newer-than-second()' {
   local old_file="test/fixtures/a.sh"
   local newer_file="test/fixtures/b.sh"
