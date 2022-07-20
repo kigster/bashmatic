@@ -62,6 +62,20 @@ Set a file or directorhy to be ignored by Dropbox
 * [file.first-is-newer-than-second()](#filefirst-is-newer-than-second)
 * [file.ask.if-exists()](#fileaskif-exists)
 * [file.install-with-backup()](#fileinstall-with-backup)
+* [file.last-modified-date()](#filelast-modified-date)
+* [file.last-modified-year()](#filelast-modified-year)
+* [file.last-modified-millis()](#filelast-modified-millis)
+* [file.size()](#filesize)
+* [file.size.mb()](#filesizemb)
+* [file.size.gb()](#filesizegb)
+* [file.list.filter-existing()](#filelistfilter-existing)
+* [file.list.filter-non-empty()](#filelistfilter-non-empty)
+* [file.count.lines()](#filecountlines)
+* [file.count.words()](#filecountwords)
+* [file.find()](#filefind)
+* [dir.find()](#dirfind)
+* [ls.mb()](#lsmb)
+* [ls.gb()](#lsgb)
 
 ### `file.temp()`
 
@@ -106,6 +120,64 @@ file.install-with-backup conf/.psqlrc ~/.psqlrc backup-strategy-function
 * @arg1 File to backup
 * @arg2 Destination
 * @arg3 [optional] Shortname of the optional backup strategy: 'bak' or 'folder'. 
+
+### `file.last-modified-date()`
+
+Prints the file's last modified date
+
+### `file.last-modified-year()`
+
+Prints the year of the file's last modified date
+
+### `file.last-modified-millis()`
+
+Prints the file's last modified date expressed as millisecondsd
+
+### `file.size()`
+
+Returns the file size in bytes
+
+### `file.size.mb()`
+
+Prints the file size expressed in Mb (and up to 1 decimal point)
+
+### `file.size.gb()`
+
+Prints the file size expressed in Gb (and up to 1 decimal point)
+
+### `file.list.filter-existing()`
+
+For each argument prints only those that represent existing files
+
+### `file.list.filter-non-empty()`
+
+For each argument prints only those that represent non-emtpy files
+
+### `file.count.lines()`
+
+Prints the number of lines in the file
+
+### `file.count.words()`
+
+Prints the number of lines in the file
+
+### `file.find()`
+
+Invokes UNIX find command searching for files (not folders)
+matching the first argument in the name.
+
+### `dir.find()`
+
+Invokes UNIX find command searching for folders (not files)
+matching the first argument in the name.
+
+### `ls.mb()`
+
+Prints all folders sorted by size, and size printed in Mb
+
+### `ls.gb()`
+
+Prints all folders sorted by size, and size printed in Gb
 
 
 
