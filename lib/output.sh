@@ -8,7 +8,7 @@ export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
 export LibOutput__MinWidth__Default=50
-export LibOutput__MaxWidth__Default=300
+export LibOutput__MaxWidth__Default=100
 export LibOutput__MinHeight__Default=20
 
 export LibOutput__WidthDetectionStrategy="unconstrained"
@@ -143,12 +143,16 @@ output.color.off() {
 .output.current-screen-width.unconstrained() {
   local w
   util.os
-  if [[ ${AppCurrentOS} =~ darwin ]]; then
-    w="$(.output.stty.field columns)"
-  elif [[ ${AppCurrentOS} =~ linux ]]; then
-    w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
+  if output.is-pipe; then
+    printf -- '%d' "${LibOutput__MaxWidth:-80}"
+  else
+    if [[ ${AppCurrentOS} =~ darwin ]]; then
+      w="$(.output.stty.field columns)"
+    elif [[ ${AppCurrentOS} =~ linux ]]; then
+      w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
+    fi
+    printf -- "%d" "$w"
   fi
-  printf -- "%d" "$w"
 }
 
 screen.width.actual() {
