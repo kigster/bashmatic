@@ -44,7 +44,7 @@ GEM
     tty-color (0.5.1)
     tty-cursor (0.7.1)
     tty-screen (0.8.0)
-    tzinfo (1.2.7)
+    tzinfo (1.2.10)
       thread_safe (~> 0.1)
     unicode-display_width (1.7.0)
     unicode_utils (1.4.0)
