@@ -1,0 +1,20 @@
+# vim: set ft=codeowners
+#=============================================================================
+# NOTE: for VIM syntax, install https://github.com/rhysd/vim-syntax-codeowners
+#=============================================================================
+#
+# FILE: .github/CODEOWNERS
+#
+# For information on how this file is structured, it's purpose
+# and syntax, please read the following: https://bit.ly/github-codeowners
+# 
+# REMEMBER: if you add a new team to this file, make sure that:
+#
+#           1. The team has this repo added to its Repo list
+#           2. The team has write access to this repo
+#           3. The settings for the team have "Code Review" tab
+#              and all checkboxes checked, except "Never assign...".
+#
+#=============================================================================
+
+*  @healthsherpa/codeowners-bash

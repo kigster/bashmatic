@@ -1,5 +1,5 @@
 [separator=—]
-= Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
+= HealthSherpa Fork of — Bashmatic® 
 // vim: ft=asciidoc
 :author: Version v3.0.2
 :doctype: book
@@ -11,6 +11,9 @@
 :icons: font
 :license: MIT
 
+CAUTION: please review the xref:./HEALTHSHERPA.md[HEALTHSHERPA.md]-specific instructions on handling this repo. 
+
+== (BASH-based DSL helpers for humans, sysadmins, and fun)
 
 == CI Matrix
 
@@ -18,10 +21,8 @@
 [width="80%",cols=">.^s,<.^m,^.^s",frame="topbot",options="header,footer"]
 |==========================
 |                    | Badges  |  FOSSA Scanning
-| FOSSSA             | image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=shield[License Status,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_shield] .7+<.>| image:https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic.svg?type=large[FOSSA License Scan,link=https://app.fossa.com/projects/git%2Bgithub.com%2Fkigster%2Fbashmatic?ref=badge_large] 
-| CI Tests           | image:https://github.com/kigster/bashmatic/actions/workflows/tests.yml/badge.svg[Test,link=https://github.com/kigster/bashmatic/actions/workflows/tests.yml]                 
-| ShellCheck         | image:https://github.com/kigster/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/kigster/bashmatic/actions/workflows/lint.yml]                 
-| Gitter             | image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+| ShellCheck         | image:https://github.com/healthsherpa/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/healthsherpa/bashmatic/actions/workflows/lint.yml]                 
+| Gitter             | image:https://badges.gitter.im/healthsherpa/bashmatic.svg[link="https://gitter.im/healthsherpa/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 |==========================
 
 
@@ -29,7 +30,7 @@
 
 _Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (500+ of them) that, we hope, make BASH programming easier, more enjoyable, and more importantly, usable due to the focus on providing constant feedback to the user about what is happening, as a script that uses Bashmatic is running.
 
-_Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the https://github.com/kigster/bashmatic/blob/master/lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
+_Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the https://github.com/healthsherpa/bashmatic/blob/master/lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
 
 icon:arrow-circle-down[3x, color="purple"]
 
@@ -60,20 +61,20 @@ _Bashmatic®_ offers a huge range of ever-growing helper functions for running c
 
 NOTE: A good portion of the helpers within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specific functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
 
-Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[functions index page].
+Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the https://github.com/healthsherpa/bashmatic/blob/master/doc/FUNCTIONS.adoc[functions index page].
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* :) 
 
 
 [TIP]
 ====
-We suggest that you learn about Bashmatic from the **https://github.com/kigster/bashmatic/blob/master/README.pdf[PDF version of this document]** which is much better for print. 
+We suggest that you learn about Bashmatic from the **https://github.com/healthsherpa/bashmatic/blob/master/README.pdf[PDF version of this document]** which is much better for print. 
 
-* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/master/doc/USAGE.md[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/master/doc/USAGE.pdf[PDF] version.
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/healthsherpa/bashmatic/blob/master/doc/USAGE.md[USAGE] file, or it's https://github.com/healthsherpa/bashmatic/blob/master/doc/USAGE.pdf[PDF] version.
 
-* There is also an auto-generated file listing the source of every function and module. You can find it https://github.com/kigster/bashmatic/blob/master/doc/FUNCTIONS.adoc[FUNCTIONS].
+* There is also an auto-generated file listing the source of every function and module. You can find it https://github.com/healthsherpa/bashmatic/blob/master/doc/FUNCTIONS.adoc[FUNCTIONS].
 
-* Additionally please checkout the https://github.com/kigster/bashmatic/blob/master/doc/CHANGELOG.md[CHANGELOG] and the https://github.com/kigster/bashmatic/blob/master/doc/LICENSE.adoc[LICENSE].
+* Additionally please checkout the https://github.com/healthsherpa/bashmatic/blob/master/doc/CHANGELOG.md[CHANGELOG] and the https://github.com/healthsherpa/bashmatic/blob/master/doc/LICENSE.adoc[LICENSE].
 ====
 
 === Compatibility
@@ -124,7 +125,7 @@ Where:
 * -q stands for "quiet"; 
 * -v for "verbose"
 
-TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo. We use this URL so that we retain the ability to redirect the installation to a different script in the future, if need be.
+TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/healthsherpa/bashmatic/master/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo. We use this URL so that we retain the ability to redirect the installation to a different script in the future, if need be.
 
 === 2. Automated Install, More Explicit
 
@@ -174,7 +175,7 @@ bash -c "$(curl -fsSL https://bashmatic.re1.re); \
 
 ====
 
-If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:kigster/bashmatic` origin, instead of the default `https://github.com/kigster/bashmatic`:
+If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:healthsherpa/bashmatic` origin, instead of the default `https://github.com/healthsherpa/bashmatic`:
 
 
 Here is the complete list of options accepted by the installer:
@@ -353,14 +354,14 @@ To install Bashmatic manually, follow these steps (feel free to change `BASHMATI
 ----
 export BASHMATIC_HOME="${HOME}/.bashmatic"
 test -d "${BASHMATIC_HOME}" || \
-  git clone https://github.com/kigster/bashmatic.git "${BASHMATIC_HOME}"
+  git clone https://github.com/healthsherpa/bashmatic.git "${BASHMATIC_HOME}"
 cd "${BASHMATIC_HOME}" && ./bin/bashmatic-install -v
 cd ->/dev/null
 ----
 
 === Using Curl
 
-Sometimes you may not be able to use `git` (I have seen issues ranging from local certificate mismatch to old versions of git, and more), but maybe able to download with `curl`. In that case, you can lookup the https://github.com/kigster/bashmatic/tags[latest tag] (substitute "v1.6.0" below with that tag), and then issue this command:
+Sometimes you may not be able to use `git` (I have seen issues ranging from local certificate mismatch to old versions of git, and more), but maybe able to download with `curl`. In that case, you can lookup the https://github.com/healthsherpa/bashmatic/tags[latest tag] (substitute "v1.6.0" below with that tag), and then issue this command:
 
 [source,bash]
 ----
@@ -368,7 +369,7 @@ export BASHMATIC_TAG="v2.4.1"
 set -e
 cd ${HOME}
 curl --insecure -fSsl \
-  https://codeload.github.com/kigster/bashmatic/tar.gz/${BASHMATIC_TAG} \
+  https://codeload.github.com/healthsherpa/bashmatic/tar.gz/${BASHMATIC_TAG} \
   -o bashmatic.tar.gz
 rm -rf .bashmatic && tar xvzf bashmatic.tar.gz && mv bashmatic-${BASHMATIC_TAG} .bashmatic
 source ~/.bashmatic/init.sh
@@ -465,7 +466,7 @@ This particular make target runs `bin/dev-setup` script with the following actio
 +
 `dev, cpp, fonts, gnu, go, java, js, load-balancing, postgres, ruby`
 
-1. `make test` and `make test-parallel`  are both meant for Bashmatic Developers and contributors. Please see the https://github.com/kigster/bashmatic#contributing[Contributing] section on how to run and what to expect from the UNIT tests.
+1. `make test` and `make test-parallel`  are both meant for Bashmatic Developers and contributors. Please see the https://github.com/healthsherpa/bashmatic#contributing[Contributing] section on how to run and what to expect from the UNIT tests.
 
 1. `make update` is the task that should be run by library contributors after they've made their their changes and want the auto-generated  documentation to reflect the  new functions added and so on and so force.  This tasks also generates the function index, re-generate the latest PDFs of `README`, `USAGE` or the `CHANGELOG` files.
 
@@ -550,7 +551,7 @@ This final and most feature-rich example is not just an example – **it's a wor
 
 NOTE: the script relies on Homebrew behind the scenes, and therefore would not work on linux or Windows (unless Brew gets ported there).
 
-It's located in https://github.com/kigster/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
+It's located in https://github.com/healthsherpa/bashmatic/blob/master/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
 image::doc/img/dev-setup.png[Developer Setup,width=100%,align=center]
 
@@ -576,7 +577,7 @@ ${BASHMATIC_HOME}/bin/dev-setup \
   -m 5.6   # use MySQL version 5.6
 ----
 
-This compact command line installs a ton of things, but don't take our word for it - run it yourself. Or, at the very least enjoy this https://github.com/kigster/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
+This compact command line installs a ton of things, but don't take our word for it - run it yourself. Or, at the very least enjoy this https://github.com/healthsherpa/bashmatic/blob/master/.dev-setup-completed.png[one extremely long screenshot] :)
 
 
 === Example IV: Installing GRC Colourify Tool
@@ -606,7 +607,7 @@ Just like with the regular `top` you can see the "top" resource-consuming proces
 
 Here is the pixelated screenshot of `dbtop` running against two live databases:
 
-image::doc/img/dbtop.png[DBTop Example,width=100%,align=center,link="https://github.com/kigster/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
+image::doc/img/dbtop.png[DBTop Example,width=100%,align=center,link="https://github.com/healthsherpa/bashmatic/blob/master/FUNCTIONS.adoc#db-top"]
 
 In order for this to work, you must first define database connection parameters in a YAML file located at the following PATH: `~/.db/database.yml`.
 
@@ -1093,7 +1094,7 @@ Then you can run it like so:
 
 [source,bash]
 ----
-$ url.shorten https://raw.githubusercontent.com/kigster/bashmatic/master/bin/install
+$ url.shorten https://raw.githubusercontent.com/healthsherpa/bashmatic/master/bin/install
 # http://bit.ly/2IIPNE1
 ----
 
@@ -1116,14 +1117,14 @@ $ github.clone sym
   ✘    Validating Github Configuration...
 
        Please enter the name of your Github Organization:
-       $ kigster
+       $ healthsherpa
 
   Your github organization was saved in your ~/.gitconfig file.
   To change it in the future, run: 
 
        $ github.org <org-name>
 
-  ✔︎ $ git clone git@github.com:kigster/sym ▪▪▪▪▪▪〔     931 ms 〕  
+  ✔︎ $ git clone git@github.com:healthsherpa/sym ▪▪▪▪▪▪〔     931 ms 〕  
 ----
 
 ==== File Helpers
@@ -1324,7 +1325,7 @@ There are plenty more modules, that help with:
 
 * link:lib/aws.sh[AWS helpers] – requires `awscli` and credentials setup, and offers some helpers to simplify AWS management.
 * link:lib/docker.sh[Docker Helpers] – assist with docker image building and pushing/pulling
-* link:lib/sym.sh[Sym] – encryption with the gem called https://github.com/kigster/sym[`sym`]
+* link:lib/sym.sh[Sym] – encryption with the gem called https://github.com/healthsherpa/sym[`sym`]
 
 And many more.
 
@@ -1424,7 +1425,9 @@ Acknowledgements: the script is an automation of the method offered on http://is
 
 == Contributing
 
-Please https://github.com/kigster/bashmatic/pulls/new[ submit a pull request] or at least an issue!
+Please see https://github.com/kigster/bashmatic#contributing[contributing] on how to submit upstream changes. 
+
+Otherwise, please create a https://github.com/healthsherpa/bashmatic/pulls/new[ submit a pull request] or at least an issue!
 
 === Running Unit Tests
 
@@ -1465,7 +1468,7 @@ make test
 
 While not every single function is tested (far from it), we do try to add tests to the critical ones.
 
-Please see https://github.com/kigster/bashmatic/blob/master/test/array_test.bats[existing tests] for the examples.
+Please see https://github.com/healthsherpa/bashmatic/blob/master/test/array_test.bats[existing tests] for the examples.
 
 ==== Run Tests Sequentially using the `Makefile`
 
@@ -1477,8 +1480,8 @@ make test-sequential
 
 == Copyright & License
 
-NOTE: © 2016-2022 Konstantin Gredeskoul +
-This project is distributed under the **MIT License.**
+NOTE: © 2016-2022 Konstantin Gredeskoul & HealthSherpa, Inc.+
+Used under permission from the author & the original's MIT license.
 
 
 
