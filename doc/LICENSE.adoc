@@ -1,7 +1,7 @@
 = LICENSE
 :doctype: book
 
-== Copyright © 2017-2021 Konstantin Gredeskoul
+== Copyright © 2016-2022 Konstantin Gredeskoul
 
 Parts of the codebase are Copyright © 2018 PioneerWorks, Inc, but have were
 authored by Konstantin Gredeskoul as part of the open source initiative.

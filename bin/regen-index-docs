@@ -49,7 +49,7 @@ HEADER
   done
 
   printf "\n\n== Copyright\n\n" >>${temp}
-  printf "\n\n© 2017-2021 Konstantin Gredeskoul, All rights reserved, MIT License." >>${temp}
+  printf "\n\n© 2016-2022 Konstantin Gredeskoul, All rights reserved, MIT License." >>${temp}
 
   run "mv -f ${temp} ${BASHMATIC_HOME}/doc"
 }
