@@ -1449,6 +1449,20 @@ Grab the version from `postgres` binary in the PATH and remove fractional sub-ve
 ---
 
 
+## File `lib/7z.sh`
+
+# lib/7z.sh
+
+
+p7zip conversions routines.
+
+
+
+
+
+---
+
+
 ## File `lib/dir.sh`
 
 
@@ -1457,6 +1471,8 @@ Grab the version from `postgres` binary in the PATH and remove fractional sub-ve
 * [dir.short-home()](#dirshort-home)
 
 ### `dir.with-file()`
+
+Returns the first folder above the given that contains a file.
 
 #### Arguments
 
@@ -1820,6 +1836,20 @@ Finds the exact absolute path of the `uname` utility on a unix file system.
 ### `run.inspect-vars()`
 
 Prints values of all variables starting with prefixes in args
+
+
+
+---
+
+
+## File `lib/background.sh`
+
+# lib/background.sh
+
+
+Run a bunch of jobs on the background and wait for their completion
+
+
 
 
 
