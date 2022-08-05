@@ -17,9 +17,12 @@ CAUTION: please review the xref:./HEALTHSHERPA.md[HEALTHSHERPA.md]-specific inst
 .CI Matrix
 [width="80%",cols=">.^s,<.^m",frame="topbot",options="header,footer"]
 |==========================
-|                    | Badges  
-| ShellCheck         | image:https://github.com/healthsherpa/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/healthsherpa/bashmatic/actions/workflows/lint.yml]                 
-| Gitter             | image:https://badges.gitter.im/healthsherpa/bashmatic.svg[link="https://gitter.im/healthsherpa/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
+|             | Badges  
+| Lint        | image:https://github.com/healthsherpa/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/healthsherpa/bashmatic/actions/workflows/lint.yml]                 
+| Bash Tests  | image:https://github.com/healthsherpa/bashmatic/actions/workflows/tests.yml/badge.svg[link="https://github.com/healthsherpa/bashmatic/actions/workflows/tests.yml"]
+
+| Zsh Tests   | image:https://github.com/healthsherpa/bashmatic/actions/workflows/zsh.yml/badge.svg[link="https://github.com/healthsherpa/bashmatic/actions/workflows/zsh.yml"]
+| Gitter      | image:https://badges.gitter.im/healthsherpa/bashmatic.svg[link="https://gitter.im/healthsherpa/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 |==========================
 
 
