@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-# @copyright © 2016-2021 Konstantin Gredeskoul, All rights reserved
+# @copyright © 2016-2022 Konstantin Gredeskoul, All rights reserved
 # @license MIT License.
 #
 # @file lib/audio.sh

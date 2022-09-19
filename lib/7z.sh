@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# vim: ft=bash
+# @copyright © 2016-2022 Konstantin Gredeskoul, All rights reserved
+# @license MIT License.
+#
+# @file lib/7z.sh
+# @description p7zip conversions routines.
 
 7z.install() {
   [[ -n $(which 7z) ]] || run "brew install p7zip"

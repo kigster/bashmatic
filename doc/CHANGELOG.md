@@ -1,5 +1,16 @@
 # Changelog
 
+## [v3.0.3](https://github.com/kigster/bashmatic/tree/v3.0.3) (2022-08-01)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.2...v3.0.3)
+
+**Merged pull requests:**
+
+- Bump tzinfo from 1.2.7 to 1.2.10 in /test [\#104](https://github.com/kigster/bashmatic/pull/104) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Adding new functions file.count.lines\(\) + documentation [\#103](https://github.com/kigster/bashmatic/pull/103) ([kigster](https://github.com/kigster))
+- \[FEATURE\] function `system.uname()` reliably returns absolute file path for `uname` [\#102](https://github.com/kigster/bashmatic/pull/102) ([kigster](https://github.com/kigster))
+- adding dir.with-file + gpg key generation [\#101](https://github.com/kigster/bashmatic/pull/101) ([kigster](https://github.com/kigster))
+
 ## [v3.0.2](https://github.com/kigster/bashmatic/tree/v3.0.2) (2022-06-14)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.1...v3.0.2)

@@ -15,6 +15,7 @@
 * xref:#module-asciidoc[asciidoc]
 * xref:#module-audio[audio]
 * xref:#module-aws[aws]
+* xref:#module-background[background]
 * xref:#module-bashit[bashit]
 * xref:#module-bashmatic[bashmatic]
 * xref:#module-brew[brew]
@@ -907,6 +908,70 @@ aws.s3.upload ()
         error "AWS S3 upload failed with code ${LibRun__LastExitCode}"
     fi
     return "${LibRun__LastExitCode}"
+}
+
+----
+
+
+=== Module `background`
+
+==== `background.log`
+
+[source,bash]
+----
+background.log () 
+{ 
+    local index="${1:-0}"
+    printf "${background_log/{{index}}/${index}}"
+}
+
+----
+
+==== `background.run`
+
+[source,bash]
+----
+background.run () 
+{ 
+    for command in "$@"
+    do
+        local index=${#running_jobs[@]}
+        local log="$(background.log "${index}")"
+        ( ${command} 2>&1 | tee -a "${log}" ) & running_jobs[$!]=-1
+    done
+}
+
+----
+
+==== `background.sigchld`
+
+[source,bash]
+----
+background.sigchld () 
+{ 
+    for pid in "${!running_jobs[@]}"
+    do
+        if [ ! -d "/proc/$pid" ]; then
+            wait "${pid}"
+            local code="$?"
+            running_jobs["${pid}"]=${code}
+        fi
+    done
+}
+
+----
+
+==== `background.wait`
+
+[source,bash]
+----
+background.wait () 
+{ 
+    local timeout
+    echo Starting background processes with pidS ${!pidS[@]}
+    echo Starting dd
+    timeout 15s dd if=/dev/zero of=/dev/null
+    echo dd terminated
 }
 
 ----
@@ -3613,7 +3678,7 @@ db.top ()
             break
         else
             .output.set-indent 0
-            hl.green "DbTop© v1.1.0 © 2016-2021 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
+            hl.green "DbTop© v1.1.0 © 2016-2022 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
             cat "${tof}"
             cursor.at.y $(($(.output.screen-height) + 1))
             printf "${bldwht}Press Ctrl-C to quit.${clr}"
@@ -4166,6 +4231,30 @@ file.ask.if-exists ()
 
 ----
 
+==== `file.count.lines`
+
+[source,bash]
+----
+file.count.lines () 
+{ 
+    [[ -f "$1" ]] || return 1
+    wc -l "$1" | awk '{print $1}' | tr -d '\n'
+}
+
+----
+
+==== `file.count.words`
+
+[source,bash]
+----
+file.count.words () 
+{ 
+    [[ -f "$1" ]] || return 1
+    wc -w "$1" | awk '{print $1}' | tr -d '\n'
+}
+
+----
+
 ==== `file.exists-and-newer-than`
 
 [source,bash]
@@ -4442,6 +4531,21 @@ file.size ()
 
 ----
 
+==== `file.size.gb`
+
+[source,bash]
+----
+file.size.gb () 
+{ 
+    local file="$1"
+    shift
+    local s=$(file.size "${file}")
+    local gb=$(echo $((s / 10 / 1024 / 1024 )) | sedx 's/([0-9][0-9])$/.\1/g')
+    printf "%.1f Gb" "${gb}"
+}
+
+----
+
 ==== `file.size.mb`
 
 [source,bash]
@@ -4451,7 +4555,7 @@ file.size.mb ()
     local file="$1"
     shift
     local s=$(file.size "${file}")
-    local mb=$(echo $((s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
+    local mb=$(echo $((s / 10/ 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
     printf "%.2f MB" "${mb}"
 }
 
@@ -4503,18 +4607,6 @@ file.stat ()
 file.strip.extension () 
 { 
     file.extension.remove "$@"
-}
-
-----
-
-==== `file.sync`
-
-[source,bash]
-----
-file.sync () 
-{ 
-    local from="$1"
-    local to="$2"
 }
 
 ----
@@ -4592,13 +4684,24 @@ files.map.shell-scripts ()
 
 ----
 
+==== `ls.gb`
+
+[source,bash]
+----
+ls.gb () 
+{ 
+    du -g -d 1 "$@" | sort -rn
+}
+
+----
+
 ==== `ls.mb`
 
 [source,bash]
 ----
 ls.mb () 
 { 
-    du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
+    du -m -d 1 "$@" | sort -rn
 }
 
 ----
@@ -13348,6 +13451,35 @@ pause.short ()
 
 ----
 
+==== `system.uname`
+
+[source,bash]
+----
+system.uname () 
+{ 
+    command -v uname && return 0
+    if [[ -x /bin/uname ]]; then
+        printf -- "/bin/uname"
+    else
+        if [[ -x /usr/bin/uname ]]; then
+            printf -- "/usr/bin/uname"
+        else
+            if [[ -x /sbin/uname ]]; then
+                printf -- "/sbin/uname"
+            else
+                if [[ -x /usr/sbin/uname ]]; then
+                    printf -- "/usr/sbin/uname"
+                else
+                    echo "Can't find uname, aborting..." 1>&2
+                    exit 1
+                fi
+            fi
+        fi
+    fi
+}
+
+----
+
 ==== `util.append-to-init-files`
 
 [source,bash]
@@ -13388,7 +13520,7 @@ util.append-to-init-files ()
 ----
 util.arch () 
 { 
-    echo -n "${AppCurrentOS}-$(/usr/bin/uname -m)-$(/usr/bin/uname -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
+    echo -n "${AppCurrentOS}-$($(system.uname) -m)-$($(system.uname) -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
 }
 
 ----
@@ -13616,7 +13748,7 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    export AppCurrentOS="${AppCurrentOS:-$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
+    export AppCurrentOS="${AppCurrentOS:-$( $(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 ----
@@ -14219,4 +14351,4 @@ zsh.install.plugins ()
 
 
 
-© 2017-2021 Konstantin Gredeskoul, All rights reserved, MIT License.
+© 2016-2022 Konstantin Gredeskoul, All rights reserved, MIT License.
