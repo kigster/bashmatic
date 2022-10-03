@@ -605,7 +605,17 @@ For each passed argument checks if it's installed.
 
 
 
+* [output.screen-width.actual()](#outputscreen-widthactual)
+* [output.screen-height.actual()](#outputscreen-heightactual)
 * [section()](#section)
+
+### `output.screen-width.actual()`
+
+OS-independent way to determine screen width.
+
+### `output.screen-height.actual()`
+
+OS-independent way to determine screen height.
 
 ### `section()`
 
@@ -1836,20 +1846,6 @@ Finds the exact absolute path of the `uname` utility on a unix file system.
 ### `run.inspect-vars()`
 
 Prints values of all variables starting with prefixes in args
-
-
-
----
-
-
-## File `lib/background.sh`
-
-# lib/background.sh
-
-
-Run a bunch of jobs on the background and wait for their completion
-
-
 
 
 
