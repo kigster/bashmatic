@@ -635,6 +635,14 @@ ui.closer.ok() {
   printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
 }
 
+inline.ok() {
+  printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
+}
+
+inline.not-ok() {
+  printf " ${txtwht}${bakred} ✘ ${clr} "
+}
+
 ui.closer.ok:() {
   ui.closer.ok "$@"
   echo
