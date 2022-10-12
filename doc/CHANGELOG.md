@@ -1,5 +1,17 @@
 # Changelog
 
+## [v3.0.5](https://github.com/kigster/bashmatic/tree/v3.0.5) (2022-10-11)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.4...v3.0.5)
+
+## [v3.0.4](https://github.com/kigster/bashmatic/tree/v3.0.4) (2022-10-03)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.3...v3.0.4)
+
+**Merged pull requests:**
+
+- Adding actual screen dimension functions [\#105](https://github.com/kigster/bashmatic/pull/105) ([kigster](https://github.com/kigster))
+
 ## [v3.0.3](https://github.com/kigster/bashmatic/tree/v3.0.3) (2022-08-01)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.2...v3.0.3)

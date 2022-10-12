@@ -1,6 +1,7 @@
 [separator=—]
-= HealthSherpa Fork of — Bashmatic® (BASH-based DSL helpers for humans, sysadmins, and fun)
-:author: Version v3.0.3
+= HealthSherpa Fork of — Bashmatic® 
+// vim: ft=asciidoc
+:author: Version v3.0.5
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai

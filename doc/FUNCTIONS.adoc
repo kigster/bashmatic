@@ -15,7 +15,6 @@
 * xref:#module-asciidoc[asciidoc]
 * xref:#module-audio[audio]
 * xref:#module-aws[aws]
-* xref:#module-background[background]
 * xref:#module-bashit[bashit]
 * xref:#module-bashmatic[bashmatic]
 * xref:#module-brew[brew]
@@ -908,70 +907,6 @@ aws.s3.upload ()
         error "AWS S3 upload failed with code ${LibRun__LastExitCode}"
     fi
     return "${LibRun__LastExitCode}"
-}
-
-----
-
-
-=== Module `background`
-
-==== `background.log`
-
-[source,bash]
-----
-background.log () 
-{ 
-    local index="${1:-0}"
-    printf "${background_log/{{index}}/${index}}"
-}
-
-----
-
-==== `background.run`
-
-[source,bash]
-----
-background.run () 
-{ 
-    for command in "$@"
-    do
-        local index=${#running_jobs[@]}
-        local log="$(background.log "${index}")"
-        ( ${command} 2>&1 | tee -a "${log}" ) & running_jobs[$!]=-1
-    done
-}
-
-----
-
-==== `background.sigchld`
-
-[source,bash]
-----
-background.sigchld () 
-{ 
-    for pid in "${!running_jobs[@]}"
-    do
-        if [ ! -d "/proc/$pid" ]; then
-            wait "${pid}"
-            local code="$?"
-            running_jobs["${pid}"]=${code}
-        fi
-    done
-}
-
-----
-
-==== `background.wait`
-
-[source,bash]
-----
-background.wait () 
-{ 
-    local timeout
-    echo Starting background processes with pidS ${!pidS[@]}
-    echo Starting dd
-    timeout 15s dd if=/dev/zero of=/dev/null
-    echo dd terminated
 }
 
 ----
@@ -7382,6 +7317,28 @@ hr.colored ()
 
 ----
 
+==== `inline.not-ok`
+
+[source,bash]
+----
+inline.not-ok () 
+{ 
+    printf " ${txtwht}${bakred} ✘ ${clr} "
+}
+
+----
+
+==== `inline.ok`
+
+[source,bash]
+----
+inline.ok () 
+{ 
+    printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
+}
+
+----
+
 ==== `left`
 
 [source,bash]
@@ -7587,6 +7544,46 @@ output.reset-min-max-width ()
 
 ----
 
+==== `output.screen-height.actual`
+
+[source,bash]
+----
+output.screen-height.actual () 
+{ 
+    local h
+    util.os
+    if [[ ${AppCurrentOS} =~ darwin ]]; then
+        h="$(.output.stty.field rows)"
+    else
+        if [[ ${AppCurrentOS} =~ linux ]]; then
+            h="$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
+        fi
+    fi
+    printf -- "%d" "$h"
+}
+
+----
+
+==== `output.screen-width.actual`
+
+[source,bash]
+----
+output.screen-width.actual () 
+{ 
+    local w
+    util.os
+    if [[ ${AppCurrentOS} =~ darwin ]]; then
+        w="$(.output.stty.field columns)"
+    else
+        if [[ ${AppCurrentOS} =~ linux ]]; then
+            w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
+        fi
+    fi
+    printf -- "%d" "$w"
+}
+
+----
+
 ==== `output.set-max-width`
 
 [source,bash]
@@ -7648,6 +7645,17 @@ screen-width ()
 [source,bash]
 ----
 screen.height () 
+{ 
+    .output.screen-height
+}
+
+----
+
+==== `screen.height.actual`
+
+[source,bash]
+----
+screen.height.actual () 
 { 
     .output.screen-height
 }
