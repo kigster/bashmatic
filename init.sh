@@ -203,7 +203,7 @@ function source-if-exists() {
 function bashmatic.load() {
   __bashmatic.parse-arguments "$@"
   __bashmatic.init-core
- 
+    bashmatic.current-os >/dev/null
   return 0
 }
 

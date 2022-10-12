@@ -28,8 +28,8 @@
     command -v gdate >/dev/null || .time.osx.coreutils
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
     [[ -n $(command -v gdate) ]] && date_runnable='gdate'
+    date_runnable=$(command -v gdate || command -v date)
   fi
-  date_runnable=$(command -v gdate || command -v date)
   eval "${date_runnable} '+%s%3N'"
 }
 
