@@ -12,7 +12,7 @@ function reset-color() {
 }
 
 # @description Prints the background color of the terminal, assuming terminal responds
-#              to the escape sequence. More info: 
+#              to the escape sequence. More info:
 #              https://stackoverflow.com/questions/2507337/how-to-determine-a-terminals-background-color
 function color.current-background() {
   printf "\e]11;?\a"
@@ -84,6 +84,32 @@ function color.enable() {
     export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
 
     export BashMatic__ColorLoaded=1
+
+    export bg_blood="\e[41m"
+    export bg_blue_on_gray="\e[90;7;42m"
+    export bg_bright_green="\e[48;5;82m"
+    export bg_dark_green="\e[48;5;82m"
+    export bg_bright_red="\e[1;31m\e[48;5;196m"
+    export bg_deep_blue="\e[48;5;37m"
+    export bg_deep_green="\e[48;5;28m"
+    export bg_green_on_gray="\e[90;7;102m"
+    export bg_grey="\e[48;5;239m"
+    export bg_mustard="\e[48;5;178m"
+    export bg_pink="\e[48;5;89m"
+    export bg_sky_blue="\e[48;5;39m"
+    export bg_yellow_on_gray="\e[90;7;43m"
+
+    export fg_dark_red="\e[38;5;88m"
+    export fg_bright_green="\e[38;5;82m"
+    export fg_sky_blue="\e[38;5;39m"
+    export fg_deep_green="\e[38;5;28m"
+    export fg_doll="\e[38;5;183m"
+    export fg_grey="\e[38;5;239m"
+    export fg_light_green="\e[38;5;108m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_pink="\e[38;5;89m"
+    export fg_purr="\e[38;5;219m"
   fi
 }
 
@@ -147,10 +173,34 @@ function color.disable() {
   unset white_on_salmon
   unset yellow_on_gray
 
+  unset bg_blood
+  unset bg_blue_on_gray
+  unset bg_bright_green
+  unset bg_dark_green
+  unset bg_bright_red
+  unset bg_deep_blue
+  unset bg_deep_green
+  unset bg_green_on_gray
+  unset bg_grey
+  unset bg_mustard
+  unset bg_pink
+  unset bg_sky_blue
+  unset bg_yellow_on_gray
+  unset fg_dark_red
+  unset fg_bright_green
+  unset fg_sky_blue
+  unset fg_deep_green
+  unset fg_doll
+  unset fg_grey
+  unset fg_light_green
+  unset fg_mustard
+  unset fg_mustard
+  unset fg_pink
+  unset fg_purr
+
   export BashMatic__ColorLoaded=0
 
   #trap reset-color EXIT
 }
 
 [[ ${BashMatic__ColorLoaded} -eq 1 ]] || color.enable
-
