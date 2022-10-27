@@ -4,7 +4,7 @@ export LibRepo__Interrupted=false
 source "${BASHMATIC_HOME}/lib/color.sh"
 
 repo.rebase() {
-  run "git pull origin master --rebase"
+  run "git pull origin main --rebase"
 }
 
 repo.stash-and-rebase() {

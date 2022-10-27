@@ -52,7 +52,7 @@ bashmatic.git.sync() {
     exit 1
   fi
 
-  (git checkout master && git pull --rebase) >/dev/null
+  (git checkout main && git pull --rebase) >/dev/null
 
   cd - >/dev/null
 }

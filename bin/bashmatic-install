@@ -337,7 +337,7 @@ export bootstrap__bash_version="5.1-rc2"
 export bootstrap__bash_prefix="/usr/local"
 export bootstrap__sudoers_dir="/private/etc/sudoers.d"
 export bootstrap__git_method="https"
-export bootstrap__git_branch="master"
+export bootstrap__git_branch="main"
 
 function is-debug() {
   ((BASHMASTIC_DEBUG))
@@ -367,7 +367,7 @@ ${bldylw}DESCRIPTION:
 ${bldylw}FLAGS:${clr}
   -m, --git-method [git|https]  The default is 'https' unless your username is 'kig'.
   -b, --git-branch [branch|tag] Use a concrete branch or a tag when installing, defaults to
-                                the 'master' branch.
+                                the 'main' branch.
 
   -H, --bashmatic-home PATH     Install bashmatic into PATH (default: ${bootstrap__bashmatic_home/${HOME}/\~})
   -V, --bash-version VERSION    Install BASH VERSION (default: ${bootstrap__bash_version})
