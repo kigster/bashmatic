@@ -77,10 +77,10 @@ function title-box() {
   printf "${clr}\n
  ${title_border_color} ┌─────────────────────────────────────────────────────────────────────────────────────┐ ${clr}\n"
   for line in "$@"; do
-    printf "${bold}${title_border_color} │  ${title_text_color}%-83.83s${title_border_color}${clr}${title_border_color}│${clr}${title_shadow_color}██${color_clear}\n" "${line}"
+    printf "${bold}${title_border_color} │  ${title_text_color}%-83.83s${title_border_color}${clr}${title_border_color}│${clr}${title_shadow_color}██${clr}\n" "${line}"
   done
-  printf " ${title_border_color} └─────────────────────────────────────────────────────────────────────────────────────┘ ${clr}${title_shadow_color}██${color_clear}
-    ${title_shadow_color}████████████████████████████████████████████████████████████████████████████████████████${color_clear}
+  printf " ${title_border_color} └─────────────────────────────────────────────────────────────────────────────────────┘ ${clr}${title_shadow_color}██${clr}
+    ${title_shadow_color}████████████████████████████████████████████████████████████████████████████████████████${clr}
 \n"
 }
 
@@ -124,6 +124,17 @@ function title() {
 }
 
 function divider() {
+  divider__ "$@"
+  printf "${clr}\n"
+}
+
+function divider__() {
   local color="${1:-${fg_bright_green}}"
-  printf " ${color}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${color_clear}\n"
+  printf "${color}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${clr}"
+}
+
+function divider.yellow() {
+  printf "${clr}\n${txtylw}"
+  divider__ "${txtylw}${bakylw}"
+  printf "${clr}${txtylw}${clr}\n"
 }

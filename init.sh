@@ -23,19 +23,31 @@ fi
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
+function year() {
+  date '+%Y'
+}
+
+# shellcheck disable=SC2296
 export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
 export PATH="${PATH}:/usr/local/bin:/usr/bin:/bin:/sbin:${SCRIPT_SOURCE}/bin"
 export BASHMATIC_HOME="${SCRIPT_SOURCE}"
 export BASHMATIC_MAIN="${BASHMATIC_HOME}/init.sh"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
+[[ -f "${BASHMATIC_LIB}/color.sh" ]] && source  "${BASHMATIC_LIB}/color.sh" 
+
+# shellcheck disable=SC2002
+export BASHMATIC_VERSION="$(/bin/cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
+export BASHMATIC_PREFIX="      ${txtgrn}${txtblk}${bakgrn}  BashMatic™ \
+${txtblk}${bakylw} ® 2015-$(year) Konstantin Gredeskoul \
+${txtwht}${bakblu} v${BASHMATIC_VERSION}   ${clr}${txtblu}${clr}"
 
 export BASHMATIC_QUIET=0
 export BASHMATIC_DEBUG=0
-export BASHMATIC_LOADED=${BASHMATIC_LOADED:-0}
+export BASHMATIC_LOADED=0
 
-[[ $* =~ -r || $* =~ --reload ]] && export BASHMATIC_LOADED=0
-[[ $* =~ -q || $* =~ --quiet ]] && export BASHMATIC_QUIET=1
-[[ $* =~ -d || $* =~ --debug ]] && {
+[[ $* =~ (-r|--reload|-f|--force) ]] && export BASHMATIC_LOADED=0
+[[ $* =~ (-q|--quiet) ]] && export BASHMATIC_QUIET=1
+[[ $* =~ (-d|--debug) ]] && {
   export BASHMATIC_DEBUG=1
   export DEBUG=1
 }
@@ -54,14 +66,29 @@ function not-quiet() {
 
 function log.err() {
   is-debug || return 0
-  printf "$(pfx) ${blderr}[ERROR] --> ${bldylw}$*${clr}\n"
+  printf "$(pfx) ${txtblk}${bakred}${txtwht}${bakred} ERROR ${clr}${txtred}${clr}${bldred} $*${clr}\n"
 }
 
 function log.inf() {
   is-debug || return 0
-  printf "$(pfx) ${bldblu}[INFO]  --> ${bldgrn}$*${clr}\n"
+  printf "$(pfx) ${txtblk}${bakblu}${txtwht}${bakblu} INFO  ${clr}${txtblu}${clr}${bldblu} $*${clr}\n"
 }
 
+function log.ok() {
+  cursor.save
+  cursor.left 1000
+  cursor.up 1
+  inline.ok
+  cursor.restore
+}
+
+function log.not-ok() {
+  cursor.save
+  cursor.left 1000
+  cursor.up 1
+  inline.not-ok
+  cursor.restore
+}
 
 function __bashmatic.print-path-config() {
   is-debug && not-quiet && printf "${BASHMATIC_PREFIX}\n"
@@ -81,9 +108,12 @@ function __bashmatic.dealias() {
   fi
 }
 
-function __bashmatic.load-time() {
-  [[ -n $(type millis 2>/dev/null) ]] || source "${BASHMATIC_HOME}/lib/time.sh"
-  export __bashmatic_start_time="$(millis)"
+function __bashmatic.load-deps() {
+  type not-ok  2>/dev/null | grep -q function           || source "${BASHMATIC_LIB}/output.sh"
+  type millis  2>/dev/null | grep -q function           || source "${BASHMATIC_LIB}/time.sh"
+  type util.os 2>/dev/null | grep -q function           || source "${BASHMATIC_LIB}/util.sh"
+  type bashmatic.reload 2>/dev/null | grep -q function  || source "${BASHMATIC_LIB}/bashmatic.sh"
+  type color.enable 2>/dev/null | grep -q function      || source "${BASHMATIC_LIB}/color.sh"
 }
 
 
@@ -106,16 +136,13 @@ function __bashmatic.home.is-valid() {
   [[ -n ${BASHMATIC_HOME} && -d ${BASHMATIC_HOME} && -s ${BASHMATIC_HOME}/init.sh ]]
 }
 
-function year() {
-  date '+%Y'
-}
-
 function __bashmatic.init-core() {
   __bashmatic.dealias
 
   # DEFINE CORE VARIABLES
   export BASHMATIC_URL="https://github.com/kigster/bashmatic"
-  export BASHMATIC_OS="${BASHMATIC_OS}"
+  export BASHMATIC_UNAME="$(system.uname)"
+  export BASHMATIC_OS="$(${BASHMATIC_UNAME} -s | tr '[:upper:]' '[:lower:]')"
 
   # shellcheck disable=2046
   export BASHMATIC_TEMP="/tmp/${USER}/__bashmatic"
@@ -128,8 +155,6 @@ function __bashmatic.init-core() {
     return 1
   fi
 
-  is-debug && __bashmatic.load-time
-  is-quiet || printf "\n${BASHMATIC_PREFIX}\n\n"
 
   local init_func="__bashmatic.init.${BASHMATIC_OS}"
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
@@ -148,13 +173,21 @@ function __bashmatic.init-core() {
 
   # LOAD ALL BASHMATIC SCRIPTS AT ONCE
   # This is the fastest method that only takes about 110ms
-  is-debug && not-quiet && printf "$(pfx) evaluating the library..."
-  eval "$(/bin/cat "${BASHMATIC_HOME}"/lib/*.sh)"
+  export __bashmatic_start_time="$(millis)"
+  local -a sources=( $(find "${BASHMATIC_LIB}" -name '*.sh') )
+  is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..."
+  eval "$(/bin/cat "${BASHMATIC_LIB}"/*.sh)"
+  local code=$?
+
+  is-debug && not-quiet && {
+    ((code)) && log.not-ok
+    ((code)) || log.ok
+  }
 
   is-debug && not-quiet && {
     local __bashmatic_end_time=$(millis)
-    echo
-    h6 "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
+    log.inf "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
+    log.ok
   }
 }
 
@@ -175,8 +208,9 @@ function __bashmatic.parse-arguments() {
       log.inf "sourcing env file ${env_file}"
       source "$env_file"
     fi
-    if [[ "$file" =~ (reload|force|refresh) ]]; then
-      log.inf "setting to is-not-loaded"
+    if [[ "$file" =~ (reload|force|refresh|-f) ]]; then
+      log.inf "force-reloading bashmatic library..."; log.ok
+      export BASHMATIC_LOADED=0
     fi
   done
 }
@@ -185,19 +219,20 @@ function __bashmatic.parse-arguments() {
 # Help
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 [[ $* =~ -h || $* =~ --help  ]] && {
-  [[ -f ${BASHMATIC_LIB}/color.sh ]] && source ${BASHMATIC_LIB}/color.sh
+
   printf "\n${BASHMATIC_PREFIX}\n"
 
   printf "
   ${bldylw}USAGE:${clr}
     ${bldgrn}source <bashmatic-home>/.init.sh  [ -q | --quiet ] \\
                                       [ -d | --debug ] \\
-                                      [ -r | --reload ]
+                                      [ -r | --reload | -f | --force ]
 
   ${bldylw}FLAGS:${clr}
     -q | --quiet         Supress output
     -d | --debug         Print lots of output
     -r | --reload        Reload the BashMatic library
+    -f | --force         Reload the BashMatic library
 
   ${bldylw}DESCRIPTION:${clr}
     Loads the entire BashMatic™ Framework into the BASH memory.
@@ -225,18 +260,25 @@ function bashmatic.load() {
   return 0
 }
 
+function pfx() {
+  printf "      ${txtgrn}${txtblk}${bakgrn}  BashMatic™ ${txtblk}${bakylw} $(date.now.humanized) ${clr}${txtylw} ${clr}"
+}
+
+#————————————————————————————————————————————————————————————————————————————————————————————————————
+# Main Flow
+#————————————————————————————————————————————————————————————————————————————————————————————————————
+
+# Dependencies
+__bashmatic.load-deps
+
+# Banner
+not-quiet && printf "\n${BASHMATIC_PREFIX}\n\n"
+
+# If we are loading for the first time...
 if [[ ${BASHMATIC_LOADED} -ne 1 ]] ; then
   #————————————————————————————————————————————————————————————————————————————————————————————————————
   # Main Flow
   #————————————————————————————————————————————————————————————————————————————————————————————————————
-
-  [[ -f "${BASHMATIC_HOME}/lib/time.sh" ]] && source "${BASHMATIC_HOME}/lib/time.sh"
-
-  export BASHMATIC_PREFIX="${txtred}${txtwht}${bakred}  BashMatic™ Framework for BASH v4+  ${txtblk}${bakylw} ® 2015-$(year) Konstantin Gredeskoul ${txtwht}${bakblu} Version ${BASHMATIC_VERSION}   ${clr}${txtblu}${clr}"
-
-  function pfx() {
-    printf "${txtred}${txtwht}${bakred}  BashMatic™ $(date.now.humanized) ${clr}${bldred} ${clr}"
-  }
 
   # resolve BASHMATIC_HOME if necessary
   __bashmatic.home.is-valid || {
@@ -265,13 +307,6 @@ if [[ ${BASHMATIC_LOADED} -ne 1 ]] ; then
 
   export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
   # shellcheck disable=SC2002
-  export BASHMATIC_VERSION="$(/bin/cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
-  export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
-
-  source ${BASHMATIC_LIBDIR}/util.sh
-
-  export BASHMATIC_UNAME=$(system.uname)
-  export BASHMATIC_OS="$($BASHMATIC_UNAME -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
 
   # grab our shell command
   export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
@@ -281,13 +316,11 @@ if [[ ${BASHMATIC_LOADED} -ne 1 ]] ; then
   export BASHMATIC_LOADED=1
 else
   source "${BASHMATIC_LIB}/output-admonitions.sh"
-  not-quiet && {
-    echo
+  not-quiet && is-debug && {
     divider
-    is-debug && printf "$(pfx) BashMatic is already loaded.\n"
-    is-debug && printf "$(pfx) Use function ${bldylw}bashmatic.reload()\n"
-    is-debug && printf "$(pfx) if you want to reload all the sources.\n"
+    printf "$(pfx) BashMatic is already loaded.\n"
+    printf "$(pfx) Use function ${bldylw}bashmatic.reload()\n"
+    printf "$(pfx) if you want to reload all the sources.\n"
     divider
-    echo
   } || true
 fi
