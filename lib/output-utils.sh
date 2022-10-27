@@ -69,12 +69,12 @@ function info() {
   echo
 }
 
-function error() {
-  title-red "                                   «« ERROR »»                                                  " \
-    "$(printf "%-90.90s" "$*")"
+function error-title() {
+  title-red "$(printf "%60.60s" "──── ERROR ───")" "$@"
+}
 
-  # header=$(printf -- "${clr}${txtred}  « ERROR » ")
-  # box.white-on-red "${header} ${clr}${bldwht}${bakred} — $1" "${@:2}" >&2
+function error() {
+  panel-error "ERROR" "$@"
 }
 
 function fatal() {

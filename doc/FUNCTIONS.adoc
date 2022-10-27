@@ -7966,11 +7966,11 @@ panel-purple-red ()
 
 ----
 
-==== `panel-red`
+==== `panel-error`
 
 [source,bash]
 ----
-panel-red () 
+panel-error () 
 { 
     export title_text_color="${bg_bright_red}${bldwht}"
     export title_border_color="${bg_bright_red}${fg_dark_red}"
@@ -7980,11 +7980,11 @@ panel-red ()
 
 ----
 
-==== `panel-red-white`
+==== `panel-error-white`
 
 [source,bash]
 ----
-panel-red-white () 
+panel-error-white () 
 { 
     export title_text_color="${bg_bright_red}${bldwht}"
     export title_border_color="${bg_bright_red}${bldwht}"
@@ -7994,11 +7994,11 @@ panel-red-white ()
 
 ----
 
-==== `panel-red-yellow`
+==== `panel-error-yellow`
 
 [source,bash]
 ----
-panel-red-yellow () 
+panel-error-yellow () 
 { 
     export title_text_color="${bg_bright_red}${bldwht}"
     export title_border_color="${bg_bright_red}${bldylw}"
