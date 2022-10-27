@@ -282,7 +282,7 @@ function git.current-branch() {
 
 function git.upstream() {
   local this_branch=$(git.current-branch)
-  this_branch=${this_branch:-master}
+  this_branch=${this_branch:-main}
   run.set-next show-output-on
   run "git branch --set-upstream-to=origin/${this_branch} ${this_branch}"
 }
