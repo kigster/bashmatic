@@ -9,11 +9,11 @@ export Bashmatic__Test=1
 
 load.bashmatic-deps() {
   source "${BASHMATIC_INIT}"  
-  load "${BASHMATIC_LIBDIR}/output.sh"
-  load "${BASHMATIC_LIBDIR}/output-boxes.sh"
-  load "${BASHMATIC_LIBDIR}/time.sh"
-  load "${BASHMATIC_LIBDIR}/sedx.sh"
-  load "${BASHMATIC_LIBDIR}/util.sh"
+  load "${BASHMATIC_LIB}/output.sh"
+  load "${BASHMATIC_LIB}/output-boxes.sh"
+  load "${BASHMATIC_LIB}/time.sh"
+  load "${BASHMATIC_LIB}/sedx.sh"
+  load "${BASHMATIC_LIB}/util.sh"
 }
 
 load.deps() {

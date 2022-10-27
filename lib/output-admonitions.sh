@@ -14,11 +14,11 @@ function title-panel() {
 
   printf "${clr}\n
  ${title_border_color} ${box_top} ${clr}\n"
-    .title.line "${shadow}" "${line}"
+    .title.line "${shadow}" "${title_title_color:-${title_text_color}}" "${line}"
   printf " ${title_border_color} ${box_divider} ${shadow}\n"
 
   for line in "$@"; do
-    .title.line "${shadow}" "${line}"
+    .title.line "${shadow}" "${title_text_color}" "${line}"
   done
   
   printf " ${title_border_color} ${box_bottom} ${shadow}\n"
@@ -27,25 +27,28 @@ function title-panel() {
 
 function .title.line() {
   local shadow="$1"; shift
-  printf " ${clr}${title_border_color} │  ${title_text_color}%-80.80s${title_border_color}${title_border_color}   │ ${shadow}\n" "$*"
+  local text_color="$1"; shift
+  printf " ${clr}${title_border_color} ┃  ${clr}${text_color}%-80.80s${clr}${title_border_color}   ┃ ${shadow}\n" "$*"
 }
 
 
-function panel-red() {
-  export title_text_color="${bg_bright_red}${bldwht}"
-  export title_border_color="${bg_bright_red}${fg_dark_red}"
+function panel-error() {
+  export title_title_color="${bldwht}${bg_blood}"
+  export title_text_color="${txtblk}${bg_blood}"
+  export title_border_color="${bg_blood}${fg_dark_red}"
   export title_shadow_color="${fg_dark_red}"
   title-panel "$@"
 }
 
-function panel-red-yellow() {
-  export title_text_color="${bg_bright_red}${bldwht}"
-  export title_border_color="${bg_bright_red}${bldylw}"
+function panel-error-yellow() {
+  export title_title_color="${bldwht}${bakred}"
+  export title_text_color="${bldylw}${bakred}"
+  export title_border_color="${blkylw}${bakred}"
   export title_shadow_color="${fg_dark_red}"
   title-panel "$@"
 }
 
-function panel-red-white() {
+function panel-error-white() {
   export title_text_color="${bg_bright_red}${bldwht}"
   export title_border_color="${bg_bright_red}${bldwht}"
   export title_shadow_color="${fg_dark_red}"
@@ -74,13 +77,22 @@ function panel-info-dark() {
 }
 
 function title-box() {
+  local len
+  local len_actual
+  local width
+  local diff
+  width=82
   printf "${clr}\n
  ${title_border_color} ┌─────────────────────────────────────────────────────────────────────────────────────┐ ${clr}\n"
   for line in "$@"; do
-    printf "${bold}${title_border_color} │  ${title_text_color}%-83.83s${title_border_color}${clr}${title_border_color}│${clr}${title_shadow_color}██${color_clear}\n" "${line}"
+    len=$(ruby -e "puts '${line}'.size")
+    len_actual=$(echo "${line}" | wc -c | tr -d ' ')
+    diff=$(( width - len ))
+    # echo "len=${len}, len_actual=${len_actual}, diff=${diff}"
+    printf " ${bold}${title_border_color} │  ${title_text_color}%${len_actual}.${len_actual}s${title_border_color}%${diff}.${diff}s${clr}${title_border_color}│ ${clr}${title_shadow_color}██${clr}\n" "${line}" " "
   done
-  printf " ${title_border_color} └─────────────────────────────────────────────────────────────────────────────────────┘ ${clr}${title_shadow_color}██${color_clear}
-    ${title_shadow_color}████████████████████████████████████████████████████████████████████████████████████████${color_clear}
+  printf " ${title_border_color} └─────────────────────────────────────────────────────────────────────────────────────┘ ${clr}${title_shadow_color}██${clr}
+    ${title_shadow_color}████████████████████████████████████████████████████████████████████████████████████████${clr}
 \n"
 }
 
@@ -99,8 +111,8 @@ function title-yellow() {
 }
 
 function title-red() {
-  export title_text_color="${bg_bright_red}${bldwht}"
-  export title_border_color="${bg_bright_red}"
+  export title_text_color="${txtwht}${bakred}"
+  export title_border_color="${bldwht}${bakred}"
   export title_shadow_color="${fg_dark_red}"
   title-box "$@"
 }
@@ -124,6 +136,17 @@ function title() {
 }
 
 function divider() {
+  divider__ "$@"
+  printf "${clr}\n"
+}
+
+function divider__() {
   local color="${1:-${fg_bright_green}}"
-  printf " ${color}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${color_clear}\n"
+  printf "${color}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${clr}"
+}
+
+function divider.yellow() {
+  printf "${clr}\n${txtylw}"
+  divider__ "${txtylw}${bakylw}"
+  printf "${clr}${txtylw}${clr}\n"
 }

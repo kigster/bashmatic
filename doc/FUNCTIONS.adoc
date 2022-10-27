@@ -46,6 +46,7 @@
 * xref:#module-openssl[openssl]
 * xref:#module-osx[osx]
 * xref:#module-output[output]
+* xref:#module-output-admonitions[output-admonitions]
 * xref:#module-output-boxes[output-boxes]
 * xref:#module-output-repeat-char[output-repeat-char]
 * xref:#module-output-utils[output-utils]
@@ -1388,14 +1389,14 @@ bashmatic.setup ()
 { 
     [[ -z ${BashMatic__Downloader} && -n $(command -v curl) ]] && export BashMatic__Downloader="curl -fsSL --connect-timeout 5 "
     [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] && export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
-    if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
-        .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
+    if [[ ! -d "${BASHMATIC_LIB}" ]]; then
+        .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIB}"
         return 1
     fi
     declare -a preload_modules=(time.sh output.sh output-utils.sh output-repeat-char.sh output-boxes.sh is.sh user.sh util.sh git.sh file.sh color.sh brew.sh)
     bashmatic.source "${preload_modules[@]}"
     bashmatic.shell-check || return 1
-    bashmatic.source-dir "${BASHMATIC_LIBDIR}"
+    bashmatic.source-dir "${BASHMATIC_LIB}"
     output.unconstrain-screen-width
     [[ -d ${BASHMATIC_HOME}/.git ]] && bashmatic.auto-update 1>&2 2> /dev/null
     return 0
@@ -1426,7 +1427,7 @@ bashmatic.shell-check ()
 ----
 bashmatic.source () 
 { 
-    local __path="${BASHMATIC_LIBDIR}"
+    local __path="${BASHMATIC_LIB}"
     local file
     local total=0
     local files=0
@@ -1511,7 +1512,7 @@ bashmatic.source-dir ()
     loaded=true
     unset files
     ${loaded} || { 
-        .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIBDIR}"
+        .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIB}"
         return 1
     }
     if [[ ${LoadedShown} -eq 0 ]]; then
@@ -2177,6 +2178,30 @@ color.disable ()
     unset white_on_pink
     unset white_on_salmon
     unset yellow_on_gray
+    unset bg_blood
+    unset bg_blue_on_gray
+    unset bg_bright_green
+    unset bg_dark_green
+    unset bg_bright_red
+    unset bg_deep_blue
+    unset bg_deep_green
+    unset bg_green_on_gray
+    unset bg_grey
+    unset bg_mustard
+    unset bg_pink
+    unset bg_sky_blue
+    unset bg_yellow_on_gray
+    unset fg_dark_red
+    unset fg_bright_green
+    unset fg_sky_blue
+    unset fg_deep_green
+    unset fg_doll
+    unset fg_grey
+    unset fg_light_green
+    unset fg_mustard
+    unset fg_mustard
+    unset fg_pink
+    unset fg_purr
     export BashMatic__ColorLoaded=0
 }
 
@@ -2242,7 +2267,55 @@ color.enable ()
         export white_on_pink="\e[48;5;199m"
         export white_on_salmon="\e[48;5;196m"
         export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
+        export bg_blood="\e[41m"
+        export bg_blue_on_gray="\e[90;7;42m"
+        export bg_bright_green="\e[48;5;82m"
+        export bg_dark_green="\e[48;5;82m"
+        export bg_bright_red="\e[1;31m\e[48;5;196m"
+        export bg_deep_blue="\e[48;5;37m"
+        export bg_deep_green="\e[48;5;28m"
+        export bg_green_on_gray="\e[90;7;102m"
+        export bg_grey="\e[48;5;239m"
+        export bg_mustard="\e[48;5;178m"
+        export bg_pink="\e[48;5;89m"
+        export bg_sky_blue="\e[48;5;39m"
+        export bg_yellow_on_gray="\e[90;7;43m"
+        export fg_dark_red="\e[38;5;88m"
+        export fg_bright_green="\e[38;5;82m"
+        export fg_sky_blue="\e[38;5;39m"
+        export fg_deep_green="\e[38;5;28m"
+        export fg_doll="\e[38;5;183m"
+        export fg_grey="\e[38;5;239m"
+        export fg_light_green="\e[38;5;108m"
+        export fg_mustard="\e[38;5;178m"
+        export fg_mustard="\e[38;5;178m"
+        export fg_pink="\e[38;5;89m"
+        export fg_purr="\e[38;5;219m"
         export BashMatic__ColorLoaded=1
+        export bg_blood="\e[41m"
+        export bg_blue_on_gray="\e[90;7;42m"
+        export bg_bright_green="\e[48;5;82m"
+        export bg_dark_green="\e[48;5;82m"
+        export bg_bright_red="\e[1;31m\e[48;5;196m"
+        export bg_deep_blue="\e[48;5;37m"
+        export bg_deep_green="\e[48;5;28m"
+        export bg_green_on_gray="\e[90;7;102m"
+        export bg_grey="\e[48;5;239m"
+        export bg_mustard="\e[48;5;178m"
+        export bg_pink="\e[48;5;89m"
+        export bg_sky_blue="\e[48;5;39m"
+        export bg_yellow_on_gray="\e[90;7;43m"
+        export fg_dark_red="\e[38;5;88m"
+        export fg_bright_green="\e[38;5;82m"
+        export fg_sky_blue="\e[38;5;39m"
+        export fg_deep_green="\e[38;5;28m"
+        export fg_doll="\e[38;5;183m"
+        export fg_grey="\e[38;5;239m"
+        export fg_light_green="\e[38;5;108m"
+        export fg_mustard="\e[38;5;178m"
+        export fg_mustard="\e[38;5;178m"
+        export fg_pink="\e[38;5;89m"
+        export fg_purr="\e[38;5;219m"
     fi
 }
 
@@ -2817,7 +2890,7 @@ db.config.parse ()
     do
         script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
     done
-    is.a-function ruby.handle-missing || source "${BASHMATIC_LIBDIR}/ruby.sh"
+    is.a-function ruby.handle-missing || source "${BASHMATIC_LIB}/ruby.sh"
     ruby.handle-missing
     ruby -e "${script[*]}" < "${bashmatic_db_config}"
 }
@@ -7798,6 +7871,253 @@ ui.closer.ok: ()
 ----
 
 
+=== Module `output-admonitions`
+
+==== `alert`
+
+[source,bash]
+----
+alert () 
+{ 
+    export title_text_color=${bold_yellow}
+    export title_border_color=${color_red}
+    export title_shadow_color=${bold_red}
+    title-box "$@"
+}
+
+----
+
+==== `divider`
+
+[source,bash]
+----
+divider () 
+{ 
+    divider__ "$@"
+    printf "${clr}\n"
+}
+
+----
+
+==== `divider.yellow`
+
+[source,bash]
+----
+divider.yellow () 
+{ 
+    printf "${clr}\n${txtylw}"
+    divider__ "${txtylw}${bakylw}"
+    printf "${clr}${txtylw}${clr}\n"
+}
+
+----
+
+==== `divider__`
+
+[source,bash]
+----
+divider__ () 
+{ 
+    local color="${1:-${fg_bright_green}}"
+    printf "${color}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${clr}"
+}
+
+----
+
+==== `panel-info`
+
+[source,bash]
+----
+panel-info () 
+{ 
+    export title_text_color="${txtwht}${bg_sky_blue}"
+    export title_border_color="${txtblk}${bg_sky_blue}"
+    export title_shadow_color="${bldblk}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-info-dark`
+
+[source,bash]
+----
+panel-info-dark () 
+{ 
+    export title_text_color="${txtblk}${bakcyn}"
+    export title_border_color="${txtblk}${bakcyn}"
+    export title_shadow_color="${txtblu}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-purple-red`
+
+[source,bash]
+----
+panel-purple-red () 
+{ 
+    export title_text_color="${bg_pink}${bldwht}"
+    export title_border_color="${bg_pink}${bldred}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-error`
+
+[source,bash]
+----
+panel-error () 
+{ 
+    export title_text_color="${bg_bright_red}${bldwht}"
+    export title_border_color="${bg_bright_red}${fg_dark_red}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-error-white`
+
+[source,bash]
+----
+panel-error-white () 
+{ 
+    export title_text_color="${bg_bright_red}${bldwht}"
+    export title_border_color="${bg_bright_red}${bldwht}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-error-yellow`
+
+[source,bash]
+----
+panel-error-yellow () 
+{ 
+    export title_text_color="${bg_bright_red}${bldwht}"
+    export title_border_color="${bg_bright_red}${bldylw}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `title`
+
+[source,bash]
+----
+title () 
+{ 
+    title-blue "$@"
+}
+
+----
+
+==== `title-blue`
+
+[source,bash]
+----
+title-blue () 
+{ 
+    export title_text_color="${color_black}${bg_sky_blue}"
+    export title_border_color="${bg_sky_blue}"
+    export title_shadow_color=${txtblu}
+    title-box "$@"
+}
+
+----
+
+==== `title-box`
+
+[source,bash]
+----
+title-box () 
+{ 
+    printf "${clr}\n
+ ${title_border_color} ┌─────────────────────────────────────────────────────────────────────────────────────┐ ${clr}\n"
+    for line in "$@"
+    do
+        printf "${bold}${title_border_color} │  ${title_text_color}%-83.83s${title_border_color}${clr}${title_border_color}│${clr}${title_shadow_color}██${clr}\n" "${line}"
+    done
+    printf " ${title_border_color} └─────────────────────────────────────────────────────────────────────────────────────┘ ${clr}${title_shadow_color}██${clr}
+    ${title_shadow_color}████████████████████████████████████████████████████████████████████████████████████████${clr}
+\n"
+}
+
+----
+
+==== `title-green`
+
+[source,bash]
+----
+title-green () 
+{ 
+    export title_text_color=${color_black}${bakgrn}
+    export title_border_color=${fg_bright_green}${bakgrn}
+    export title_shadow_color=${fg_deep_green}
+    title-box "$@"
+}
+
+----
+
+==== `title-panel`
+
+[source,bash]
+----
+title-panel () 
+{ 
+    local line="$1"
+    shift
+    local shadow="${title_shadow_color}██${clr}"
+    printf "${clr}\n
+ ${title_border_color} ${box_top} ${clr}\n"
+    .title.line "${shadow}" "${line}"
+    printf " ${title_border_color} ${box_divider} ${shadow}\n"
+    for line in "$@"
+    do
+        .title.line "${shadow}" "${line}"
+    done
+    printf " ${title_border_color} ${box_bottom} ${shadow}\n"
+    printf " ${title_shadow_color}   ${box_bottom_shadow}${clr}\n\n"
+}
+
+----
+
+==== `title-red`
+
+[source,bash]
+----
+title-red () 
+{ 
+    export title_text_color="${bg_bright_red}${bldwht}"
+    export title_border_color="${bg_bright_red}"
+    export title_shadow_color="${fg_dark_red}"
+    title-box "$@"
+}
+
+----
+
+==== `title-yellow`
+
+[source,bash]
+----
+title-yellow () 
+{ 
+    export title_text_color="${color_black}${bg_yellow_on_gray}"
+    export title_border_color="${bg_yellow_on_gray}"
+    export title_shadow_color="${fg_mustard}"
+    title-box "$@"
+}
+
+----
+
+
 === Module `output-boxes`
 
 ==== `arrow-right`
@@ -8982,8 +9302,7 @@ err ()
 ----
 error () 
 { 
-    header=$(printf -- "${clr}${txtred}  « ERROR » ")
-    box.white-on-red "${header} ${clr}${bldwht}${bakred} — $1" "${@:2}" 1>&2
+    title-red "                                   «« ERROR »»                                                  " "$(printf "%-90.90s" "$*")"
 }
 
 ----
@@ -9184,7 +9503,6 @@ warn ()
 ----
 warning () 
 { 
-    header=$(printf -- "${clr}${txtylw}  « WARNING » ")
     local first="$1"
     shift
     box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" 1>&2
@@ -12461,6 +12779,18 @@ text.ord ()
 
 === Module `time`
 
+==== `date.now.humanized`
+
+[source,bash]
+----
+date.now.humanized () 
+{ 
+    util.os
+    gdate '+%d %b %Y | %T.%3N %P'
+}
+
+----
+
 ==== `date.now.with-time`
 
 [source,bash]
@@ -12637,6 +12967,7 @@ time.now.file-extension ()
 ----
 time.now.with-ms () 
 { 
+    util.os
     local date_runnable
     date_runnable='date'
     if [[ "${AppCurrentOS}" == "darwin" ]]; then

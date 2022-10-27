@@ -59,7 +59,7 @@ db.config.parse() {
   for field in "${bashmatic_db_connection[@]}"; do
     script+=("h.key?('${db}') && h['${db}'].key?('${field}') ? print(h['${db}']['${field}']) : print('null'); print ' '; ")
   done
-  is.a-function ruby.handle-missing || source "${BASHMATIC_LIBDIR}/ruby.sh"
+  is.a-function ruby.handle-missing || source "${BASHMATIC_LIB}/ruby.sh"
   ruby.handle-missing
   ruby -e "${script[*]}"<"${bashmatic_db_config}"
 }

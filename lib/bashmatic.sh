@@ -151,7 +151,7 @@ function bashmatic.reset.cache() {
 }
 
 function bashmatic.source() {
-  local __path="${BASHMATIC_LIBDIR}"
+  local __path="${BASHMATIC_LIB}"
   local file
   local total=0
   local files=0
@@ -251,7 +251,7 @@ function bashmatic.source-dir() {
   unset files
 
   ${loaded} || {
-    .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIBDIR}"
+    .err "Unable to find BashMatic library folder with files:" "${BASHMATIC_LIB}"
     return 1
   }
 
@@ -280,8 +280,8 @@ function bashmatic.setup() {
   [[ -z ${BashMatic__Downloader} && -n $(command -v wget) ]] &&
     export BashMatic__Downloader="wget -q -O --connect-timeout=5 - "
 
-  if [[ ! -d "${BASHMATIC_LIBDIR}" ]]; then
-    .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIBDIR}"
+  if [[ ! -d "${BASHMATIC_LIB}" ]]; then
+    .err "Unable to file BashMatic's library source folder — ${BASHMATIC_LIB}"
     return 1
   fi
 
@@ -302,7 +302,7 @@ function bashmatic.setup() {
 
   bashmatic.source "${preload_modules[@]}"
   bashmatic.shell-check || return 1
-  bashmatic.source-dir "${BASHMATIC_LIBDIR}"
+  bashmatic.source-dir "${BASHMATIC_LIB}"
 
   output.unconstrain-screen-width
 
