@@ -22,6 +22,7 @@
 
 # milliseconds
 .run.millis() {
+  util.os
   local date_runnable
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "darwin" ]]; then
@@ -35,6 +36,7 @@
 
 # milliseconds
 function time.now.with-ms() {
+  util.os
   local date_runnable
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "darwin" ]]; then
@@ -49,6 +51,11 @@ function time.now.with-ms() {
 #      2022-05-03 14:29:52.302
 function date.now.with-time() {
   date '+%F ' | tr -d '\n' ; time.now.with-ms
+}
+
+function date.now.humanized() {
+  util.os
+  gdate '+%d %b %Y | %T.%3N %P'
 }
 
 # @description Starts a time for a given name space

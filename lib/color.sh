@@ -83,6 +83,33 @@ function color.enable() {
     export white_on_salmon="\e[48;5;196m"
     export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
 
+    export bg_blood="\e[41m"
+    export bg_blue_on_gray="\e[90;7;42m"
+    export bg_bright_green="\e[48;5;82m"
+    export bg_dark_green="\e[48;5;82m"
+    export bg_bright_red="\e[1;31m\e[48;5;196m"
+    export bg_deep_blue="\e[48;5;37m"
+    export bg_deep_green="\e[48;5;28m"
+    export bg_green_on_gray="\e[90;7;102m"
+    export bg_grey="\e[48;5;239m"
+    export bg_mustard="\e[48;5;178m"
+    export bg_pink="\e[48;5;89m"
+    export bg_sky_blue="\e[48;5;39m"
+    export bg_yellow_on_gray="\e[90;7;43m"
+
+    export fg_dark_red="\e[38;5;88m"
+    export fg_bright_green="\e[38;5;82m"
+    export fg_sky_blue="\e[38;5;39m"
+    export fg_deep_green="\e[38;5;28m"
+    export fg_doll="\e[38;5;183m"
+    export fg_grey="\e[38;5;239m"
+    export fg_light_green="\e[38;5;108m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_pink="\e[38;5;89m"
+    export fg_purr="\e[38;5;219m"
+
+
     export BashMatic__ColorLoaded=1
   fi
 }
@@ -101,7 +128,6 @@ function .ansi() { echo -e "\e[${1}m${*:2}\e[0m"; }
 
 function color.disable() {
   export clr='\e[0m' # Text Reset
-
   unset txtblk
   unset txtred
   unset txtgrn

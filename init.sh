@@ -12,6 +12,13 @@
 
 set +ex
 
+if [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
+  [[ -n $BASH_VERSION && $0 != "${BASH_SOURCE[0]}" ]] ; then 
+  readonly __run_as_script=0 2>/dev/null
+else
+  readonly __run_as_script=1 2>/dev/null
+fi
+
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -22,71 +29,42 @@ export BASHMATIC_HOME="${SCRIPT_SOURCE}"
 export BASHMATIC_MAIN="${BASHMATIC_HOME}/init.sh"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
-if ! declare -f -F source_if_exists >/dev/null; then
-  source "${BASHMATIC_HOME}/.bash_safe_source"
-fi
+export BASHMATIC_QUIET=0
+export BASHMATIC_DEBUG=0
+export BASHMATIC_LOADED=${BASHMATIC_LOADED:-0}
 
-function __bashmatic.home.is-valid() {
-  [[ -n ${BASHMATIC_HOME} && -d ${BASHMATIC_HOME} && -s ${BASHMATIC_HOME}/init.sh ]]
+[[ $* =~ -r || $* =~ --reload ]] && export BASHMATIC_LOADED=0
+[[ $* =~ -q || $* =~ --quiet ]] && export BASHMATIC_QUIET=1
+[[ $* =~ -d || $* =~ --debug ]] && { 
+  export BASHMATIC_DEBUG=1
+  export DEBUG=1
 }
-
-export BASHMATIC_PREFIX="${txtred}${txtwht}${bakred} BASHMATIC™ ${txtblk}${bakylw} ® 2015-2022 Konstantin Gredeskoul ${txtwht}${bakblu} Version ${BASHMATIC_VERSION}${clr}${txtblu}"
-
-# resolve BASHMATIC_HOME if necessary
-__bashmatic.home.is-valid || {
-  log.inf "Resolving BASHMATIC_HOME as the current one is invalid: ${BASHMATIC_HOME}"
-  if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
-    is-debug && \
-      printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
-    export BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
-  elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
-    is-debug && \
-      printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
-      export BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
-  else
-      printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
-      export BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
-  fi
-
-  log.inf "Resolved BASHMATIC_HOME to [${BASHMATIC_HOME}]"
-}
-
-__bashmatic.home.is-valid || { 
-  log.err "ERROR: Can't determine BASHMATIC installation path."
-  __bashmatic.print-path-config
-  return 1
-}
-
-export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
-# shellcheck disable=SC2002
-export BASHMATIC_VERSION="$(/bin/cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
-export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
-
-source ${BASHMATIC_LIBDIR}/util.sh
-
-export BASHMATIC_UNAME=$(system.uname)
-export BASHMATIC_OS="$($BASHMATIC_UNAME -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
-
-# grab our shell command
-export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
 function is-debug() {
   [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]] 
 }
 
+function is-quiet() {
+  [[ ${BASHMATIC_QUIET} -gt 0 ]]
+}
+
+function not-quiet() {
+  [[ ${BASHMATIC_QUIET} -eq 0 ]]
+}
+
 function log.err() {
   is-debug || return 0
-  printf "${blderr}[ERROR] --> ${bldylw}$*${clr}\n"
+  printf "$(pfx) ${blderr}[ERROR] --> ${bldylw}$*${clr}\n"
 }
 
 function log.inf() {
   is-debug || return 0
-  printf "${bldblu}[INFO]  --> ${bldgrn}$*${clr}\n"
+  printf "$(pfx) ${bldblu}[INFO]  --> ${bldgrn}$*${clr}\n"
 }
 
 
 function __bashmatic.print-path-config() {
-  printf "${BASHMATIC_PREFIX}\n"
+  is-debug && not-quiet && printf "${BASHMATIC_PREFIX}\n"
   is-debug || return 0
   echo "BASHMATIC_HOME[${BASHMATIC_HOME}]"
   echo "BASHMATIC_MAIN[${BASHMATIC_MAIN}]" 
@@ -120,6 +98,18 @@ function __bashmatic.init.linux() {
   return 0
 }
 
+if ! declare -f -F source_if_exists >/dev/null; then
+  source "${BASHMATIC_HOME}/.bash_safe_source"
+fi
+
+function __bashmatic.home.is-valid() {
+  [[ -n ${BASHMATIC_HOME} && -d ${BASHMATIC_HOME} && -s ${BASHMATIC_HOME}/init.sh ]]
+}
+
+function year() {
+  date '+%Y'
+}
+
 function __bashmatic.init-core() {
   __bashmatic.dealias
 
@@ -138,10 +128,8 @@ function __bashmatic.init-core() {
     return 1
   fi
 
-  is-debug && {
-      printf "${BASHMATIC_PREFIX}\n"
-    __bashmatic.load-time
-  }
+  is-debug && __bashmatic.load-time
+  is-quiet || printf "\n${BASHMATIC_PREFIX}\n\n"
 
   local init_func="__bashmatic.init.${BASHMATIC_OS}"
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
@@ -160,11 +148,13 @@ function __bashmatic.init-core() {
 
   # LOAD ALL BASHMATIC SCRIPTS AT ONCE
   # This is the fastest method that only takes about 110ms
+  is-debug && not-quiet && printf "$(pfx) evaluating the library..."
   eval "$(/bin/cat "${BASHMATIC_HOME}"/lib/*.sh)"
 
-  is-debug && {
+  is-debug && not-quiet && {
     local __bashmatic_end_time=$(millis)
-    h.yellow "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
+    echo
+    h6 "Bashmatic library took $((__bashmatic_end_time - __bashmatic_start_time)) milliseconds to load."
   }
 }
 
@@ -192,6 +182,33 @@ function __bashmatic.parse-arguments() {
 }
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
+# Help
+#————————————————————————————————————————————————————————————————————————————————————————————————————
+[[ $* =~ -h || $* =~ --help  ]] && {
+  [[ -f ${BASHMATIC_LIB}/color.sh ]] && source ${BASHMATIC_LIB}/color.sh
+  printf "\n${BASHMATIC_PREFIX}\n"
+
+  printf "
+  ${bldylw}USAGE:${clr}
+    ${bldgrn}source <bashmatic-home>/.init.sh  [ -q | --quiet ] \\
+                                      [ -d | --debug ] \\
+                                      [ -r | --reload ]
+
+  ${bldylw}FLAGS:${clr}
+    -q | --quiet         Supress output
+    -d | --debug         Print lots of output
+    -r | --reload        Reload the BashMatic library
+
+  ${bldylw}DESCRIPTION:${clr}
+    Loads the entire BashMatic™ Framework into the BASH memory.
+
+"
+
+  ((__run_as_script)) && exit 0
+  return 0
+}
+
+#————————————————————————————————————————————————————————————————————————————————————————————————————
 # Public functions
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
@@ -203,8 +220,73 @@ function source-if-exists() {
 function bashmatic.load() {
   __bashmatic.parse-arguments "$@"
   __bashmatic.init-core
-    bashmatic.current-os >/dev/null
+  bashmatic.current-os >/dev/null
+  export BASHMATIC_LOADED=1
   return 0
 }
 
-bashmatic.load "$@"
+if [[ ${BASHMATIC_LOADED} -ne 1 ]] ; then
+  #————————————————————————————————————————————————————————————————————————————————————————————————————
+  # Main Flow
+  #————————————————————————————————————————————————————————————————————————————————————————————————————
+
+  [[ -f "${BASHMATIC_HOME}/lib/time.sh" ]] && source "${BASHMATIC_HOME}/lib/time.sh"
+
+  export BASHMATIC_PREFIX="${txtred}${txtwht}${bakred}  BashMatic™ Framework for BASH v4+  ${txtblk}${bakylw} ® 2015-$(year) Konstantin Gredeskoul ${txtwht}${bakblu} Version ${BASHMATIC_VERSION}   ${clr}${txtblu}${clr}"
+
+  function pfx() {
+    printf "${txtred}${txtwht}${bakred}  BashMatic™ $(date.now.humanized) ${clr}${bldred} ${clr}"
+  }
+
+  # resolve BASHMATIC_HOME if necessary
+  __bashmatic.home.is-valid || {
+    log.inf "Resolving BASHMATIC_HOME as the current one is invalid: ${BASHMATIC_HOME}"
+    if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
+      is-debug && \
+        printf "${BASHMATIC_PREFIX} Detected zsh version ${ZSH_VERSION}, source=$0:A\n"
+      export BASHMATIC_HOME="$(/usr/bin/dirname "$0:A")"
+    elif [[ "${SHELL_COMMAND}" =~ bash ]]; then
+      is-debug && \
+        printf "${BASHMATIC_PREFIX} Detected bash version ${BASH_VERSION}, source=${BASH_SOURCE[0]}\n"
+        export BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "${BASH_SOURCE[0]}")" && printf '%s\n' "$(pwd -P)")"
+    else
+        printf "${BASHMATIC_PREFIX} WARNING: Detected an unsupported shell type: ${SHELL_COMMAND}, continue.\n" >&2
+        export BASHMATIC_HOME="$(cd -P -- "$(/usr/bin/dirname -- "$0")" && printf '%s\n' "$(pwd -P)")"
+    fi
+
+    log.inf "Resolved BASHMATIC_HOME to [${BASHMATIC_HOME}]"
+  }
+
+  __bashmatic.home.is-valid || { 
+    log.err "ERROR: Can't determine BASHMATIC installation path."
+    __bashmatic.print-path-config
+    return 1
+  }
+
+  export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -v /usr/local/bin/grep || echo grep)"
+  # shellcheck disable=SC2002
+  export BASHMATIC_VERSION="$(/bin/cat "${BASHMATIC_HOME}/.version" | /usr/bin/tr -d '\n')"
+  export BASHMATIC_LIBDIR="${BASHMATIC_HOME}/lib"
+
+  source ${BASHMATIC_LIBDIR}/util.sh
+
+  export BASHMATIC_UNAME=$(system.uname)
+  export BASHMATIC_OS="$($BASHMATIC_UNAME -s | /usr/bin/tr '[:upper:]' '[:lower:]')"
+
+  # grab our shell command
+  export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
+
+  bashmatic.load "$@"
+
+  export BASHMATIC_LOADED=1
+else
+  not-quiet && {
+    echo
+    divider
+    is-debug && printf "$(pfx) BashMatic is already loaded.\n"
+    is-debug && printf "$(pfx) Use function ${bldylw}bashmatic.reload()\n"
+    is-debug && printf "$(pfx) if you want to reload all the sources.\n"
+    divider
+    echo
+  } || true
+fi
