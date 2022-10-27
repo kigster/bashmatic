@@ -109,11 +109,14 @@ function __bashmatic.dealias() {
 }
 
 function __bashmatic.load-deps() {
-  type not-ok  2>/dev/null | grep -q function           || source "${BASHMATIC_LIB}/output.sh"
-  type millis  2>/dev/null | grep -q function           || source "${BASHMATIC_LIB}/time.sh"
-  type util.os 2>/dev/null | grep -q function           || source "${BASHMATIC_LIB}/util.sh"
-  type bashmatic.reload 2>/dev/null | grep -q function  || source "${BASHMATIC_LIB}/bashmatic.sh"
-  type color.enable 2>/dev/null | grep -q function      || source "${BASHMATIC_LIB}/color.sh"
+  local reload="${1:-false}"
+
+  (${reload} && type title   2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/output-admonitions.sh"
+  (${reload} && type not-ok  2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/output.sh"
+  (${reload} && type millis  2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/time.sh"
+  (${reload} && type util.os 2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/util.sh"
+  (${reload} && type bashmatic.reload 2>/dev/null | grep -q function)  || source "${BASHMATIC_LIB}/bashmatic.sh"
+  (${reload} && type color.enable 2>/dev/null | grep -q function    )  || source "${BASHMATIC_LIB}/color.sh"
 }
 
 
@@ -218,24 +221,23 @@ function __bashmatic.parse-arguments() {
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Help
 #————————————————————————————————————————————————————————————————————————————————————————————————————
-[[ $* =~ -h || $* =~ --help  ]] && {
-
+ps -p $$ | grep -q init.sh && [[ $* =~ -h || $* =~ --help || -z "$*" ]] && {
   printf "\n${BASHMATIC_PREFIX}\n"
 
   printf "
-  ${bldylw}USAGE:${clr}
-    ${bldgrn}source <bashmatic-home>/.init.sh  [ -q | --quiet ] \\
-                                      [ -d | --debug ] \\
-                                      [ -r | --reload | -f | --force ]
+      ${bldylw}USAGE:${clr}
+        ${bldgrn}source <bashmatic-home>/init.sh  [  flags  ]
+        ${bldgrn}<bashmatic-home>/init.sh         [  flags  ]
 
-  ${bldylw}FLAGS:${clr}
-    -q | --quiet         Supress output
-    -d | --debug         Print lots of output
-    -r | --reload        Reload the BashMatic library
-    -f | --force         Reload the BashMatic library
+      ${bldylw}FLAGS:${clr}
+        -q | --quiet         Supress output
+        -d | --debug         Print lots of output
+        -r | --reload        Reload the BashMatic library
+        -f | --force         Reload the BashMatic library
+        -h | --help          Print this help message.
 
-  ${bldylw}DESCRIPTION:${clr}
-    Loads the entire BashMatic™ Framework into the BASH memory.
+      ${bldylw}DESCRIPTION:${clr}
+        Loads the entire BashMatic™ Framework into the BASH memory.
 
 "
 
@@ -315,7 +317,6 @@ if [[ ${BASHMATIC_LOADED} -ne 1 ]] ; then
 
   export BASHMATIC_LOADED=1
 else
-  source "${BASHMATIC_LIB}/output-admonitions.sh"
   not-quiet && is-debug && {
     divider
     printf "$(pfx) BashMatic is already loaded.\n"
