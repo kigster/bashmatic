@@ -1,5 +1,15 @@
 # Changelog
 
+## [v3.0.6](https://github.com/kigster/bashmatic/tree/v3.0.6) (2022-10-27)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.5...v3.0.6)
+
+**Merged pull requests:**
+
+- Adding admonitions + fixing init.sh [\#110](https://github.com/kigster/bashmatic/pull/110) ([kigster](https://github.com/kigster))
+- Rename master to main [\#109](https://github.com/kigster/bashmatic/pull/109) ([kigster](https://github.com/kigster))
+- adding dir.with-file + gpg key generation [\#101](https://github.com/kigster/bashmatic/pull/101) ([kigster](https://github.com/kigster))
+
 ## [v3.0.5](https://github.com/kigster/bashmatic/tree/v3.0.5) (2022-10-11)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.4...v3.0.5)
