@@ -181,14 +181,17 @@ file.install-with-backup() {
   run "cp -v ${source} ${dest}"
 }
 
+# @description Prints the file's last modified date
 file.last-modified-date() {
   stat -f "%Sm" -t "%Y-%m-%d" "$1"
 }
 
+# @description Prints the year of the file's last modified date
 file.last-modified-year() {
   stat -f "%Sm" -t "%Y" "$1"
 }
 
+# @description Prints the file's last modified date expressed as millisecondsd
 file.last-modified-millis() { 
   echo -n "$(/usr/bin/stat -f %m "$1")000"
 }
@@ -215,6 +218,7 @@ file.stat() {
   echo "${!field}"
 }
 
+# @description Returns the file size in bytes
 file.size() {
   util.os
   if [[ ${AppCurrentOS} =~ linux ]]; then
@@ -224,20 +228,32 @@ file.size() {
   fi
 }
 
+# @description Prints the file size expressed in Mb (and up to 1 decimal point)
 file.size.mb() {
   local file="$1"
   shift
   local s=$(file.size "${file}")
-  local mb=$(echo $((s / 10000)) | sedx 's/([0-9][0-9])$/.\1/g')
+  local mb=$(echo $((s / 10/ 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
   printf "%.2f MB" "${mb}"
 }
 
+# @description Prints the file size expressed in Gb (and up to 1 decimal point)
+file.size.gb() {
+  local file="$1"
+  shift
+  local s=$(file.size "${file}")
+  local gb=$(echo $((s / 10 / 1024 / 1024 )) | sedx 's/([0-9][0-9])$/.\1/g')
+  printf "%.1f Gb" "${gb}"
+}
+
+# @description For each argument prints only those that represent existing files
 file.list.filter-existing() {
   for file in "$@"; do
     [[ -f "${file}" ]] && echo "${file}"
   done
 }
 
+# @description For each argument prints only those that represent non-emtpy files
 file.list.filter-non-empty() {
   for file in "$@"; do
     [[ -s "${file}" ]] && echo "${file}"
@@ -342,21 +358,39 @@ file.extension.replace() {
   done
 }
 
-file.sync() {
-  local from="$1"
-  local to="$2"
-
+# @description Prints the number of lines in the file
+file.count.lines() {
+  [[ -f "$1" ]] || return 1
+  wc -l "$1" | awk '{print $1}' | tr -d '\n' 
 }
 
+# @description Prints the number of lines in the file
+file.count.words() {
+  [[ -f "$1" ]] || return 1
+  wc -w "$1" | awk '{print $1}' | tr -d '\n' 
+}
+
+# @description Invokes UNIX find command searching for files (not folders)
+#              matching the first argument in the name.
 file.find() {
   find . -name "*$1*" -type f -print
 }
 
+# @description Invokes UNIX find command searching for folders (not files)
+#              matching the first argument in the name.
 dir.find() {
   find . -name "*$1*" -type d -print
 }
 
+# @description Prints all folders sorted by size, and size printed in Mb
 ls.mb(){
-  du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
+  # du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
+  du -m -d 1 "$@" | sort -rn
+}
+
+# @description Prints all folders sorted by size, and size printed in Gb
+ls.gb(){
+  # du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fGb %s\n", $1/1024/1024, $2 )}' | tail -10
+  du -g -d 1 "$@" | sort -rn
 }
 

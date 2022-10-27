@@ -40,6 +40,10 @@ function bashmatic.debug-off() {
   unset BASHMATIC_PATH_DEBUG
 }
 
+function __bashmatic.set-is-not-loaded() {
+  unset BASHMATIC_LOADED
+}
+
 function bashmatic.reload() {
   __bashmatic.set-is-not-loaded
   source "${BASHMATIC_HOME}/.envrc.no-debug"

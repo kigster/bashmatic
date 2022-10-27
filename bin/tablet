@@ -3,7 +3,7 @@
 #
 # Bashmatic Framework®
 #
-# Copyright © 2017-2021 Konstantin Gredeskoul, All rights reserved, MIT License.
+# Copyright © 2016-2022 Konstantin Gredeskoul, All rights reserved, MIT License.
 #
 # @description This executable script is meant to perform per-table "analyze verbose"
 #              database. It can choose tables that have never been analyzed, or

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=sh
 # Bashmatic Utilities
-# © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
+# © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 #
 # @file regen-usage-docs

@@ -75,11 +75,33 @@ util.i-to-ver() {
 }
 
 util.os() {
-  export AppCurrentOS="${AppCurrentOS:-$(/usr/bin/uname -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
+  export AppCurrentOS="${AppCurrentOS:-$( $(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 util.arch() {
-  echo -n "${AppCurrentOS}-$(/usr/bin/uname -m)-$(/usr/bin/uname -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
+  echo -n "${AppCurrentOS}-$($(system.uname) -m)-$($(system.uname) -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
+}
+
+# @description 
+#   Finds the exact absolute path of the `uname` utility on a unix file system.
+#
+# @returns
+#   Aborts the process if none are found.
+system.uname() {
+  command -v uname && return 0
+
+  if [[ -x /bin/uname ]]; then
+    printf -- "/bin/uname"
+  elif [[ -x /usr/bin/uname ]] ; then
+    printf -- "/usr/bin/uname"
+  elif [[ -x /sbin/uname ]]; then
+    printf -- "/sbin/uname"
+  elif [[ -x /usr/sbin/uname ]]; then
+    printf -- "/usr/sbin/uname"
+  else
+    echo "Can't find uname, aborting..." >&2
+    exit 1
+  fi    
 }
 
 # shellcheck disable=SC2120

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # vim: set ft=bash
 #——————————————————————————————————————————————————————————————————————————————
-# © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
+# © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modifications, © 2016-2021 Konstantin Gredeskoul, All rights reserved. MIT License.
+# Any modifications, © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
 # Install necessary dependencies on OSX
@@ -22,19 +22,21 @@
 
 # milliseconds
 .run.millis() {
+  util.os
   local date_runnable
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "darwin" ]]; then
     command -v gdate >/dev/null || .time.osx.coreutils
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
     [[ -n $(command -v gdate) ]] && date_runnable='gdate'
+    date_runnable=$(command -v gdate || command -v date)
   fi
-  date_runnable=$(command -v gdate || command -v date)
   eval "${date_runnable} '+%s%3N'"
 }
 
 # milliseconds
 function time.now.with-ms() {
+  util.os
   local date_runnable
   date_runnable='date'
   if [[ "${AppCurrentOS}" == "darwin" ]]; then
@@ -49,6 +51,11 @@ function time.now.with-ms() {
 #      2022-05-03 14:29:52.302
 function date.now.with-time() {
   date '+%F ' | tr -d '\n' ; time.now.with-ms
+}
+
+function date.now.humanized() {
+  util.os
+  gdate '+%d %b %Y | %T.%3N %P'
 }
 
 # @description Starts a time for a given name space

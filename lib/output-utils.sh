@@ -54,8 +54,7 @@ function warn() {
   printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
 }
 
-function warning() {
-  header=$(printf -- "${clr}${txtylw}  « WARNING » ")
+function warning() { 
   local first="$1"
   shift
   box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" >&2
@@ -71,8 +70,11 @@ function info() {
 }
 
 function error() {
-  header=$(printf -- "${clr}${txtred}  « ERROR » ")
-  box.white-on-red "${header} ${clr}${bldwht}${bakred} — $1" "${@:2}" >&2
+  title-red "                                   «« ERROR »»                                                  " \
+    "$(printf "%-90.90s" "$*")"
+
+  # header=$(printf -- "${clr}${txtred}  « ERROR » ")
+  # box.white-on-red "${header} ${clr}${bldwht}${bakred} — $1" "${@:2}" >&2
 }
 
 function fatal() {

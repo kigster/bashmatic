@@ -1,5 +1,6 @@
 -- vim: ft=sql
 select pid,
+       rpad(coalesce(datname, 'DB'), 20) as dbname,
        rpad(coalesce(application_name, 'app'), 7) as app,
        rpad(coalesce(backend_type, 'bcknd'), 15) as backand_type,
        to_char((now() + interval '0.0001 sec' - query_start)::interval, 'HH24:MM:SS.ms') as duration,

@@ -8,7 +8,7 @@ source lib/output.sh
 source lib/color.sh
 source lib/util.sh
 
-set +e
+set -e
 
 @test "ascii-pipe() should remove color and other escape sequences from STDIN" {
   set -e
@@ -30,4 +30,16 @@ set +e
   output.is-pipe | cat>/dev/null && is_pipe=1
   [[ ${is_pipe} -eq 1 ]]
 } 
+
+@test "output.screen-width.actual()" {
+  export COLUMNS=120
+  local w=$(output.screen-width.actual)
+  [[ $w -eq  0 ]]
+}
+
+@test "output.screen.height.actual()" {
+  export ROWS=20
+  local h=$(output.screen-width.actual)
+  [[ $h -eq 0 ]]
+}
 

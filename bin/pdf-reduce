@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 # Author: Konstantin Gredeskoul
-# Bashmatic and the wrapper is Copyright © 2017-2021 Konstantin Gredeskoul
+# Bashmatic and the wrapper is Copyright © 2016-2022 Konstantin Gredeskoul
 # Part of this code is Copyright © 2014-2019, Alfred Klomp
 #
 # This script can extract image URLs from a remote HTML document(s) and
