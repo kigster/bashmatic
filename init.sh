@@ -19,6 +19,8 @@ else
   readonly __run_as_script=1 2>/dev/null
 fi
 
+export BASHMATIC_BANNER_SHOWN=${BASHMATIC_BANNER_SHOWN:-false}
+
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -274,7 +276,11 @@ function pfx() {
 __bashmatic.load-deps
 
 # Banner
-not-quiet && printf "\n${BASHMATIC_PREFIX}\n\n"
+
+${BASHMATIC_BANNER_SHOWN} || {
+  not-quiet && printf "\n${BASHMATIC_PREFIX}\n\n"
+  export BASHMATIC_BANNER_SHOWN=true
+}
 
 # If we are loading for the first time...
 if [[ ${BASHMATIC_LOADED} -ne 1 ]] ; then
