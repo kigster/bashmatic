@@ -35,6 +35,13 @@ source lib/bashmatic.sh
   [[ ${words} -eq 1991 ]]
 }
 
+@test 'file.print-normalized-name' {
+  set -e
+  local long="01 DCDNT Memorial Day — Sam Pederson.mp3"
+  local short="$(file.print-normalized-name "${long}")"
+  [[ ${short} == "01-dcdnt-memorial-day--sam-pederson.mp3" ]]
+}
+
 @test 'file.first-is-newer-than-second()' {
   local old_file="test/fixtures/a.sh"
   local newer_file="test/fixtures/b.sh"
