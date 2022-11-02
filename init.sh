@@ -268,9 +268,9 @@ function pfx() {
   printf "      ${txtgrn}${txtblk}${bakgrn}  BashMatic™ ${txtblk}${bakylw} $(date.now.humanized) ${clr}${txtylw} ${clr}"
 }
 
-#————————————————————————————————————————————————————————————————————————————————————————————————————
+#———————————————————————————————————————————————————————————————————————————
 # Main Flow
-#————————————————————————————————————————————————————————————————————————————————————————————————————
+#———————————————————————————————————————————————————————————————————————————
 
 # Dependencies
 __bashmatic.load-deps
@@ -278,15 +278,16 @@ __bashmatic.load-deps
 # Banner
 
 ${BASHMATIC_BANNER_SHOWN} || {
-  not-quiet && printf "\n${BASHMATIC_PREFIX}\n\n"
-  export BASHMATIC_BANNER_SHOWN=true
-}
+  not-quiet && 
+    output.is-tty && 
+    printf "\n${BASHMATIC_PREFIX}\n\n" export BASHMATIC_BANNER_SHOWN=true 
+} 
 
 # If we are loading for the first time...
 if [[ ${BASHMATIC_LOADED} -ne 1 ]] ; then
-  #————————————————————————————————————————————————————————————————————————————————————————————————————
+  #———————————————————————————————————————————————————————————————————————————
   # Main Flow
-  #————————————————————————————————————————————————————————————————————————————————————————————————————
+  #———————————————————————————————————————————————————————————————————————————
 
   # resolve BASHMATIC_HOME if necessary
   __bashmatic.home.is-valid || {
