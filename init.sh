@@ -278,9 +278,10 @@ __bashmatic.load-deps
 # Banner
 
 ${BASHMATIC_BANNER_SHOWN} || {
-  not-quiet && 
-    output.is-tty && 
+  output.is-ssh || {
+    not-quiet && output.is-tty && 
     printf "\n${BASHMATIC_PREFIX}\n\n" export BASHMATIC_BANNER_SHOWN=true 
+  }
 } 
 
 # If we are loading for the first time...
