@@ -19,8 +19,6 @@ else
   readonly __run_as_script=1 2>/dev/null
 fi
 
-export BASHMATIC_BANNER_SHOWN=${BASHMATIC_BANNER_SHOWN:-false}
-
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -110,17 +108,25 @@ function __bashmatic.dealias() {
   fi
 }
 
+# shellcheck disable=SC2120
 function __bashmatic.load-deps() {
-  local reload="${1:-false}"
+  #  local reload="${1:-false}"
+  #  (${reload} && type title   2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/output-admonitions.sh"
+  #  (${reload} && type title   2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/output-boxes.sh"
+  #  (${reload} && type not-ok  2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/output.sh"
+  #  (${reload} && type millis  2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/time.sh"
+  #  (${reload} && type util.os 2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/util.sh"
+  #  (${reload} && type bashmatic.reload 2>/dev/null | grep -q function)  || source "${BASHMATIC_LIB}/bashmatic.sh"
+  #  (${reload} && type color.enable 2>/dev/null | grep -q function    )  || source "${BASHMATIC_LIB}/color.sh"
 
-  (${reload} && type title   2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/output-admonitions.sh"
-  (${reload} && type not-ok  2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/output.sh"
-  (${reload} && type millis  2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/time.sh"
-  (${reload} && type util.os 2>/dev/null | grep -q function         )  || source "${BASHMATIC_LIB}/util.sh"
-  (${reload} && type bashmatic.reload 2>/dev/null | grep -q function)  || source "${BASHMATIC_LIB}/bashmatic.sh"
-  (${reload} && type color.enable 2>/dev/null | grep -q function    )  || source "${BASHMATIC_LIB}/color.sh"
+  source "${BASHMATIC_LIB}/output-admonitions.sh"
+  source "${BASHMATIC_LIB}/output-boxes.sh"
+  source "${BASHMATIC_LIB}/output.sh"
+  source "${BASHMATIC_LIB}/time.sh"
+  source "${BASHMATIC_LIB}/util.sh"
+  source "${BASHMATIC_LIB}/bashmatic.sh"
+  source "${BASHMATIC_LIB}/color.sh"
 }
-
 
 function __bashmatic.init.darwin() {
   local -a required_binares=(gdate gsed)
@@ -134,6 +140,7 @@ function __bashmatic.init.linux() {
 }
 
 if ! declare -f -F source_if_exists >/dev/null; then
+  # shellcheck source=./.bash_safe_source
   source "${BASHMATIC_HOME}/.bash_safe_source"
 fi
 
