@@ -36,7 +36,7 @@ function dir.temp() {
 
 file.print-normalized-name() {
   local file="$1"
-  echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-/&]//g; s/--+/-/g;'
+  echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g; s/[^A-Za-z0-9.\-]/-/g; s/---+/--/g'
 }
 
 # @description This function will rename all files passed to it as follows: spaces
@@ -48,19 +48,32 @@ file.print-normalized-name() {
 #       # my-word-document.docx
 #              
 file.normalize-files() {
-  trap 'set +x' EXIT INT
-
+  trap 'return 1' INT
+  run.set-all abort-on-error
+  local file
+  local counter=0
   for file in "$@"; do  
+    [[ -f "${file}" ]] || { 
+      error "File '${file}' does not exist, continue."
+      continue
+    }
     local new_name="$(file.print-normalized-name "${file}")"
     [[ "${file}" == "${new_name}" ]] && continue
-    run "mkdir -p \$(dirname \"${new_name}\")"
+    local dir_name="$(dirname "${new_name}")"
+    [[ -n ${dir_name} ]] && {
+      [[ -d ${dir_name} ]] || run "mkdir -p \"${dir_name}\""
+    }
+
     if run.config.is-dry-run; then
       info "mv -v \"${file}\" \"${new_name}\""
     else
-      run "mv \"${file}\" \"${new_name}\""
+      run.set-next show-output-on
+      run "mv -fv \"${file}\" \"${new_name}\""
+      counter=$(( counter + 1 ))
     fi
   done
-    
+  hr
+  inf "Total of ${counter} files have been renamed."    
   return 
 }
 

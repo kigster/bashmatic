@@ -15,7 +15,7 @@ export DEFALT_MIN_WIDTH=80
 export UI_WIDTH=${UI_WIDTH:-${DEFALT_MIN_WIDTH}}
 
 if [[ -n $CI ]] ; then
-  export UI_WIDTH=100
+  export UI_WIDTH=80
   output.constrain-screen-width ${UI_WIDTH}
   prefix=" ⏱  "
 
@@ -387,6 +387,7 @@ function specs.header() {
   printf "      \e[42;30;5m    Bashmatic® Test Runner                             ${clr}\n"
   printf "      \e[42;30;2m    Version $(bashmatic.version)                                      ${clr}\n"
   printf "      \e[42;24;1m                                                       ${clr}\n"
+  printf "      \e[43;30;3m    %s  ${clr}\n" "                                                 "
   printf "      \e[43;30;3m    %s  ${clr}\n" "© 2016-$(date '+%Y') Konstantin Gredeskoul, (MIT License)."
   printf "      \e[43;14;4m    %43.43s        ${clr}\n" " "
   echo

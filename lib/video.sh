@@ -72,7 +72,7 @@ function .video.convert.compress-23() {
 function .video.convert.compress-3() {
   # https://unix.stackexchange.com/questions/28803/how-can-i-reduce-a-videos-size-with-ffmpeg
   # Here is a 2 pass example. Pretty hard coded but it really puts on the squeeze
-  "$(.video.ffmpeg-run) -y -i "$1" -c:v libvpx-vp9 -pass 1 -deadline best -crf 30 -b:v 664k -c:a libopus -f webm /ev/nu"s
+  $(.video.ffmpeg-run) -y -i "$1" -c:v libvpx-vp9 -pass 1 -deadline best -crf 30 -b:v 664k -c:a libopus -f webm /dev/null
   $(.video.ffmpeg-run) -y -i "$1" -c:v libvpx-vp9 -pass 2 -crf 30 -b:v 664k -c:a libopus -strict -2 "$2"
 }
 
@@ -234,3 +234,25 @@ function video.shrink() {
     video.encode "${file}" "shrinkwrap" "${dest}"
   done
 }
+
+function video.make.mp4() {
+  local file="$1"
+  local target="${2}"
+  [[ -z "${target}" ]] && target="CC-${file/.MOV/.mp4}"
+
+  [[ -s "${file}" ]] || {
+    error "File [$file] does not exist."
+    return 1  
+  }
+
+  [[ "${file}" == "${target}" ]] && target="COMPRESSED-${target}"
+
+  h1bg "${file} -> ${target}"
+
+  run.set-next show-output-on continue-on-error
+
+  run "ffmpeg -n -loglevel error -stats -i \"${file}\" -c:v libx265 -b:v 4M -x265-params pass=1 -f null /dev/null"
+  run "ffmpeg -n -loglevel error -stats -i \"${file}\" -c:v libx265 -b:v 4M -x265-params pass=2 \"${target}\""
+}
+
+
