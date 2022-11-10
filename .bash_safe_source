@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091
 # vim: ft=bash
 # © Copyright 2021 Konstantin Gredeskoul
 # Part of BASHMATIC framework.
@@ -18,6 +19,7 @@ function source_if_exists() {
   for file in "$@"; do
     if [[ -s "${file}" ]]; then
       is-debug && printf "[debug] ——> ${bldgrn}%-60.60s${clr}" "${file}"
+      # shellcheck source=./${file}
       source "${file}"
       local code=$?
 

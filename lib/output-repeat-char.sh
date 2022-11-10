@@ -109,3 +109,4 @@ export LibOutput__RepeatCharImplementation="product"
   printf "%s%d" "${width}" "$(text.ord "${char}")"
 }
 
+

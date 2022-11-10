@@ -216,7 +216,7 @@ function brew.install.package() {
 
   [[ -n "${opts_force}" ]] && force="--force"
   [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-  [[ -z "${opt_terse}" ]] && inf "checking for 🍻 ${bldylw}${package}..."
+  [[ -z "${opt_terse}" ]] && inf "brewing  🍻   ${bldylw}${package}..."
 
   if brew.package.all-installed "${package}"; then
     [[ -z "${opt_terse}" ]] && ok:
@@ -355,4 +355,5 @@ function brew.service.restart() {
   local svc="$1"
   run "brew services restart ${svc}"
 }
+
 

@@ -116,7 +116,8 @@ function reset-color:() {
 
 function columnize() {
   local columns="${1:-2}"
-  local sw="${SCREEN_WIDTH:=$(.output.screen-width)}"
+  [[ -n $1 ]] && shift
+  local sw="${2:-$(screen.width.actual)}"
   [[ ${sw} -lt 90 ]] && sw=100
   pr -l 10000 -"${columns}" -e4 -w ${sw} |
     expand -8 |
@@ -169,5 +170,6 @@ function dbgf() {
   fi
   return ${code}
 }
+
 
 

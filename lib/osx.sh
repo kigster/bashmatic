@@ -180,7 +180,7 @@ osx.ramdisk.mount() {
 
   local total=$((size * 2 * 1024))
   util.os
-  [[ ${AppCurrentOS} != "darwin" ]] && {
+  [[ ${BASHMATIC_OS} != "darwin" ]] && {
     error "This function only works on OSX"
     return 1
   }
@@ -334,4 +334,5 @@ function osx.detect-cpu() {
     echo unknown unknown 
   fi
 }
+
 

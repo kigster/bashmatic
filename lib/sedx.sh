@@ -5,7 +5,7 @@ util.ensure-gnu-sed() {
   local gsed_path
 
   util.os
-  case "${AppCurrentOS}" in
+  case "${BASHMATIC_OS}" in
   darwin)
     gsed_path="$(command -v gsed 2>/dev/null)"
     if [[ -z "${gsed_path}" ]]; then
@@ -55,5 +55,6 @@ function sedx() {
   }
   ${bashmatic__sed_command} -E "$@"
 }
+
 
 

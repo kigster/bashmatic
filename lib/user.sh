@@ -147,3 +147,4 @@ user.current-shell-init-file() {
   echo "${init_file}"
 }  
 
+

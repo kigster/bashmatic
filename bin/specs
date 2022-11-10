@@ -5,7 +5,7 @@
 # © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
-# IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
+# IMPORTANT: Override this variable if your tests are located in a different folder, eg 'specs'
 # shellcheck disable=2046
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 
@@ -14,18 +14,17 @@
   exit 1  
 }
 
-set -e -o pipefail
 
-source "${BASHMATIC_HOME}/init.sh" --reload
-source "${BASHMATIC_HOME}/lib/bashmatic.sh"
+# shellcheck source=./../init.sh
+source "${BASHMATIC_HOME}/init.sh" -q
+# shellcheck source=./../test/helpers/test-lib.sh
 source "${BASHMATIC_HOME}/test/helpers/test-lib.sh"
 
 function specs.main() {
-  export TEST_DIR="${TEST_DIR:-"test"}"
-
+ export TEST_DIR="${TEST_DIR:-"test"}"
   if is.sourced-in; then
     info "All functions are loaded. "
-    info "Now you can run ${bldylw}specs.run <spec> <spect> ... "
+    info "Now you can run ${bldylw}specs.run <spec> <specs> ... "
     return 0
   else
     specs.run "$@"

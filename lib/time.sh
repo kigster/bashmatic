@@ -25,7 +25,7 @@
   util.os
   local date_runnable
   date_runnable='date'
-  if [[ "${AppCurrentOS}" == "darwin" ]]; then
+  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
     command -v gdate >/dev/null || .time.osx.coreutils
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
     [[ -n $(command -v gdate) ]] && date_runnable='gdate'
@@ -39,7 +39,7 @@ function time.now.with-ms() {
   util.os
   local date_runnable
   date_runnable='date'
-  if [[ "${AppCurrentOS}" == "darwin" ]]; then
+  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
     [[ -z $(command -v gdate) ]] && .time.osx.coreutils
     [[ -n $(command -v gdate) ]] && date_runnable='gdate'
   fi
@@ -161,7 +161,7 @@ function time.a-command() {
 # epoch number. Appears to be different on linux vs OSX.
 time.date-from-epoch() {
   local epoch_ts="$1"
-  if [[ "${AppCurrentOS}" == "darwin" ]]; then
+  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
     printf "date -r ${epoch_ts}"
   else
     printf "date --date='@${epoch_ts}'"
@@ -233,4 +233,5 @@ millis() {
 today() {
   date +'%Y-%m-%d'
 }
+
 

@@ -9,7 +9,11 @@
 export __bashmatic_warning_notification=${BASHMATIC_HOME}/.developer-warned
 export __bashmatic_library_last_sourced=${BASHMATIC_HOME}/.last-loaded
 
+export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
+# shellcheck source=./time.sh
 [[ -n $(type millis 2>/dev/null) ]] || source "${BASHMATIC_HOME}"/lib/time.sh
+# shellcheck source=./file.sh
 [[ -n $(type file.last-modified-millis 2>/dev/null) ]] || source "${BASHMATIC_HOME}"/lib/file.sh
 
 function bashmatic.cd-into() {
@@ -18,12 +22,11 @@ function bashmatic.cd-into() {
 }
 
 function bashmatic.current-os() {
-  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-  printf "%s" "${AppCurrentOS}"
+  printf "%s" "${BASHMATIC_OS}"
 }
 
-# @descripion True if .envrc.local file is present. We take it as a sign
-#             you may be developing bashmatic.
+# @description True if .envrc.local file is present. We take it as a sign
+#              you may be developing bashmatic.
 function bashmatic.is-developer() {
   [[ ${BASHMATIC_DEVELOPER} -eq 1 || -f ${BASHMATIC_HOME}/.envrc.local ]]
 }
@@ -46,14 +49,18 @@ function __bashmatic.set-is-not-loaded() {
 
 function bashmatic.reload() {
   __bashmatic.set-is-not-loaded
+  # shellcheck source=./../.envrc.no-debug
   source "${BASHMATIC_HOME}/.envrc.no-debug"
-  source "${BASHMATIC_INIT}"
+  # shellcheck source=./../init.sh
+  source "${BASHMATIC_INIT}" --reload
 }
 
 function bashmatic.reload-debug() {
   __bashmatic.set-is-not-loaded
+  # shellcheck source=./../.envrc.debug
   source "${BASHMATIC_HOME}/.envrc.debug"
-  source "${BASHMATIC_INIT}"
+  # shellcheck source=./../init.sh
+  source "${BASHMATIC_INIT}" --reload
 }
 
 function bashmatic.version() {
@@ -83,7 +90,7 @@ function bashmatic.functions-from() {
 
   cd "${BASHMATIC_HOME}/lib" >/dev/null || return 1
 
-  export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
+  local screen_width=$(screen.width.actual)
 
   if [[ -n $(echo "${pattern}" | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
     pattern="${pattern}.sh"
@@ -118,7 +125,7 @@ function bashmatic.functions.runtime() {
 
 # Setup
 function bashmatic.bash.version() {
-  echo "${BASH_VERSION/[^0-9]*/}"
+  echo "${BASH_VERSION:0:1}"
 }
 
 function bashmatic.bash.version-four-or-later() {
@@ -138,14 +145,16 @@ function __rnd() {
 
 bashmatic.bash.version-four-or-later && {
   [[ ${#load_cache[@]} -gt 0 ]] || {
-    declare -g -A load_cache=()
+    ${GLOBAL} -A load_cache
+    load_cache=()
   }
 }
 
 function bashmatic.reset.cache() {
   unset load_cache
   bashmatic.bash.version-four-or-later && {
-    declare -g -A load_cache=()
+    ${GLOBAL} -A load_cache
+    load_cache=()
   }
   rm -f "${__bashmatic_library_last_sourced}"
 }
@@ -349,5 +358,6 @@ function bashmatic.auto-update-error() {
         tee -a "${__bashmatic_auto_update_help_file}" >&2
   fi
 }
+
 
 

@@ -178,7 +178,8 @@ export DevSetup__Version="0.4.1"
     asciidoc
     asciidoctor
     awscli
-    bash-completion
+    bash-completion@2
+    bat
     cloc
     coreutils
     curl
@@ -239,6 +240,7 @@ export DevSetup__Version="0.4.1"
     watch
     wget
     ydiff
+    yq
     zlib
   )
 
@@ -901,7 +903,7 @@ function dev-setup.invoke-actions() {
 }
 
 function dev-setup.run-actions() {
-  if [[ ${AppCurrentOS} =~ darwin ]]; then
+  if [[ ${BASHMATIC_OS} =~ darwin ]]; then
     brew.install
   fi
 

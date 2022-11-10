@@ -303,9 +303,9 @@ function .install.darwin-requirements() {
 # Ensure OS-specific reqquirements are satisfied
 #——————————————————————————————————————————————————————————————————————————————————————
 function .install.os-requirements() {
-  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
-  case ${AppCurrentOS} in
+  case ${BASHMATIC_OS} in
   darwin)
     .install.darwin-requirements
     ;;
@@ -313,7 +313,7 @@ function .install.os-requirements() {
     .install.linux-requirements
     ;;
   *)
-   .err "Operating system ${AppCurrentOS} is not supported."
+   .err "Operating system ${BASHMATIC_OS} is not supported."
     exit 1
     ;;
   esac

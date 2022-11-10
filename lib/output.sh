@@ -28,21 +28,21 @@ output.reset-min-max-width
 output.screen-width.actual() {
   local w
   util.os
-  if [[ ${AppCurrentOS} =~ darwin ]]; then
+  if [[ ${BASHMATIC_OS} =~ darwin ]]; then
     w="$(.output.stty.field columns)"
-  elif [[ ${AppCurrentOS} =~ linux ]]; then
+  elif [[ ${BASHMATIC_OS} =~ linux ]]; then
     w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
   fi
-  printf -- "%d" "$w"
+  printf -- "%d" "${w}"
 }
 
 # @description OS-independent way to determine screen height.
 output.screen-height.actual() {
   local h
   util.os
-  if [[ ${AppCurrentOS} =~ darwin ]]; then
+  if [[ ${BASHMATIC_OS} =~ darwin ]]; then
     h="$(.output.stty.field rows)"
-  elif [[ ${AppCurrentOS} =~ linux ]]; then
+  elif [[ ${BASHMATIC_OS} =~ linux ]]; then
     h="$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
   fi
   printf -- "%d" "$h"
@@ -673,3 +673,4 @@ ui.closer.kind-of-ok:() {
   ui.closer.kind-of-ok $@
   echo
 }
+

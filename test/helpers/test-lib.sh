@@ -11,8 +11,14 @@
 readonly BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
 # readonly BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
-export DEFALT_MIN_WIDTH=80
-export UI_WIDTH=${UI_WIDTH:-${DEFALT_MIN_WIDTH}}
+# shellcheck source=./../../lib/color.sh
+source "${BASHMATIC_HOME}/init.sh"
+
+export DEFAULT_MIN_WIDTH=80
+export UI_WIDTH=${UI_WIDTH:-${DEFAULT_MIN_WIDTH}}
+
+declare -a test_files
+declare -a all_test_files
 
 if [[ -n $CI ]] ; then
   export UI_WIDTH=80
@@ -21,7 +27,7 @@ if [[ -n $CI ]] ; then
 
   function test-group() {
     output.constrain-screen-width ${UI_WIDTH}
-    h3bg "$(echo "${prefix}$* " | tr '[:lower:]' '[:upper:]')"
+    h1  bg "$(echo "${prefix}$* " | tr '[:lower:]' '[:upper:]')"
   }
   function test-group-ok() {
     output.constrain-screen-width ${UI_WIDTH}
@@ -75,8 +81,8 @@ function specs.init() {
   export Bashmatic__Test=${True}
 
   (mkdir -p "${BatsPrefix}" 2>/dev/null) || true
-  (mkdir -p "${BatsPrefix}"/bin 2>/dev/null) || true
-  (mkdir -p "${BatsPrefix}"/libexec 2>/dev/null) || true
+  (mkdir -p "${BatsPrefix}/bin" 2>/dev/null) || true
+  (mkdir -p "${BatsPrefix}/libexec" 2>/dev/null) || true
 
   export PATH="${ProjectRoot}/bin:${PATH}"
   export PATH="${BatsPrefix}/bin:${BatsPrefix}/libexec:${PATH}"
@@ -93,7 +99,7 @@ function specs.init() {
 }
 
 function specs.find-project-root() {
-  local dir="${PWD}"
+  local dir="$(pwd -P)"
   while true; do
     [[ "${dir}" == "/" || -z "${dir}" ]] && break
     [[ -d "${dir}/${TEST_DIR}" ]] && {
@@ -106,7 +112,7 @@ function specs.find-project-root() {
   error "Can't find project root containing directory '${TEST_DIR}'" \
     "If your tests are located in differently named folder (eg 'specs'), please set"
   "the environment variable before running specs, eg:" \
-    "\$ ${bldylw}export TEST_DIR=specs; specs" >&2
+    "\$ ${bldylw}\export TEST_DIR=specs; specs" >&2
 
   return 1
 }
@@ -183,8 +189,8 @@ function specs.validate-bats() {
   [[ -z ${bats} ]] && {
     error "Can't find bats executable 😩  even after attemping to install it."
     info
-    info "which bats:                      ${bldylw}$(which bats)"
-    info "command -v bats:                 ${bldylw}$(command -v bats)"
+    info "whichan bats:                      ${bldylw}$(which bats)"
+    info "commd -v bats:                 ${bldylw}$(command -v bats)"
     info "find ${BatsRoot} -name bats:     ${bldylw}$(find "${BatsRoot}" -name bats)"
     exit 1
   }
@@ -198,7 +204,7 @@ function specs.run.one-file() {
   is.not-blank "${file}" || return 1
   is.a-non-empty-file "${file}" || return 1
 
-  test-group "${file}"
+  test-group "$(printf "%-80.80s" "${file}")"
   local start=$(millis)
   local bats=$(specs.find-bats)
   export flag_file_count=$((flag_file_count + 1))
@@ -270,7 +276,7 @@ function specs.run.all-in-parallel() {
   command -v parallel >/dev/null || ${func}
   command -v parallel >/dev/null || {
     warning "Can't find command [parallel] even after an attempted install."
-    info "Swithcing to serial test mode."
+    info "Switching to serial test mode."
     
     dbgf specs.run.many-files "${test_files[@]}"
     return $?
@@ -282,12 +288,12 @@ function specs.run.all-in-parallel() {
 }
 
 #------------------------------------------------------------------
-# Auxillary
+# Auxiliary
 function specs.add-all-files() {
-  export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
   if [[ -z ${all_test_files[*]} ]]; then
+    echo find "${TEST_DIR}" -maxdepth 1 -name '*test*.bats'
     all_test_files=($(find "${TEST_DIR}" -maxdepth 1 -name '*test*.bats' | sort))
-    [[ -d "${TEST_DIR}/${AppCurrentOS}" ]] && all_test_files=(${all_test_files[@]} $(find "${TEST_DIR}/${AppCurrentOS}" -maxdepth 1 -name '*test*.bats' | sort))
+    [[ -d "${TEST_DIR}/${BASHMATIC_OS}" ]] && all_test_files=(${all_test_files[@]} $(find "${TEST_DIR}/${BASHMATIC_OS}" -maxdepth 1 -name '*test*.bats' | sort))
   fi
 }
 
@@ -312,7 +318,7 @@ export flag_file_count_failed=0
 export flag_keep_going_on_error=0
 export flag_bats_args="-p"
 export flag_bats_reinstall=0
-export flag_parallel_tests=1
+export flag_parallel_tests=0
 
 function specs.parse-opts() {
   trap 'printf "\n\n\n${bldred}Ctrl-C detected, aborting tests.${clr}\n\n"; exit 1' SIGINT
@@ -333,9 +339,9 @@ function specs.parse-opts() {
       shift
       export flag_bats_reinstall=1
       ;;
-    -P | --no-parallel)
+    -p | --parallel)
       shift
-      export flag_parallel_tests=0
+      export flag_parallel_tests=1
       ;;
     -t | --taps)
       shift
@@ -409,8 +415,8 @@ function specs.usage() {
   hr
   echo
   printf "${bldylw}OPTIONS\n${txtpur}"
-  printf "    -P | --no-parallel      Runs all tests sequentially instead of ${bldylw}parallel${txtpur}.\n"
-  printf "    -i | --install METHOD   Install Bats using the provided methjod.\n"
+  printf "    -p | --parallel         Runs all tests sequentially instead of ${bldylw}serially${txtpur}.\n"
+  printf "    -i | --install METHOD   Install Bats using the provided method.\n"
   printf "                            Supported methods: ${bldylw}${Bashmatic__BatsInstallMethods}${txtpur}\n\n"
   printf "    -r | --reinstall        Reinstall Bats framework before running\n"
   printf "    -c | --continue         Continue after a failing test file.\n"
@@ -425,8 +431,6 @@ function specs.set-width() {
 }
 
 function specs.run() {
-  declare -a test_files
-  declare -a all_test_files
 
   specs.set-width
   specs.header

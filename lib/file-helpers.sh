@@ -62,3 +62,4 @@ export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
   return 0
 }
 
+

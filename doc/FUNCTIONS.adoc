@@ -1224,8 +1224,8 @@ bashmatic.cd-into ()
 ----
 bashmatic.current-os () 
 { 
-    export AppCurrentOS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-    printf "%s" "${AppCurrentOS}"
+    export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+    printf "%s" "${BASHMATIC_OS}"
 }
 
 ----
@@ -1374,7 +1374,7 @@ bashmatic.reset.cache ()
 { 
     unset load_cache
     bashmatic.bash.version-four-or-later && { 
-        declare -g -A load_cache=()
+        ${GLOBAL} -A load_cache=()
     }
     rm -f "${__bashmatic_library_last_sourced}"
 }
@@ -4174,7 +4174,7 @@ dropbox.unignore ()
 { 
     local file="$(path.absolute "$1")"
     util.os
-    case "${AppCurrentOS}" in 
+    case "${BASHMATIC_OS}" in
         darwin)
             run "xattr -d com.dropbox.ignored \"${file}\""
         ;
@@ -4530,7 +4530,7 @@ file.print-normalized-name ()
 file.size () 
 { 
     util.os
-    if [[ ${AppCurrentOS} =~ linux ]]; then
+    if [[ ${BASHMATIC_OS} =~ linux ]]; then
         stat -c %s "$1"
     else
         file.stat "$1" st_size
@@ -5761,9 +5761,9 @@ github.validate ()
 ----
 gpg.install () 
 { 
-    [[ -z ${AppCurrentOS} ]] && util.os
+    [[ -z ${BASHMATIC_OS} ]] && util.os
     gpg.install-deps
-    case "${AppCurrentOS}" in 
+    case "${BASHMATIC_OS}" in
         darwin)
             brew.install.packages "gnupg"
         ;
@@ -5781,8 +5781,8 @@ gpg.install ()
 ----
 gpg.install-deps () 
 { 
-    [[ -z ${AppCurrentOS} ]] && util.os
-    case "${AppCurrentOS}" in 
+    [[ -z ${BASHMATIC_OS} ]] && util.os
+    case "${BASHMATIC_OS}" in
         darwin)
             brew.install.packages "coreutils gawk gnu-sed git curl gzip"
         ;
@@ -5801,7 +5801,7 @@ gpg.install-deps ()
 ----
 gpg.key-for-github () 
 { 
-    [[ -z ${AppCurrentOS} ]] && util.os
+    [[ -z ${BASHMATIC_OS} ]] && util.os
     if ! command -v gpg > /dev/null; then
         gpg.install
     fi
@@ -7072,7 +7072,7 @@ osx.ramdisk.mount ()
     local diskname="${2:-"ramdisk"}"
     local total=$((size * 2 * 1024))
     util.os
-    [[ ${AppCurrentOS} != "darwin" ]] && { 
+    [[ ${BASHMATIC_OS} != "darwin" ]] && {
         error "This function only works on OSX"
         return 1
     }
@@ -7625,10 +7625,10 @@ output.screen-height.actual ()
 { 
     local h
     util.os
-    if [[ ${AppCurrentOS} =~ darwin ]]; then
+    if [[ ${BASHMATIC_OS} =~ darwin ]]; then
         h="$(.output.stty.field rows)"
     else
-        if [[ ${AppCurrentOS} =~ linux ]]; then
+        if [[ ${BASHMATIC_OS} =~ linux ]]; then
             h="$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
         fi
     fi
@@ -7645,10 +7645,10 @@ output.screen-width.actual ()
 { 
     local w
     util.os
-    if [[ ${AppCurrentOS} =~ darwin ]]; then
+    if [[ ${BASHMATIC_OS} =~ darwin ]]; then
         w="$(.output.stty.field columns)"
     else
-        if [[ ${AppCurrentOS} =~ linux ]]; then
+        if [[ ${BASHMATIC_OS} =~ linux ]]; then
             w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
         fi
     fi
@@ -11876,7 +11876,7 @@ util.ensure-gnu-sed ()
     local sed_path
     local gsed_path
     util.os
-    case "${AppCurrentOS}" in 
+    case "${BASHMATIC_OS}" in
         darwin)
             gsed_path="$(command -v gsed 2>/dev/null)"
             if [[ -z "${gsed_path}" ]]; then
@@ -12588,7 +12588,7 @@ sym.dev.have-key ()
 sym.dev.import () 
 { 
     local skip_instructions=${1:-0}
-    if [[ ${AppCurrentOS} != 'darwin' ]]; then
+    if [[ ${BASHMATIC_OS} != 'darwin' ]]; then
         error 'This is only meant to run on Mac OS-X'
         return
     fi
@@ -12848,7 +12848,7 @@ time.a-command ()
 time.date-from-epoch () 
 { 
     local epoch_ts="$1"
-    if [[ "${AppCurrentOS}" == "darwin" ]]; then
+    if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
         printf "date -r ${epoch_ts}"
     else
         printf "date --date='@${epoch_ts}'"
@@ -12970,7 +12970,7 @@ time.now.with-ms ()
     util.os
     local date_runnable
     date_runnable='date'
-    if [[ "${AppCurrentOS}" == "darwin" ]]; then
+    if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
         [[ -z $(command -v gdate) ]] && .time.osx.coreutils
         [[ -n $(command -v gdate) ]] && date_runnable='gdate'
     fi
@@ -13859,7 +13859,7 @@ util.append-to-init-files ()
 ----
 util.arch () 
 { 
-    echo -n "${AppCurrentOS}-$($(system.uname) -m)-$($(system.uname) -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
+    echo -n "${BASHMATIC_OS}-$($(system.uname) -m)-$($(system.uname) -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
 }
 
 ----
@@ -14087,7 +14087,7 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    export AppCurrentOS="${AppCurrentOS:-$( $(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
+    export BASHMATIC_OS="${BASHMATIC_OS:-$( $(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 ----

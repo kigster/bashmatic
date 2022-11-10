@@ -55,3 +55,4 @@ function flatten-file() {
   printf -- "${command}"
   return 0
 }
+

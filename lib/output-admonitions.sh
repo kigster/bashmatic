@@ -150,3 +150,4 @@ function divider.yellow() {
   divider__ "${txtylw}${bakylw}"
   printf "${clr}${txtylw}${clr}\n"
 }
+
