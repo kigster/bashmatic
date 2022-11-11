@@ -34,3 +34,4 @@ db.rails.schema.checksum() {
   fi
 }
 
+

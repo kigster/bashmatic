@@ -225,3 +225,4 @@ docker.images.inspect() {
   docker.images-named "${name}" "docker.image.inspect"
 }
 
+

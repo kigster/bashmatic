@@ -13,8 +13,8 @@
 #———————————————————————————————————————————————————————————————————————————————
 
 function gpg.install-deps() {
-  [[ -z ${AppCurrentOS} ]] && util.os
-  case "${AppCurrentOS}" in
+  [[ -z ${BASHMATIC_OS} ]] && util.os
+  case "${BASHMATIC_OS}" in
   darwin)
     brew.install.packages "coreutils gawk gnu-sed git curl gzip"
     ;;
@@ -27,9 +27,9 @@ function gpg.install-deps() {
 }
 
 function gpg.install() {
-  [[ -z ${AppCurrentOS} ]] && util.os
+  [[ -z ${BASHMATIC_OS} ]] && util.os
   gpg.install-deps
-  case "${AppCurrentOS}" in
+  case "${BASHMATIC_OS}" in
   darwin)
     brew.install.packages "gnupg"
     ;;
@@ -41,7 +41,7 @@ function gpg.install() {
 }
 
 function gpg.key-for-github() {
-  [[ -z ${AppCurrentOS} ]] && util.os
+  [[ -z ${BASHMATIC_OS} ]] && util.os
   if ! command -v gpg >/dev/null ; then
     gpg.install
   fi
@@ -116,3 +116,4 @@ function gpg.my-keys() {
   return 0
 }
  
+

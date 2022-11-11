@@ -80,7 +80,7 @@ __pause() {
 sym.dev.import() {
   local skip_instructions=${1:-0}
 
-  if [[ ${AppCurrentOS} != 'darwin' ]]; then
+  if [[ ${BASHMATIC_OS} != 'darwin' ]]; then
     error 'This is only meant to run on Mac OS-X'
     return
   fi
@@ -216,4 +216,5 @@ decrypt.secrets() {
     exit ${code}
   }
 }
+
 

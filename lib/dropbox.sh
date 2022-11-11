@@ -9,7 +9,7 @@ function dropbox.ignore {
   local file="$(path.absolute "$1")"
   util.os
 
-  case "${AppCurrentOS}" in
+  case "${BASHMATIC_OS}" in
     darwin)
       run "xattr -w com.dropbox.ignored 1 \"${file}\""
       ;;
@@ -24,7 +24,7 @@ function dropbox.ignore {
 function dropbox.unignore() {
   local file="$(path.absolute "$1")"
   util.os
-  case "${AppCurrentOS}" in
+  case "${BASHMATIC_OS}" in
     darwin)
       run "xattr -d com.dropbox.ignored \"${file}\""
       ;;
@@ -33,4 +33,5 @@ function dropbox.unignore() {
       ;;
   esac
 }
+
 

@@ -234,7 +234,7 @@ file.stat() {
 # @description Returns the file size in bytes
 file.size() {
   util.os
-  if [[ ${AppCurrentOS} =~ linux ]]; then
+  if [[ ${BASHMATIC_OS} =~ linux ]]; then
     stat -c %s "$1"
   else
     file.stat "$1" st_size
@@ -406,4 +406,5 @@ ls.gb(){
   # du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fGb %s\n", $1/1024/1024, $2 )}' | tail -10
   du -g -d 1 "$@" | sort -rn
 }
+
 

@@ -75,11 +75,11 @@ util.i-to-ver() {
 }
 
 util.os() {
-  export AppCurrentOS="${AppCurrentOS:-$( $(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
+  export BASHMATIC_OS="${BASHMATIC_OS:-$( $(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 util.arch() {
-  echo -n "${AppCurrentOS}-$($(system.uname) -m)-$($(system.uname) -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
+  echo -n "${BASHMATIC_OS}-$($(system.uname) -m)-$($(system.uname) -p)" | /usr/bin/tr '[:upper:]' '[:lower:]'
 }
 
 # @description 
@@ -338,6 +338,7 @@ function var.expand() {
       return 1
   esac
 }
+
 
 
 

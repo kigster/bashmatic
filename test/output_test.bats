@@ -32,14 +32,12 @@ set -e
 } 
 
 @test "output.screen-width.actual()" {
-  export COLUMNS=120
   local w=$(output.screen-width.actual)
-  [[ $w -eq  0 ]]
+  [[ $w -eq $COLUMNS ]]
 }
 
-@test "output.screen.height.actual()" {
-  export ROWS=20
-  local h=$(output.screen-width.actual)
-  [[ $h -eq 0 ]]
+@test "output.screen-height.actual()" {
+  local h=$(output.screen-height.actual)
+  [[ $h -eq $LINES ]]
 }
 
