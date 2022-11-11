@@ -14,14 +14,17 @@
   exit 1  
 }
 
-
 # shellcheck source=./../init.sh
-source "${BASHMATIC_HOME}/init.sh" -q
-# shellcheck source=./../test/helpers/test-lib.sh
-source "${BASHMATIC_HOME}/test/helpers/test-lib.sh"
+source "${BASHMATIC_HOME}/init.sh"
+
+export BashMatic__ColorLoaded=0
+source "${BASHMATIC_HOME}/lib/color.sh"
 
 function specs.main() {
- export TEST_DIR="${TEST_DIR:-"test"}"
+  export TEST_DIR="${TEST_DIR:-"test"}"
+  # shellcheck source=./../test/helpers/test-lib.sh
+  source "${BASHMATIC_HOME}/test/helpers/test-lib.sh"
+
   if is.sourced-in; then
     info "All functions are loaded. "
     info "Now you can run ${bldylw}specs.run <spec> <specs> ... "

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vim: ft=sh
+# vim: ft=bash
 #
 # Bashmatic Utilities
 # © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
@@ -8,7 +8,7 @@
 # IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
 # shellcheck disable=2046
 
-readonly BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
+export BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
 # readonly BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
 # shellcheck source=./../../lib/color.sh
@@ -92,8 +92,13 @@ function specs.init() {
   export Bashmatic__BatsInstallPrefixes=($(util.functions-matching.diff specs.install.bats.))
   export Bashmatic__BatsInstallMethods="$(array.to.csv "${Bashmatic__BatsInstallPrefixes[@]}")"
 
+  unset BashMatic__ColorLoaded
+  source "${BASHMATIC_LIB}/color.sh"
+
   .output.set-indent 1
-  color.enable
+  type color.enable >/dev/null || {
+    color.enable
+  }
 
   return 0
 }
@@ -110,9 +115,9 @@ function specs.find-project-root() {
   done
 
   error "Can't find project root containing directory '${TEST_DIR}'" \
-    "If your tests are located in differently named folder (eg 'specs'), please set"
-  "the environment variable before running specs, eg:" \
-    "\$ ${bldylw}\export TEST_DIR=specs; specs" >&2
+        "If your tests are located in differently named folder (eg 'specs'), please set" \
+        "the environment variable before running specs, eg:" \
+        "\$ ${bldylw}\export TEST_DIR=specs; specs" >&2
 
   return 1
 }
@@ -431,7 +436,6 @@ function specs.set-width() {
 }
 
 function specs.run() {
-
   specs.set-width
   specs.header
 
@@ -445,14 +449,15 @@ function specs.run() {
   dbgf specs.validate-bats
   dbgf specs.add-all-files # Populates all_test_files[@] if not already populated
 
-  [[ -z ${test_files[*]} ]] && test_files=("${all_test_files[@]}")
+  [[ -z "${test_files[*]}" ]] && test_files=( ${all_test_files[@]} )
 
-  [[ ${#test_files} -gt 0 ]] && h4bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
+  [[ ${#test_files[@]} -gt 0 ]] && h4bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
 
-  if [[ ${flag_parallel_tests}0 -eq 0 ]] ;  then 
+  if [[ ${flag_parallel_tests} -eq 0 ]] ;  then
     dbgf specs.run.many-files "${test_files[@]}"
   else
     dbgf specs.run.all-in-parallel "${test_files[@]}"
   fi
 }
+
 

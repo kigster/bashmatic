@@ -3,6 +3,7 @@
 
 set +e
 load test_helper
+export GLOBAL=
 source lib/color.sh
 set +e
 
