@@ -6,9 +6,13 @@
 # Any modifications, © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 
 export BashMatic__ColorLoaded=${BashMatic__ColorLoaded:-"0"}
+
 [[ -z ${GLOBAL} ]] && export GLOBAL="declare "
+[[ ${SHELL} =~ zsh ]] && export GLOBAL="declare -g "
 
 if [[ ${BashMatic__ColorLoaded} -ne 1 ]]; then
+  DECLARATIONS="
+
   ${GLOBAL} txtblk
   ${GLOBAL} txtred
   ${GLOBAL} txtgrn
@@ -123,6 +127,10 @@ if [[ ${BashMatic__ColorLoaded} -ne 1 ]]; then
   ${GLOBAL} fg_mustard
   ${GLOBAL} fg_pink
   ${GLOBAL} fg_purr
+  "
+
+  eval "${DECLARATIONS}"
+
 fi
 
 function reset-color() {
