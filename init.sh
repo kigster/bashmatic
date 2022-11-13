@@ -21,6 +21,7 @@ fi
 
 export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 declare GLOBAL
+export GLOBAL="declare "
 
 if [[ ${BASH_MAJOR_VERSION} -eq 3 ]] ; then
   export GLOBAL="declare"
@@ -380,4 +381,7 @@ export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -
 # grab our shell command
 export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
+__bashmatic.prerequisites
 bashmatic.load "$@"
+
+
