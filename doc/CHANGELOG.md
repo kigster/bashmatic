@@ -1,11 +1,32 @@
 # Changelog
 
-## [v3.0.6](https://github.com/kigster/bashmatic/tree/v3.0.6) (2022-10-27)
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.7...HEAD)
+
+**Closed issues:**
+
+- Fix the millis\(\) error when loading init.sh [\#118](https://github.com/kigster/bashmatic/issues/118)
+
+## [v3.0.7](https://github.com/kigster/bashmatic/tree/v3.0.7) (2022-11-15)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.6...v3.0.7)
+
+**Merged pull requests:**
+
+- Fix the millis\(\) error [\#117](https://github.com/kigster/bashmatic/pull/117) ([kigster](https://github.com/kigster))
+
+## [v3.0.6](https://github.com/kigster/bashmatic/tree/v3.0.6) (2022-11-13)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.5...v3.0.6)
 
 **Merged pull requests:**
 
+- Declare globally [\#116](https://github.com/kigster/bashmatic/pull/116) ([kigster](https://github.com/kigster))
+- Consolidating duplicate variables — cleaning up [\#115](https://github.com/kigster/bashmatic/pull/115) ([kigster](https://github.com/kigster))
+- Simplifying the reload function [\#114](https://github.com/kigster/bashmatic/pull/114) ([kigster](https://github.com/kigster))
+- Don't show the banner if no TTY is available [\#113](https://github.com/kigster/bashmatic/pull/113) ([kigster](https://github.com/kigster))
+- Video compression helpers such as `video.make.mp4` [\#111](https://github.com/kigster/bashmatic/pull/111) ([kigster](https://github.com/kigster))
 - Adding admonitions + fixing init.sh [\#110](https://github.com/kigster/bashmatic/pull/110) ([kigster](https://github.com/kigster))
 - Rename master to main [\#109](https://github.com/kigster/bashmatic/pull/109) ([kigster](https://github.com/kigster))
 - adding dir.with-file + gpg key generation [\#101](https://github.com/kigster/bashmatic/pull/101) ([kigster](https://github.com/kigster))
@@ -18,20 +39,9 @@
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.3...v3.0.4)
 
-**Merged pull requests:**
-
-- Adding actual screen dimension functions [\#105](https://github.com/kigster/bashmatic/pull/105) ([kigster](https://github.com/kigster))
-
 ## [v3.0.3](https://github.com/kigster/bashmatic/tree/v3.0.3) (2022-08-01)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.2...v3.0.3)
-
-**Merged pull requests:**
-
-- Bump tzinfo from 1.2.7 to 1.2.10 in /test [\#104](https://github.com/kigster/bashmatic/pull/104) ([dependabot[bot]](https://github.com/apps/dependabot))
-- Adding new functions file.count.lines\(\) + documentation [\#103](https://github.com/kigster/bashmatic/pull/103) ([kigster](https://github.com/kigster))
-- \[FEATURE\] function `system.uname()` reliably returns absolute file path for `uname` [\#102](https://github.com/kigster/bashmatic/pull/102) ([kigster](https://github.com/kigster))
-- adding dir.with-file + gpg key generation [\#101](https://github.com/kigster/bashmatic/pull/101) ([kigster](https://github.com/kigster))
 
 ## [v3.0.2](https://github.com/kigster/bashmatic/tree/v3.0.2) (2022-06-14)
 

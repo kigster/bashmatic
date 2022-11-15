@@ -65,7 +65,6 @@
 * xref:#module-sedx[sedx]
 * xref:#module-serial[serial]
 * xref:#module-set[set]
-* xref:#module-settings[settings]
 * xref:#module-shasum[shasum]
 * xref:#module-shdoc[shdoc]
 * xref:#module-shell-set[shell-set]
@@ -837,7 +836,7 @@ aws.ec2 ()
     local command="$cmd"
     case $command in 
         list | show | ls)
-            __utf_table "$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{name: Name, instance_id: InstanceId, ip_address: PrivateIpAddress, state: State.Name}' --output table 2>/dev/null)"
+            __utf_table "$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{name: Name, instance_id: InstanceId, ip_address: PrivateIpAddress, state: State.Name}' --output table 2> /dev/null)"
             return $?
         ;
         *)
@@ -856,8 +855,8 @@ aws.ec2 ()
 aws.rds.hostname () 
 { 
     local name=${1}
-    [[ -z $(which jq) ]] && out=$(brew.install.package jq 2>/dev/null 1>/dev/null)
-    [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2>/dev/null 1>/dev/null)
+    [[ -z $(which jq) ]] && out=$(brew.install.package jq 2> /dev/null > /dev/null)
+    [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2> /dev/null > /dev/null)
     [[ -n ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g' | ${GrepCommand} "^${name}\."
     [[ -z ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g'
 }
@@ -1012,7 +1011,7 @@ bashit-init ()
 ----
 bashit-install () 
 { 
-    if [[ ! -d "${HOME}/.bash_it" && -n $(command -v git 2>/dev/null) ]]; then
+    if [[ ! -d "${HOME}/.bash_it" && -n $(command -v git 2> /dev/null) ]]; then
         git clone -q "${__bashmatic_bash_it_source}" ~/.bash_it > /dev/null
     fi
     [[ -d ${HOME}/.bash_it ]] || return 1
@@ -1190,7 +1189,7 @@ bashmatic.bash.exit-unless-version-four-or-later ()
 ----
 bashmatic.bash.version () 
 { 
-    echo "${BASH_VERSION/[^0-9]*/}"
+    echo "${BASH_VERSION:0:1}"
 }
 
 ----
@@ -1224,7 +1223,6 @@ bashmatic.cd-into ()
 ----
 bashmatic.current-os () 
 { 
-    export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
     printf "%s" "${BASHMATIC_OS}"
 }
 
@@ -1277,7 +1275,7 @@ bashmatic.functions-from ()
     [[ -n ${pattern} ]] && shift
     [[ -z ${pattern} ]] && pattern="[a-z]*.sh"
     cd "${BASHMATIC_HOME}/lib" > /dev/null || return 1
-    export SCREEN_WIDTH=${SCREEN_WIDTH:=$(screen-width)}
+    local screen_width=$(screen.width.actual)
     if [[ -n $(echo "${pattern}" | eval "${GrepCommand} '\*$' ") || ! ${pattern} =~ \.sh$ ]]; then
         pattern="${pattern}.sh"
     fi
@@ -1348,7 +1346,7 @@ bashmatic.reload ()
 { 
     __bashmatic.set-is-not-loaded
     source "${BASHMATIC_HOME}/.envrc.no-debug"
-    source "${BASHMATIC_INIT}"
+    source "${BASHMATIC_INIT}" --reload
 }
 
 ----
@@ -1361,7 +1359,7 @@ bashmatic.reload-debug ()
 { 
     __bashmatic.set-is-not-loaded
     source "${BASHMATIC_HOME}/.envrc.debug"
-    source "${BASHMATIC_INIT}"
+    source "${BASHMATIC_INIT}" --reload
 }
 
 ----
@@ -1374,7 +1372,8 @@ bashmatic.reset.cache ()
 { 
     unset load_cache
     bashmatic.bash.version-four-or-later && { 
-        ${GLOBAL} -A load_cache=()
+        ${GLOBAL} -A load_cache
+        load_cache=()
     }
     rm -f "${__bashmatic_library_last_sourced}"
 }
@@ -1643,7 +1642,7 @@ brew.install ()
     if brew.is-installed; then
         ok:
         local brew=$(brew.binary)
-        info "Excellent: an existing Homebrew Version: ${bldylw}$(${brew} --version 2>/dev/null | head -1) exists"
+        info "Excellent: an existing Homebrew Version: ${bldylw}$(${brew} --version 2> /dev/null | head -1) exists"
         run "${brew} update"
     else
         not-ok:
@@ -1697,7 +1696,7 @@ brew.install.package ()
     local code
     [[ -n "${opts_force}" ]] && force="--force"
     [[ -n "${opts_verbose}" ]] && verbose="--verbose"
-    [[ -z "${opt_terse}" ]] && inf "checking for 🍻 ${bldylw}${package}..."
+    [[ -z "${opt_terse}" ]] && inf "brewing  🍻   ${bldylw}${package}..."
     if brew.package.all-installed "${package}"; then
         [[ -z "${opt_terse}" ]] && ok:
         [[ -z "${opt_terse}" ]] || printf "${bldgrn}○ "
@@ -1987,7 +1986,7 @@ brew.uninstall.packages ()
 brew.upgrade () 
 { 
     brew.is-installed || brew.install
-    local brew_cmd=$(command -v brew 2>/dev/null)
+    local brew_cmd=$(command -v brew 2> /dev/null)
     if [[ -z ${brew_cmd} ]]; then
         warn "brew is not installed...., brew_command is blank..."
         return 1
@@ -2213,110 +2212,107 @@ color.disable ()
 ----
 color.enable () 
 { 
-    if [[ ${BashMatic__ColorLoaded} -eq 1 ]]; then
-        [[ -n ${BASHMATIC_DEBUG} ]] && echo "colors are already loaded."
-    else
-        export txtblk='\e[0;30m'
-        export txtred='\e[0;31m'
-        export txtgrn='\e[0;32m'
-        export txtylw='\e[0;33m'
-        export txtblu='\e[0;34m'
-        export txtpur='\e[0;35m'
-        export txtcyn='\e[0;36m'
-        export txtwht='\e[0;37m'
-        export bldblk='\e[1;30m'
-        export bldred='\e[1;31m'
-        export bldgrn='\e[1;32m'
-        export bldylw='\e[1;33m'
-        export bldblu='\e[1;34m'
-        export bldpur='\e[1;35m'
-        export bldcyn='\e[1;36m'
-        export bldwht='\e[1;37m'
-        export unkblk='\e[4;30m'
-        export undred='\e[4;31m'
-        export undgrn='\e[4;32m'
-        export undylw='\e[4;33m'
-        export undblu='\e[4;34m'
-        export undpur='\e[4;35m'
-        export undcyn='\e[4;36m'
-        export undwht='\e[4;37m'
-        export bakblk='\e[40m'
-        export bakred='\e[41m'
-        export bakgrn='\e[42m'
-        export bakylw='\e[43m'
-        export bakblu='\e[44m'
-        export bakpur='\e[45m'
-        export bakcyn='\e[46m'
-        export bakwht='\e[47m'
-        export txtrst='\e[0m'
-        export rst='\e[0m'
-        export clr='\e[0m'
-        export bold='\e[1m'
-        export italic='\e[3m'
-        export underlined='\e[4m'
-        export strikethrough='\e[9m'
-        export inverse_on='\e[7m'
-        export inverse_off='\e[27m'
-        export default_bg='\e[49m'
-        export default_fg='\e[39m'
-        export black_on_orange="\e[48;5;208m\e[48;30;208m"
-        export black_on_yellow="\e[48;5;11m\e[48;30;209m"
-        export white_on_orange="\e[48;5;208m"
-        export white_on_yellow="\e[48;5;214m"
-        export white_on_red="\e[48;5;9m"
-        export white_on_pink="\e[48;5;199m"
-        export white_on_salmon="\e[48;5;196m"
-        export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
-        export bg_blood="\e[41m"
-        export bg_blue_on_gray="\e[90;7;42m"
-        export bg_bright_green="\e[48;5;82m"
-        export bg_dark_green="\e[48;5;82m"
-        export bg_bright_red="\e[1;31m\e[48;5;196m"
-        export bg_deep_blue="\e[48;5;37m"
-        export bg_deep_green="\e[48;5;28m"
-        export bg_green_on_gray="\e[90;7;102m"
-        export bg_grey="\e[48;5;239m"
-        export bg_mustard="\e[48;5;178m"
-        export bg_pink="\e[48;5;89m"
-        export bg_sky_blue="\e[48;5;39m"
-        export bg_yellow_on_gray="\e[90;7;43m"
-        export fg_dark_red="\e[38;5;88m"
-        export fg_bright_green="\e[38;5;82m"
-        export fg_sky_blue="\e[38;5;39m"
-        export fg_deep_green="\e[38;5;28m"
-        export fg_doll="\e[38;5;183m"
-        export fg_grey="\e[38;5;239m"
-        export fg_light_green="\e[38;5;108m"
-        export fg_mustard="\e[38;5;178m"
-        export fg_mustard="\e[38;5;178m"
-        export fg_pink="\e[38;5;89m"
-        export fg_purr="\e[38;5;219m"
-        export BashMatic__ColorLoaded=1
-        export bg_blood="\e[41m"
-        export bg_blue_on_gray="\e[90;7;42m"
-        export bg_bright_green="\e[48;5;82m"
-        export bg_dark_green="\e[48;5;82m"
-        export bg_bright_red="\e[1;31m\e[48;5;196m"
-        export bg_deep_blue="\e[48;5;37m"
-        export bg_deep_green="\e[48;5;28m"
-        export bg_green_on_gray="\e[90;7;102m"
-        export bg_grey="\e[48;5;239m"
-        export bg_mustard="\e[48;5;178m"
-        export bg_pink="\e[48;5;89m"
-        export bg_sky_blue="\e[48;5;39m"
-        export bg_yellow_on_gray="\e[90;7;43m"
-        export fg_dark_red="\e[38;5;88m"
-        export fg_bright_green="\e[38;5;82m"
-        export fg_sky_blue="\e[38;5;39m"
-        export fg_deep_green="\e[38;5;28m"
-        export fg_doll="\e[38;5;183m"
-        export fg_grey="\e[38;5;239m"
-        export fg_light_green="\e[38;5;108m"
-        export fg_mustard="\e[38;5;178m"
-        export fg_mustard="\e[38;5;178m"
-        export fg_pink="\e[38;5;89m"
-        export fg_purr="\e[38;5;219m"
-    fi
+    export BashMatic__ColorLoaded=1
+    export txtblk='\e[0;30m'
+    export txtred='\e[0;31m'
+    export txtgrn='\e[0;32m'
+    export txtylw='\e[0;33m'
+    export txtblu='\e[0;34m'
+    export txtpur='\e[0;35m'
+    export txtcyn='\e[0;36m'
+    export txtwht='\e[0;37m'
+    export bldblk='\e[1;30m'
+    export bldred='\e[1;31m'
+    export bldgrn='\e[1;32m'
+    export bldylw='\e[1;33m'
+    export bldblu='\e[1;34m'
+    export bldpur='\e[1;35m'
+    export bldcyn='\e[1;36m'
+    export bldwht='\e[1;37m'
+    export unkblk='\e[4;30m'
+    export undred='\e[4;31m'
+    export undgrn='\e[4;32m'
+    export undylw='\e[4;33m'
+    export undblu='\e[4;34m'
+    export undpur='\e[4;35m'
+    export undcyn='\e[4;36m'
+    export undwht='\e[4;37m'
+    export bakblk='\e[40m'
+    export bakred='\e[41m'
+    export bakgrn='\e[42m'
+    export bakylw='\e[43m'
+    export bakblu='\e[44m'
+    export bakpur='\e[45m'
+    export bakcyn='\e[46m'
+    export bakwht='\e[47m'
+    export txtrst='\e[0m'
+    export rst='\e[0m'
+    export clr='\e[0m'
+    export bold='\e[1m'
+    export italic='\e[3m'
+    export underlined='\e[4m'
+    export strikethrough='\e[9m'
+    export inverse_on='\e[7m'
+    export inverse_off='\e[27m'
+    export default_bg='\e[49m'
+    export default_fg='\e[39m'
+    export black_on_orange="\e[48;5;208m\e[48;30;208m"
+    export black_on_yellow="\e[48;5;11m\e[48;30;209m"
+    export white_on_orange="\e[48;5;208m"
+    export white_on_yellow="\e[48;5;214m"
+    export white_on_red="\e[48;5;9m"
+    export white_on_pink="\e[48;5;199m"
+    export white_on_salmon="\e[48;5;196m"
+    export yellow_on_gray="\e[38;5;220m\e[48;5;242m"
+    export bg_blood="\e[41m"
+    export bg_blue_on_gray="\e[90;7;42m"
+    export bg_bright_green="\e[48;5;82m"
+    export bg_dark_green="\e[48;5;82m"
+    export bg_bright_red="\e[1;31m\e[48;5;196m"
+    export bg_deep_blue="\e[48;5;37m"
+    export bg_deep_green="\e[48;5;28m"
+    export bg_green_on_gray="\e[90;7;102m"
+    export bg_grey="\e[48;5;239m"
+    export bg_mustard="\e[48;5;178m"
+    export bg_pink="\e[48;5;89m"
+    export bg_sky_blue="\e[48;5;39m"
+    export bg_yellow_on_gray="\e[90;7;43m"
+    export fg_dark_red="\e[38;5;88m"
+    export fg_bright_green="\e[38;5;82m"
+    export fg_sky_blue="\e[38;5;39m"
+    export fg_deep_green="\e[38;5;28m"
+    export fg_doll="\e[38;5;183m"
+    export fg_grey="\e[38;5;239m"
+    export fg_light_green="\e[38;5;108m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_pink="\e[38;5;89m"
+    export fg_purr="\e[38;5;219m"
+    export BashMatic__ColorLoaded=1
+    export bg_blood="\e[41m"
+    export bg_blue_on_gray="\e[90;7;42m"
+    export bg_bright_green="\e[48;5;82m"
+    export bg_dark_green="\e[48;5;82m"
+    export bg_bright_red="\e[1;31m\e[48;5;196m"
+    export bg_deep_blue="\e[48;5;37m"
+    export bg_deep_green="\e[48;5;28m"
+    export bg_green_on_gray="\e[90;7;102m"
+    export bg_grey="\e[48;5;239m"
+    export bg_mustard="\e[48;5;178m"
+    export bg_pink="\e[48;5;89m"
+    export bg_sky_blue="\e[48;5;39m"
+    export bg_yellow_on_gray="\e[90;7;43m"
+    export fg_dark_red="\e[38;5;88m"
+    export fg_bright_green="\e[38;5;82m"
+    export fg_sky_blue="\e[38;5;39m"
+    export fg_deep_green="\e[38;5;28m"
+    export fg_doll="\e[38;5;183m"
+    export fg_grey="\e[38;5;239m"
+    export fg_light_green="\e[38;5;108m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_mustard="\e[38;5;178m"
+    export fg_pink="\e[38;5;89m"
+    export fg_purr="\e[38;5;219m"
 }
 
 ----
@@ -3545,7 +3541,7 @@ db.refresh.actions ()
 ----
 db.usage () 
 { 
-    local config="~/$(basename $(dirname "${bashmatic_db_config}"))/$(basename  "${bashmatic_db_config}")"
+    local config="~/$(basename $(dirname "${bashmatic_db_config}"))/$(basename "${bashmatic_db_config}")"
     usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "-C / --commands" "List all sub-commands to the db script" "-c / --connectons" "List all available database connections" "-e / --examples" "Show script usage examples" "-h / --help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
 }
 
@@ -4174,7 +4170,7 @@ dropbox.unignore ()
 { 
     local file="$(path.absolute "$1")"
     util.os
-    case "${BASHMATIC_OS}" in
+    case "${BASHMATIC_OS}" in 
         darwin)
             run "xattr -d com.dropbox.ignored \"${file}\""
         ;
@@ -4273,7 +4269,7 @@ file.exists-and-newer-than ()
     shift
     local minutes="${1}"
     shift
-    if [[ -n "$(find "${file}" -mmin -"${minutes}" -print 2>/dev/null)" ]]; then
+    if [[ -n "$(find "${file}" -mmin -"${minutes}" -print 2> /dev/null)" ]]; then
         return 0
     else
         return 1
@@ -4494,18 +4490,32 @@ file.list.filter-non-empty ()
 ----
 file.normalize-files () 
 { 
-    trap 'set +x' EXIT INT
+    trap 'return 1' INT
+    run.set-all abort-on-error
+    local file
+    local counter=0
     for file in "$@"
     do
+        [[ -f "${file}" ]] || { 
+            error "File '${file}' does not exist, continue."
+            continue
+        }
         local new_name="$(file.print-normalized-name "${file}")"
         [[ "${file}" == "${new_name}" ]] && continue
-        run "mkdir -p \$(dirname \"${new_name}\")"
+        local dir_name="$(dirname "${new_name}")"
+        [[ -n ${dir_name} ]] && { 
+            [[ -d ${dir_name} ]] || run "mkdir -p \"${dir_name}\""
+        }
         if run.config.is-dry-run; then
             info "mv -v \"${file}\" \"${new_name}\""
         else
-            run "mv \"${file}\" \"${new_name}\""
+            run.set-next show-output-on
+            run "mv -fv \"${file}\" \"${new_name}\""
+            counter=$(( counter + 1 ))
         fi
     done
+    hr
+    inf "Total of ${counter} files have been renamed."
     return
 }
 
@@ -4518,7 +4528,7 @@ file.normalize-files ()
 file.print-normalized-name () 
 { 
     local file="$1"
-    echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g;s/[^\A-Za-z0-9.-/&]//g; s/--+/-/g;'
+    echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g; s/[^A-Za-z0-9.\-]/-/g; s/---+/--/g'
 }
 
 ----
@@ -4846,7 +4856,7 @@ g-u ()
 gem.cache-installed () 
 { 
     gem.configure-cache
-    if [[ ! -s "${LibGem__GemListCache}" || -z "$(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null)" ]]; then
+    if [[ ! -s "${LibGem__GemListCache}" || -z "$(find "${LibGem__GemListCache}" -mmin -30 2> /dev/null)" ]]; then
         gem list > "${LibGem__GemListCache}" > /dev/null
     fi
 }
@@ -5763,7 +5773,7 @@ gpg.install ()
 { 
     [[ -z ${BASHMATIC_OS} ]] && util.os
     gpg.install-deps
-    case "${BASHMATIC_OS}" in
+    case "${BASHMATIC_OS}" in 
         darwin)
             brew.install.packages "gnupg"
         ;
@@ -5782,7 +5792,7 @@ gpg.install ()
 gpg.install-deps () 
 { 
     [[ -z ${BASHMATIC_OS} ]] && util.os
-    case "${BASHMATIC_OS}" in
+    case "${BASHMATIC_OS}" in 
         darwin)
             brew.install.packages "coreutils gawk gnu-sed git curl gzip"
         ;
@@ -5839,7 +5849,7 @@ gpg.my-keys ()
     local -a info=($(gpg.name-and-email))
     local name="${info[0]}"
     local email="${info[1]}"
-    declare -a keys=($(gpg --list-secret-keys --keyid-format=long | grep -B 3 -E "^uid *\[ultimate\] ${name}.*$" |  grep -E '^sec' | cut -d '/' -f 2 | sed 's/ .*$//g'))
+    declare -a keys=($(gpg --list-secret-keys --keyid-format=long | grep -B 3 -E "^uid *\[ultimate\] ${name}.*$" | grep -E '^sec' | cut -d '/' -f 2 | sed 's/ .*$//g'))
     if [[ ${#keys[@]} -gt 0 ]]; then
         printf "\n${bldylw}Your GPG keys are:${clr}\n" 1>&2
         echo "${keys[*]}" | tr ' ' "\n"
@@ -6616,15 +6626,7 @@ net.local-net ()
 ----
 net.local-subnet () 
 { 
-    local subnet="$(ifconfig -a |
-    grep inet | grep broadcast |
-    grep -v 'inet 169' |
-    grep -v 'inet 127' |
-    awk '{print $2}' |
-    cut -d '.' -f 1,2,3 |
-    sort |
-    uniq |
-    head -1).0/24"
+    local subnet="$(ifconfig -a | grep inet | grep broadcast | grep -v 'inet 169' | grep -v 'inet 127' | awk '{print $2}' | cut -d '.' -f 1,2,3 | sort | uniq | head -1).0/24"
     printf '%s' "${subnet}"
 }
 
@@ -6867,7 +6869,7 @@ change-underscan ()
     h2 "Now: please change the resolution ${bldylw}on the problem monitor." "NOTE: it's ${italic}not important what resolution you choose," "as long as it's different than what you had previously..." "Finally: exit Display Preferences once you changed resolution."
     run "open /System/Library/PreferencePanes/Displays.prefPane"
     run.ui.ask "Have you changed the resolution and exited Display Prefs? "
-    local line=$(sudo diff "${file}" "${backup}" 2>/dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')
+    local line=$(sudo diff "${file}" "${backup}" 2> /dev/null | head -1 | /usr/bin/env ruby -ne 'puts $_.to_i')
     [[ -n ${BASHMATIC_DEBUG} ]] && info "diff line is at ${line}"
     value=
     if [[ "${line}" -gt 0 ]]; then
@@ -7072,7 +7074,7 @@ osx.ramdisk.mount ()
     local diskname="${2:-"ramdisk"}"
     local total=$((size * 2 * 1024))
     util.os
-    [[ ${BASHMATIC_OS} != "darwin" ]] && {
+    [[ ${BASHMATIC_OS} != "darwin" ]] && { 
         error "This function only works on OSX"
         return 1
     }
@@ -7629,7 +7631,7 @@ output.screen-height.actual ()
         h="$(.output.stty.field rows)"
     else
         if [[ ${BASHMATIC_OS} =~ linux ]]; then
-            h="$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
+            h="$(stty -a 2> /dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
         fi
     fi
     printf -- "%d" "$h"
@@ -7649,10 +7651,10 @@ output.screen-width.actual ()
         w="$(.output.stty.field columns)"
     else
         if [[ ${BASHMATIC_OS} =~ linux ]]; then
-            w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
+            w="$(stty -a 2> /dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
         fi
     fi
-    printf -- "%d" "$w"
+    printf -- "%d" "${w}"
 }
 
 ----
@@ -7924,6 +7926,50 @@ divider__ ()
 
 ----
 
+==== `panel-error`
+
+[source,bash]
+----
+panel-error () 
+{ 
+    export title_title_color="${bldwht}${bg_blood}"
+    export title_text_color="${txtblk}${bg_blood}"
+    export title_border_color="${bg_blood}${fg_dark_red}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-error-white`
+
+[source,bash]
+----
+panel-error-white () 
+{ 
+    export title_text_color="${bg_bright_red}${bldwht}"
+    export title_border_color="${bg_bright_red}${bldwht}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-error-yellow`
+
+[source,bash]
+----
+panel-error-yellow () 
+{ 
+    export title_title_color="${bldwht}${bakred}"
+    export title_text_color="${bldylw}${bakred}"
+    export title_border_color="${blkylw}${bakred}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
 ==== `panel-info`
 
 [source,bash]
@@ -7966,48 +8012,6 @@ panel-purple-red ()
 
 ----
 
-==== `panel-error`
-
-[source,bash]
-----
-panel-error () 
-{ 
-    export title_text_color="${bg_bright_red}${bldwht}"
-    export title_border_color="${bg_bright_red}${fg_dark_red}"
-    export title_shadow_color="${fg_dark_red}"
-    title-panel "$@"
-}
-
-----
-
-==== `panel-error-white`
-
-[source,bash]
-----
-panel-error-white () 
-{ 
-    export title_text_color="${bg_bright_red}${bldwht}"
-    export title_border_color="${bg_bright_red}${bldwht}"
-    export title_shadow_color="${fg_dark_red}"
-    title-panel "$@"
-}
-
-----
-
-==== `panel-error-yellow`
-
-[source,bash]
-----
-panel-error-yellow () 
-{ 
-    export title_text_color="${bg_bright_red}${bldwht}"
-    export title_border_color="${bg_bright_red}${bldylw}"
-    export title_shadow_color="${fg_dark_red}"
-    title-panel "$@"
-}
-
-----
-
 ==== `title`
 
 [source,bash]
@@ -8039,11 +8043,19 @@ title-blue ()
 ----
 title-box () 
 { 
+    local len
+    local len_actual
+    local width
+    local diff
+    width=82
     printf "${clr}\n
  ${title_border_color} ┌─────────────────────────────────────────────────────────────────────────────────────┐ ${clr}\n"
     for line in "$@"
     do
-        printf "${bold}${title_border_color} │  ${title_text_color}%-83.83s${title_border_color}${clr}${title_border_color}│${clr}${title_shadow_color}██${clr}\n" "${line}"
+        len=$(ruby -e "puts '${line}'.size")
+        len_actual=$(echo "${line}" | wc -c | tr -d ' ')
+        diff=$(( width - len ))
+        printf " ${bold}${title_border_color} │  ${title_text_color}%${len_actual}.${len_actual}s${title_border_color}%${diff}.${diff}s${clr}${title_border_color}│ ${clr}${title_shadow_color}██${clr}\n" "${line}" " "
     done
     printf " ${title_border_color} └─────────────────────────────────────────────────────────────────────────────────────┘ ${clr}${title_shadow_color}██${clr}
     ${title_shadow_color}████████████████████████████████████████████████████████████████████████████████████████${clr}
@@ -8077,11 +8089,11 @@ title-panel ()
     local shadow="${title_shadow_color}██${clr}"
     printf "${clr}\n
  ${title_border_color} ${box_top} ${clr}\n"
-    .title.line "${shadow}" "${line}"
+    .title.line "${shadow}" "${title_title_color:-${title_text_color}}" "${line}"
     printf " ${title_border_color} ${box_divider} ${shadow}\n"
     for line in "$@"
     do
-        .title.line "${shadow}" "${line}"
+        .title.line "${shadow}" "${title_text_color}" "${line}"
     done
     printf " ${title_border_color} ${box_bottom} ${shadow}\n"
     printf " ${title_shadow_color}   ${box_bottom_shadow}${clr}\n\n"
@@ -8095,8 +8107,8 @@ title-panel ()
 ----
 title-red () 
 { 
-    export title_text_color="${bg_bright_red}${bldwht}"
-    export title_border_color="${bg_bright_red}"
+    export title_text_color="${txtwht}${bakred}"
+    export title_border_color="${bldwht}${bakred}"
     export title_shadow_color="${fg_dark_red}"
     title-box "$@"
 }
@@ -9211,7 +9223,8 @@ br ()
 columnize () 
 { 
     local columns="${1:-2}"
-    local sw="${SCREEN_WIDTH:=$(.output.screen-width)}"
+    [[ -n $1 ]] && shift
+    local sw="${2:-$(screen.width.actual)}"
     [[ ${sw} -lt 90 ]] && sw=100
     pr -l 10000 -"${columns}" -e4 -w ${sw} | expand -8 | sed -E '/^ *$/d' | grep -v 'Page '
 }
@@ -9302,7 +9315,18 @@ err ()
 ----
 error () 
 { 
-    title-red "                                   «« ERROR »»                                                  " "$(printf "%-90.90s" "$*")"
+    panel-error "ERROR" "$@"
+}
+
+----
+
+==== `error-title`
+
+[source,bash]
+----
+error-title () 
+{ 
+    title-red "$(printf "%60.60s" "──── ERROR ───")" "$@"
 }
 
 ----
@@ -10122,7 +10146,7 @@ EXAMPLES:
     local pattern="$(pids.normalize.search-string "$1")"
     shift
     local func=${1:-"echo"}
-    if [[ -z $(which "${func}") && -z $(type "${func}" 2>/dev/null) ]]; then
+    if [[ -z $(which "${func}") && -z $(type "${func}" 2> /dev/null) ]]; then
         errror "Function ${func} does not exist."
         return 1
     fi
@@ -10263,7 +10287,7 @@ pstop ()
 ----
 sig.is-valid () 
 { 
-    [[ -n $(kill -l "${1}" 2>/dev/null) ]]
+    [[ -n $(kill -l "${1}" 2> /dev/null) ]]
 }
 
 ----
@@ -10984,7 +11008,7 @@ ruby.installed-gems ()
 ----
 ruby.kigs-gems () 
 { 
-    if [[ -z $(type wd 2>/dev/null) && -n $(command -v warp-dir) ]]; then
+    if [[ -z $(type wd 2> /dev/null) && -n $(command -v warp-dir) ]]; then
         [[ -f ~/.bash_wd ]] || { 
             warp-dir install --dotfile ~/.bashrc > /dev/null
             source ~/.bash_wd
@@ -11876,16 +11900,16 @@ util.ensure-gnu-sed ()
     local sed_path
     local gsed_path
     util.os
-    case "${BASHMATIC_OS}" in
+    case "${BASHMATIC_OS}" in 
         darwin)
-            gsed_path="$(command -v gsed 2>/dev/null)"
+            gsed_path="$(command -v gsed 2> /dev/null)"
             if [[ -z "${gsed_path}" ]]; then
                 echo
                 h3 "Please wait while we install gnu-sed using Brew..." "It's a required dependency for many key features." 1>&2
                 ( brew install gnu-sed --force --quiet && brew unlink gnu-sed
                 brew link gnu-sed --overwrite ) 1>&2 > /dev/null
                 hash -r 2> /dev/null
-                gsed_path="$(command -v gsed 2>/dev/null)"
+                gsed_path="$(command -v gsed 2> /dev/null)"
                 [[ -z ${gsed_path} && -x /usr/local/bin/gsed ]] && gsed_path="/usr/local/bin/gsed"
             fi
             [[ -n "${gsed_path}" && -x "${gsed_path}" ]] || { 
@@ -11984,9 +12008,6 @@ set-e-status ()
 ----
 
 
-=== Module `settings`
-
-
 === Module `shasum`
 
 ==== `sha`
@@ -12026,7 +12047,7 @@ shasum.all-files-in-dir ()
     local name_pattern="$1"
     shift
     [[ -n ${name_pattern} ]] && name_pattern=" -name \"${name_pattern}\""
-    shasum.sha $(eval "find \"${dir}\" -type f ${name_pattern}" ) | awk '{print $2 " " $1}' | sort | .sha-only
+    shasum.sha $(eval "find \"${dir}\" -type f ${name_pattern}") | awk '{print $2 " " $1}' | sort | .sha-only
 }
 
 ----
@@ -12126,7 +12147,7 @@ shasum.to-hash ()
 ----
 gawk.install () 
 { 
-    local gawk_path="$(command -v gawk 2>/dev/null)"
+    local gawk_path="$(command -v gawk 2> /dev/null)"
     [[ -n "${gawk_path}" && -x "${gawk_path}" ]] || brew.install.package gawk
 }
 
@@ -12273,7 +12294,7 @@ ssh.keys.generate ()
     local name="$1"
     local code=0
     local email
-    local date="$( time.now.db )"
+    local date="$(time.now.db)"
     ssh.key.filenames "$@"
     if is.a-non-empty-file "${__bm__private_key_path}"; then
         warning "Private key already exists at the path:" "${bldred}${__bm__private_key_path}"
@@ -12573,7 +12594,7 @@ sym.dev.have-key ()
 { 
     sym.dev.configure
     if [[ -z ${CI} ]]; then
-        [[ -z "$(keychain ${SYMIT__KEY} find 2>/dev/null)" ]] || printf "yes"
+        [[ -z "$(keychain ${SYMIT__KEY} find 2> /dev/null)" ]] || printf "yes"
     else
         [[ -n "${APP_SYM_KEY}" ]] && print "yes"
     fi
@@ -12691,7 +12712,7 @@ sym.install.symit ()
         error "Please run this command from the RAILS_ROOT folder"
         return 1
     fi
-    [[ -n "$(which sym 2>/dev/null)" && -f ~/.sym.symit.bash ]] && return
+    [[ -n "$(which sym 2> /dev/null)" && -f ~/.sym.symit.bash ]] && return
     local symit_source="/tmp/sym.symit.bash.$$"
     trap "rm -f ${symit__source}; " EXIT
     local symit_url="https://raw.githubusercontent.com/kigster/sym/master/bin/sym.symit.bash"
@@ -13617,7 +13638,7 @@ user.login-shell-init-file ()
 ----
 user.login-shell-path () 
 { 
-    if [[ -n $(command -v finger 2>/dev/null) ]]; then
+    if [[ -n $(command -v finger 2> /dev/null) ]]; then
         finger "${USER}" | grep Shell: | sed 's/^.*Shell: //g'
     else
         if grep -q "${USER}" /etc/passwd 2> /dev/null; then
@@ -14087,7 +14108,7 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    export BASHMATIC_OS="${BASHMATIC_OS:-$( $(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
+    export BASHMATIC_OS="${BASHMATIC_OS:-$($(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
 }
 
 ----
@@ -14373,6 +14394,28 @@ video.install.dependencies ()
     fi
     printf "%s" "${ffmpeg_binary}"
     return 0
+}
+
+----
+
+==== `video.make.mp4`
+
+[source,bash]
+----
+video.make.mp4 () 
+{ 
+    local file="$1"
+    local target="${2}"
+    [[ -z "${target}" ]] && target="CC-${file/.MOV/.mp4}"
+    [[ -s "${file}" ]] || { 
+        error "File [$file] does not exist."
+        return 1
+    }
+    [[ "${file}" == "${target}" ]] && target="COMPRESSED-${target}"
+    h1bg "${file} -> ${target}"
+    run.set-next show-output-on continue-on-error
+    run "ffmpeg -n -loglevel error -stats -i \"${file}\" -c:v libx265 -b:v 4M -x265-params pass=1 -f null /dev/null"
+    run "ffmpeg -n -loglevel error -stats -i \"${file}\" -c:v libx265 -b:v 4M -x265-params pass=2 \"${target}\""
 }
 
 ----

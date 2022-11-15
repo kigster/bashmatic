@@ -951,6 +951,22 @@ local emulation="${ostype[1]}"
 ---
 
 
+## File `lib/bashmatic.sh`
+
+
+
+* [bashmatic.is-developer()](#bashmaticis-developer)
+
+### `bashmatic.is-developer()`
+
+True if .envrc.local file is present. We take it as a sign
+you may be developing bashmatic.
+
+
+
+---
+
+
 ## File `lib/db.sh`
 
 
