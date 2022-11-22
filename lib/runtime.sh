@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #——————————————————————————————————————————————————————————————————————————————
 # © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
@@ -34,7 +35,7 @@ export LibRun__CommandColor__Default="${LibRun__CommandColorFg__Default}${LibRun
 export LibRun__RetryCount__Default=${LibRun__RetryCount__Default:-0}
 export LibRun__RetryCountMax=3
 
-.run.initializer() {
+function .run.initializer() {
   export LibRun__AbortOnError=${LibRun__AbortOnError__Default}
   export LibRun__AskOnError=${LibRun__AskOnError__Default}
   export LibRun__ShowCommandOutput=${LibRun__ShowCommandOutput__Default}
@@ -58,7 +59,7 @@ export commands_completed=0
 # Run it while the library is loading.
 .run.initializer
 
-.run.env() {
+function .run.env() {
   export run_stdout=/tmp/bash-run.$$.stdout
   export run_stderr=/tmp/bash-run.$$.stderr
 
@@ -67,7 +68,7 @@ export commands_completed=0
   export commands_completed=${commands_completed:-0}
 }
 
-.run.cleanup() {
+function .run.cleanup() {
   rm -f ${run_stdout}
   rm -f ${run_stderr}
 }
@@ -89,14 +90,14 @@ export commands_completed=0
   fi
 }
 
-.run.bundle.exec.with-output() {
+function .run.bundle.exec.with-output() {
   export LibRun__ShowCommandOutput=${True}
   .run.bundle.exec "$@"
 }
 
 # Runs the command in the context of the "bundle exec",
 # and aborts on error.
-.run.bundle.exec() {
+function .run.bundle.exec() {
   local cmd="$*"
   .run.env
   local w=$(($(.output.screen-width) - 10))
@@ -109,16 +110,16 @@ export commands_completed=0
   fi
 }
 
-.run.retry.enforce-max() {
+function .run.retry.enforce-max() {
   [[ -n ${LibRun__RetryCount} && ${LibRun__RetryCount} -gt ${LibRun__RetryCountMax} ]] &&
     export LibRun__RetryCount="${LibRun__RetryCountMax}"
 }
 
-.run.retry.only-codes() {
+function .run.retry.only-codes() {
   export LibRun__RetryExitCodes=("$@")
 }
 
-.run.should-retry-exit-code() {
+function .run.should-retry-exit-code() {
   local code=$1
   if [[ -n ${LibRun__RetryExitCodes[*]} ]]; then
     array.includes "${code}" "${array[@]}"
@@ -127,7 +128,7 @@ export commands_completed=0
   fi
 }
 
-.run.eval() {
+function .run.eval() {
   local stdout="$1"
   shift
   local stderr="$1"
@@ -153,13 +154,13 @@ export commands_completed=0
   fi
 }
 
-run.dry-run-prefix() {
+function run.dry-run-prefix() {
   if [[ ${LibRun__DryRun} == ${True} ]]; then
     printf "${txtcyn}${italic}« dry run »${clr} "
   fi
 }
 
-run.print-command() {
+function run.print-command() {
   local command="$1"
   local max_width=${2:-"120"}
   local min_width=60
@@ -190,11 +191,11 @@ run.print-command() {
   fi
 }
 
-run.print-command-full-screen() {
+function run.print-command-full-screen() {
   run.print-long-command "$1" $(screen.width)
 }
 
-command-spacer() {
+function command-spacer() {
   local color="${LibRun__CommandColor}"
   [[ ${LibRun__LastExitCode} -ne 0 ]] && color="${txtred}"
 
@@ -210,7 +211,7 @@ command-spacer() {
   printf "${clr}"
 }
 
-run.print-long-command() {
+function run.print-long-command() {
   local command="$1"
   local max_width=${2:-"150"}
   local w
@@ -230,7 +231,7 @@ run.print-long-command() {
 
 }
 
-run.post-command-with-output() {
+function run.post-command-with-output() {
   local duration="$1"
   if [[ ${LibRun__ShowCommand} -eq ${True} ]]; then
     command-spacer
@@ -246,7 +247,7 @@ run.post-command-with-output() {
 # both stdout and error, and do NOT abort on failure.
 #
 # See: #.run.initializer for the list of global variables.
-.run.exec() {
+function .run.exec() {
   local command="$*"
 
   if ((INSPECT)) || [[ -n ${BASHMATIC_DEBUG} && ${LibRun__Verbose} -eq ${True} ]]; then
@@ -336,7 +337,7 @@ run.post-command-with-output() {
 
 # This errors out if the command provided finishes successfully, but quicker than
 # expected. Expected duration is the first numeric argument, command is the rest.
-run.with.minimum-duration() {
+function run.with.minimum-duration() {
   local min_duration=$1
   shift
   local command="$*"
@@ -347,7 +348,8 @@ run.with.minimum-duration() {
   local result=$?
 
   local now=$(millis)
-  local duration=$(((now - started) / 1000))
+  # shellcheck disable=SC2079
+  local duration=$(ruby -e "puts (${now} - ${started})/1000.0"  )
 
   if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
     local cmd="$(echo "${command}" | sedx 's/\"//g')"
@@ -355,7 +357,7 @@ run.with.minimum-duration() {
       "The command took ${bldylw}${duration}${txtred} secs." \
       "${bldylw}${cmd}${txtred}"
 
-    ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
+    ((BASH_IN_SUBSHELL)) && exit 1 || return 1
   elif [[ ${duration} -gt ${min_duration} ]]; then
     info "minimum duration operation ran in ${duration} seconds."
   fi
@@ -363,7 +365,7 @@ run.with.minimum-duration() {
   return ${result}
 }
 
-run.ui.press-any-key() {
+function run.ui.press-any-key() {
   local prompt="$*"
   [[ -z ${prompt} ]] && prompt="Press any key to continue..."
   br
@@ -376,27 +378,63 @@ run.ui.press-any-key() {
   echo
 }
 
-run.inspect.set-skip-false-or-blank() {
+function run.inspect.set-skip-false-or-blank() {
   local value="${1}"
   [[ -n "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${value}
   [[ -z "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${True}
 }
 
-run.inspect-variable() {
+function run.add-obfuscated-var() {
+  while true; do
+    local variable="$1"; shift
+    [[ -n ${variable} ]] || break
+    export OBFUSCATED_VARIABLES+=( "${variable}" )
+  done
+  export OBFUSCATED_VARIABLES=($(array.uniq "${OBFUSCATED_VARIABLES[@]}"))
+}
+
+function run.obfuscate-string-value() {
+  local value="$1"
+  local len="30"
+  local sha=$(echo "${value}" | sha512sum | cut -d ' ' -f 1)
+
+  printf "%s" "${sha:0:${len}}"
+}
+
+function run.print-obfuscated-vars() {
+  for var in "${OBFUSCATED_VARIABLES[@]}"; do
+    run.inspect-variable "${var}"
+  done
+}
+
+function run.inspect-variable() {
   local var_name=${1}
   local var_value=${!var_name}
   local value=""
 
-  local print_value=
+  local print_value
+  local obfuscated_value
   local max_len=120
-  local avail_len=$(($(screen.width) - 45))
-  local lcase_var_name="$(echo "${var_name}" | tr 'A-Z' 'a-z')"
+  local avail_len=$(($(screen.width.actual) - 45))
+  local lcase_var_name="$(echo "${var_name}" | tr '[:upper:]' '[:lower:]')"
 
-  local print_value=1
+  print_value=1
+
+  local print_value
+
+  array.includes "${var_name}"       "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${var_name}")
+  array.includes "${lcase_var_name}" "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${lcase_var_name}")
+
   local color="${bldblu}"
 
   local value_off=" ✘   "
   local value_check="✔︎"
+  local value_color=""
+
+  [[ -n ${obfuscated_value} ]] && {
+    obfuscated_value="<obfuscated-value> ${obfuscated_value}"
+    value_color="${italic}${txtred}"
+  }
 
   if [[ -n "${var_value}" ]]; then
     if [[ ${lcase_var_name} =~ 'exit' ]]; then
@@ -424,89 +462,97 @@ run.inspect-variable() {
     return 0
   fi
 
-  printf -- "    ${bldylw}%-35s ${txtblk}${color} " "${var_name}"
+  printf -- "    ${txtylw}%-55s ${txtblk}${color} " "${var_name}"
   [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
 
   # Counts the number of dots present in the numeric argument
   local dot_count="$(echo "${var_value}" | sedx -E 's/[^.]//g' | tr -d '\n' | wc -c)"
 
   if [[ "${print_value}" -eq 1 ]]; then
+    if [[ -n ${obfuscated_value} ]]; then
+      print_value="${obfuscated_value}"
+      var_value="${obfuscated_value}"
+      value="${obfuscated_value}"
+    fi
+
     if [[ -n "${value}" ]]; then
-      printf -- "%*.*s" ${avail_len} ${avail_len} "${value}"
-    elif $(is.numeric "${var_value}"); then
+      printf -- "${value_color}%*.*s" ${avail_len} ${avail_len} "${value}"
+    elif is.numeric "${var_value}"; then
       avail_len=$((avail_len - 5))
       if [[ ${dot_count} -gt 1 || ${dot_count} -gt 1 ]]; then
-        printf -- "%*s" "${avail_len}" "${var_value}"
+        printf -- "${value_color}%*s" "${avail_len}" "${var_value}"
       else
-        if [[ "${var_value}" =~ '.' ]]; then
-          printf -- "%*.2f" "${avail_len}" "${var_value}"
+        if [[ "${var_value}" =~ \. ]]; then
+          printf -- "${value_color}%*.2f" "$((avail_len - 3 ))" "${var_value}"
         else
-          printf -- "%*d" "${avail_len}" "${var_value}"
+          printf -- "${value_color}%*d" "${avail_len}" "${var_value}"
         fi
       fi
     else
-      avail_len=$((avail_len - 5))
-      printf -- "%*.*s" "${avail_len}" "${avail_len}" "${var_value}"
+      printf -- "${value_color}%*.*s" "${avail_len}" "${avail_len}" "${var_value}"
     fi
   else
-    printf -- "%*.*s" "${avail_len}" "${avail_len}" "${value}"
+    printf -- "${value_color}%*.*s" "${avail_len}" "${avail_len}" "${value}"
   fi
-  echo
+  printf "${clr}\n"
 }
 
-run.print-variable() {
+function run.print-variable() {
   run.inspect-variable "$1"
 }
 
-run.inspect-variables() {
+function run.inspect-variables() {
   local title=${1}
   shift
   hl.subtle "${title}"
+  # trunk-ignore(shellcheck/SC2068)
   for var in $@; do
     run.inspect-variable "${var}"
   done
 }
 
-run.print-variables() {
-  local title=${1}
+function run.print-variables() {
+  local title="${1}"
   shift
   hl.yellow "${title}"
+  # trunk-ignore(shellcheck/SC2068)
   for var in $@; do
     run.print-variable "${var}"
   done
 }
 
-run.variables-starting-with() {
+function run.variables-starting-with() {
   local prefix="${1}"
   env | grep -E -e "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
-run.variables-ending-with() {
+function run.variables-ending-with() {
   local suffix="${1}"
   env | grep -E -e ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 # Usage: run.inspect-variables-that-are starting-with LibRun
-run.inspect-variables-that-are() {
+function run.inspect-variables-that-are() {
   local pattern_type="${1}" # starting-with or ending-with
   local pattern="${2}"      # actual pattern
-  run.inspect-variables "VARIABLES $(echo "${pattern_type}" | tr 'a-z' 'A-Z') ${pattern}" \
+  run.inspect-variables \
+    "VARIABLES $(echo "${pattern_type}" | tr '[:lower:]' '[:upper:]') ${pattern}" \
     "$(run.variables-"${pattern_type}" "${pattern}" | tr '\n' ' ')"
 }
 
 # @description Prints values of all variables starting with prefixes in args
 # @example Print all bashmatic variables:
 #
-#     run.inspect-vars BASHMATIC_
+#     run.inspect-vars BAxSHMATIC_
 #
-run.inspect-vars() {
+function run.inspect-vars() {
   for var in "$@"; do
     run.inspect-variables-that-are starting-with "$var"
   done
 }
 
 # shellcheck disable=SC2120
-run.inspect() {
+function run.inspect() {
   if [[ ${#@} -eq 0 || $(array.has-element "config" "$@") == "true" ]]; then
     run.inspect-variables-that-are starting-with LibRun
   fi
@@ -531,31 +577,31 @@ run() {
   return ${LibRun__LastExitCode}
 }
 
-run.with.ruby-bundle() {
+function run.with.ruby-bundle() {
   .run.bundle.exec "$@"
 }
 
-run.with.ruby-bundle-and-output() {
+function run.with.ruby-bundle-and-output() {
   .run.bundle.exec.with-output "$@"
 }
 
-run.config.is-dry-run() {
+function run.config.is-dry-run() {
   [[ ${LibRun__DryRun} -eq ${True} ]]
 }
 
-run.config.verbose-is-enabled() {
+function run.config.verbose-is-enabled() {
   [[ ${LibRun__Verbose} -eq ${True} ]]
 }
 
-run.config.detail-is-enabled() {
+function run.config.detail-is-enabled() {
   [[ ${LibRun__Detail} -eq ${True} ]]
 }
 
-run.on-error.ask-is-enabled() {
+function run.on-error.ask-is-enabled() {
   [[ ${LibRun__AskOnError} -eq ${True} ]]
 }
 
-run.was-successful() {
+function run.was-successful() {
   [[ ${LibRun__LastExitCode} -eq 0 ]]
 }
 

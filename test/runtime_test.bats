@@ -13,7 +13,38 @@ source lib/runtime-config.sh
 source lib/runtime.sh
 source lib/run.sh
 
-set -e
+@test "inspect variables with names starting with LibRun" {
+  set +e
+  output=$(run.inspect-variables-that-are starting-with LibRun)
+  code=$?
+  set -e
+  [[ "${code}" -eq 0 ]]
+  [[ "${output}" =~ "LibRun__DryRun" ]]
+  [[ "${output}" =~ "LibRun__Verbose" ]]
+}
+
+@test "print obfuscated variables without real data" {
+  export MOO_NAME="Cow Moo"
+  export MOO_SSN="121-344-2244"
+  export MOO_EIN="X101343000"
+  export MOO_DOB="2020/01/01"
+
+  run.add-obfuscated-var MOO_SSN MOO_EIN
+
+  set +e
+  code=0
+  output="$(run.inspect-variables-that-are starting-with MOO_)"
+  code=$?
+
+  [[ "${code}" -eq 0 ]] &&
+  [[ "${output}" =~ "MOO_NAME" ]] &&
+  [[ "${output}" =~ "MOO_SSN" ]] &&
+  [[ "${output}" =~ "MOO_EIN" ]] &&
+  [[ "${output}" =~ "MOO_DOB" ]] &&
+  [[ ! "${output}" =~ "${MOO_SSN}" ]] &&
+  [[ ! "${output}" =~ "${MOO_EIN}" ]] &&
+  [[ "${output}" =~ "OBFUS" ]]
+}
 
 @test "run() with a successful command and defaults" {
   set +e
@@ -47,15 +78,6 @@ set -e
   [[ ${clean_output/\/bin\/ls/} == "${clean_output}" ]]
 }
 
-@test "inspect variables with names starting with LibRun" {
-  set +e
-  output=$(run.inspect-variables-that-are starting-with LibRun)
-  code=$?
-  set -e
-  [[ "${code}" -eq 0 ]]
-  [[ "${output}" =~ "LibRun__DryRun" ]]
-  [[ "${output}" =~ "LibRun__Verbose" ]]
-}
 
 @test "! set.dry-run.on && is.dry-run.on " {
   set -e

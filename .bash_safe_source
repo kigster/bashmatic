@@ -10,40 +10,61 @@ function is-debug() {
   [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]] 
 }
 
+if is-debug; then
+  source ${BASHMATIC_HOME}/.envrc.debug
+else
+  source ${BASHMATIC_HOME}/.envrc.debug-off
+fi 
+
+function debug-info() {
+  is-debug || return 
+  printf "${txtblk}${bakgrn} [debug] ➔ ${clr} ${bldgrn}%-60.60s${clr}${bldgrn}$2" "$1"
+  [[ -n $3 ]] && eval "$3"
+}
+
+
+function debug-error() {
+  is-debug || return 
+  printf "${txtblk}${bakred} [error] ➔ ${clr} ${bldred}%-60.60s${clr}${txtred}$2" "$1"
+  [[ -n $3 ]] && eval "$3"
+}
+
+function result-ok() {
+  is-debug && printf "${bldwht}${bakgrn}[ ✔︎ ]${clr}\n"
+}
+
+function result-failure() {
+  is-debug && printf "${bldwht}${bakred}[ ✘ ]${clr}"
+  if [[ $1 =~ ([0-9]) ]] ; then
+    printf " [ exit code=${$1} ]\n"
+  else
+    echo
+  fi
+}
+
 is-debug && BASHMATIC_DEBUG=1
 is-debug || unset BASHMATIC_DEBUG
 
 function source_if_exists() {
   local errors=0
   local files="${#@}"
+  local codes=0
   for file in "$@"; do
     if [[ -s "${file}" ]]; then
-      is-debug && printf "[debug] ——> ${bldgrn}%-60.60s${clr}" "${file}"
+      debug-info "${file}"
       # shellcheck source=./${file}
       source "${file}"
       local code=$?
-
       if ((code)); then
-        if is-debug; then
-          printf " (exit code: ${code} [ 💣 ])\n"
-          code=$((code + 1))
-          errors=$((errors + 1))
-        else
-          code=$((code + 1))
-          echo "WARNING: sourced file ${file} returned non-zero code ${code}" >&2
-        fi
+        result-failure ${code}
       else
-        if is-debug; then
-          printf " (${bldgrn}[  ✔︎ ]${clr})\n"
-        fi
+        result-ok
       fi
     else
-      echo "WARNING: sourced file ${file} does not exist" >&2
+      debug-error "File [$file] does not exist."
     fi
   done
 
-  is-debug && echo "source_if_exists: attempted to source ${files} files, ${errors} returned errors."
-  
   return ${code}
 }
 
