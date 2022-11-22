@@ -21,7 +21,10 @@ fi
 
 export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 declare GLOBAL
-export GLOBAL="declare "
+export  GLOBAL="declare "
+
+declare -a OBFUSCATED_VARIABLES
+export OBFUSCATED_VARIABLES=()
 
 if [[ ${BASH_MAJOR_VERSION} -eq 3 ]] ; then
   export GLOBAL="declare"
@@ -269,7 +272,7 @@ function __bashmatic.init-core() {
 # Every 5 minutes, since it's in seconds
 export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
 
-${GLOBAL} bashmatic_showed_banner_at
+eval "${GLOBAL} bashmatic_showed_banner_at"
 
 function __bashmatic.banner.show() {
   export bashmatic_showed_banner_at=$(millis)
@@ -285,6 +288,8 @@ function __bashmatic.banner.show() {
 # @example
 #      __bashmatic.banner true
 function __bashmatic.banner() {
+  __bashmatic.prerequisites
+
   local force_show=${1:-false}
   # bashsupport disable=BP2001
   export bashmatic_showed_banner_at=${bashmatic_showed_banner_at:-0}
@@ -354,7 +359,9 @@ function pfx() {
 # Main Flow
 #———————————————————————————————————————————————————————————————————————————
 
+
 # resolve BASHMATIC_HOME if necessary
+__bashmatic.banner
 __bashmatic.home.is-valid || {
   log.inf "Resolving BASHMATIC_HOME as the current one is invalid: ${BASHMATIC_HOME}"
   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then
@@ -387,5 +394,4 @@ export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND'
 
 __bashmatic.prerequisites
 bashmatic.load "$@"
-
 
