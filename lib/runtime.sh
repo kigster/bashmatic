@@ -272,7 +272,6 @@ function .run.exec() {
     .run.retry.enforce-max
 
     export LibRun__RetryCount="$((LibRun__RetryCount - 1))"
-
     [[ -n ${LibRun__RetrySleep} ]] && sleep "${LibRun__RetrySleep}"
 
     info "warning: command exited with code ${bldred}${LibRun__LastExitCode}" \
@@ -432,7 +431,7 @@ function run.inspect-variable() {
   local value_color=""
 
   [[ -n ${obfuscated_value} ]] && {
-    obfuscated_value="<obfuscated-value> ${obfuscated_value}"
+    obfuscated_value="<obfuscated-value-${obfuscated_value}>"
     value_color="${italic}${txtred}"
   }
 
