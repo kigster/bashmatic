@@ -11,9 +11,9 @@ function is-debug() {
 }
 
 if is-debug; then
-  source ${BASHMATIC_HOME}/.envrc.debug
+  source "${BASHMATIC_HOME}/.envrc.debug"
 else
-  source ${BASHMATIC_HOME}/.envrc.debug-off
+  source "${BASHMATIC_HOME}/.envrc.debug-off"
 fi 
 
 function debug-info() {
@@ -36,7 +36,7 @@ function result-ok() {
 function result-failure() {
   is-debug && printf "${bldwht}${bakred}[ ✘ ]${clr}"
   if [[ $1 =~ ([0-9]) ]] ; then
-    printf " [ exit code=${$1} ]\n"
+    printf " [ exit code=$1 ]\n"
   else
     echo
   fi
@@ -46,9 +46,6 @@ is-debug && BASHMATIC_DEBUG=1
 is-debug || unset BASHMATIC_DEBUG
 
 function source_if_exists() {
-  local errors=0
-  local files="${#@}"
-  local codes=0
   for file in "$@"; do
     if [[ -s "${file}" ]]; then
       debug-info "${file}"
