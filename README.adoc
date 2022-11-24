@@ -27,7 +27,13 @@
 
 == Introduction 
 
-_Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (500+ of them) that, we hope, make BASH programming easier, more enjoyable, and more importantly, usable due to the focus on providing constant feedback to the user about what is happening, as a script that uses Bashmatic is running.
+_Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
+
+After you install the library (the default location is `~/.bashmatic`), you have a choice of either sourcing the library in right from the start (by adding `source ~/.bashmatic/init.sh` do your shell initialization files, for example), or only loading it in the scripts that need that. Both approaches are valid and have their merits.
+
+All we'll say on this matter is that we manage the optimize the hell out of the sourcing the library. Here is an example:
+
+image::doc/img/bashmatic-init.png["source init.sh",80%,80%,align="center",border="5px"]
 
 _Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the https://github.com/kigster/bashmatic/blob/main/lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
 
