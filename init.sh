@@ -21,15 +21,18 @@ fi
 
 export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 declare GLOBAL
-export  GLOBAL="declare "
 
 declare -a OBFUSCATED_VARIABLES
 export OBFUSCATED_VARIABLES=()
+export GLOBAL
 
 if [[ ${BASH_MAJOR_VERSION} -eq 3 ]] ; then
   export GLOBAL="declare"
 elif [[ ${BASH_MAJOR_VERSION} -gt 3 ]] ; then
   export GLOBAL="declare -g"
+elif [[ $SHELL =~ zsh ]]; then
+  typeset -gx GLOBAL
+  GLOBAL="typeset -gx "
 else
   export GLOBAL=
 fi
@@ -76,10 +79,12 @@ function log.not-ok() {
   echo
 }
 
+eval "
 ${GLOBAL} BASHMATIC_OS
 ${GLOBAL} BASHMATIC_HOME
 ${GLOBAL} BASHMATIC_INIT
 ${GLOBAL} BASHMATIC_LIB
+"
 
 # shellcheck disable=SC2296
 export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
@@ -92,7 +97,7 @@ declare -a BASHMATIC_REQUIRED_LIBS
 export BASHMATIC_REQUIRED_LIBS=()
 
 function __bashmatic.prerequisites() {
-  export BASHMATIC_REQUIRED_LIBS+=( time color util output output-admonitions output-boxes output-utils )
+  export BASHMATIC_REQUIRED_LIBS=( time color util output output-admonitions output-boxes output-utils )
   is-debug && not-quiet && echo
   for lib in "${BASHMATIC_REQUIRED_LIBS[@]}"; do
     file="${BASHMATIC_LIB}/${lib}.sh"
@@ -261,9 +266,11 @@ function __bashmatic.init-core() {
 
   # Load all library files into an array. This isn't really used besides showing the total
   # number of files, but it can come handy later. Plus, mapfile takes 26ms.
-  local -a sources
-  mapfile -t < <(find "${BASHMATIC_LIB}" -name '*.sh') sources
-  is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok
+  [[ $SHELL =~ zsh ]] || {
+    local -a sources
+    mapfile -t < <(find "${BASHMATIC_LIB}" -name '*.sh') sources
+    is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok
+  }
 }
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
