@@ -8,8 +8,6 @@ source lib/output.sh
 source lib/color.sh
 source lib/util.sh
 
-set -e
-
 @test "ascii-pipe() should remove color and other escape sequences from STDIN" {
   set -e
   [ -z "$(printf \"${bldred}HELLO${clr}\n\" | ascii-clean)" ]
@@ -32,12 +30,16 @@ set -e
 } 
 
 @test "output.screen-width.actual()" {
+  output.unconstrain-screen-width
   local w=$(output.screen-width.actual)
+  set -e
   [[ $w -eq $COLUMNS ]]
 }
 
 @test "output.screen-height.actual()" {
+  output.unconstrain-screen-width
   local h=$(output.screen-height.actual)
+  set -e
   [[ $h -eq $LINES ]]
 }
 

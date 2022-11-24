@@ -89,9 +89,10 @@ export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
 declare -a BASHMATIC_REQUIRED_LIBS
+export BASHMATIC_REQUIRED_LIBS=()
 
 function __bashmatic.prerequisites() {
-  export BASHMATIC_REQUIRED_LIBS=( time color util output output-admonitions output-boxes output-utils )
+  export BASHMATIC_REQUIRED_LIBS+=( time color util output output-admonitions output-boxes output-utils )
   is-debug && not-quiet && echo
   for lib in "${BASHMATIC_REQUIRED_LIBS[@]}"; do
     file="${BASHMATIC_LIB}/${lib}.sh"

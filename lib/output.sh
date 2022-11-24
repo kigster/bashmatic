@@ -25,7 +25,7 @@ function output.reset-min-max-width() {
 output.reset-min-max-width
 
 # @description OS-independent way to determine screen width.
-output.screen-width.actual() {
+function output.screen-width.actual() {
   local w
   util.os
   if [[ ${BASHMATIC_OS} =~ darwin ]]; then
@@ -36,8 +36,8 @@ output.screen-width.actual() {
   printf -- "%d" "${w}"
 }
 
-# @description OS-independent way to determine screen height.
-output.screen-height.actual() {
+# @description OS-indepen∑t way to determine screen height.
+function output.screen-height.actual() {
   local h
   util.os
   if [[ ${BASHMATIC_OS} =~ darwin ]]; then
@@ -64,72 +64,72 @@ function output.unconstrain-screen-width() {
   return 0
 }
 
-output.set-max-width() {
+function output.set-max-width() {
   [[ $1 -gt 0 ]] && export LibOutput__MaxWidth="$1"
 }
 
-output.set-min-width() {
+function output.set-min-width() {
   [[ $1 -gt 0 ]] && export LibOutput__MinWidth="$1"
 }
 
-.output.cursor-right-by() {
+function .output.cursor-right-by() {
   output.is-terminal && printf "\e[${1}C"
 }
 
-.output.cursor-left-by() {
+function .output.cursor-left-by() {
   output.is-terminal && printf "\e[${1}D"
 }
 
-.output.cursor-up-by() {
+function .output.cursor-up-by() {
   output.is-terminal && printf "\e[${1}A"
 }
 
-.output.cursor-down-by() {
+function .output.cursor-down-by() {
   output.is-terminal && printf "\e[${1}B"
 }
 
-.output.cursor-move-to-y() {
+function .output.cursor-move-to-y() {
   output.is-terminal || return
   .output.cursor-up-by 1000
   .output.cursor-down-by "${1:-0}"
 }
 
-.output.cursor-move-to-x() {
+function .output.cursor-move-to-x() {
   output.is-terminal || return
   .output.cursor-left-by 1000
   [[ -n $1 && "$1" -ne 0 ]] && .output.cursor-right-by "${1}"
 }
 
-cursor.rewind() {
+function cursor.rewind() {
   local x=${1:-0}
   .output.cursor-move-to-x "${x}"
 }
 
-cursor.left() {
+function cursor.left() {
   .output.cursor-left-by "$@"
 }
 
-cursor.up() {
+function cursor.up() {
   .output.cursor-up-by "$@"
 }
 
-cursor.down() {
+function cursor.down() {
   .output.cursor-down-by "$@"
 }
 
-cursor.right() {
+function cursor.right() {
   .output.cursor-right-by "$@"
 }
 
-cursor.save() {
+function cursor.save() {
   printf "\e[s"
 }
 
-cursor.restore() {
+function cursor.restore() {
   printf "\e[u"
 }
 
-output.print-at-x-y() {
+function output.print-at-x-y() {
   local x=$1
   shift
   local y=$1
@@ -142,27 +142,27 @@ output.print-at-x-y() {
   .output.cursor-move-to-x 0
 }
 
-.ver-to-i() {
+function .ver-to-i() {
   version=${1}
   echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
 }
 
-output.color.on() {
+function output.color.on() {
   printf "${bldred}" >&2
   printf "${bldblu}" >&1
 }
 
-output.color.off() {
+function output.color.off() {
   reset-color: >&2
   reset-color: >&1
 }
 
-.output.stty.field() {
+function .output.stty.field() {
   local field="$1"
   stty -a 2>/dev/null | grep "${field}" | tr -d ';' | tr ' ' '\n' | grep -B 1 "${field}" | head -1
 }
 
-.output.current-screen-width.unconstrained() {
+function .output.current-screen-width.unconstrained() {
   if output.is-pipe; then
     printf -- '%d' "${LibOutput__MaxWidth:-80}"
   else
@@ -171,15 +171,15 @@ output.color.off() {
 
 }
 
-screen.width.actual() {
+function screen.width.actual() {
   .output.current-screen-width.unconstrained
 }
 
-screen.height.actual() {
+function screen.height.actual() {
   .output.screen-height
 }
 
-.output.current-screen-width.constrained() {
+function .output.current-screen-width.constrained() {
   local w=$(.output.current-screen-width.unconstrained)
 
   local min_w="${LibOutput__MinWidth}"
@@ -193,7 +193,7 @@ screen.height.actual() {
   printf -- "%d" "$w"
 }
 
-.output.current-screen-width() {
+function .output.current-screen-width() {
   local strategy="${LibOutput__WidthDetectionStrategy}"
   local func=".output.current-screen-width.${strategy}"
   is.a-function "${func}" || {
@@ -203,7 +203,7 @@ screen.height.actual() {
   ${func}
 }
 
-.output.screen-width() {
+function .output.screen-width() {
   if [[ -n ${CI} ]]; then
     printf -- "120"
     return 0
@@ -226,18 +226,18 @@ screen.height.actual() {
   printf -- "%d" "${w}"
 }
 
-.output.screen-height() {
+function .output.screen-height() {
   local h=$(output.screen-height.actual)
   [[ -z ${h} ]] && h=${LibOutput__MinHeight}
   [[ ${h} -lt ${LibOutput__MinHeight} ]] && h=${LibOutput__MinHeight}
   printf -- $((h - 2))
 }
 
-.output.line() {
+function .output.line() {
   .output.repeat-char "─" "$(.output.width)"
 }
 
-.output.hr() {
+function .output.hr() {
   local cols=${1:-$(.output.screen-width)}
   local char=${2:-"—"}
   local color=${3:-${txtylw}}
@@ -247,38 +247,38 @@ screen.height.actual() {
   reset-color
 }
 
-.output.replicate-to() {
+function .output.replicate-to() {
   local char="$1"
   local len="$2"
 
   .output.repeat-char "${char}" "${len}"
 }
 
-.output.sep() {
+function .output.sep() {
   .output.hr
   printf "\n"
 }
 
 # set background color to something before calling this
-.output.bar() {
+function .output.bar() {
   .output.repeat-char " "
   reset-color
 }
 
-.output.clean.pipe() {
+function .output.clean.pipe() {
   sedx 's/(\x1b|\\\e)\[[0-9]*;?[0-9]?+m//g; s/\r//g'
 }
 
-ascii-pipe() {
+function ascii-pipe() {
   cat | .output.clean.pipe
 }
 
-.output.clean() {
+function .output.clean() {
   local text="$*"
   printf -- '%s' "${text}" | .output.clean.pipe
 }
 
-ascii-clean() {
+function ascii-clean() {
   .output.clean "$@"
 }
 
@@ -286,7 +286,7 @@ ascii-clean() {
 # <box>
 ################################################################################
 # shellcheck disable=SC2120
-.output.box-separator() {
+function .output.box-separator() {
   printf "$1├"
   .output.line
   #.output.cursor-left-by 1
@@ -294,21 +294,21 @@ ascii-clean() {
 }
 
 # shellcheck disable=SC2120
-.output.box-top() {
+function .output.box-top() {
   printf "$1┌"
   .output.line
   #.output.cursor-left-by 1
   printf "┐${clr}\n"
 }
 
-.output.box-bottom() {
+function .output.box-bottom() {
   printf "└"
   .output.line
   #.output.cursor-left-by 1
   printf "┘${clr}\n"
 }
 
-.output.boxed-text() {
+function .output.boxed-text() {
   local __color_bdr="${1}"
   shift
   local __color_fg="${1}"
@@ -341,7 +341,7 @@ ascii-clean() {
 }
 
 # Usage: .output.box border-color text-color "line 1" "line 2" ....
-.output.box() {
+function .output.box() {
   local __color_bdr=${1}
   shift
   local __color_fg=${1}
@@ -379,7 +379,7 @@ ascii-clean() {
 # </box>
 ################################################################################
 
-.output.center() {
+function .output.center() {
   local color="${1}"
   shift
   local text="$*"
@@ -396,7 +396,7 @@ ascii-clean() {
   echo
 }
 
-.output.set-indent() {
+function .output.set-indent() {
   local shift="$1"
 
   [[ ${shift} -ge 0 && ${shift} -lt 100 ]] && {
@@ -404,20 +404,20 @@ ascii-clean() {
   }
 }
 
-.set-indent() {
+function .set-indent() {
   .output.set-indent "$@"
 }
 
-.output.width() {
+function .output.width() {
   local w=$(screen.width)
   printf "%d" $((w - 4))
 }
 
-.output.left-as-is() {
+function .output.left-as-is() {
   .output.left-as-is.black-text "$@"
 }
 
-.output.left-as-is.black-text() {
+function .output.left-as-is.black-text() {
   local bg="${1}"
   shift # bar  background
   local tfg="${1}"
@@ -449,7 +449,7 @@ ascii-clean() {
 
 }
 
-.output.left-justify() {
+function .output.left-justify() {
   local color="${1}"
   shift
   local text="$*"
@@ -462,7 +462,7 @@ ascii-clean() {
   fi
 }
 
-.output.left-powerline() {
+function .output.left-powerline() {
   local color="$1"
   shift
 
@@ -504,30 +504,30 @@ ascii-clean() {
 # Prints text centered on the screen
 # Usage: center "colors/prefix" "text"
 #    eg: center "${bakred}${txtwht}" "Welcome Friends!"
-center() {
+function center() {
   .output.center "$@"
 }
 
-left() {
+function left() {
   .output.left-justify "$@"
 }
 
 # @description Prints a "arrow-like" line using powerline characters
 # @arg1 Width (optional) — only intepretered as width if the first argument is a number.
 # @args Text to print
-section() {
+function section() {
   .output.left-powerline pur "$@"
 }
 
-cursor.at.x() {
+function cursor.at.x() {
   .output.cursor-move-to-x "$@"
 }
 
-cursor.at.y() {
+function cursor.at.y() {
   .output.cursor-move-to-y "$@"
 }
 
-cursor.shift.x() {
+function cursor.shift.x() {
   local shift="$1"
   if [[ "${shift:0:1}" == "-" ]]; then
     .output.cursor-left-by "${shift:1}"
@@ -536,58 +536,58 @@ cursor.shift.x() {
   fi
 }
 
-screen.width() {
+function screen.width() {
   .output.screen-width
 }
 
-screen-width() {
+function screen-width() {
   .output.screen-width
 }
 
-screen.height() {
+function screen.height() {
   .output.screen-height
 }
 
-screen-height() {
+function screen-height() {
   .output.screen-height
 }
 
-output.is-terminal() {
+function output.is-terminal() {
   output.is-tty || output.is-redirect || output.is-pipe || output.is-ssh
 }
 
-output.is-ssh() {
+function output.is-ssh() {
   [[ -n "${SSH_CLIENT}" || -n "${SSH_CONNECTION}" ]]
 }
 
-output.is-tty() {
+function output.is-tty() {
   [[ -t 1 ]]
 }
 
-output.is-pipe() {
+function output.is-pipe() {
   [[ -p /dev/stdout ]]
 }
 
-output.has-stdin() {
+function output.has-stdin() {
   [[ ! -t 0 ]]
 }
 
-output.is-redirect() {
+function output.is-redirect() {
   [[ ! -t 1 && ! -p /dev/stdout ]]
 }
 
-hr.colored() {
+function hr.colored() {
   local color="$*"
   [[ -z ${color} ]] && color="${bldred}"
   .output.hr "$(screen-width)" "—" "${*}"
 }
 
-hr() {
+function hr() {
   [[ -z "$*" ]] || printf "$*"
   .output.hr
 }
 
-stdout() {
+function stdout() {
   local file=$1
   hl.subtle STDOUT
   printf "${clr}"
@@ -595,7 +595,7 @@ stdout() {
   reset-color
 }
 
-stderr() {
+function stderr() {
   local file=$1
   hl.subtle STDERR
   printf "${txtred}"
@@ -603,7 +603,7 @@ stderr() {
   reset-color
 }
 
-duration() {
+function duration() {
   local millis="$1"
   local exit_code="$2"
   [[ -n $(which bc) ]] || return
@@ -620,7 +620,7 @@ duration() {
   fi
 }
 
-left-prefix() {
+function left-prefix() {
   [[ -z ${LibOutput__LeftPrefix} ]] && {
     export LibOutput__LeftPrefix=$(.output.replicate-to " " "${LibOutput__LeftPrefixLen}")
   }
@@ -630,16 +630,16 @@ left-prefix() {
 #—————————————————————————————————————————————————————————————————
 # Closers for open-ended statements like `inf`, `warn`, `debug`, `err`
 #—————————————————————————————————————————————————————————————————
-ui.closer.ok() {
+function ui.closer.ok() {
   .output.cursor-left-by 1000
   printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
 }
 
-inline.ok() {
+function inline.ok() {
   printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
 }
 
-inline.not-ok() {
+function inline.not-ok() {
   printf " ${txtwht}${bakred} ✘ ${clr} "
 }
 
@@ -648,29 +648,28 @@ ui.closer.ok:() {
   echo
 }
 
-ok() { ui.closer.ok "$@"; }
+function ok() { ui.closer.ok "$@"; }
 ok:() { ui.closer.ok: "$@"; }
 
-ui.closer.not-ok() {
+function ui.closer.not-ok() {
   .output.cursor-left-by 1000
   printf " ${bakred}${bldwht} ✘ ${clr} "
 }
 
 ui.closer.not-ok:() {
-  ui.closer.not-ok $@
+  ui.closer.not-ok "$@"
   echo
 }
 
-not-ok() { ui.closer.not-ok "$@"; }
+function not-ok() { ui.closer.not-ok "$@"; }
 not-ok:() { ui.closer.not-ok: "$@"; }
 
-ui.closer.kind-of-ok() {
+function ui.closer.kind-of-ok() {
   .output.cursor-left-by 1000
   printf " ${bakylw}${bldwht} ❖ ${clr} "
 }
 
 ui.closer.kind-of-ok:() {
-  ui.closer.kind-of-ok $@
+  ui.closer.kind-of-ok "$@"
   echo
 }
-
