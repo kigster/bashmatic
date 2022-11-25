@@ -14,22 +14,32 @@ set +ex
 
 if [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
   [[ -n $BASH_VERSION && $0 != "${BASH_SOURCE[0]}" ]] ; then
-  readonly __run_as_script=0 2>/dev/null
+  export __run_as_script=0 2>/dev/null
 else
-  readonly __run_as_script=1 2>/dev/null
+  export __run_as_script=1 2>/dev/null
 fi
 
-export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
-declare GLOBAL
-export GLOBAL="declare "
+export BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
+
+# This next section figures out how to make variables global depending on what
+# shell we are running.
+
+declare -a OBFUSCATED_VARIABLES
+export OBFUSCATED_VARIABLES=()
+export GLOBAL
 
 if [[ ${BASH_MAJOR_VERSION} -eq 3 ]] ; then
   export GLOBAL="declare"
 elif [[ ${BASH_MAJOR_VERSION} -gt 3 ]] ; then
   export GLOBAL="declare -g"
+elif [[ $SHELL =~ zsh ]]; then
+  typeset -gx GLOBAL
+  export GLOBAL="typeset -gx "
 else
-  export GLOBAL=
+  export GLOBAL="declare"
 fi
+
+((BASHMATIC_DEBUG)) && echo  "DECLARE is [$DECLARE]"
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
@@ -73,10 +83,12 @@ function log.not-ok() {
   echo
 }
 
-${GLOBAL} BASHMATIC_OS
-${GLOBAL} BASHMATIC_HOME
-${GLOBAL} BASHMATIC_INIT
-${GLOBAL} BASHMATIC_LIB
+eval "
+  ${GLOBAL} BASHMATIC_OS   ;
+  ${GLOBAL} BASHMATIC_HOME ;
+  ${GLOBAL} BASHMATIC_INIT ;
+  ${GLOBAL} BASHMATIC_LIB  ;
+"
 
 # shellcheck disable=SC2296
 export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
