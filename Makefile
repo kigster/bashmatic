@@ -89,6 +89,9 @@ update-changelog: 		## Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN en
 				@bash -c "$(BASHMATIC_HOME)/bin/regen-changelog"
 				@mv $(BASHMATIC_HOME)/CHANGELOG.md $(BASHMATIC_HOME)/doc
 
+graphite-chagenlog:		## Create changelog using Graphite
+				gt changelog > CHANGELOG.md
+
 update-functions: 		## Auto-generate doc/FUNCTIONS index at doc/FUNCTIONS.adoc/pdf
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Regenerating doc/FUNCTIONS.adoc — functions INDEX...$(clear)\n"
 				@bash -c "source $(BASHMATIC_HOME)/bin/regen-index-docs; generate-functions-index"
