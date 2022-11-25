@@ -10,18 +10,11 @@ function is-debug() {
   [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]] 
 }
 
-if is-debug; then
-  source "${BASHMATIC_HOME}/.envrc.debug"
-else
-  source "${BASHMATIC_HOME}/.envrc.debug-off"
-fi 
-
 function debug-info() {
   is-debug || return 
   printf "${txtblk}${bakgrn} [debug] ➔ ${clr} ${bldgrn}%-60.60s${clr}${bldgrn}$2" "$1"
   [[ -n $3 ]] && eval "$3"
 }
-
 
 function debug-error() {
   is-debug || return 
@@ -44,6 +37,14 @@ function result-failure() {
 
 is-debug && BASHMATIC_DEBUG=1
 is-debug || unset BASHMATIC_DEBUG
+
+if is-debug; then
+  # shellcheck source=./.envrc.debug.on
+  source "${BASHMATIC_HOME}/.envrc.debug.on"
+else
+  # shellcheck source=./.envrc.debug.off
+  source "${BASHMATIC_HOME}/.envrc.debug.off"
+fi
 
 function source_if_exists() {
   for file in "$@"; do

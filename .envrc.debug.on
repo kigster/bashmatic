@@ -1,0 +1,5 @@
+# vim: ft=bash
+
+export DEBUG=1
+export BASHMATIC_DEBUG=1
+export BASHMATIC_PATH_DEBUG=1

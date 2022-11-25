@@ -22,6 +22,13 @@ fi
 export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 declare GLOBAL
 
+declare -a BASHMATIC_REQUIRED_LIBS
+export BASHMATIC_REQUIRED_LIBS=( time output util color output-admonitions output-boxes output-utils )
+
+# Every 5 minutes, since it's in seconds
+export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
+eval "${GLOBAL} bashmatic_showed_banner_at"
+
 declare -a OBFUSCATED_VARIABLES
 export OBFUSCATED_VARIABLES=()
 export GLOBAL
@@ -37,50 +44,9 @@ else
   export GLOBAL="declare"
 fi
 
+source "${BASHMATIC_HOME}/init-helpers.sh"
+
 # ((BASHMATIC_DEBUG)) && echo  "DECLARE is [$DECLARE]"
-
-#————————————————————————————————————————————————————————————————————————————————————————————————————
-# Initialization and Setup
-#————————————————————————————————————————————————————————————————————————————————————————————————————
-
-function year() {
-  date '+%Y'
-}
-
-function is-debug() {
-  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]]
-}
-
-function is-quiet() {
-  [[ ${BASHMATIC_QUIET} -gt 0 ]]
-}
-
-function not-quiet() {
-  [[ ${BASHMATIC_QUIET} -eq 0 ]]
-}
-
-function log.err() {
-  is-debug || return 0
-  printf "$(pfx) ${txtblk}${bakred}${txtwht}${bakred} ERROR ${clr}${txtred}${clr}${bldred} $*${clr}\n"
-}
-
-function log.inf() {
-  is-debug || return 0
-  printf "$(pfx) ${txtblk}${bakblu}${txtwht}${bakblu} INFO  ${clr}${txtblu}${clr}${bldblu} $*${clr}\n"
-}
-
-function log.ok() {
-  cursor.up 1
-  inline.ok
-  echo
-}
-
-function log.not-ok() {
-  cursor.up 1
-  inline.not-ok
-  echo
-}
-
 eval "
   ${GLOBAL} BASHMATIC_OS   ;
   ${GLOBAL} BASHMATIC_HOME ;
@@ -97,9 +63,14 @@ export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
 declare -a BASHMATIC_REQUIRED_LIBS
 export BASHMATIC_REQUIRED_LIBS=()
+export __prerequisites_loaded=false
 
+# @description sources in some of the library files required for handling init.sh
 function __bashmatic.prerequisites() {
-  export BASHMATIC_REQUIRED_LIBS=( time color util output output-admonitions output-boxes output-utils )
+  ${__prerequisites_loaded} && return 0
+
+  export __prerequisites_loaded=true
+
   is-debug && not-quiet && echo
   for lib in "${BASHMATIC_REQUIRED_LIBS[@]}"; do
     file="${BASHMATIC_LIB}/${lib}.sh"
@@ -268,21 +239,20 @@ function __bashmatic.init-core() {
 
   # Load all library files into an array. This isn't really used besides showing the total
   # number of files, but it can come handy later. Plus, mapfile takes 26ms.
-  [[ $SHELL =~ zsh ]] || {
+  if [[ $SHELL =~ zsh || ${BASH_MAJOR_VERSION} -lt 4 ]]; then
+    warning "Please for the love of science and binary upgrade your BASH already..."
+    is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 ${BASHMATIC_LIB}/*.sh | wc -l | tr -d '\n ') sources to load..."
+  else  
     local -a sources
     mapfile -t < <(find "${BASHMATIC_LIB}" -name '*.sh') sources
     is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok
-  }
+  fi
 }
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Banner
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
-# Every 5 minutes, since it's in seconds
-export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
-
-eval "${GLOBAL} bashmatic_showed_banner_at"
 
 function __bashmatic.banner.show() {
   export bashmatic_showed_banner_at=$(millis)
@@ -371,6 +341,7 @@ function pfx() {
 
 
 # resolve BASHMATIC_HOME if necessary
+__bashmatic.prerequisites
 __bashmatic.banner
 __bashmatic.home.is-valid || {
   log.inf "Resolving BASHMATIC_HOME as the current one is invalid: ${BASHMATIC_HOME}"
@@ -402,6 +373,5 @@ export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -
 # grab our shell command
 export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
-__bashmatic.prerequisites
 bashmatic.load "$@"
 

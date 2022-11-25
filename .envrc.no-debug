@@ -1,7 +1,0 @@
-# vim: ft=bah
-# vim: ft=bash
-export DEBUG=0
-export BASHMATIC_DEBUG=0
-export BASHMATIC_PATH_DEBUG=0
-export BASHMATIC_DEBUG=0
-export BASHMATIC_DEBUG=0
