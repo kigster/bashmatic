@@ -27,17 +27,24 @@
 
 == Introduction 
 
-_Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
+_Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun** - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
 
 
-After you install the library (the default location is `~/.bashmatic`), realize that you have a choice of either **sourcing the library from your shell 'dotfiles' like `~/.bash_profile` by adding `source ~/.bashmatic/init.sh`. OR can skip it during login initialization, and **only loading it in the scripts that use the library**.
+====
+After you install the library (the default location is `~/.bashmatic`), realize that you have a choice of either:
 
-[ATTENTION] Both approaches are absolutely valid and have their pros and cons. Loading bashmatic in your dotfiles could be a bit risky. One way or another we'll soon provide ways to verify that bashmatic you download is the safe and correct version, every time.
+* Automatically *sourcing the library (and all 900+ functions) from your shell 'dotfiles'* like `~/.bash_profile` by adding this line: `source ~/.bashmatic/init.sh`. On a recent M1 Apple laptop this adds about 200ms total.
+* OR, can *skip it during your login initialization*, and only load it at the top of the scripts that use the library.
+====
+
+[CAUTION]
+Both approaches are absolutely valid and have their pros and cons. Loading bashmatic in your dotfiles could be a bit risky. One way or another we'll soon provide ways to verify that bashmatic you download is the safe and correct version, every time.
 
 
 All we'll say on this matter is that we manage the optimize the hell out of the sourcing the library. Here is an example:
 
-image::doc/img/bashmatic-init.png["source init.sh",80%,80%,align="center",border="5px",url="doc/img"]
+
+image::doc/img/bashmatic-init.png[Init,width=85%,align=center,border=5,margin=10]
 
 _Bashmatic®_'s programming style is heavily influenced by Ruby's DSL languages. If you take a quick look at the https://github.com/kigster/bashmatic/blob/main/lib/is.sh[is.sh] script, it defines a bunch of DSL functions that can be chained with `&&`  and `||` to create a compact and self-documenting code like this:
 
