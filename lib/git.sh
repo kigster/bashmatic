@@ -235,10 +235,37 @@ function git.branch.current() {
 #
 # @arg $1 optional name of the remote to open, defaults to "orogin"
 #
-function git.open() {
-  local remote="${1:-"origin"}"
+function git.repo() {
   local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
-  info "Opening URL ${bldylw}${url}"
+  printf -- "%s" "${url}"
+}
+
+# @description Returns a URL on Github website that points to the
+# .  README on the current branch.
+function git.repo.current() {
+  local url="$(git.repo)"
+  local current_branch="$(git.branch.current)"
+  local readme="README.md"
+  for file in README.md README README.txt README.adoc CHANGELOG.md; do
+    if [[ -s "${file}" ]] ; then
+      export readme="${file}"
+      break
+    fi
+  done
+  # blob/kig/obfuscated-vars/README.adoc
+  local full_url="${url}/blob/${current_branch}/${readme}"
+  printf -- "%s" "${full_url}"
+}
+
+function git.open.current() {
+  local url=$(git.repo.current)
+  info "git.open() -> ${bldylw}${url}"
+  open -a 'Google Chrome' "${url}"
+}
+
+function git.open.repo() {
+  local url=$(git.repo)
+  info "git.open.repo() -> ${bldylw}${url}"
   open -a 'Google Chrome' "${url}"
 }
 

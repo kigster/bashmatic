@@ -13,12 +13,30 @@ source lib/git.sh
 source lib/github.sh
 source lib/util.sh
 
+export REPO_URL="https://github.com/kigster/bashmatic"
+
 set -e
 
 export git_skip=skip
 if [[ -n $(git tag -l 2>/dev/null) ]]; then
   export git_skip=
 fi
+
+@test "git.repo()" {
+  ${git_skip}
+  repo=$(git.repo)
+  set -e
+  [[ ${repo} =~ ${REPO_URL} ]]
+}
+
+@test "git.repo.current()" {
+  ${git_skip}
+  set -e
+  url="$(git.repo.current)"
+  repo="$(git.repo)"
+  current_branch="$(git.branch.current)"
+  [[ "${url}" == "${REPO_URL}/blob/${current_branch}/README.adoc" ]]
+}
 
 @test "git.repo.latest-local-tag regex" {
   ${git_skip}
