@@ -37,7 +37,7 @@ else
   export GLOBAL="declare"
 fi
 
-((BASHMATIC_DEBUG)) && echo  "DECLARE is [$DECLARE]"
+# ((BASHMATIC_DEBUG)) && echo  "DECLARE is [$DECLARE]"
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
