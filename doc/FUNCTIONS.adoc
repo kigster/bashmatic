@@ -5393,15 +5393,27 @@ git.local-vs-remote ()
 
 ----
 
-==== `git.open`
+==== `git.open.current`
 
 [source,bash]
 ----
-git.open () 
+git.open.current () 
 { 
-    local remote="${1:-"origin"}"
-    local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
-    info "Opening URL ${bldylw}${url}"
+    local url=$(git.repo.current)
+    info "git.open() -> ${bldylw}${url}"
+    open -a 'Google Chrome' "${url}"
+}
+
+----
+
+==== `git.open.repo`
+
+[source,bash]
+----
+git.open.repo () 
+{ 
+    local url=$(git.repo)
+    info "git.open.repo() -> ${bldylw}${url}"
     open -a 'Google Chrome' "${url}"
 }
 
@@ -5466,6 +5478,18 @@ git.remotes ()
 
 ----
 
+==== `git.repo`
+
+[source,bash]
+----
+git.repo () 
+{ 
+    local url=$(git remote get-url origin | sed -E 's/git@/https:\/\//g;s/com:/com\//g')
+    printf -- "%s" "${url}"
+}
+
+----
+
 ==== `git.repo-is-clean`
 
 [source,bash]
@@ -5481,6 +5505,28 @@ git.repo-is-clean ()
         cd - > /dev/null
         return 1
     fi
+}
+
+----
+
+==== `git.repo.current`
+
+[source,bash]
+----
+git.repo.current () 
+{ 
+    local url="$(git.repo)"
+    local current_branch="$(git.branch.current)"
+    local readme="README.md"
+    for file in README.md README README.txt README.adoc CHANGELOG.md
+    do
+        if [[ -s "${file}" ]]; then
+            export readme="${file}"
+            break
+        fi
+    done
+    local full_url="${url}/blob/${current_branch}/${readme}"
+    printf -- "%s" "${full_url}"
 }
 
 ----

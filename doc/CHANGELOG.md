@@ -1,16 +1,16 @@
 # Changelog
 
-## [v3.0.7](https://github.com/kigster/bashmatic/tree/v3.0.7) (2022-11-15)
+## [v3.0.7](https://github.com/kigster/bashmatic/tree/v3.0.7) (2022-11-25)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.6...v3.0.7)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.0...v3.0.7)
+
+## [v3.1.0](https://github.com/kigster/bashmatic/tree/v3.1.0) (2022-11-24)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.6...v3.1.0)
 
 **Closed issues:**
 
 - Fix the millis\(\) error when loading init.sh [\#118](https://github.com/kigster/bashmatic/issues/118)
-
-**Merged pull requests:**
-
-- Fix the millis\(\) error [\#117](https://github.com/kigster/bashmatic/pull/117) ([kigster](https://github.com/kigster))
 
 ## [v3.0.6](https://github.com/kigster/bashmatic/tree/v3.0.6) (2022-11-13)
 

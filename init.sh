@@ -14,9 +14,9 @@ set +ex
 
 if [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
   [[ -n $BASH_VERSION && $0 != "${BASH_SOURCE[0]}" ]] ; then
-  readonly __run_as_script=0 2>/dev/null
+  export __run_as_script=0 2>/dev/null
 else
-  readonly __run_as_script=1 2>/dev/null
+  export __run_as_script=1 2>/dev/null
 fi
 
 export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
@@ -34,8 +34,10 @@ elif [[ $SHELL =~ zsh ]]; then
   typeset -gx GLOBAL
   GLOBAL="typeset -gx "
 else
-  export GLOBAL=
+  export GLOBAL="declare"
 fi
+
+# ((BASHMATIC_DEBUG)) && echo  "DECLARE is [$DECLARE]"
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
@@ -80,10 +82,10 @@ function log.not-ok() {
 }
 
 eval "
-${GLOBAL} BASHMATIC_OS
-${GLOBAL} BASHMATIC_HOME
-${GLOBAL} BASHMATIC_INIT
-${GLOBAL} BASHMATIC_LIB
+  ${GLOBAL} BASHMATIC_OS   ;
+  ${GLOBAL} BASHMATIC_HOME ;
+  ${GLOBAL} BASHMATIC_INIT ;
+  ${GLOBAL} BASHMATIC_LIB  ;
 "
 
 # shellcheck disable=SC2296

@@ -1119,7 +1119,8 @@ Installs gawk into /usr/local/bin/gawk
 
 
 * [git.cfgu()](#gitcfgu)
-* [git.open()](#gitopen)
+* [git.repo()](#gitrepo)
+* [git.repo.current()](#gitrepocurrent)
 * [git.cfg.get()](#gitcfgget)
 
 ### `git.cfgu()`
@@ -1134,7 +1135,7 @@ git.cfgu email kigster@gmail.com
 git.cfgu
 ```
 
-### `git.open()`
+### `git.repo()`
 
 Reads the remote of a repo by name provided as
 an argument (or defaults to "origin") and opens it in the browser.
@@ -1152,6 +1153,11 @@ git.open origin # same thing
 #### Arguments
 
 * **$1** (optional): name of the remote to open, defaults to "orogin"
+
+### `git.repo.current()`
+
+Returns a URL on Github website that points to the
+.  README on the current branch.
 
 ### `git.cfg.get()`
 
