@@ -20,10 +20,7 @@ else
 fi
 
 export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
-declare GLOBAL
-
-declare -a BASHMATIC_REQUIRED_LIBS
-export BASHMATIC_REQUIRED_LIBS=( time output util color output-admonitions output-boxes output-utils )
+export GLOBAL="declare "
 
 # Every 5 minutes, since it's in seconds
 export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
@@ -44,9 +41,51 @@ else
   export GLOBAL="declare"
 fi
 
-source "${BASHMATIC_HOME}/init-helpers.sh"
+#!/usr/bin/env bash
+# vim: ft=bash
 
-# ((BASHMATIC_DEBUG)) && echo  "DECLARE is [$DECLARE]"
+#————————————————————————————————————————————————————————————————————————————————————————————————————
+# Initialization and Setup
+#————————————————————————————————————————————————————————————————————————————————————————————————————
+
+function year() {
+  date '+%Y'
+}
+
+function is-debug() {
+  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]]
+}
+
+function is-quiet() {
+  [[ ${BASHMATIC_QUIET} -gt 0 ]]
+}
+
+function not-quiet() {
+  [[ ${BASHMATIC_QUIET} -eq 0 ]]
+}
+
+function log.err() {
+  is-debug || return 0
+  printf "$(pfx) ${txtblk}${bakred}${txtwht}${bakred} ERROR ${clr}${txtred}${clr}${bldred} $*${clr}\n"
+}
+
+function log.inf() {
+  is-debug || return 0
+  printf "$(pfx) ${txtblk}${bakblu}${txtwht}${bakblu} INFO  ${clr}${txtblu}${clr}${bldblu} $*${clr}\n"
+}
+
+function log.ok() {
+  cursor.up 1
+  inline.ok
+  echo
+}
+
+function log.not-ok() {
+  cursor.up 1
+  inline.not-ok
+  echo
+}
+
 eval "
   ${GLOBAL} BASHMATIC_OS   ;
   ${GLOBAL} BASHMATIC_HOME ;
@@ -61,27 +100,37 @@ export BASHMATIC_HOME="${SCRIPT_SOURCE}"
 export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
-declare -a BASHMATIC_REQUIRED_LIBS
-export BASHMATIC_REQUIRED_LIBS=()
-export __prerequisites_loaded=false
+export BASHMATIC_QUIET=0
+export BASHMATIC_DEBUG=0
+export BASHMATIC_HELP=0
+
+[[ "$*" =~ (-q|--quiet) ]] && export BASHMATIC_QUIET=1
+[[ "$*" =~ (-d|--debug) ]] && export BASHMATIC_DEBUG=1
+[[ "$*" =~ (-h|--help)  ]] && export BASHMATIC_HELP=1
+
+eval "${GLOBAL} -a BASHMATIC_REQUIRED_LIBS"
+export BASHMATIC_REQUIRED_LIBS=( time output util color output-admonitions output-boxes output-utils )
+export __bashmatic_prerequisites_loaded=false
 
 # @description sources in some of the library files required for handling init.sh
 function __bashmatic.prerequisites() {
-  ${__prerequisites_loaded} && return 0
+  ${__bashmatic_prerequisites_loaded} && {
+    is-debug && not-quiet && log.inf "NOTE: prerequisites have already been loaded."
+    return 0
+  }
 
-  export __prerequisites_loaded=true
-
-  is-debug && not-quiet && echo
+  export __bashmatic_prerequisites_loaded=true
   for lib in "${BASHMATIC_REQUIRED_LIBS[@]}"; do
-    file="${BASHMATIC_LIB}/${lib}.sh"
-    [[ -f ${file} ]] || {
-      echo "ERROR: can't find file [${file}], SKIPPING...."
-      continue
-    }
-    is-debug && not-quiet && log.inf "Loading [${file}]..."
-    # shellcheck source=./${file}
-    source "${file}"
-    __bashmatic.debug-conclusion $?
+    file="${BASHMATIC_HOME}/lib/${lib}.sh"
+    # is-debug && not-quiet && log.inf    "Checking lib: [${file}]..."
+    if [[ -f "${file}" ]]; then
+      is-debug && not-quiet && log.inf  "Sourcing lib: [${file}]..."
+      # shellcheck disable=SC1090
+      source "${file}"
+      __bashmatic.debug-conclusion $?
+    else
+      log.err "Can't find lib: [${file}]... (ignoring)"
+    fi
   done
 
   # shellcheck disable=SC2002
@@ -90,10 +139,6 @@ function __bashmatic.prerequisites() {
   ${txtblk}${bakylw} ® 2015-$(year) Konstantin Gredeskoul   \
   ${txtwht}${bakblu}   v${BASHMATIC_VERSION}   ${clr}${txtblu}${clr}"
 }
-
-export BASHMATIC_QUIET=0
-export BASHMATIC_DEBUG=0
-export BASHMATIC_HELP=0
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Argument Parsing in case they loaded us with , eg. .
@@ -120,13 +165,14 @@ function __bashmatic.parse-arguments() {
   for file in "$@"; do
     [[ $0 =~ $file ]] && {
       log.inf "skipping the first file ${file}"
-        continue
-      }
+      continue
+    }
     local env_file="${BASHMATIC_HOME}/.envrc.${file}"
-    if [[ -f $env_file ]]; then
-      log.inf "sourcing env file ${env_file}"
+    if [[ -s "${env_file}" ]]; then
+      log.inf "sourcing env file [${env_file}]"
       source "${env_file}"
     fi
+
     if [[ "$file" =~ (reload|force|refresh|-f) ]]; then
       log.inf "force-reloading bashmatic library..."; log.ok
     fi
