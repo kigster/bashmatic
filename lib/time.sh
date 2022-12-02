@@ -47,10 +47,19 @@ function time.now.with-ms() {
 }
 
 # @description Prints the complete date with time up to milliseconds
-# @example 
+# @example
 #      2022-05-03 14:29:52.302
 function date.now.with-time() {
-  date '+%F ' | tr -d '\n' ; time.now.with-ms
+  date '+%F ' | tr -d '\n'
+  time.now.with-ms
+}
+
+function date.now.with-time.and.zone() { 
+  (
+    date '+%F '
+    time.now.with-ms
+    date '+ %z'
+  ) | tr -d '\n'; 
 }
 
 function date.now.humanized() {
@@ -107,9 +116,18 @@ function time.with-duration() {
   local verbose=false
   local secret=false
 
-  [[ "$1" == quiet ]]   && { shift; quiet=true; }
-  [[ "$1" == verbose ]] && { shift; verbose=true; }
-  [[ "$1" == secret ]]  && { shift; secret=true; }
+  [[ "$1" == quiet ]] && {
+    shift
+    quiet=true
+  }
+  [[ "$1" == verbose ]] && {
+    shift
+    verbose=true
+  }
+  [[ "$1" == secret ]] && {
+    shift
+    secret=true
+  }
 
   local -a command=("$@")
   local marker="$(util.random-string 10)"
@@ -233,5 +251,3 @@ millis() {
 today() {
   date +'%Y-%m-%d'
 }
-
-
