@@ -413,8 +413,8 @@ function run.inspect-variable() {
 
   local print_value
   local obfuscated_value
-  local max_len=120
-  local avail_len=$(($(screen.width.actual) - 45))
+  local max_len=110
+  local avail_len=$(($(screen.width.actual) - 50))
   local lcase_var_name="$(echo "${var_name}" | tr '[:upper:]' '[:lower:]')"
 
   print_value=1
@@ -426,8 +426,8 @@ function run.inspect-variable() {
 
   local color="${bldblu}"
 
-  local value_off=" ✘   "
-  local value_check="✔︎"
+  local value_no="${color_red}✘"
+  local value_yes="${color_green}✔︎"
   local value_color=""
 
   [[ -n ${obfuscated_value} ]] && {
@@ -435,33 +435,37 @@ function run.inspect-variable() {
     value_color="${italic}${txtred}"
   }
 
+  if [[ ${var_name} =~ PASSWORD ]] ; then
+    value="•••••••••••••••••"
+  fi
+
   if [[ -n "${var_value}" ]]; then
     if [[ ${lcase_var_name} =~ 'exit' ]]; then
       if [[ ${var_value} -eq 0 ]]; then
-        value=${value_check}
+        value=${value_yes}
         color="${bldgrn}"
       else
         print_value=1
         value=${var_value}
         color="${bldred}"
       fi
-    elif [[ "${var_value}" == "${True}" || "${var_value}" == "1" ]]; then
-      value="${value_check}"
+    elif [[ "${var_value}" == "${True}" || "${var_value}" == "1" || "${var_value}" == "true" ]]; then
+      value="${value_yes}"
       color="${bldgrn}"
-    elif [[ "${var_value}" == "${False}" || "${var_value}" == "0" ]]; then
-      value="${value_off}"
+    elif [[ "${var_value}" == "${False}" || "${var_value}" == "0" || "${var_value}" == "false" ]]; then
+      value="${value_no}"
       color="${bldred}"
     fi
   else
-    value="${value_off}"
+    value="${value_no}"
     color="${bldred}"
   fi
 
-  if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_off}" ]]; then
+  if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_no}" ]]; then
     return 0
   fi
 
-  printf -- "    ${txtylw}%-55s ${txtblk}${color} " "${var_name}"
+  printf -- "    ${txtylw}%-55.55s ${txtblk}${color} " "${var_name}"
   [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
 
   # Counts the number of dots present in the numeric argument
@@ -475,23 +479,23 @@ function run.inspect-variable() {
     fi
 
     if [[ -n "${value}" ]]; then
-      printf -- "${value_color}%*.*s" ${avail_len} ${avail_len} "${value}"
+      printf -- "${value_color}${value}"
     elif is.numeric "${var_value}"; then
-      avail_len=$((avail_len - 5))
+      avail_len=$((avail_len ))
       if [[ ${dot_count} -gt 1 || ${dot_count} -gt 1 ]]; then
-        printf -- "${value_color}%*s" "${avail_len}" "${var_value}"
+        printf -- "${value_color}${var_value}"
       else
         if [[ "${var_value}" =~ \. ]]; then
-          printf -- "${value_color}%*.2f" "$((avail_len - 3 ))" "${var_value}"
+          printf -- "${value_color}${var_value}"
         else
-          printf -- "${value_color}%*d" "${avail_len}" "${var_value}"
+          printf -- "${value_color}${var_value}"
         fi
       fi
     else
-      printf -- "${value_color}%*.*s" "${avail_len}" "${avail_len}" "${var_value}"
+      printf -- "${value_color}${var_value}" #%-*.*s${underline}" "${avail_len}" "${avail_len}" "${var_value}"
     fi
   else
-    printf -- "${value_color}%*.*s" "${avail_len}" "${avail_len}" "${value}"
+    printf -- "${value_color}${value}"
   fi
   printf "${clr}\n"
 }
@@ -503,7 +507,7 @@ function run.print-variable() {
 function run.inspect-variables() {
   local title=${1}
   shift
-  hl.subtle "${title}"
+  h6 "${title}"
   # trunk-ignore(shellcheck/SC2068)
   for var in $@; do
     run.inspect-variable "${var}"
