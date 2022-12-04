@@ -430,12 +430,12 @@ function run.inspect-variable() {
   local value_yes="${color_green}✔︎"
   local value_color=""
 
-  [[ -n ${obfuscated_value} ]] && {
+  [[ -n ${!obfuscated_value} ]] && {
     obfuscated_value="<obfuscated-value-${obfuscated_value}>"
     value_color="${italic}${txtred}"
   }
 
-  if [[ ${var_name} =~ PASSWORD ]] ; then
+  if [[ ${var_name} =~ (PASSWORD|KEY|CRED) ]] ; then
     value="•••••••••••••••••"
   fi
 
