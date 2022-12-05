@@ -20,7 +20,11 @@ else
 fi
 
 export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
-declare GLOBAL
+export GLOBAL="declare "
+
+# Every 5 minutes, since it's in seconds
+export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
+eval "${GLOBAL} bashmatic_showed_banner_at"
 
 declare -a OBFUSCATED_VARIABLES
 export OBFUSCATED_VARIABLES=()
@@ -37,7 +41,8 @@ else
   export GLOBAL="declare"
 fi
 
-# ((BASHMATIC_DEBUG)) && echo  "DECLARE is [$DECLARE]"
+#!/usr/bin/env bash
+# vim: ft=bash
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
@@ -95,22 +100,37 @@ export BASHMATIC_HOME="${SCRIPT_SOURCE}"
 export BASHMATIC_INIT="${BASHMATIC_HOME}/init.sh"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
-declare -a BASHMATIC_REQUIRED_LIBS
-export BASHMATIC_REQUIRED_LIBS=()
+export BASHMATIC_QUIET=0
+export BASHMATIC_DEBUG=0
+export BASHMATIC_HELP=0
 
+[[ "$*" =~ (-q|--quiet) ]] && export BASHMATIC_QUIET=1
+[[ "$*" =~ (-d|--debug) ]] && export BASHMATIC_DEBUG=1
+[[ "$*" =~ (-h|--help)  ]] && export BASHMATIC_HELP=1
+
+eval "${GLOBAL} -a BASHMATIC_REQUIRED_LIBS"
+export BASHMATIC_REQUIRED_LIBS=( time output util color output-admonitions output-boxes output-utils )
+export __bashmatic_prerequisites_loaded=false
+
+# @description sources in some of the library files required for handling init.sh
 function __bashmatic.prerequisites() {
-  export BASHMATIC_REQUIRED_LIBS=( time color util output output-admonitions output-boxes output-utils )
-  is-debug && not-quiet && echo
+  ${__bashmatic_prerequisites_loaded} && {
+    is-debug && not-quiet && log.inf "NOTE: prerequisites have already been loaded."
+    return 0
+  }
+
+  export __bashmatic_prerequisites_loaded=true
   for lib in "${BASHMATIC_REQUIRED_LIBS[@]}"; do
-    file="${BASHMATIC_LIB}/${lib}.sh"
-    [[ -f ${file} ]] || {
-      echo "ERROR: can't find file [${file}], SKIPPING...."
-      continue
-    }
-    is-debug && not-quiet && log.inf "Loading [${file}]..."
-    # shellcheck source=./${file}
-    source "${file}"
-    __bashmatic.debug-conclusion $?
+    file="${BASHMATIC_HOME}/lib/${lib}.sh"
+    # is-debug && not-quiet && log.inf    "Checking lib: [${file}]..."
+    if [[ -f "${file}" ]]; then
+      is-debug && not-quiet && log.inf  "Sourcing lib: [${file}]..."
+      # shellcheck disable=SC1090
+      source "${file}"
+      __bashmatic.debug-conclusion $?
+    else
+      log.err "Can't find lib: [${file}]... (ignoring)"
+    fi
   done
 
   # shellcheck disable=SC2002
@@ -119,10 +139,6 @@ function __bashmatic.prerequisites() {
   ${txtblk}${bakylw} ® 2015-$(year) Konstantin Gredeskoul   \
   ${txtwht}${bakblu}   v${BASHMATIC_VERSION}   ${clr}${txtblu}${clr}"
 }
-
-export BASHMATIC_QUIET=0
-export BASHMATIC_DEBUG=0
-export BASHMATIC_HELP=0
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Argument Parsing in case they loaded us with , eg. .
@@ -149,13 +165,14 @@ function __bashmatic.parse-arguments() {
   for file in "$@"; do
     [[ $0 =~ $file ]] && {
       log.inf "skipping the first file ${file}"
-        continue
-      }
+      continue
+    }
     local env_file="${BASHMATIC_HOME}/.envrc.${file}"
-    if [[ -f $env_file ]]; then
-      log.inf "sourcing env file ${env_file}"
+    if [[ -s "${env_file}" ]]; then
+      log.inf "sourcing env file [${env_file}]"
       source "${env_file}"
     fi
+
     if [[ "$file" =~ (reload|force|refresh|-f) ]]; then
       log.inf "force-reloading bashmatic library..."; log.ok
     fi
@@ -268,21 +285,20 @@ function __bashmatic.init-core() {
 
   # Load all library files into an array. This isn't really used besides showing the total
   # number of files, but it can come handy later. Plus, mapfile takes 26ms.
-  [[ $SHELL =~ zsh ]] || {
+  if [[ $SHELL =~ zsh || ${BASH_MAJOR_VERSION} -lt 4 ]]; then
+    warning "Please for the love of science and binary upgrade your BASH already..."
+    is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 ${BASHMATIC_LIB}/*.sh | wc -l | tr -d '\n ') sources to load..."
+  else  
     local -a sources
     mapfile -t < <(find "${BASHMATIC_LIB}" -name '*.sh') sources
     is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok
-  }
+  fi
 }
 
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Banner
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
-# Every 5 minutes, since it's in seconds
-export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
-
-eval "${GLOBAL} bashmatic_showed_banner_at"
 
 function __bashmatic.banner.show() {
   export bashmatic_showed_banner_at=$(millis)
@@ -371,6 +387,7 @@ function pfx() {
 
 
 # resolve BASHMATIC_HOME if necessary
+__bashmatic.prerequisites
 __bashmatic.banner
 __bashmatic.home.is-valid || {
   log.inf "Resolving BASHMATIC_HOME as the current one is invalid: ${BASHMATIC_HOME}"
@@ -402,6 +419,5 @@ export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -
 # grab our shell command
 export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
-__bashmatic.prerequisites
 bashmatic.load "$@"
 

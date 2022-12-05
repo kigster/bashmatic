@@ -12,9 +12,13 @@ export __bashmatic_library_last_sourced=${BASHMATIC_HOME}/.last-loaded
 export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 # shellcheck source=./time.sh
-[[ -n $(type millis 2>/dev/null) ]] || source "${BASHMATIC_HOME}"/lib/time.sh
+[[ -n $(type millis 2>/dev/null) ]] || source "${BASHMATIC_LIB}/time.sh"
+
+# shellcheck source=./output.sh
+[[ -n $(type output.is-tty 2>/dev/null) ]] || source "${BASHMATIC_LIB}/output.sh"
+#
 # shellcheck source=./file.sh
-[[ -n $(type file.last-modified-millis 2>/dev/null) ]] || source "${BASHMATIC_HOME}"/lib/file.sh
+[[ -n $(type file.last-modified-millis 2>/dev/null) ]] || source "${BASHMATIC_LIB}/file.sh"
 
 function bashmatic.cd-into() {
  [[ -d ${BASHMATIC_HOME} ]] || return 1
