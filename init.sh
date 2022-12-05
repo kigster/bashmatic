@@ -48,6 +48,11 @@ fi
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
+function date.now.humanized() {
+  util.os
+  date '+%d %b %Y | %T.%3N %P'
+}
+
 function year() {
   date '+%Y'
 }
@@ -388,7 +393,7 @@ function pfx() {
 
 # resolve BASHMATIC_HOME if necessary
 __bashmatic.prerequisites
-__bashmatic.banner
+__bashmatic.banner false
 __bashmatic.home.is-valid || {
   log.inf "Resolving BASHMATIC_HOME as the current one is invalid: ${BASHMATIC_HOME}"
   if [[ "${SHELL_COMMAND}" =~ zsh ]]; then

@@ -62,11 +62,6 @@ function date.now.with-time.and.zone() {
   ) | tr -d '\n'; 
 }
 
-function date.now.humanized() {
-  util.os
-  gdate '+%d %b %Y | %T.%3N %P'
-}
-
 # @description Starts a time for a given name space
 # @example
 #       time.with-duration.start moofie
