@@ -87,6 +87,7 @@ if [[ ${BashMatic__ColorLoaded} -ne 1 ]]; then
   ${GLOBAL} bg_pink
   ${GLOBAL} bg_sky_blue
   ${GLOBAL} bg_yellow_on_gray
+  ${GLOBAL} bg_dark_yellow
 
   ${GLOBAL} fg_dark_red
   ${GLOBAL} fg_bright_green
@@ -124,9 +125,9 @@ if [[ ${BashMatic__ColorLoaded} -ne 1 ]]; then
   ${GLOBAL} fg_grey
   ${GLOBAL} fg_light_green
   ${GLOBAL} fg_mustard
-  ${GLOBAL} fg_mustard
   ${GLOBAL} fg_pink
   ${GLOBAL} fg_purr
+  ${GLOBAL} fg_dark_yellow
   "
 
   eval "${DECLARATIONS}"
@@ -212,6 +213,7 @@ function color.enable() {
   export bg_blue_on_gray="\e[90;7;42m"
   export bg_bright_green="\e[48;5;82m"
   export bg_dark_green="\e[48;5;82m"
+  export bg_dark_yellow="\e[48;5;208m"
   export bg_bright_red="\e[1;31m\e[48;5;196m"
   export bg_deep_blue="\e[48;5;37m"
   export bg_deep_green="\e[48;5;28m"
@@ -222,6 +224,7 @@ function color.enable() {
   export bg_sky_blue="\e[48;5;39m"
   export bg_yellow_on_gray="\e[90;7;43m"
 
+  export fg_dark_yellow="\e[30;48;5;82m"
   export fg_dark_red="\e[38;5;88m"
   export fg_bright_green="\e[38;5;82m"
   export fg_sky_blue="\e[38;5;39m"
@@ -243,12 +246,13 @@ function color.enable() {
   export bg_bright_red="\e[1;31m\e[48;5;196m"
   export bg_deep_blue="\e[48;5;37m"
   export bg_deep_green="\e[48;5;28m"
-  export bg_green_on_gray="\e[90;7;102m"
+  export bg_green_on_gray="\e[48;5;22m"
   export bg_grey="\e[48;5;239m"
-  export bg_mustard="\e[48;5;178m"
+  export bg_mustard="\e[48;5;214m"
+  export bg_sunny="\e[48;5;220m"
+  export bg_yellow="\e[48;5;226m"
   export bg_pink="\e[48;5;89m"
   export bg_sky_blue="\e[48;5;39m"
-  export bg_yellow_on_gray="\e[90;7;43m"
 
   export fg_dark_red="\e[38;5;88m"
   export fg_bright_green="\e[38;5;82m"
@@ -258,7 +262,7 @@ function color.enable() {
   export fg_grey="\e[38;5;239m"
   export fg_light_green="\e[38;5;108m"
   export fg_mustard="\e[38;5;178m"
-  export fg_mustard="\e[38;5;178m"
+  export fg_dark_yellow="\e[38;5;208m"
   export fg_pink="\e[38;5;89m"
   export fg_purr="\e[38;5;219m"
 }

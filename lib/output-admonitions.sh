@@ -20,7 +20,7 @@ function title-panel() {
   for line in "$@"; do
     .title.line "${shadow}" "${title_text_color}" "${line}"
   done
-  
+
   printf " ${title_border_color} ${box_bottom} ${shadow}\n"
   printf " ${title_shadow_color}   ${box_bottom_shadow}${clr}\n\n"
 }
@@ -40,11 +40,11 @@ function panel-error() {
   title-panel "$@"
 }
 
-function panel-error-yellow() {
-  export title_title_color="${bldwht}${bakred}"
-  export title_text_color="${bldylw}${bakred}"
-  export title_border_color="${blkylw}${bakred}"
-  export title_shadow_color="${fg_dark_red}"
+function panel-warning() {
+  export title_title_color="${txtblk}${bg_mustard}"
+  export title_text_color="${txtblk}${bg_mustard}"
+  export title_border_color="${bg_mustard}"
+  export title_shadow_color="${clr} ${bg_mustard}"
   title-panel "$@"
 }
 
@@ -59,6 +59,13 @@ function panel-purple-red() {
   export title_text_color="${bg_pink}${bldwht}"
   export title_border_color="${bg_pink}${bldred}"
   export title_shadow_color="${fg_dark_red}"
+  title-panel "$@"
+}
+
+function panel-yellow-black() {
+  export title_text_color="${bg_mustard}${bldwht}"
+  export title_border_color="${bg_mustard}${bldblk}"
+  export title_shadow_color="${bakylw}"
   title-panel "$@"
 }
 
@@ -126,7 +133,7 @@ function title-blue() {
 
 function title-green() {
   export title_text_color=${color_black}${bakgrn}
-  export title_border_color=${fg_bright_green}${bakgrn}
+  export title_border_color=${txtblk}${bakgrn}
   export title_shadow_color=${fg_deep_green}
   title-box "$@"
 }

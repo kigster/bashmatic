@@ -57,7 +57,7 @@ function warn() {
 function warning() { 
   local first="$1"
   shift
-  box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" >&2
+  panel-purple-red "${header} ${clr}${txtblk}${bakylw} — $first" "$@" >&2
 }
 
 function br() {
