@@ -64,6 +64,15 @@ function not-quiet() {
   [[ ${BASHMATIC_QUIET} -eq 0 ]]
 }
 
+function cursor.up() {
+  printf "\e[${1:-"1"}A"
+}
+
+function inline.ok() {
+  printf " ${txtblk}${bakgrn} ✔︎ ${clr} "
+}
+
+
 function log.err() {
   is-debug || return 0
   printf "$(pfx) ${txtblk}${bakred}${txtwht}${bakred} ERROR ${clr}${txtred}${clr}${bldred} $*${clr}\n"
@@ -115,7 +124,6 @@ export __bashmatic_prerequisites_loaded=false
 # @description sources in some of the library files required for handling init.sh
 function __bashmatic.prerequisites() {
   ${__bashmatic_prerequisites_loaded} && {
-    is-debug && not-quiet && log.inf "NOTE: prerequisites have already been loaded."
     return 0
   }
 
