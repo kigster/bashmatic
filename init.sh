@@ -40,16 +40,11 @@ elif [[ $SHELL =~ zsh ]]; then
 else
   export GLOBAL="declare"
 fi
-
-#!/usr/bin/env bash
-# vim: ft=bash
-
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
 function date.now.humanized() {
-  util.os
   date '+%d %b %Y | %T.%3N %P'
 }
 
