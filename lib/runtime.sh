@@ -503,7 +503,9 @@ function run.print-variable() {
 function run.inspect-variables() {
   local title=${1}
   shift
-  hl.subtle "${title}"
+  output.constrain-screen-width 130
+  h3bg "${title}"
+  output.constrain-screen-width 110
   # trunk-ignore(shellcheck/SC2068)
   for var in $@; do
     run.inspect-variable "${var}"
