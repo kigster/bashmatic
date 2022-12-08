@@ -48,6 +48,8 @@ function .run.initializer() {
   export LibRun__RetryExitCodes=()
 }
 
+trap "kill $$" INT
+
 export SENSITIVE_VARS_REGEX="(password|api_key|token)"
 
 export LibRun__DryRun=${False}
@@ -435,9 +437,9 @@ function run.inspect-variable() {
   array.includes "${var_name}" "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${var_name}")
   array.includes "${lcase_var_name}" "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${lcase_var_name}")
 
-  local color="${txtwht}${bakblk}"
+  local color="${txtblk}${bakpur}"
 
-  local value_off=" ✘  "
+  local value_off=" ✘ "
   local value_check=" ✔︎  "
   local value_color=""
 
@@ -471,16 +473,16 @@ function run.inspect-variable() {
       avail_len=$((avail_len + 2))
     fi
   else
-    var_value=" 👻   [empty]"
+    var_value=" ─  [empty]"
     color="${bakpur}"
-    avail_len=$((avail_len + 3))
+    avail_len=$((avail_len + 2))
   fi
 
   #  if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_off}" ]]; then
   #    return 0
   #  fi
 
-  printf -- "    ❯${txtylw} %-35s ${txtblk}${color} " "${var_name}"
+  printf -- "  ❯${txtylw} %-40s ${txtblk}${color} " "${var_name}"
 
   [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
 
