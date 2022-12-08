@@ -2,7 +2,7 @@
 # vim: ft=bash
 #
 # file: lib/init.sh
-# 
+#
 # @description
 #    This is primary loading file to access ALL or almost all of the Bashmatic functions.
 #    At the time of this writing, this encompasses 826 funcitions, and takes 756ms on my
@@ -214,12 +214,13 @@ function __bashmatic.debug-conclusion() {
   }
 }
 
-# shellcheck disable=SC2120
+# shellcheck disable=SC2120 source=./lib/util.sh
+# shellcheck disable=SC2120 source=./lib/time.sh
 function __bashmatic.eval-library() {
 
   source "${BASHMATIC_LIB}/time.sh"
   source "${BASHMATIC_LIB}/util.sh"
-  
+
   local __bashmatic_start_time="$(millis)"
 
   # LOAD ALL BASHMATIC SCRIPTS AT ONCE
@@ -296,7 +297,7 @@ function __bashmatic.init-core() {
   if [[ $SHELL =~ zsh || ${BASH_MAJOR_VERSION} -lt 4 ]]; then
     warning "Please for the love of science and binary upgrade your BASH already..."
     is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 ${BASHMATIC_LIB}/*.sh | wc -l | tr -d '\n ') sources to load..."
-  else  
+  else
     local -a sources
     mapfile -t < <(find "${BASHMATIC_LIB}" -name '*.sh') sources
     is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok

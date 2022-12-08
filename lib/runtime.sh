@@ -4,7 +4,7 @@
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modi  fications, © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
+# Any modifications, © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
 # The following "global" variables define how the run framework executes
@@ -28,7 +28,6 @@ export LibRun__CommandColorBg__Default="${bakgrn}"
 export LibRun__CommandColorFg__Default="${txtblk}"
 export LibRun__CommandColor__Default="${LibRun__CommandColorFg__Default}${LibRun__CommandColorBg__Default}"
 
-
 # Maximum number of Retries that can be set via the
 # LibRun__RetryCount variable before running the command.
 # After running the command, RetryCount is reset to RetryCountDefault.
@@ -48,6 +47,8 @@ function .run.initializer() {
   declare -a LibRun__RetryExitCodes
   export LibRun__RetryExitCodes=()
 }
+
+export SENSITIVE_VARS_REGEX="(password|api_key|token)"
 
 export LibRun__DryRun=${False}
 export LibRun__Verbose=${False}
@@ -91,7 +92,7 @@ function .run.cleanup() {
 }
 
 function .run.bundle.exec.with-output() {
-  export LibRun__ShowCommandOutput=${True}
+  export LibRun__ShowCommandOutput="${True}"
   .run.bundle.exec "$@"
 }
 
@@ -175,7 +176,7 @@ function run.print-command() {
   local ascii_cmd
   local command_prompt="${prefix} ❯ "
   local command_width=$((w - 25))
-  
+
   [[ ${command_width} -lt ${min_width} ]] && command_width=${min_width}
 
   # record length of the command
@@ -192,7 +193,7 @@ function run.print-command() {
 }
 
 function run.print-command-full-screen() {
-  run.print-long-command "$1" $(screen.width)
+  run.print-long-command "$1" "$(screen.width)"
 }
 
 function command-spacer() {
@@ -228,7 +229,6 @@ function run.print-long-command() {
   printf "${prefix}❯ ${bldylw}"
   printf "${command}" | fold -s -w"${w}" |
     awk 'NR > 1 {printf "            "}; { printf "%s\n", $0}'
-
 }
 
 function run.post-command-with-output() {
@@ -348,7 +348,7 @@ function run.with.minimum-duration() {
 
   local now=$(millis)
   # shellcheck disable=SC2079
-  local duration=$(ruby -e "puts (${now} - ${started})/1000.0"  )
+  local duration=$(ruby -e "puts (${now} - ${started})/1000.0")
 
   if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
     local cmd="$(echo "${command}" | sedx 's/\"//g')"
@@ -385,9 +385,10 @@ function run.inspect.set-skip-false-or-blank() {
 
 function run.add-obfuscated-var() {
   while true; do
-    local variable="$1"; shift
+    local variable="$1"
+    shift
     [[ -n ${variable} ]] || break
-    export OBFUSCATED_VARIABLES+=( "${variable}" )
+    export OBFUSCATED_VARIABLES+=("${variable}")
   done
   export OBFUSCATED_VARIABLES=($(array.uniq "${OBFUSCATED_VARIABLES[@]}"))
 }
@@ -406,6 +407,16 @@ function run.print-obfuscated-vars() {
   done
 }
 
+function var.is-truthy() {
+  local value="${1}"
+  [[ "${value}" == "${True}" || "${value}" == "1" || ${value} == "true" ]]
+}
+
+function var.is-falsy() {
+  local value="${1}"
+  [[ -z "${value}" || "${value}" == "${False}" || "${value}" == "0" || ${value} == "false" ]]
+}
+
 function run.inspect-variable() {
   local var_name=${1}
   local var_value=${!var_name}
@@ -413,7 +424,7 @@ function run.inspect-variable() {
 
   local print_value
   local obfuscated_value
-  local max_len=120
+  local max_len=100
   local avail_len=$(($(screen.width.actual) - 45))
   local lcase_var_name="$(echo "${var_name}" | tr '[:upper:]' '[:lower:]')"
 
@@ -421,13 +432,13 @@ function run.inspect-variable() {
 
   local print_value
 
-  array.includes "${var_name}"       "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${var_name}")
+  array.includes "${var_name}" "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${var_name}")
   array.includes "${lcase_var_name}" "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${lcase_var_name}")
 
-  local color="${bldblu}"
+  local color="${txtwht}${bakblk}"
 
-  local value_off=" ✘   "
-  local value_check="✔︎"
+  local value_off=" ✘  "
+  local value_check=" ✔︎  "
   local value_color=""
 
   [[ -n ${obfuscated_value} ]] && {
@@ -436,32 +447,41 @@ function run.inspect-variable() {
   }
 
   if [[ -n "${var_value}" ]]; then
-    if [[ ${lcase_var_name} =~ 'exit' ]]; then
+    if [[ ${var_name} =~ ${SENSITIVE_VARS_REGEX} || ${var_name} =~ ${SENSITIVE_VARS_REGEX^^} ]]; then
+      var_value="$(run.obfuscate-string-value ${var_name}) [obfuscated]"
+      color="${itawht}${italic}${bakcyn}"
+    elif [[ ${lcase_var_name} =~ 'exit' ]]; then
       if [[ ${var_value} -eq 0 ]]; then
-        value=${value_check}
-        color="${bldgrn}"
+        var_value="${value_check} [zero]"
+        color="${bakgrn}"
       else
         print_value=1
-        value=${var_value}
-        color="${bldred}"
+        var_value=${var_value}
+        color="${bakred}"
+        avail_len=$((avail_len + 5))
       fi
-    elif [[ "${var_value}" == "${True}" || "${var_value}" == "1" ]]; then
-      value="${value_check}"
-      color="${bldgrn}"
-    elif [[ "${var_value}" == "${False}" || "${var_value}" == "0" ]]; then
-      value="${value_off}"
-      color="${bldred}"
+      avail_len=$((avail_len + 5))
+    elif var.is-truthy "${var_value}"; then
+      var_value="${value_check} [true]"
+      color="${bakgrn}"
+      avail_len=$((avail_len + 5))
+    elif var.is-falsy "${var_value}"; then
+      var_value="${value_off} [false]"
+      color="${bakred}"
+      avail_len=$((avail_len + 2))
     fi
   else
-    value="${value_off}"
-    color="${bldred}"
+    var_value=" 👻   [empty]"
+    color="${bakpur}"
+    avail_len=$((avail_len + 3))
   fi
 
-  if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_off}" ]]; then
-    return 0
-  fi
+  #  if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_off}" ]]; then
+  #    return 0
+  #  fi
 
-  printf -- "    ${txtylw}%-55s ${txtblk}${color} " "${var_name}"
+  printf -- "    ❯${txtylw} %-35s ${txtblk}${color} " "${var_name}"
+
   [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
 
   # Counts the number of dots present in the numeric argument
@@ -474,24 +494,27 @@ function run.inspect-variable() {
       value="${obfuscated_value}"
     fi
 
-    if [[ -n "${value}" ]]; then
-      printf -- "${value_color}%*.*s" ${avail_len} ${avail_len} "${value}"
+    if [[ -n "${value}" ]] && ! is.numeric "${var_value}"; then
+      # printf -- "${value_color}%-*.*s" ${avail_len} ${avail_len} "${var_value}"
+      echo "XXX"
     elif is.numeric "${var_value}"; then
-      avail_len=$((avail_len - 5))
+      avail_len=$((avail_len))
       if [[ ${dot_count} -gt 1 || ${dot_count} -gt 1 ]]; then
-        printf -- "${value_color}%*s" "${avail_len}" "${var_value}"
+       echo "XXX"
+       printf -- "${value_color}[%-*.*s]" "${avail_len}" "${avail_len}" "${var_value}"
       else
         if [[ "${var_value}" =~ \. ]]; then
-          printf -- "${value_color}%*.2f" "$((avail_len - 3 ))" "${var_value}"
+          printf -- "${value_color}%-*.2f" "$((avail_len))" "${var_value}"
         else
-          printf -- "${value_color}%*d" "${avail_len}" "${var_value}"
+          printf -- "${value_color}%-*d" "$((avail_len))" "${var_value}"
         fi
       fi
     else
-      printf -- "${value_color}%*.*s" "${avail_len}" "${avail_len}" "${var_value}"
+      printf -- "${value_color}%-*.*s" "${avail_len}" "${avail_len}" "${var_value}"
     fi
   else
-    printf -- "${value_color}%*.*s" "${avail_len}" "${avail_len}" "${value}"
+    avail_len=$((avail_len))
+    printf -- "${value_color}%-*.*s" "${avail_len}" "${avail_len}" "${var_value}"
   fi
   printf "${clr}\n"
 }
@@ -503,33 +526,61 @@ function run.print-variable() {
 function run.inspect-variables() {
   local title=${1}
   shift
-  output.constrain-screen-width 130
+  output.constrain-screen-width 100
   h3bg "${title}"
-  output.constrain-screen-width 110
   # trunk-ignore(shellcheck/SC2068)
+  # shellcheck disable=SC2068
   for var in $@; do
     run.inspect-variable "${var}"
   done
 }
 
+# @description Adds a variable to the list of the variables to be obfuscated
 function run.print-variables() {
   local title="${1}"
   shift
   hl.yellow "${title}"
   # trunk-ignore(shellcheck/SC2068)
+  # shellcheck disable=SC2068
   for var in $@; do
     run.print-variable "${var}"
   done
 }
 
+function run.register-obfuscated-vars() {
+  run.add-obfuscated-var password api_key secret token
+}
+
+# shellcheck disable=SC2120
+function run.filter-out-sensitive-vars() {
+  local a="${1:-""}"
+  if [[ "$a" == "-" ]]; then
+    read -r a
+  elif [[ -f "${a}" ]]; then
+    grep -v -E "${SENSITIVE_VARS_REGEX}" "${a}"
+  else
+    echo | grep -v -E "${SENSITIVE_VARS_REGEX}"
+  fi
+}
+
 function run.variables-starting-with() {
   local prefix="${1}"
-  env | grep -E -e "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
+  env | \
+    grep -E -e "^${prefix}" | \
+    grep '=' | \
+    sedx 's/=.*//g' | \
+    grep -v -E "${SENSITIVE_VARS_REGEX}" | \
+    sort
 }
 
 function run.variables-ending-with() {
   local suffix="${1}"
-  env | grep -E -e ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
+  env | \
+    grep -E -e ".*${suffix}=.*\$" | \
+    grep -v -E "${SENSITIVE_VARS_REGEX}" | \
+    grep '=' | \
+    sedx 's/=.*//g' | \
+    sort
 }
 
 # Usage: run.inspect-variables-that-are starting-with LibRun
@@ -605,5 +656,3 @@ function run.on-error.ask-is-enabled() {
 function run.was-successful() {
   [[ ${LibRun__LastExitCode} -eq 0 ]]
 }
-
-

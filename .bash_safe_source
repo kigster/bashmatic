@@ -7,17 +7,17 @@
 set +e
 
 function is-debug() {
-  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]] 
+  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]]
 }
 
 function debug-info() {
-  is-debug || return 
+  is-debug || return
   printf "${txtblk}${bakgrn} [debug] ➔ ${clr} ${bldgrn}%-60.60s${clr}${bldgrn}$2" "$1"
   [[ -n $3 ]] && eval "$3"
 }
 
 function debug-error() {
-  is-debug || return 
+  is-debug || return
   printf "${txtblk}${bakred} [error] ➔ ${clr} ${bldred}%-60.60s${clr}${txtred}$2" "$1"
   [[ -n $3 ]] && eval "$3"
 }
