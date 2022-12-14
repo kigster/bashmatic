@@ -1,7 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
 // vim: ft=asciidoc
-:author: Version v3.1.0
+:author: Version v3.1.2
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai

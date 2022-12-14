@@ -4,9 +4,10 @@
 set +e
 load test_helper
 
+source init.sh
+source lib/util.sh
 source lib/output.sh
 source lib/color.sh
-source lib/util.sh
 
 @test "ascii-pipe() should remove color and other escape sequences from STDIN" {
   set -e

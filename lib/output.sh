@@ -2,8 +2,6 @@
 # Private functions
 # shellcheck disable=SC2155
 
-source "${BASHMATIC_HOME}/lib/util.sh"
-
 export LibOutput__CommandPrefixLen=7
 export LibOutput__LeftPrefix="       "
 
@@ -12,7 +10,6 @@ export LibOutput__MaxWidth__Default=100
 export LibOutput__MinHeight__Default=20
 
 export LibOutput__WidthDetectionStrategy="unconstrained"
-
 export LibOutput__CachedScreenWidthMs=10000 # how long to cache screen-width for.
 export bashmatic_spacer_width="${bashmatic_spacer_width:-4}"
 
@@ -27,25 +24,39 @@ output.reset-min-max-width
 # @description OS-independent way to determine screen width.
 function output.screen-width.actual() {
   local w
-  util.os
-  if [[ ${BASHMATIC_OS} =~ darwin ]]; then
+  case "${BASHMATIC_OS_NAME}" in
+  darwin)
     w="$(.output.stty.field columns)"
-  elif [[ ${BASHMATIC_OS} =~ linux ]]; then
+    ;;
+  linux)
     w="$(stty -a 2>/dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
-  fi
+    ;;
+  *)
+    error "Unsupported OS: ${BASHMATIC_OS_NAME}"
+    return 1
+    ;;
+  esac
+
   printf -- "%d" "${w}"
 }
 
-# @description OS-indepen∑t way to determine screen height.
+# @description OS-independent way to determine screen height.
 function output.screen-height.actual() {
   local h
-  util.os
-  if [[ ${BASHMATIC_OS} =~ darwin ]]; then
+  case ${BASHMATIC_OS_NAME} in
+  darwin)
     h="$(.output.stty.field rows)"
-  elif [[ ${BASHMATIC_OS} =~ linux ]]; then
+    ;;
+  linux)
     h="$(stty -a 2>/dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
-  fi
-  printf -- "%d" "$h"
+    ;;
+  *)
+    error "Unsupported OS: ${BASHMATIC_OS_NAME}"
+    return 1
+    ;;
+  esac
+
+  printf -- "%d" "${h}"
 }
 
 function output.constrain-screen-width() {
@@ -164,11 +175,10 @@ function .output.stty.field() {
 
 function .output.current-screen-width.unconstrained() {
   if output.is-pipe; then
-    printf -- '%d' "${LibOutput__MaxWidth:-80}"
+    printf -- '%d' "${LibOutput__MaxWidth:-100}"
   else
     output.screen-width.actual
   fi
-
 }
 
 function screen.width.actual() {
@@ -204,26 +214,27 @@ function .output.current-screen-width() {
 }
 
 function .output.screen-width() {
-  if [[ -n ${CI} ]]; then
-    printf -- "120"
+  if output.is-terminal ; then
+    printf -- "%d" $(output.screen-width.actual)
     return 0
   fi
+  
+  if output.is-pipe || output.is-redirect || output.is-ssh; then
+    printf -- "%d" 120
+    return 0
+  fi 
 
-  # local now
-  # now="$(millis)"
-
-  # if [[ -n "${LibOutput__CachedScreenWidth}" && $((now - LibOutput__CachedScreenMillis)) -lt ${LibOutput__CachedScreenWidthMs} ]]; then
-  #   printf -- "${LibOutput__CachedScreenWidth}"
-  #   return 0
-  # fi
+  if [[ -n ${CI} ]]; then
+    printf -- "%d" 120
+  else
+    printf -- "%d" 100
+  fi
 
   local w
   w="$(.output.current-screen-width)"
 
-  # export LibOutput__CachedScreenWidth="${w}"
-  # export LibOutput__CachedScreenMillis="${now}"
-
   printf -- "%d" "${w}"
+  return 0
 }
 
 function .output.screen-height() {
@@ -643,33 +654,34 @@ function inline.not-ok() {
   printf " ${txtwht}${bakred} ✘ ${clr} "
 }
 
-ui.closer.ok:() {
+function ui.closer.ok:() {
   ui.closer.ok "$@"
   echo
 }
 
 function ok() { ui.closer.ok "$@"; }
-ok:() { ui.closer.ok: "$@"; }
+function ok:() { ui.closer.ok: "$@"; }
 
 function ui.closer.not-ok() {
   .output.cursor-left-by 1000
   printf " ${bakred}${bldwht} ✘ ${clr} "
 }
 
-ui.closer.not-ok:() {
+function ui.closer.not-ok:() {
   ui.closer.not-ok "$@"
   echo
 }
 
 function not-ok() { ui.closer.not-ok "$@"; }
-not-ok:() { ui.closer.not-ok: "$@"; }
+
+function not-ok:() { ui.closer.not-ok: "$@"; }
 
 function ui.closer.kind-of-ok() {
   .output.cursor-left-by 1000
   printf " ${bakylw}${bldwht} ❖ ${clr} "
 }
 
-ui.closer.kind-of-ok:() {
+function ui.closer.kind-of-ok:() {
   ui.closer.kind-of-ok "$@"
   echo
 }

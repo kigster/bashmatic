@@ -1,12 +1,30 @@
 # Changelog
 
+## [v3.1.1](https://github.com/kigster/bashmatic/tree/v3.1.1) (2022-12-08)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/completion...v3.1.1)
+
+## [completion](https://github.com/kigster/bashmatic/tree/completion) (2022-12-08)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.0...completion)
+
+**Merged pull requests:**
+
+- WIP: attempt to fix god knows what [\#121](https://github.com/kigster/bashmatic/pull/121) ([kigster](https://github.com/kigster))
+
+## [v3.1.0](https://github.com/kigster/bashmatic/tree/v3.1.0) (2022-11-25)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.7...v3.1.0)
+
+**Merged pull requests:**
+
+- New feature: git.open.current\(\) will open  branch. [\#120](https://github.com/kigster/bashmatic/pull/120) ([kigster](https://github.com/kigster))
+- fAdding abbility to obfiscate sensitive vars [\#119](https://github.com/kigster/bashmatic/pull/119) ([kigster](https://github.com/kigster))
+- Fix the millis\(\) error [\#117](https://github.com/kigster/bashmatic/pull/117) ([kigster](https://github.com/kigster))
+
 ## [v3.0.7](https://github.com/kigster/bashmatic/tree/v3.0.7) (2022-11-25)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.0...v3.0.7)
-
-## [v3.1.0](https://github.com/kigster/bashmatic/tree/v3.1.0) (2022-11-24)
-
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.6...v3.1.0)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.6...v3.0.7)
 
 **Closed issues:**
 

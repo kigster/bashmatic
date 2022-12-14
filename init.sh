@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-#
-# file: lib/init.sh
+# file: init.sh
 #
 # @description
 #    This is primary loading file to access ALL or almost all of the Bashmatic functions.
@@ -10,8 +9,6 @@
 #
 # @see https://github.com/kigster/bashmatic#4-installing-bashmatic
 
-set +ex
-
 if [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
   [[ -n $BASH_VERSION && $0 != "${BASH_SOURCE[0]}" ]] ; then
   export __run_as_script=0 2>/dev/null
@@ -19,16 +16,14 @@ else
   export __run_as_script=1 2>/dev/null
 fi
 
-export  BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
+export BASHMATIC_DIR="$(cd $(dirname ${BASH_SOURCE[0]}); pwd -P)"
+export BASHMATIC_HOME="${BASHMATIC_DIR}"
+export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
+
+[[ -z $(type system.uname 2>/dev/null) && -f "${BASHMATIC_LIB}/util.sh" ]] && source "${BASHMATIC_LIB}/util.sh" 
+
+export BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 export GLOBAL="declare "
-
-# Every 5 minutes, since it's in seconds
-export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
-eval "${GLOBAL} bashmatic_showed_banner_at"
-
-declare -a OBFUSCATED_VARIABLES
-export OBFUSCATED_VARIABLES=()
-export GLOBAL
 
 if [[ ${BASH_MAJOR_VERSION} -eq 3 ]] ; then
   export GLOBAL="declare"
@@ -40,6 +35,29 @@ elif [[ $SHELL =~ zsh ]]; then
 else
   export GLOBAL="declare"
 fi
+
+eval "
+  ${GLOBAL} DEBUG                         ;
+  ${GLOBAL} BASHMATIC_DEBUG               ;
+  ${GLOBAL} BASHMATIC_HELP                ;
+  ${GLOBAL} BASHMATIC_OS                  ;
+  ${GLOBAL} BASHMATIC_OS_NAME             ;
+  ${GLOBAL} BASHMATIC_HOME                ;
+  ${GLOBAL} BASHMATIC_INIT                ;
+  ${GLOBAL} BASHMATIC_LIB                 ;
+  ${GLOBAL} BASHMATIC_SHOW_BANNER_SECS    ;
+"
+
+system.save-os-name
+
+# Every 5 minutes, since it's in seconds
+export BASHMATIC_SHOW_BANNER_SECS=$(( 5 * 60 ))
+eval "${GLOBAL} bashmatic_showed_banner_at"
+
+declare -a OBFUSCATED_VARIABLES
+export OBFUSCATED_VARIABLES=()
+export GLOBAL
+
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -94,13 +112,6 @@ function log.not-ok() {
   inline.not-ok
   echo
 }
-
-eval "
-  ${GLOBAL} BASHMATIC_OS   ;
-  ${GLOBAL} BASHMATIC_HOME ;
-  ${GLOBAL} BASHMATIC_INIT ;
-  ${GLOBAL} BASHMATIC_LIB  ;
-"
 
 # shellcheck disable=SC2296
 export SCRIPT_SOURCE="$(cd "$(/usr/bin/dirname "${BASH_SOURCE[0]:-"${(%):-%x}"}")" || exit 1; pwd -P)"
@@ -263,8 +274,6 @@ function __bashmatic.init-core() {
   export BASHMATIC_URL="https://github.com/kigster/bashmatic"
   export BASHMATIC_UNAME="$(system.uname)"
 
-  [[ -z ${BASHMATIC_OS} ]] && readonly BASHMATIC_OS="$(${BASHMATIC_UNAME} -s | tr '[:upper:]' '[:lower:]')"
-
   # bashsupport disable=BP2001
   # shellcheck disable=2046
   export BASHMATIC_TEMP="/tmp/${USER}/__bashmatic"
@@ -277,7 +286,7 @@ function __bashmatic.init-core() {
     return 1
   fi
 
-  local init_func="__bashmatic.init.${BASHMATIC_OS}"
+  local init_func="__bashmatic.init.${BASHMATIC_OS_NAME}"
   [[ -n $(type "${init_func}" 2>/dev/null) ]] && ${init_func}
 
   # shellcheck disable=SC2155
@@ -298,8 +307,7 @@ function __bashmatic.init-core() {
     warning "Please for the love of science and binary upgrade your BASH already..."
     is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 ${BASHMATIC_LIB}/*.sh | wc -l | tr -d '\n ') sources to load..."
   else
-    local -a sources
-    mapfile -t < <(find "${BASHMATIC_LIB}" -name '*.sh') sources
+    local -a sources=( $(find /Users/kig/.bashmatic/lib -name '*.sh') )
     is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok
   fi
 }

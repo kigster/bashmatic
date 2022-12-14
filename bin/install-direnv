@@ -28,7 +28,7 @@ function direnv.install() {
   printf " — NO."
   not-ok:
 
-  export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export BASHMATIC_OS="${BASHMATIC_OS_NAME}"
 
   if [[ ${BASHMATIC_OS} == darwin ]]; then
     command -v brew>/dev/null || brew.install

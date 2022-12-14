@@ -6,7 +6,7 @@ source "${BASHMATIC_HOME}/lib/db.sh"
 
 function db.commands-list() {
   h5 "Available Commands"
-  source "${BASHMATIC_HOME}/lib/util.sh"
+  source "${BASHMATIC_LIB}/util.sh"
   db.refresh.actions
   printf "${bldgrn}"
   array.to.bullet-list "${db_actions[@]}" | sed 's/^/     /g'
