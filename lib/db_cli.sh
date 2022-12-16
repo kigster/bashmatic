@@ -96,8 +96,8 @@ function db.examples() {
 
 export flag_quiet=0
 export flag_verbose=0
-export flag_filter_active
-export flag_width
+export flag_filter_active="idle"
+export flag_width="$(output.screen-width.actual)"
 export action=
 
 function db.main() {

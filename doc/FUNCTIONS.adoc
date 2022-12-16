@@ -1345,7 +1345,7 @@ bashmatic.load-at-login ()
 bashmatic.reload () 
 { 
     __bashmatic.set-is-not-loaded
-    source "${BASHMATIC_HOME}/.envrc.no-debug"
+    [[ -f "${BASHMATIC_HOME}/.envrc.no-debug" ]] && source "${BASHMATIC_HOME}/.envrc.no-debug"
     source "${BASHMATIC_INIT}" --reload
 }
 
@@ -3489,6 +3489,24 @@ db.main ()
                 h3 "Valid actions are:" "${db_actions[@]}"
                 exit 0
             ;
+            -f | --filter)
+                shift
+                [[ "$1" =~ "%" ]] && { 
+                    error "The filter expression is automatically wrapped in '%<expression>%'," "so — no need to add '%' yourself."
+                    exit 1
+                }
+                export flag_filter_active="$1"
+                shift
+            ;
+            -w | --width)
+                shift
+                is.numeric "$1" || { 
+                    error "Argument to -w | --width must be a number, dear."
+                    exit 1
+                }
+                export flag_width="$1"
+                shift
+            ;
             [a-z]*)
                 [[ -n ${action} ]] && break
                 export action="$1"
@@ -3542,7 +3560,7 @@ db.refresh.actions ()
 db.usage () 
 { 
     local config="~/$(basename $(dirname "${bashmatic_db_config}"))/$(basename "${bashmatic_db_config}")"
-    usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "-C / --commands" "List all sub-commands to the db script" "-c / --connectons" "List all available database connections" "-e / --examples" "Show script usage examples" "-h / --help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
+    usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "-w / --width WIDTH" "Use specified screen width instead of automatic." "-f / --filter REGEX" "Defaults to 'idle', but can be set" " " "to remove some active queries from the view." "-C / --commands" "List all sub-commands to the db script" "-c / --connections" "List all available database connections" "-e / --examples" "Show script usage examples" "-h / --help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
 }
 
 ----

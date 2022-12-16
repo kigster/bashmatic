@@ -1,12 +1,20 @@
 # Changelog
 
-## [v3.1.1](https://github.com/kigster/bashmatic/tree/v3.1.1) (2022-12-08)
+## [v3.1.3](https://github.com/kigster/bashmatic/tree/v3.1.3) (2022-12-16)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/completion...v3.1.1)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/completion...v3.1.3)
 
 ## [completion](https://github.com/kigster/bashmatic/tree/completion) (2022-12-08)
 
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.0...completion)
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.2...completion)
+
+## [v3.1.2](https://github.com/kigster/bashmatic/tree/v3.1.2) (2022-12-08)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.1...v3.1.2)
+
+## [v3.1.1](https://github.com/kigster/bashmatic/tree/v3.1.1) (2022-12-08)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.0...v3.1.1)
 
 **Merged pull requests:**
 

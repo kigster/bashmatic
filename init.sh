@@ -19,7 +19,7 @@ export BASHMATIC_DIR="$(cd $(dirname ${BASH_SOURCE[0]}); pwd -P)"
 export BASHMATIC_HOME="${BASHMATIC_DIR}"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
-[[ -z $(type system.uname 2>/dev/null) && -f "${BASHMATIC_LIB}/util.sh" ]] && source "${BASHMATIC_LIB}/util.sh" 
+[[ -z $(type system.uname 2>/dev/null) && -f "${BASHMATIC_LIB}/util.sh" ]] && source "${BASHMATIC_LIB}/util.sh"
 
 export BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 export GLOBAL="declare "
@@ -306,7 +306,7 @@ function __bashmatic.init-core() {
     warning "Please for the love of science and binary upgrade your BASH already..."
     is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 ${BASHMATIC_LIB}/*.sh | wc -l | tr -d '\n ') sources to load..."
   else
-    local -a sources=( $(find /Users/kig/.bashmatic/lib -name '*.sh') )
+    local -a sources=( $(find ${BASHMATIC_HOME}/lib -name '*.sh') )
     is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok
   fi
 }

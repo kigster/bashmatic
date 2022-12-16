@@ -5,6 +5,7 @@ load test_helper
 source lib/util.sh
 source lib/user.sh
 source lib/is.sh
+source lib/output.sh
 source lib/db.sh
 source lib/db_cli.sh
 source lib/db_rails.sh

@@ -1072,7 +1072,7 @@ db.psql.connect.db-settings-toml primary > primary.ini
 ### `db.actions.run-multiple()`
 
 Executes multiple commands by passing them to psql each with -c flag. This
-allows, for instance, setting session values, and running commands such as VACUUM which 
+allows, for instance, setting session values, and running commands such as VACUUM which
 can not run within an implicit transaction started when joining multiple statements with ";"
 
 #### Example
