@@ -16,10 +16,10 @@ source lib/user.sh
 }
 
 @test 'date.now.with-time.and.zone()' {
-  t=$(date.now.with-time.and.zone)
-  zone=$(date '+%z')
+  local t=$(date.now.with-time.and.zone)
+  local zone="$(date '+%z')"
   set -e
-  [[ "$t" =~ ${zone} ]]
+  [[ ${t} =~ ${zone}$ ]]
 }
 
 @test "time.with-duration()" {
