@@ -27,6 +27,9 @@
 \echo 'Type :locks              — to see all current database locks'
 \set locks 'select pid,client_addr,client_port,wait_event_type,wait_event,state, to_char(now()::time - query_start::time, ''HH24:MI:SS'') as duration, substring(regexp_replace(substring(query, 0, 200), E''[\\n\\r\\\\s]+'', '' '', ''g'' ), 0, 120) as sql from pg_stat_activity where state != ''idle'' and ( wait_event is not null or wait_event_type is not null) order by duration desc;'
 
+\echo 'Type :locks_detail       - to see all current database locks with detail'
+\set locks_detail 'WITH RECURSIVE activity AS (SELECT pg_blocking_pids(a.pid) blocked_by, a.*, (CASE WHEN (SELECT 1 FROM pg_locks AS l WHERE locktype = ''advisory'' AND l.pid = a.pid) = 1 THEN TRUE ELSE FALSE END) AS has_advisory, age(clock_timestamp(), a.xact_start)::interval(0) AS tx_age, age(clock_timestamp(), a.state_change)::interval(0) AS state_age  FROM pg_stat_activity AS a  WHERE state IS DISTINCT FROM ''idle'' ), blockers AS (SELECT array_agg(DISTINCT c ORDER BY c) AS pids  FROM (SELECT unnest(blocked_by) FROM activity) AS dt(c) ), tree AS (SELECT activity.*, 1 AS level, activity.pid AS top_blocker_pid, array[activity.pid] AS path, array[activity.pid]::int[] AS all_blockers_above  FROM activity, blockers  WHERE array[pid] <@ blockers.pids AND blocked_by = ''{}''::int[]  UNION ALL  SELECT activity.*, tree.level + 1 AS level, tree.top_blocker_pid, path || array[activity.pid] AS path, tree.all_blockers_above || array_agg(activity.pid) over () AS all_blockers_above  FROM activity, tree  WHERE NOT array[activity.pid] <@ tree.all_blockers_above AND activity.blocked_by <> ''{}''::int[] AND activity.blocked_by <@ tree.all_blockers_above ) SELECT pid, blocked_by, tx_age, state_age, backend_xid AS xid, backend_xmin AS xmin, replace(state, ''idle in transaction'', ''idletx'') AS state, client_addr, usename, wait_event_type || '':'' || wait_event AS wait, (SELECT COUNT(distinct t1.pid) FROM tree t1 WHERE array[tree.pid] <@ t1.path AND t1.pid <> tree.pid) AS blkd, has_advisory, format(''%s %s%s'', lpad(''['' || tree.pid::text || '']'', 7, '' ''), repeat(''.'', level - 1) || CASE WHEN level > 1 THEN '' '' END, left(query, 1000) ) AS query FROM tree ORDER BY top_blocker_pid, level, tree.pid;'
+
 \echo '——————————————————————————————————————————————————————————————————————————'
 
 \echo 'Type :dbage              — to see frozen transaction ID age by database'
@@ -40,14 +43,13 @@
 \echo '——————————————————————————————————————————————————————————————————————————'
 
 \echo 'Type :top20              — to see top 20 time-consuming queries (shortened)'
-\set top20 'select to_char(total_time / 1000.0, ''999,999,999'') total_secs,to_char(total_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g''), 0, 140) as sql from pg_stat_statements order by total_time desc limit 20;'
+\set top20 'select to_char(total_exec_time / 1000.0, ''999,999,999'') total_secs,to_char(total_exec_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g''), 0, 140) as sql from pg_stat_statements order by total_exec_time desc limit 20;'
 
 \echo 'Type :top LIMIT;         — to see top LIMIT time-consuming queries (shortened)'
-\set top   'select to_char(total_time / 1000.0, ''999,999,999'') total_secs,to_char(total_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g''), 0, 140) as sql from pg_stat_statements order by total_time desc limit '
+\set top   'select to_char(total_exec_time / 1000.0, ''999,999,999'') total_secs,to_char(total_exec_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g''), 0, 140) as sql from pg_stat_statements order by total_exec_time desc limit '
 
 \echo 'Type :top30full          — to see top 30 time-consuming queries (full)'
-\set top30full 'select to_char(total_time / 1000.0, ''999,999,999'') total_secs, to_char(total_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g'' ), 0, 1000) as sql from pg_stat_statements order by total_time desc limit 30;'
-
+\set top30full 'select to_char(total_exec_time / 1000.0, ''999,999,999'') total_secs, to_char(total_exec_time / calls / 1000, ''999,999.99'') as average_secs, calls, rows, substring(regexp_replace(query, E''[\\n\\r\\\\s]+'', '' '', ''g'' ), 0, 1000) as sql from pg_stat_statements order by total_exec_time desc limit 30;'
 \echo '——————————————————————————————————————————————————————————————————————————'
 
 \echo 'Type :st1                — to set statement timeout to 1 hour'
@@ -81,7 +83,7 @@
 
 \echo '——————————————————————————————————————————————————————————————————————————'
 \echo 'Table and Index Stats'
- 
+
 \echo 'Type :tt ''TABLE'';        — Run ":tt ''TABLE'';" to see table stats from pg_stat_user_tables'
 \set tt 'select * from pg_stat_user_tables where relname = '
 

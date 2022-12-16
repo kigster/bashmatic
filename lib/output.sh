@@ -218,11 +218,11 @@ function .output.screen-width() {
     printf -- "%d" $(output.screen-width.actual)
     return 0
   fi
-  
+
   if output.is-pipe || output.is-redirect || output.is-ssh; then
     printf -- "%d" 120
     return 0
-  fi 
+  fi
 
   if [[ -n ${CI} ]]; then
     printf -- "%d" 120

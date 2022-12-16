@@ -8,7 +8,6 @@
 #    machine without the caching enabled.
 #
 # @see https://github.com/kigster/bashmatic#4-installing-bashmatic
-
 if [[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
   [[ -n $BASH_VERSION && $0 != "${BASH_SOURCE[0]}" ]] ; then
   export __run_as_script=0 2>/dev/null

@@ -54,7 +54,7 @@ function __bashmatic.set-is-not-loaded() {
 function bashmatic.reload() {
   __bashmatic.set-is-not-loaded
   # shellcheck source=./../.envrc.no-debug
-  source "${BASHMATIC_HOME}/.envrc.no-debug"
+  [[ -f "${BASHMATIC_HOME}/.envrc.no-debug" ]] && source "${BASHMATIC_HOME}/.envrc.no-debug"
   # shellcheck source=./../init.sh
   source "${BASHMATIC_INIT}" --reload
 }
