@@ -14,7 +14,7 @@ source lib/user.sh
   time.a-command 'sleep 1.2' | grep -E -q "0 minutes 1.[0-9]{3} seconds"
 }
 
-@test 'time.now.with-time.and.zone()' {
+@test 'date.now.with-time.and.zone()' {
   set -e
   t1=$(date.now.with-time.and.zone)
   zone=$(date '+%z')
