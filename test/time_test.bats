@@ -16,10 +16,14 @@ source lib/user.sh
 }
 
 @test 'date.now.with-time.and.zone()' {
-  local t=$(date.now.with-time.and.zone)
-  local zone="$(date '+%z')"
-  set -e
-  [[ ${t} =~ ${zone} ]]
+  if [[ -n ${CI} ]] ; then
+    echo "Skipping this test on CI...."
+  else
+    local t=$(date.now.with-time.and.zone)
+    local zone="$(date '+%z')"
+    set -e
+    [[ ${t} =~ ${zone} ]]
+  fi
 }
 
 @test "time.with-duration()" {

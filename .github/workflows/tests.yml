@@ -36,4 +36,5 @@ jobs:
       env:
         TERM: xterm-256color
         MIN_WIDTH: 80
+        CI: true
       run: bin/specs
