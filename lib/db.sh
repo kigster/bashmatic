@@ -4,7 +4,7 @@
 #===============================================================================
 
 function is-verbose() {
-  ((flag_verbose))  
+  ((flag_verbose))
 }
 
 function is-quiet() {
@@ -19,7 +19,7 @@ unset bashmatic_db_password
 unset bashmatic_db_host
 unset bashmatic_db_database
 
-db.psql.args-data-only() { 
+db.psql.args-data-only() {
   printf -- "%s" "-t --no-align --pset footer -q -X --tuples-only"
 }
 
@@ -30,7 +30,7 @@ db.config.init() {
 db.config.init-max-query-len() {
   local w=$(screen.width.actual)
   local max_query_len
-  
+
   max_query_len=$(( w - 20 ))
   max_query_len=$(array.force-range "${max_query_len}" 80 1000)
 
@@ -139,7 +139,7 @@ db.psql.report-error() {
 
 print-cli() {
   is-verbose || return
-  notice "Running command line:" 
+  notice "Running command line:"
   cursor.up 2
   notice "${itablk}$*"
 }
@@ -459,9 +459,9 @@ db.actions.run() {
 db.actions.set-max-query-len() {
   db.config.set-max-query-len "$@"
 }
-# @description 
+# @description
 #    Executes multiple commands by passing them to psql each with -c flag. This
-#    allows, for instance, setting session values, and running commands such as VACUUM which 
+#    allows, for instance, setting session values, and running commands such as VACUUM which
 #    can not run within an implicit transaction started when joining multiple statements with ";"
 #
 # @example

@@ -1072,7 +1072,7 @@ db.psql.connect.db-settings-toml primary > primary.ini
 ### `db.actions.run-multiple()`
 
 Executes multiple commands by passing them to psql each with -c flag. This
-allows, for instance, setting session values, and running commands such as VACUUM which 
+allows, for instance, setting session values, and running commands such as VACUUM which
 can not run within an implicit transaction started when joining multiple statements with ";"
 
 #### Example
@@ -1833,10 +1833,14 @@ Miscellaneous utilities.
 
 
 
+* [system.uname()](#systemuname)
 * [util.random-number()](#utilrandom-number)
 * [util.generate-password()](#utilgenerate-password)
 * [util.random-string.of-length()](#utilrandom-stringof-length)
-* [system.uname()](#systemuname)
+
+### `system.uname()`
+
+Finds the exact absolute path of the `uname` utility on a unix file system.
 
 ### `util.random-number()`
 
@@ -1850,10 +1854,6 @@ Generates a password of a given length
 
 Generates a random string of a given length
 
-### `system.uname()`
-
-Finds the exact absolute path of the `uname` utility on a unix file system.
-
 
 
 ---
@@ -1863,7 +1863,12 @@ Finds the exact absolute path of the `uname` utility on a unix file system.
 
 
 
+* [run.print-variables()](#runprint-variables)
 * [run.inspect-vars()](#runinspect-vars)
+
+### `run.print-variables()`
+
+Adds a variable to the list of the variables to be obfuscated
 
 ### `run.inspect-vars()`
 

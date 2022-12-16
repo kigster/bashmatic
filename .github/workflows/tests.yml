@@ -24,8 +24,17 @@ jobs:
       uses: ruby/setup-ruby@359bebbc29cbe6c87da6bc9ea3bc930432750108
       with:
         ruby-version: '3.1'
+    - name: Source
+      env:
+        TERM: xterm-256color
+        MIN_WIDTH: 80
+      run: |
+        source init.sh;
+        printf "date.now.with-time.and.zone: [%s]\n" "$(date.now.with-time.and.zone)";
+        printf "                  date zone: [%s]\n" "$(date '+%z')";
     - name: Test
       env:
         TERM: xterm-256color
         MIN_WIDTH: 80
+        CI: true
       run: bin/specs

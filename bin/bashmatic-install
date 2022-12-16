@@ -303,7 +303,6 @@ function .install.darwin-requirements() {
 # Ensure OS-specific reqquirements are satisfied
 #——————————————————————————————————————————————————————————————————————————————————————
 function .install.os-requirements() {
-  export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
   case ${BASHMATIC_OS} in
   darwin)

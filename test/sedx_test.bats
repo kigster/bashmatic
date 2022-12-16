@@ -15,7 +15,7 @@ config-moo() {
 }
 
 @test "sedx() with gnu-sed installed" {
-  export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export BASHMATIC_OS="${BASHMATIC_OS_NAME}"
   if [[ ${BASHMATIC_OS} == "darwin" ]]; then
     if [[ -n $(which brew) && -z $(which gsed) ]]; then
       brew install --force --quiet gnu-sed 2>&1 | cat >/dev/null
@@ -28,7 +28,7 @@ config-moo() {
 }
 
 @test "sedx() without gnu-sed installed" {
-  export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  export BASHMATIC_OS="${BASHMATIC_OS_NAME}"
   if [[ ${BASHMATIC_OS} == "darwin" ]]; then
     if [[ -n $(which brew) ]]; then
       if [[ -n "${INTEGRATION_TEST}" ]]; then

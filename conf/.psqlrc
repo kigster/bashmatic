@@ -1,7 +1,8 @@
 -- vim: set filetsype=sql
 -- don't output commands as we run them
 -- set how to output numbers (this turns on thousdand separators)
-\set PSQLRC_VERSION '(v0.1.1)'
+\set PSQLRC_VERSION  '1.0.1'
+\set PSQLRC_RELEASED 'Thu Dec 15 18:36:30 PST 2022'
 \set QUIET 1
 \encoding unicode
 \timing 0
@@ -22,8 +23,8 @@
 -- Verbose error reports.
 \set VERBOSITY verbose
 \echo '┌───────────────────────────────────────────────────────────────────────────┐'
-\echo '│ PostgreSQL PSQL Prompt & Shortcuts ' :PSQLRC_VERSION '                             │'
-\echo '│ © 2016-2022 All Rights Reserved @kigster, MIT License 🌎  https://kig.re/ │'
+\echo '│ PostgreSQL PSQL Macros, Version v' :PSQLRC_VERSION ' (' :PSQLRC_RELEASED ') │'
+\echo '│ © 2015-2023 All Rights Reserved @kigster, MIT License 🌎  https://kig.re/  │'
 \echo '│                                                                           │'
 \echo '│ To switch between wide and narrow result views, type \\x<ENTER>            │'
 \echo '└───────────────────────────────────────────────────────────────────────────┘'
@@ -31,7 +32,9 @@
 \pset border 0
 \pset tuples_only 1
 SELECT '    PostgreSQL Server Version: ' || regexp_replace(version(), 'PostgreSQL ([\d.]+) .*', '\1', 'g') as pg_version;
-\echo '    To load and view macros, type :macros<ENTER> (or :m for short)'
+\echo '┌───────────────────────────────────────────────────────────────────────────┐'
+\echo '│ 💡   To load and view macros, type :macros<ENTER> (or :m for short)        │'
+\echo '└───────────────────────────────────────────────────────────────────────────┘'
 \echo
 
 \pset border 3
@@ -49,5 +52,3 @@ SET search_path TO public,extensions;
 -- New Prompt, more compact, and works with back editing using readlines
 \set PROMPT1 '%[%033[0;30;33m%]%[%033[0;43;30m%] %`date "+%H:%M:%S%p"`  %033[0;30;33m%]%033[0;43;37m%]%[%033[0;0;0m%]━%[%033[0;30;32m%]%033[0;42;30m%] %n@%M:%> %033[0;32m%%[%033[3;30;96m%]━%[%033[3;30;106m%]% %[%033[3;30;106m%]%/%x %033[0;96m%   %[%033[0m%]\n     ❯ '
 \set PROMPT2 '%[%033[0;30;33m%] ⤷ %l%[%033[0m% ❯ '
-\set PROMPT1 '%[%033[6;30;33m%]%[%033[0;43;30m%] %`date "+%H:%M:%S%p"`  %[%033[%6;30;33m%]%[%033[%0;0;0m%]━%[%033[%3;5;35m%]%[%033[5;32;34m%] %n@%M:%> %[%033[3;30;44m%]━━━%[%033[3;34;81m%]% %[%033[3;30;106m%] %/%x %[%033[%0m%]\n ❯ '
-

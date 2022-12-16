@@ -26,7 +26,7 @@ dir.with-file() {
       [[ -f "${_d}/${file}" ]] || {
         echo "No file ${file} was found in the path.">&2
         return 1
-      } 
+      }
       echo "${_d}"
       exit 0
     fi
@@ -91,7 +91,7 @@ dir.rsync-to() {
 
   run.ui.ask "Do you want do delete files in ${to} that don't match files in ${from}?"
 
-  rsync -avht "${from}" "${to}"  
+  rsync -avht "${from}" "${to}"
 }
 
 

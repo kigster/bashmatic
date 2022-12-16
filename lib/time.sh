@@ -54,12 +54,12 @@ function date.now.with-time() {
   time.now.with-ms
 }
 
-function date.now.with-time.and.zone() { 
+function date.now.with-time.and.zone() {
   (
     date '+%F '
     time.now.with-ms
     date '+ %z'
-  ) | tr -d '\n'; 
+  ) | tr -d '\n';
 }
 
 # @description Starts a time for a given name space
@@ -72,14 +72,22 @@ function date.now.with-time.and.zone() {
 #       time.with-duration.clear moofie
 function time.with-duration.start() {
   local name="$1"
-  [[ -z ${name} ]] && name="_default"
+  if [[ -z ${name} ]]; then
+    name="_default"
+  else
+    name="${name/ /_}"
+  fi
   eval "export __bashmatic_with_duration_ms${name}=$(millis)"
 }
 
 function time.with-duration.end() {
   local name="$1"
   shift
-  [[ -z ${name} ]] && name="_default"
+  if [[ -z ${name} ]]; then
+    name="_default"
+  else
+    name="${name/ /_}"
+  fi
   local var="__bashmatic_with_duration_ms${name}"
   local started=$(.subst ${var})
   [[ -z ${started} ]] && started=${!var}

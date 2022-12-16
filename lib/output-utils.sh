@@ -54,7 +54,7 @@ function warn() {
   printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
 }
 
-function warning() { 
+function warning() {
   local first="$1"
   shift
   box.black-on-yellow "${header} ${clr}${txtblk}${bakylw} — $first" "$@" >&2

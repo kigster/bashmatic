@@ -1345,7 +1345,7 @@ bashmatic.load-at-login ()
 bashmatic.reload () 
 { 
     __bashmatic.set-is-not-loaded
-    source "${BASHMATIC_HOME}/.envrc.no-debug"
+    [[ -f "${BASHMATIC_HOME}/.envrc.no-debug" ]] && source "${BASHMATIC_HOME}/.envrc.no-debug"
     source "${BASHMATIC_INIT}" --reload
 }
 
@@ -3405,7 +3405,7 @@ db.cli-setup ()
 db.commands-list () 
 { 
     h5 "Available Commands"
-    source "${BASHMATIC_HOME}/lib/util.sh"
+    source "${BASHMATIC_LIB}/util.sh"
     db.refresh.actions
     printf "${bldgrn}"
     array.to.bullet-list "${db_actions[@]}" | sed 's/^/     /g'
@@ -3489,6 +3489,24 @@ db.main ()
                 h3 "Valid actions are:" "${db_actions[@]}"
                 exit 0
             ;
+            -f | --filter)
+                shift
+                [[ "$1" =~ "%" ]] && { 
+                    error "The filter expression is automatically wrapped in '%<expression>%'," "so — no need to add '%' yourself."
+                    exit 1
+                }
+                export flag_filter_active="$1"
+                shift
+            ;
+            -w | --width)
+                shift
+                is.numeric "$1" || { 
+                    error "Argument to -w | --width must be a number, dear."
+                    exit 1
+                }
+                export flag_width="$1"
+                shift
+            ;
             [a-z]*)
                 [[ -n ${action} ]] && break
                 export action="$1"
@@ -3542,7 +3560,7 @@ db.refresh.actions ()
 db.usage () 
 { 
     local config="~/$(basename $(dirname "${bashmatic_db_config}"))/$(basename "${bashmatic_db_config}")"
-    usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "-C / --commands" "List all sub-commands to the db script" "-c / --connectons" "List all available database connections" "-e / --examples" "Show script usage examples" "-h / --help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
+    usage-box "db [global flags] command [command flags] connection [-- psql flags] © Performs one of many supported actions against PostgreSQL" "-q / --quiet" "Suppress the colorful header messages" "-v / --verbose" "Show additional output" "-n / --dry-run" "Only print commands, but do not run them" "├GLOBAL FLAGS:" " " "-w / --width WIDTH" "Use specified screen width instead of automatic." "-f / --filter REGEX" "Defaults to 'idle', but can be set" " " "to remove some active queries from the view." "-C / --commands" "List all sub-commands to the db script" "-c / --connections" "List all available database connections" "-e / --examples" "Show script usage examples" "-h / --help" "Show this help screen" " " " " "├SUMMARY:" " " " " "This tool uses a list of database connections defined in the" " " "YAML file that must be installed at: ${bldylw}${config}" " " " "
 }
 
 ----
@@ -7672,15 +7690,19 @@ output.reset-min-max-width ()
 output.screen-height.actual () 
 { 
     local h
-    util.os
-    if [[ ${BASHMATIC_OS} =~ darwin ]]; then
-        h="$(.output.stty.field rows)"
-    else
-        if [[ ${BASHMATIC_OS} =~ linux ]]; then
+    case ${BASHMATIC_OS_NAME} in 
+        darwin)
+            h="$(.output.stty.field rows)"
+        ;
+        linux)
             h="$(stty -a 2> /dev/null | grep rows | awk '{print $5}' | sedx 's/;//g')"
-        fi
-    fi
-    printf -- "%d" "$h"
+        ;
+        *)
+            error "Unsupported OS: ${BASHMATIC_OS_NAME}"
+            return 1
+        ;
+    esac
+    printf -- "%d" "${h}"
 }
 
 ----
@@ -7692,14 +7714,18 @@ output.screen-height.actual ()
 output.screen-width.actual () 
 { 
     local w
-    util.os
-    if [[ ${BASHMATIC_OS} =~ darwin ]]; then
-        w="$(.output.stty.field columns)"
-    else
-        if [[ ${BASHMATIC_OS} =~ linux ]]; then
+    case "${BASHMATIC_OS_NAME}" in 
+        darwin)
+            w="$(.output.stty.field columns)"
+        ;
+        linux)
             w="$(stty -a 2> /dev/null | grep columns | awk '{print $7}' | sedx 's/;//g')"
-        fi
-    fi
+        ;
+        *)
+            error "Unsupported OS: ${BASHMATIC_OS_NAME}"
+            return 1
+        ;
+    esac
     printf -- "%d" "${w}"
 }
 
@@ -7864,7 +7890,7 @@ ui.closer.kind-of-ok ()
 ----
 ui.closer.kind-of-ok: () 
 { 
-    ui.closer.kind-of-ok $@
+    ui.closer.kind-of-ok "$@"
     echo
 }
 
@@ -7888,7 +7914,7 @@ ui.closer.not-ok ()
 ----
 ui.closer.not-ok: () 
 { 
-    ui.closer.not-ok $@
+    ui.closer.not-ok "$@"
     echo
 }
 
@@ -11364,6 +11390,23 @@ run ()
 
 ----
 
+==== `run.add-obfuscated-var`
+
+[source,bash]
+----
+run.add-obfuscated-var () 
+{ 
+    while true; do
+        local variable="$1"
+        shift
+        [[ -n ${variable} ]] || break
+        export OBFUSCATED_VARIABLES+=("${variable}")
+    done
+    export OBFUSCATED_VARIABLES=($(array.uniq "${OBFUSCATED_VARIABLES[@]}"))
+}
+
+----
+
 ==== `run.config.detail-is-enabled`
 
 [source,bash]
@@ -11410,6 +11453,26 @@ run.dry-run-prefix ()
 
 ----
 
+==== `run.filter-out-sensitive-vars`
+
+[source,bash]
+----
+run.filter-out-sensitive-vars () 
+{ 
+    local a="${1:-""}"
+    if [[ "$a" == "-" ]]; then
+        read -r a
+    else
+        if [[ -f "${a}" ]]; then
+            grep -v -E "${SENSITIVE_VARS_REGEX}" "${a}"
+        else
+            echo | grep -v -E "${SENSITIVE_VARS_REGEX}"
+        fi
+    fi
+}
+
+----
+
 ==== `run.inspect`
 
 [source,bash]
@@ -11443,69 +11506,91 @@ run.inspect-variable ()
     local var_name=${1}
     local var_value=${!var_name}
     local value=""
-    local print_value=
-    local max_len=120
-    local avail_len=$(($(screen.width) - 45))
-    local lcase_var_name="$(echo "${var_name}" | tr 'A-Z' 'a-z')"
-    local print_value=1
-    local color="${bldblu}"
-    local value_off=" ✘   "
-    local value_check="✔︎"
+    local print_value
+    local obfuscated_value
+    local max_len=100
+    local avail_len=$(($(screen.width.actual) - 45))
+    local lcase_var_name="$(echo "${var_name}" | tr '[:upper:]' '[:lower:]')"
+    print_value=1
+    local print_value
+    array.includes "${var_name}" "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${var_name}")
+    array.includes "${lcase_var_name}" "${OBFUSCATED_VARIABLES[@]}" && obfuscated_value=$(run.obfuscate-string-value "${lcase_var_name}")
+    local color="${txtblk}${bakpur}"
+    local value_off=" ✘ "
+    local value_check=" ✔︎  "
+    local value_color=""
+    [[ -n ${obfuscated_value} ]] && { 
+        obfuscated_value="<obfuscated-value-${obfuscated_value}>"
+        value_color="${italic}${txtred}"
+    }
     if [[ -n "${var_value}" ]]; then
-        if [[ ${lcase_var_name} =~ 'exit' ]]; then
-            if [[ ${var_value} -eq 0 ]]; then
-                value=${value_check}
-                color="${bldgrn}"
-            else
-                print_value=1
-                value=${var_value}
-                color="${bldred}"
-            fi
+        if [[ ${var_name} =~ ${SENSITIVE_VARS_REGEX} || ${var_name} =~ ${SENSITIVE_VARS_REGEX^^} ]]; then
+            var_value="$(run.obfuscate-string-value ${var_name}) [obfuscated]"
+            color="${itawht}${italic}${bakcyn}"
         else
-            if [[ "${var_value}" == "${True}" || "${var_value}" == "1" ]]; then
-                value="${value_check}"
-                color="${bldgrn}"
+            if [[ ${lcase_var_name} =~ 'exit' ]]; then
+                if [[ ${var_value} -eq 0 ]]; then
+                    var_value="${value_check} [zero]"
+                    color="${bakgrn}"
+                else
+                    print_value=1
+                    var_value=${var_value}
+                    color="${bakred}"
+                    avail_len=$((avail_len + 5))
+                fi
+                avail_len=$((avail_len + 5))
             else
-                if [[ "${var_value}" == "${False}" || "${var_value}" == "0" ]]; then
-                    value="${value_off}"
-                    color="${bldred}"
+                if var.is-truthy "${var_value}"; then
+                    var_value="${value_check} [true]"
+                    color="${bakgrn}"
+                    avail_len=$((avail_len + 5))
+                else
+                    if var.is-falsy "${var_value}"; then
+                        var_value="${value_off} [false]"
+                        color="${bakred}"
+                        avail_len=$((avail_len + 2))
+                    fi
                 fi
             fi
         fi
     else
-        value="${value_off}"
-        color="${bldred}"
+        var_value=" ─  [empty]"
+        color="${bakpur}"
+        avail_len=$((avail_len + 2))
     fi
-    if [[ ${LibRun__Inspect__SkipFalseOrBlank} -eq ${True} && "${value}" == "${value_off}" ]]; then
-        return 0
-    fi
-    printf -- "    ${bldylw}%-35s ${txtblk}${color} " "${var_name}"
+    printf -- "  ❯${txtylw} %-40s ${txtblk}${color} " "${var_name}"
     [[ ${avail_len} -gt ${max_len} ]] && avail_len=${max_len}
     local dot_count="$(echo "${var_value}" | sedx -E 's/[^.]//g' | tr -d '\n' | wc -c)"
     if [[ "${print_value}" -eq 1 ]]; then
-        if [[ -n "${value}" ]]; then
-            printf -- "%*.*s" ${avail_len} ${avail_len} "${value}"
+        if [[ -n ${obfuscated_value} ]]; then
+            print_value="${obfuscated_value}"
+            var_value="${obfuscated_value}"
+            value="${obfuscated_value}"
+        fi
+        if [[ -n "${value}" ]] && ! is.numeric "${var_value}"; then
+            echo "XXX"
         else
-            if $(is.numeric "${var_value}"); then
-                avail_len=$((avail_len - 5))
+            if is.numeric "${var_value}"; then
+                avail_len=$((avail_len))
                 if [[ ${dot_count} -gt 1 || ${dot_count} -gt 1 ]]; then
-                    printf -- "%*s" "${avail_len}" "${var_value}"
+                    echo "XXX"
+                    printf -- "${value_color}[%-*.*s]" "${avail_len}" "${avail_len}" "${var_value}"
                 else
-                    if [[ "${var_value}" =~ '.' ]]; then
-                        printf -- "%*.2f" "${avail_len}" "${var_value}"
+                    if [[ "${var_value}" =~ \. ]]; then
+                        printf -- "${value_color}%-*.2f" "$((avail_len))" "${var_value}"
                     else
-                        printf -- "%*d" "${avail_len}" "${var_value}"
+                        printf -- "${value_color}%-*d" "$((avail_len))" "${var_value}"
                     fi
                 fi
             else
-                avail_len=$((avail_len - 5))
-                printf -- "%*.*s" "${avail_len}" "${avail_len}" "${var_value}"
+                printf -- "${value_color}%-*.*s" "${avail_len}" "${avail_len}" "${var_value}"
             fi
         fi
     else
-        printf -- "%*.*s" "${avail_len}" "${avail_len}" "${value}"
+        avail_len=$((avail_len))
+        printf -- "${value_color}%-*.*s" "${avail_len}" "${avail_len}" "${var_value}"
     fi
-    echo
+    printf "${clr}\n"
 }
 
 ----
@@ -11518,7 +11603,8 @@ run.inspect-variables ()
 { 
     local title=${1}
     shift
-    hl.subtle "${title}"
+    output.constrain-screen-width 100
+    h3bg "${title}"
     for var in $@
     do
         run.inspect-variable "${var}"
@@ -11535,7 +11621,7 @@ run.inspect-variables-that-are ()
 { 
     local pattern_type="${1}"
     local pattern="${2}"
-    run.inspect-variables "VARIABLES $(echo "${pattern_type}" | tr 'a-z' 'A-Z') ${pattern}" "$(run.variables-"${pattern_type}" "${pattern}" | tr '\n' ' ')"
+    run.inspect-variables "VARIABLES $(echo "${pattern_type}" | tr '[:lower:]' '[:upper:]') ${pattern}" "$(run.variables-"${pattern_type}" "${pattern}" | tr '\n' ' ')"
 }
 
 ----
@@ -11563,6 +11649,20 @@ run.inspect.set-skip-false-or-blank ()
     local value="${1}"
     [[ -n "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${value}
     [[ -z "${value}" ]] && export LibRun__Inspect__SkipFalseOrBlank=${True}
+}
+
+----
+
+==== `run.obfuscate-string-value`
+
+[source,bash]
+----
+run.obfuscate-string-value () 
+{ 
+    local value="$1"
+    local len="30"
+    local sha=$(echo "${value}" | sha512sum | cut -d ' ' -f 1)
+    printf "%s" "${sha:0:${len}}"
 }
 
 ----
@@ -11628,7 +11728,7 @@ run.print-command ()
 ----
 run.print-command-full-screen () 
 { 
-    run.print-long-command "$1" $(screen.width)
+    run.print-long-command "$1" "$(screen.width)"
 }
 
 ----
@@ -11655,6 +11755,20 @@ run.print-long-command ()
 
 ----
 
+==== `run.print-obfuscated-vars`
+
+[source,bash]
+----
+run.print-obfuscated-vars () 
+{ 
+    for var in "${OBFUSCATED_VARIABLES[@]}"
+    do
+        run.inspect-variable "${var}"
+    done
+}
+
+----
+
 ==== `run.print-variable`
 
 [source,bash]
@@ -11672,13 +11786,24 @@ run.print-variable ()
 ----
 run.print-variables () 
 { 
-    local title=${1}
+    local title="${1}"
     shift
     hl.yellow "${title}"
     for var in $@
     do
         run.print-variable "${var}"
     done
+}
+
+----
+
+==== `run.register-obfuscated-vars`
+
+[source,bash]
+----
+run.register-obfuscated-vars () 
+{ 
+    run.add-obfuscated-var password api_key secret token
 }
 
 ----
@@ -11710,7 +11835,7 @@ run.ui.press-any-key ()
 run.variables-ending-with () 
 { 
     local suffix="${1}"
-    env | grep -E -e ".*${suffix}=.*\$" | grep '=' | sedx 's/=.*//g' | sort
+    env | grep -E -e ".*${suffix}=.*\$" | grep -v -E "${SENSITIVE_VARS_REGEX}" | grep '=' | sedx 's/=.*//g' | sort
 }
 
 ----
@@ -11722,7 +11847,7 @@ run.variables-ending-with ()
 run.variables-starting-with () 
 { 
     local prefix="${1}"
-    env | grep -E -e "^${prefix}" | grep '=' | sedx 's/=.*//g' | sort
+    env | grep -E -e "^${prefix}" | grep '=' | sedx 's/=.*//g' | grep -v -E "${SENSITIVE_VARS_REGEX}" | sort
 }
 
 ----
@@ -11752,11 +11877,11 @@ run.with.minimum-duration ()
     run "${command}"
     local result=$?
     local now=$(millis)
-    local duration=$(((now - started) / 1000))
+    local duration=$(ruby -e "puts (${now} - ${started})/1000.0")
     if [[ ${result} -eq 0 && ${duration} -lt ${min_duration} ]]; then
         local cmd="$(echo "${command}" | sedx 's/\"//g')"
         error "An operation finished too quickly. The threshold was set to ${bldylw}${min_duration} sec." "The command took ${bldylw}${duration}${txtred} secs." "${bldylw}${cmd}${txtred}"
-        ((${BASH_IN_SUBSHELL})) && exit 1 || return 1
+        ((BASH_IN_SUBSHELL)) && exit 1 || return 1
     else
         if [[ ${duration} -gt ${min_duration} ]]; then
             info "minimum duration operation ran in ${duration} seconds."
@@ -11785,6 +11910,30 @@ run.with.ruby-bundle ()
 run.with.ruby-bundle-and-output () 
 { 
     .run.bundle.exec.with-output "$@"
+}
+
+----
+
+==== `var.is-falsy`
+
+[source,bash]
+----
+var.is-falsy () 
+{ 
+    local value="${1}"
+    [[ -z "${value}" || "${value}" == "${False}" || "${value}" == "0" || ${value} == "false" ]]
+}
+
+----
+
+==== `var.is-truthy`
+
+[source,bash]
+----
+var.is-truthy () 
+{ 
+    local value="${1}"
+    [[ "${value}" == "${True}" || "${value}" == "1" || ${value} == "true" ]]
 }
 
 ----
@@ -12846,18 +12995,6 @@ text.ord ()
 
 === Module `time`
 
-==== `date.now.humanized`
-
-[source,bash]
-----
-date.now.humanized () 
-{ 
-    util.os
-    gdate '+%d %b %Y | %T.%3N %P'
-}
-
-----
-
 ==== `date.now.with-time`
 
 [source,bash]
@@ -12866,6 +13003,19 @@ date.now.with-time ()
 { 
     date '+%F ' | tr -d '\n'
     time.now.with-ms
+}
+
+----
+
+==== `date.now.with-time.and.zone`
+
+[source,bash]
+----
+date.now.with-time.and.zone () 
+{ 
+    ( date '+%F '
+    time.now.with-ms
+    date '+ %z' ) | tr -d '\n'
 }
 
 ----
@@ -13117,7 +13267,11 @@ time.with-duration.end ()
 { 
     local name="$1"
     shift
-    [[ -z ${name} ]] && name="_default"
+    if [[ -z ${name} ]]; then
+        name="_default"
+    else
+        name="${name/ /_}"
+    fi
     local var="__bashmatic_with_duration_ms${name}"
     local started=$(.subst ${var})
     [[ -z ${started} ]] && started=${!var}
@@ -13140,7 +13294,11 @@ time.with-duration.end ()
 time.with-duration.start () 
 { 
     local name="$1"
-    [[ -z ${name} ]] && name="_default"
+    if [[ -z ${name} ]]; then
+        name="_default"
+    else
+        name="${name/ /_}"
+    fi
     eval "export __bashmatic_with_duration_ms${name}=$(millis)"
 }
 
@@ -13857,6 +14015,20 @@ pause.short ()
 
 ----
 
+==== `system.save-os-name`
+
+[source,bash]
+----
+system.save-os-name () 
+{ 
+    local _os=""
+    __os="$($(system.uname) -s | tr '[:upper:]' '[:lower:]' | tr -d '\n')"
+    [[ -z "${BASHMATIC_OS_NAME}" ]] && export BASHMATIC_OS_NAME="${__os}" > /dev/null 2>&1
+    export BASHMASTIC_OS="${BASHMATIC_OS_NAME}"
+}
+
+----
+
 ==== `system.uname`
 
 [source,bash]
@@ -13864,24 +14036,21 @@ pause.short ()
 system.uname () 
 { 
     command -v uname && return 0
-    if [[ -x /bin/uname ]]; then
-        printf -- "/bin/uname"
-    else
-        if [[ -x /usr/bin/uname ]]; then
-            printf -- "/usr/bin/uname"
-        else
-            if [[ -x /sbin/uname ]]; then
-                printf -- "/sbin/uname"
-            else
-                if [[ -x /usr/sbin/uname ]]; then
-                    printf -- "/usr/sbin/uname"
-                else
-                    echo "Can't find uname, aborting..." 1>&2
-                    exit 1
-                fi
-            fi
-        fi
-    fi
+    [[ -x ${__bashmatic_uname_binary} && -x ${__bashmatic_uname_binary} ]] && { 
+        echo ${__bashmatic_uname_binary}
+        return 0
+    }
+    local -a uname_options=("/bin/uname" "/usr/bin/uname" "/sbin/uname" "/usr/sbin/uname")
+    local binary
+    for binary in ${uname_options[@]}
+    do
+        [[ -x ${binary} ]] && { 
+            export __bashmatic_uname_binary="$(printf -- "%s" "${binary}")"
+            printf "%s" "${__bashmatic_uname_binary}"
+            return 0
+        }
+    done
+    return 1
 }
 
 ----
@@ -14154,7 +14323,8 @@ util.lines-in-folder ()
 ----
 util.os () 
 { 
-    export BASHMATIC_OS="${BASHMATIC_OS:-$($(system.uname) -s | /usr/bin/tr '[:upper:]' '[:lower:]')}"
+    export BASHMATIC_OS="${BASHMATIC_OS_NAME:=$(uname -s | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')}"
+    export BASHMATIC_OS_NAME
 }
 
 ----

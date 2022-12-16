@@ -9,7 +9,7 @@
 export __bashmatic_warning_notification=${BASHMATIC_HOME}/.developer-warned
 export __bashmatic_library_last_sourced=${BASHMATIC_HOME}/.last-loaded
 
-export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+export BASHMATIC_OS="${BASHMATIC_OS_NAME}"
 
 # shellcheck source=./time.sh
 [[ -n $(type millis 2>/dev/null) ]] || source "${BASHMATIC_LIB}/time.sh"
@@ -54,7 +54,7 @@ function __bashmatic.set-is-not-loaded() {
 function bashmatic.reload() {
   __bashmatic.set-is-not-loaded
   # shellcheck source=./../.envrc.no-debug
-  source "${BASHMATIC_HOME}/.envrc.no-debug"
+  [[ -f "${BASHMATIC_HOME}/.envrc.no-debug" ]] && source "${BASHMATIC_HOME}/.envrc.no-debug"
   # shellcheck source=./../init.sh
   source "${BASHMATIC_INIT}" --reload
 }
@@ -140,7 +140,7 @@ function bashmatic.bash.exit-unless-version-four-or-later() {
   bashmatic.bash.version-four-or-later || {
     error "Sorry, this functionality requires BASH version 4 or later."
     exit 1 >/dev/null
-  } 
+  }
 }
 
 function __rnd() {
@@ -176,13 +176,13 @@ function bashmatic.source() {
     local t1=$(millis)
 
     [[ "${file}" =~ "/" ]] || file="${__path}/${file}"
-    
+
     bashmatic.bash.version-four-or-later && {
       local cached_at=${load_cache[${file}]}
       cached_at=${cached_at:-0}
       local modified_at="$(file.last-modified-millis "${file}")"
       [[ ${modified_at} -le ${cached_at} && ${modified_at} -le ${last_loaded_at} ]] && {
-        is-debug && printf -- "${bldred} (cached)    ${txtgrn} ▶︎ %s${clr}\n" "${file/\/*\//}"     
+        is-debug && printf -- "${bldred} (cached)    ${txtgrn} ▶︎ %s${clr}\n" "${file/\/*\//}"
         continue
       }
     }
@@ -193,7 +193,7 @@ function bashmatic.source() {
     }
 
     if [[ -n ${SOURCE_DEBUG} || ${DEBUG} -eq 1 ]]; then
-      is-debug && printf -- "             ${txtylw} ▶︎ %s${clr}" "${file/\/*\//}"     
+      is-debug && printf -- "             ${txtylw} ▶︎ %s${clr}" "${file/\/*\//}"
       source "${file}" >/dev/null
       is-debug && {
         cursor.rewind -120
@@ -213,7 +213,7 @@ function bashmatic.source() {
         [[ ${duration} -gt 20 ]] && color="${bldred}"
         printf "${color}${duration}ms [%3d]" "${code}"
         printf "\n"
-        unset t1 
+        unset t1
         unset t2
       }
     else
@@ -299,17 +299,17 @@ function bashmatic.setup() {
   fi
 
   declare -a preload_modules=(
-    time.sh 
-    output.sh 
-    output-utils.sh 
-    output-repeat-char.sh 
-    output-boxes.sh 
-    is.sh 
-    user.sh 
-    util.sh 
-    git.sh 
-    file.sh 
-    color.sh 
+    time.sh
+    output.sh
+    output-utils.sh
+    output-repeat-char.sh
+    output-boxes.sh
+    is.sh
+    user.sh
+    util.sh
+    git.sh
+    file.sh
+    color.sh
     brew.sh
   )
 
@@ -349,7 +349,7 @@ function bashmatic.auto-update() {
 
 function bashmatic.auto-update-error() {
   bashmatic.is-developer || return
-  file.exists-and-newer-than "${__bashmatic_warning_notification}" 10 || return 
+  file.exists-and-newer-than "${__bashmatic_warning_notification}" 10 || return
   touch "${__bashmatic_warning_notification}"
 
   if [[ -f ${__bashmatic_auto_update_help_file} ]]; then

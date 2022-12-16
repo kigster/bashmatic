@@ -56,10 +56,21 @@ function .db.primary-or-replica() {
   shift
   local height="$1"
   shift
+
+  local sw=$(output.screen-width.actual)
+
+  local query_filter_out="idle"
+  if [[ -n ${flag_filter_active} ]]; then
+    query_filter_out="${flag_filter_active}"
+  fi
+
   local query_width
-  local sw=$(screen-width)
-  query_width=$((sw - 82))
-  sed -e "/^--.*$/d; s/QUERY_WIDTH/${query_width}/g;s/LIMIT/${height}/g" "${BASHMATIC_HOME}/.db.active.sql" | tr '\n' ' ' >"${tof}.query"
+  query_width=$((sw - 60))
+  if is.numeric "${flag_width}" && [[ -n ${flag_width} && ${flag_width} -gt 50 ]]; then
+    query_width="${flag_width}"
+  fi
+
+  sed -e "/^--.*$/d; s/QUERY_WIDTH/${query_width}/g; s/LIMIT/${height}/g; s/QUERY_FILTER_OUT/${query_filter_out}/g" "${BASHMATIC_HOME}/.db.active.sql" | tr '\n' ' ' >"${tof}.query"
 }
 
 .db.top.connection() {

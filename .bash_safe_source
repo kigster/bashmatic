@@ -7,7 +7,15 @@
 set +e
 
 function is-debug() {
-  [[ $((DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG)) -gt 0 ]]
+  export DEBUG=${DEBUG:-0}
+  export BASHMATIC_DEBUG=${BASHMATIC_DEBUG:-0}
+  export BASHMATIC_PATH_DEBUG=${BASHMATIC_PATH_DEBUG:-0}
+  local sum=$(( DEBUG + BASHMATIC_DEBUG + BASHMATIC_PATH_DEBUG ))
+  if [[ ${sum} -gt 0 ]]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 function debug-info() {

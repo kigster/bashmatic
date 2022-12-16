@@ -21,7 +21,7 @@ set -e
 }
 
 @test "path.dirs from STDIN" {
-  local p1="/bin:/Users/kig/bin:/usr/bin:/bin:/sbin"
+  local p1="/bin:/home/zed/bin:/usr/bin:/bin:/sbin"
   local p2="/bin:a:b:c"
   local p3="/bin:/usr/local/bin"
   for p in $p1 $p2 $p3; do
@@ -30,7 +30,7 @@ set -e
 }
 
 @test "path.dirs from ARG" {
-  local p1="/bin:/Users/kig/bin:/usr/bin:/bin:/sbin"
+  local p1="/bin:/home/zed/bin:/usr/bin:/bin:/sbin"
   local p2="/bin:a:b:c"
   local p3="/bin:/usr/local/bin"
   for p in $p1 $p2 $p3; do
@@ -43,11 +43,11 @@ set -e
 }
 
 @test "path.strip-slash" {
-  local p1="/Users/kig/"
-  local p2="/Users/kig"
-  local p3="/Users/kig///"
+  local p1="/home/zed/"
+  local p2="/home/zed"
+  local p3="/home/zed///"
   for p in $p1 $p2 $p3; do
-    [ "$(path.strip-slash $p)" == "/Users/kig" ]
+    [ "$(path.strip-slash $p)" == "/home/zed" ]
   done
 }
 
@@ -82,8 +82,8 @@ set -e
 }
 
 @test "path.mutate.delete" {
-  export TEST_PATH="/bin:/usr/local/bin:/sbin:/usr/bin:/bin:/Users/kig/bin"
-  export TEST_PATH=$(path.dirs.delete "${TEST_PATH}" /Users/kig/bin /sbin)
+  export TEST_PATH="/bin:/usr/local/bin:/sbin:/usr/bin:/bin:/home/zed/bin"
+  export TEST_PATH=$(path.dirs.delete "${TEST_PATH}" /home/zed/bin /sbin)
 
   [ "${TEST_PATH}" == "/bin:/usr/local/bin:/usr/bin:/bin" ]
 }
