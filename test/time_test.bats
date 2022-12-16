@@ -19,7 +19,7 @@ source lib/user.sh
   local t=$(date.now.with-time.and.zone)
   local zone="$(date '+%z')"
   set -e
-  [[ ${t} =~ ${zone}$ ]]
+  [[ ${t} =~ ${zone} ]]
 }
 
 @test "time.with-duration()" {
@@ -31,7 +31,7 @@ source lib/user.sh
   local units=${duration[1]}
 
   set -e
-  [[ "$units" == "sec" ]]
+  [[ "$units" == "sec" ]] &&
   [[ "$period" =~ ^[0-9]+(\.[0-9]+)?$ ]]
 }
 
