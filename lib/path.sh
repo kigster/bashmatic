@@ -24,7 +24,7 @@ function path.dirs() {
     while IFS= read -r line; do
       path="${path}:${line}"
     done
-  fi  
+  fi
   [[ -z "${path}" ]] && path="${1:-${PATH}}"
   echo "${path//:/$'\n'}" | /usr/bin/tr -d "'" | sedx '/^$/d; s/://g'
 }
@@ -44,7 +44,7 @@ function path.dirs.uniq() {
 }
 
 function path.dirs.sort() {
-  path.dirs.uniq "$@" | sort 
+  path.dirs.uniq "$@" | sort
 }
 
 function path.dirs.sort-rev() {
@@ -52,8 +52,8 @@ function path.dirs.sort-rev() {
 }
 
 # @description
-#     Deletes any number of folders from the PATH passed as the first 
-#     string argument (defaults to $PATH). Does not mutate the $PATH, 
+#     Deletes any number of folders from the PATH passed as the first
+#     string argument (defaults to $PATH). Does not mutate the $PATH,
 #     just prints the result to STDOUT
 # @arg1 String representation of a PATH, eg "/bin:/usr/bin:/usr/local/bin"
 # @arg2 An array of paths to be removed from the PATH
@@ -87,7 +87,7 @@ function path.uniq() {
   array.join ':' $(path.dirs.uniq "$@")
 }
 
-# @description 
+# @description
 #     Using sed and tr uniq the PATH without re-sorting it.
 function PATH.uniqify() {
   local _p="$(printf "${PATH}" | sed 's/:/\n/g' | uniq | tr '\n' ':')"
@@ -156,14 +156,6 @@ function path.mutate.append() {
 #     exports the new value of the PATH
 function path.mutate.prepend() {
   export PATH="$(path.prepend "$@")"
-}
-
-# @description
-#     This function exists within direnv, but since we
-#     are sourcing in .envrc we need to have this defined
-#     to avoid errors.
-function PATH_add() {
-  path.mutate.append "$@"
 }
 
 # @description Returns an absolute version of a given path

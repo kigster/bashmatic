@@ -15,11 +15,11 @@ else
   export __run_as_script=1 2>/dev/null
 fi
 
-export BASHMATIC_DIR="$(cd $(dirname ${BASH_SOURCE[0]}); pwd -P)"
+export BASHMATIC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1; pwd -P)"
 export BASHMATIC_HOME="${BASHMATIC_DIR}"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
-[[ -f "${BASHMATIC_LIB}/util.sh" ]] && source "${BASHMATIC_LIB}/util.sh"
+source "${BASHMATIC_LIB}/util.sh"
 
 export BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 export GLOBAL="declare "
