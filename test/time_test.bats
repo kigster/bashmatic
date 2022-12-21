@@ -7,7 +7,6 @@ source lib/time.sh
 source lib/util.sh
 source lib/user.sh
 
-
 # duration 'sleep 1.1'
 # 0 minutes 1.100 seconds
 @test 'time.a-command' {

@@ -1,8 +1,20 @@
 # Changelog
 
+## [v3.1.4](https://github.com/kigster/bashmatic/tree/v3.1.4) (2022-12-20)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.3...v3.1.4)
+
+**Merged pull requests:**
+
+- Install gdate if needed [\#124](https://github.com/kigster/bashmatic/pull/124) ([kigster](https://github.com/kigster))
+
 ## [v3.1.3](https://github.com/kigster/bashmatic/tree/v3.1.3) (2022-12-16)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/completion...v3.1.3)
+
+**Merged pull requests:**
+
+- Fixing os-name constant & a bunch of other nifty fixes and tweaks [\#123](https://github.com/kigster/bashmatic/pull/123) ([kigster](https://github.com/kigster))
 
 ## [completion](https://github.com/kigster/bashmatic/tree/completion) (2022-12-08)
 
