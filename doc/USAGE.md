@@ -1426,6 +1426,32 @@ is.dry-run.on || run "ls -al"
 ---
 
 
+## File `lib/memory.sh`
+
+
+
+* [memory.size-to-bytes()](#memorysize-to-bytes)
+* [memory.bytes-to-units()](#memorybytes-to-units)
+
+### `memory.size-to-bytes()`
+
+Pass in a value eg. 32GB or 16M and it returns back the number of bytes
+
+### `memory.bytes-to-units()`
+
+This function receives up to three arguments:
+
+#### Arguments
+
+* @arg1 A number of bytes to convert into a more human-friendly format
+* @arg2 An optional printf format string, defaults to '%.1f'
+* @arg3 An optional suffix ('b' or "B" or none at all)
+
+
+
+---
+
+
 ## File `lib/color.sh`
 
 

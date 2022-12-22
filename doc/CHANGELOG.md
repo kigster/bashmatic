@@ -1,8 +1,21 @@
 # Changelog
 
-## [v3.1.4](https://github.com/kigster/bashmatic/tree/v3.1.4) (2022-12-21)
+## [v3.1.5](https://github.com/kigster/bashmatic/tree/v3.1.5) (2022-12-22)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.4...v3.1.5)
+
+**Merged pull requests:**
+
+- OS-detection, memory monitoring, system printout in YAML [\#127](https://github.com/kigster/bashmatic/pull/127) ([kigster](https://github.com/kigster))
+
+## [v3.1.4](https://github.com/kigster/bashmatic/tree/v3.1.4) (2022-12-22)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.3...v3.1.4)
+
+**Merged pull requests:**
+
+- Version 3.1.4 ; fix time tests; run command [\#126](https://github.com/kigster/bashmatic/pull/126) ([kigster](https://github.com/kigster))
+- Install gdate if needed [\#124](https://github.com/kigster/bashmatic/pull/124) ([kigster](https://github.com/kigster))
 
 ## [v3.1.3](https://github.com/kigster/bashmatic/tree/v3.1.3) (2022-12-16)
 

@@ -41,6 +41,7 @@
 * xref:#module-jemalloc[jemalloc]
 * xref:#module-json[json]
 * xref:#module-maths[maths]
+* xref:#module-memory[memory]
 * xref:#module-net[net]
 * xref:#module-nvm[nvm]
 * xref:#module-openssl[openssl]
@@ -6635,6 +6636,63 @@ maths.eval ()
 ----
 
 
+=== Module `memory`
+
+==== `memory.bytes-to-units`
+
+[source,bash]
+----
+memory.bytes-to-units () 
+{ 
+    local bytes="$1"
+    local format="${2:-"%.1f"}"
+    local suffix="${3:-"b"}"
+    command -v numfmt > /dev/null || { 
+        command -v brew && brew install coreutils -q
+        [[ -x $(brew --prefix)/bin/numfmt ]] || { 
+            error "Can't find numfmt installed, even after installing coreutils"
+            return 1
+        }
+    }
+    is.numeric "${bytes}" && numfmt --to=iec "${bytes}" --format="${format}" --suffix="${suffix/ */}"
+}
+
+----
+
+==== `memory.size-to-bytes`
+
+[source,bash]
+----
+memory.size-to-bytes () 
+{ 
+    local value="$1"
+    local upper="${value^^}"
+    local numeric
+    local bytes
+    numeric="$(echo "${value}" | tr -d 'a-zA-Z ')"
+    if [[ ${upper} =~ M$ || ${upper} =~ MB$ ]]; then
+        bytes=$((numeric * 1024 * 1024))
+    else
+        if [[ ${upper} =~ TB$ || ${upper} =~ T$ ]]; then
+            bytes=$((numeric * 1024 * 1024 * 1024 * 1024))
+        else
+            if [[ ${upper} =~ GB$ || ${upper} =~ G$ ]]; then
+                bytes=$((numeric * 1024 * 1024 * 1024))
+            else
+                if [[ ${upper} =~ K$ || ${upper} =~ KB$ ]]; then
+                    bytes=$((numeric * 1024))
+                else
+                    bytes=${numeric}
+                fi
+            fi
+        fi
+    fi
+    printf "%d" "${bytes}"
+}
+
+----
+
+
 === Module `net`
 
 ==== `net.fast-scan`
@@ -11809,10 +11867,10 @@ run.post-command-with-output ()
 run.print-command () 
 { 
     local command="$1"
-    local max_width=${2:-"120"}
+    local max_width=${2:-"150"}
     local min_width=60
     local w
-    w=$(($(.output.screen-width) - 10))
+    w=$(($(screen-width) - 10))
     [[ ${w} -gt ${max_width} ]] && w=${max_width}
     export LibRun__AssignedWidth=${w}
     local prefix="${LibOutput__LeftPrefix}${clr}"
@@ -13173,12 +13231,9 @@ time.a-command ()
 ----
 time.date-from-epoch () 
 { 
-    local epoch_ts="$1"
-    if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
-        printf "date -r ${epoch_ts}"
-    else
-        printf "date --date='@${epoch_ts}'"
-    fi
+    local epoch_ts
+    epoch_ts="$1"
+    printf "date --date='@${epoch_ts}'"
 }
 
 ----
@@ -13970,7 +14025,14 @@ user.login-shell-path ()
 ----
 user.my.ip () 
 { 
-    dig +short myip.opendns.com @resolver1.opendns.com
+    local result
+    result=$(dig +short myip.opendns.com @resolver1.opendns.com)
+    if [[ -n ${result} ]]; then
+        echo "${result}"
+    else
+        curl -sSf "http://ipecho.net/plain"
+        echo
+    fi
 }
 
 ----
