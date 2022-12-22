@@ -1,5 +1,4 @@
 # vim: ft=bash
-# @file dev/lib/common/os.bash
 #
 # @description This file is responsible for gatheriong infomration about the current
 # system such OS, CPU model, emulation (eg. Rosetta) to ultimately s
