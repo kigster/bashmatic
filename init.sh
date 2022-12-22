@@ -62,16 +62,22 @@ export GLOBAL
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
 function bdate() {
-  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
+  if [[ "${BASHMATIC_OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}" == "darwin" ]]; then
     command -v gdate >/dev/null || gdate.install >/dev/null
+    command -v gdate >/dev/null && {
+      command -v gdate
+      return
+    } 
   fi 
   command -v date
 }
 
 function gdate.install() {
+  [[ "${BASHMATIC_OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}" == "darwin" ]] || return 0
+  
   command -v gdate >/dev/null && return 
   command -v brew  >/dev/null && brew install -q coreutils
-  command -v gdate >/dev/null && ln -s $(command -v gdate) /usr/local/bin/date
+  command -v gdate >/dev/null && ln -sv "$(command -v gdate)" /usr/local/bin/date
 }
 
 function date.now.humanized() {
@@ -249,7 +255,7 @@ function __bashmatic.eval-library() {
   # LOAD ALL BASHMATIC SCRIPTS AT ONCE
   # This is the fastest method that only takes about 80ms
   eval "$(/bin/cat "${BASHMATIC_LIB}"/*.sh)"
-
+  source "${BASHMATIC_LIB}/runtime.sh"
   __bashmatic.debug-conclusion $?
 
   is-debug && not-quiet && {
@@ -317,9 +323,9 @@ function __bashmatic.init-core() {
   # number of files, but it can come handy later. Plus, mapfile takes 26ms.
   if [[ $SHELL =~ zsh || ${BASH_MAJOR_VERSION} -lt 4 ]]; then
     warning "Please for the love of science and binary upgrade your BASH already..."
-    is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 ${BASHMATIC_LIB}/*.sh | wc -l | tr -d '\n ') sources to load..."
+    is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 "${BASHMATIC_LIB}"/*.sh | wc -l | tr -d '\n ') sources to load..."
   else
-    local -a sources=( $(find ${BASHMATIC_HOME}/lib -name '*.sh') )
+    local -a sources=( $(find "${BASHMATIC_HOME}/lib" -name '*.sh') )
     is-debug && not-quiet && log.inf "Evaluating the library, total of ${#sources[@]} sources to load..." && log.ok
   fi
 }
@@ -449,4 +455,4 @@ export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -
 export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
 bashmatic.load "$@"
-
+source ${BASHMATIC_HOME}/lib/runtime.sh

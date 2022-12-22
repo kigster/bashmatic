@@ -804,7 +804,6 @@ Utilities for managing the $PATH variable
 * [path.mutate.delete()](#pathmutatedelete)
 * [path.mutate.append()](#pathmutateappend)
 * [path.mutate.prepend()](#pathmutateprepend)
-* [PATH_add()](#path_add)
 * [path.absolute()](#pathabsolute)
 
 ### `path.strip-slash()`
@@ -831,8 +830,8 @@ Does not mutate the $PATH
 
 ### `path.dirs.delete()`
 
-Deletes any number of folders from the PATH passed as the first 
-string argument (defaults to $PATH). Does not mutate the $PATH, 
+Deletes any number of folders from the PATH passed as the first
+string argument (defaults to $PATH). Does not mutate the $PATH,
 just prints the result to STDOUT
 
 #### Arguments
@@ -877,12 +876,6 @@ exports the new value of the PATH
 
 Prepends valid directories to those in the PATH, and
 exports the new value of the PATH
-
-### `PATH_add()`
-
-This function exists within direnv, but since we
-are sourcing in .envrc we need to have this defined
-to avoid errors.
 
 ### `path.absolute()`
 

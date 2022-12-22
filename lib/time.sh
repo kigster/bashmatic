@@ -181,12 +181,9 @@ function time.a-command() {
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on linux vs OSX.
 time.date-from-epoch() {
-  local epoch_ts="$1"
-  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
-    printf "date -r ${epoch_ts}"
-  else
-    printf "date --date='@${epoch_ts}'"
-  fi
+  local epoch_ts
+  epoch_ts="$1"
+  printf "date --date='@${epoch_ts}'"
 }
 
 time.now.db() {

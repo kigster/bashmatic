@@ -165,10 +165,10 @@ function run.dry-run-prefix() {
 
 function run.print-command() {
   local command="$1"
-  local max_width=${2:-"120"}
+  local max_width=${2:-"150"}
   local min_width=60
   local w
-  w=$(($(.output.screen-width) - 10))
+  w=$(($(screen-width) - 10))
 
   [[ ${w} -gt ${max_width} ]] && w=${max_width}
 

@@ -7961,6 +7961,61 @@ alert ()
 
 ----
 
+==== `box-error`
+
+[source,bash]
+----
+box-error () 
+{ 
+    panel-error "$@"
+}
+
+----
+
+==== `box-info`
+
+[source,bash]
+----
+box-info () 
+{ 
+    panel-info "$@"
+}
+
+----
+
+==== `box-purple`
+
+[source,bash]
+----
+box-purple () 
+{ 
+    panel-purple-red "$@"
+}
+
+----
+
+==== `box-success`
+
+[source,bash]
+----
+box-success () 
+{ 
+    panel-green "$@"
+}
+
+----
+
+==== `box-warning`
+
+[source,bash]
+----
+box-warning () 
+{ 
+    panel-red-white "$@"
+}
+
+----
+
 ==== `divider`
 
 [source,bash]
@@ -8004,23 +8059,9 @@ divider__ ()
 ----
 panel-error () 
 { 
-    export title_title_color="${bldwht}${bg_blood}"
-    export title_text_color="${txtblk}${bg_blood}"
-    export title_border_color="${bg_blood}${fg_dark_red}"
-    export title_shadow_color="${fg_dark_red}"
-    title-panel "$@"
-}
-
-----
-
-==== `panel-error-white`
-
-[source,bash]
-----
-panel-error-white () 
-{ 
+    export title_title_color="${bg_bright_red}${bldwht}"
     export title_text_color="${bg_bright_red}${bldwht}"
-    export title_border_color="${bg_bright_red}${bldwht}"
+    export title_border_color="${bg_bright_red}${fg_dark_red}"
     export title_shadow_color="${fg_dark_red}"
     title-panel "$@"
 }
@@ -8035,8 +8076,23 @@ panel-error-yellow ()
 { 
     export title_title_color="${bldwht}${bakred}"
     export title_text_color="${bldylw}${bakred}"
-    export title_border_color="${blkylw}${bakred}"
+    export title_border_color="${bldylw}${bakred}"
     export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-green`
+
+[source,bash]
+----
+panel-green () 
+{ 
+    export title_title_color="${txtblk}${bg_bright_green}"
+    export title_text_color="${txtblk}${bg_bright_green}"
+    export title_border_color="${fg_deep_green}${bg_bright_green}"
+    export title_shadow_color="${fg_deep_green}"
     title-panel "$@"
 }
 
@@ -8048,9 +8104,40 @@ panel-error-yellow ()
 ----
 panel-info () 
 { 
-    export title_text_color="${txtwht}${bg_sky_blue}"
+    export title_title_color="${bldwht}${bg_sky_blue}"
+    export title_text_color="${bldylw}${bg_sky_blue}"
+    export title_border_color="${bg_sky_blue}"
+    export title_shadow_color="${fg_deep_blue}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-info-blue`
+
+[source,bash]
+----
+panel-info-blue () 
+{ 
+    export title_title_color="${bldwht}${bg_sky_blue}"
+    export title_text_color="${bldwht}${bg_sky_blue}"
+    export title_border_color="${bldwht}${fg_deep_blue}"
+    export title_shadow_color="${fg_deep_blue}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-info-blue-black`
+
+[source,bash]
+----
+panel-info-blue-black () 
+{ 
+    export title_title_color="${txtblk}${bg_sky_blue}"
+    export title_text_color="${txtblk}${bg_sky_blue}"
     export title_border_color="${txtblk}${bg_sky_blue}"
-    export title_shadow_color="${bldblk}"
+    export title_shadow_color="${fg_deep_blue}"
     title-panel "$@"
 }
 
@@ -8070,14 +8157,45 @@ panel-info-dark ()
 
 ----
 
+==== `panel-info-yellow`
+
+[source,bash]
+----
+panel-info-yellow () 
+{ 
+    export title_title_color="${bldwht}${bakgrn}"
+    export title_text_color="${bldylw}${bakgrn}"
+    export title_border_color="${bldylw}${bakgrn}"
+    export title_shadow_color="${fg_deep_blue}"
+    title-panel "$@"
+}
+
+----
+
 ==== `panel-purple-red`
 
 [source,bash]
 ----
 panel-purple-red () 
 { 
+    export title_title_color="${fg_bright_red}"
     export title_text_color="${bg_pink}${bldwht}"
     export title_border_color="${bg_pink}${bldred}"
+    export title_shadow_color="${fg_dark_red}"
+    title-panel "$@"
+}
+
+----
+
+==== `panel-red-white`
+
+[source,bash]
+----
+panel-red-white () 
+{ 
+    export title_title_color="${fg_bright_red}"
+    export title_text_color="${bg_bright_red}${bg_mustard}"
+    export title_border_color="${bg_mustard}${bldwht}"
     export title_shadow_color="${fg_dark_red}"
     title-panel "$@"
 }
@@ -8162,11 +8280,13 @@ title-panel ()
     printf "${clr}\n
  ${title_border_color} ${box_top} ${clr}\n"
     .title.line "${shadow}" "${title_title_color:-${title_text_color}}" "${line}"
-    printf " ${title_border_color} ${box_divider} ${shadow}\n"
-    for line in "$@"
-    do
-        .title.line "${shadow}" "${title_text_color}" "${line}"
-    done
+    if [[ ${#@} -gt 0 ]]; then
+        printf " ${title_border_color} ${box_divider} ${shadow}\n"
+        for line in "$@"
+        do
+            .title.line "${shadow}" "${title_text_color}" "${line}"
+        done
+    fi
     printf " ${title_border_color} ${box_bottom} ${shadow}\n"
     printf " ${title_shadow_color}   ${box_bottom_shadow}${clr}\n\n"
 }
@@ -9669,17 +9789,6 @@ PATH.uniqify ()
 { 
     local _p="$(printf "${PATH}" | sed 's/:/\n/g' | uniq | tr '\n' ':')"
     [[ "${_p}" == "${PATH}" ]] || export PATH="${_p}"
-}
-
-----
-
-==== `PATH_add`
-
-[source,bash]
-----
-PATH_add () 
-{ 
-    path.mutate.append "$@"
 }
 
 ----

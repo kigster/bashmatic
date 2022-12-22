@@ -4,13 +4,14 @@
 # © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
 # shellcheck disable=SC1134
-#
+
+export BASHMATIC_TEMP="${BASHMATIC_TEMP:-"$(mktemp -d)"}"
+
 LibBrew__PackageCacheList="${BASHMATIC_TEMP}/brew-package-cache.txt"
 export LibBrew__PackageCacheList
 
 LibBrew__CaskCacheList="${BASHMATIC_TEMP}/brew-cask-cache.txt"
 export LibBrew__CaskCacheList
-
 
 #================================================================================
 # Global Brew Functions
@@ -46,6 +47,7 @@ function brew.install() {
     local brew=$(brew.binary)
     info "Excellent: an existing Homebrew Version: ${bldylw}$(${brew} --version 2>/dev/null | head -1) exists"
     run "${brew} update"
+
   else
     not-ok:
     info "Brew wasn't found — installing Homebrew, ${bldgrn}please wait..."
