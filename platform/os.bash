@@ -59,13 +59,13 @@ function array.index-of() {
 }
 
 function os.darwin.pre-install() {
-  verb "Ensuring OS-X Dev Tools are up to date and installed..."
+  info "Ensuring OS-X Dev Tools are up to date and installed..." >&2
   if [[ -f dev/bashmatic/init.sh ]]; then
     source dev/bashmatic/init.sh
     run.set-all continue-on-error show-output-off
   fi
   # Install Command Line Tools
-  verb "running: xcode-select --install 2>/dev/null"
+  info "running: xcode-select --install 2>/dev/null" >&2
   xcode-select --install 2>/dev/null
 
   # Enable command line tools
@@ -129,7 +129,15 @@ function os.print-system-type() {
 # @description This function displays current configuration and is
 #              very useful in debugging.
 function os.print-system-yaml() {
-  printf -- "---\nsystem:\n  hostname: \"$(hostname)\"\n  user: \"$(whoami)\"\n"
+  cat <<YAML
+system:
+  hostname: "$(hostname)"
+  user: "$(whoami)"
+  ip: "$(user.my.ip)"
+  reverse_ip: "$(user.my.reverse-ip)"
+
+YAML
+
   [[ -z $(os.value-for cpu_model) ]] && os.determine-system-type
   local value
   for key in "${system_info_keys[@]}"; do
@@ -139,6 +147,9 @@ function os.print-system-yaml() {
     fi
     printf "  ${key}: \"${value}\"\n"
   done
+  if [[ ${BASHMATIC_OS} == "darwin" ]]; then
+    system_profiler SPHardwareDataType  | tail -13 | awk 'BEGIN{FS=":"}{printf "%s: %s\n", $1, $2}' | sed -E 's/^ */  /g; /^ *:.*$/d'
+  fi
 }
 
 is.a-function() {
@@ -175,7 +186,7 @@ function os.determine-system-type() {
     threads_per_core=$((thread_count / cpu_count))
 
     ## @description RAM numbers
-    ## These are all going to be in pure bytes.  Use the following function to convert: 
+    ## These are all going to be in pure bytes.  Use the following function to convert:
     ##    memory.bytes-to-units( very-large-number )
     ## to a human-readable format.
     ram_physical=$(memory.size-to-bytes "$(system_profiler SPHardwareDataType | grep Memory: | awk '{printf "%d %s", $2, $3}')" )
