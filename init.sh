@@ -62,16 +62,22 @@ export GLOBAL
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 
 function bdate() {
-  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
+  if [[ "${BASHMATIC_OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}" == "darwin" ]]; then
     command -v gdate >/dev/null || gdate.install >/dev/null
+    command -v gdate >/dev/null && {
+      command -v gdate
+      return
+    } 
   fi 
   command -v date
 }
 
 function gdate.install() {
+  [[ "${BASHMATIC_OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}" == "darwin" ]] || return 0
+  
   command -v gdate >/dev/null && return 
   command -v brew  >/dev/null && brew install -q coreutils
-  command -v gdate >/dev/null && ln -s $(command -v gdate) /usr/local/bin/date
+  command -v gdate >/dev/null && ln -sv "$(command -v gdate)" /usr/local/bin/date
 }
 
 function date.now.humanized() {
