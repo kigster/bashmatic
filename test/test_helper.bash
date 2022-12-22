@@ -11,6 +11,7 @@ load.bashmatic-deps() {
   source "${BASHMATIC_INIT}"  
   load "${BASHMATIC_LIB}/output.sh"
   load "${BASHMATIC_LIB}/output-boxes.sh"
+  load "${BASHMATIC_LIB}/output-utils.sh"
   load "${BASHMATIC_LIB}/time.sh"
   load "${BASHMATIC_LIB}/sedx.sh"
   load "${BASHMATIC_LIB}/util.sh"

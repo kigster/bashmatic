@@ -416,6 +416,17 @@ function pfx() {
   printf "      ${txtgrn}${txtblk}${bakgrn}  BashMatic™ ${txtblk}${bakylw} $(date.now.humanized) ${clr}${txtylw} ${clr}"
 }
 
+function os.info() {
+  source "${BASHMATIC_HOME}/platform/os.bash"
+  os.determine-system-type && os.print-system-type
+}
+
+function os.yaml() {
+  source "${BASHMATIC_HOME}/platform/os.bash"
+  command -v yq >/dev/null || brew install yq -q
+  os.determine-system-type && os.print-system-yaml  | yq eval
+}
+
 #———————————————————————————————————————————————————————————————————————————
 # Main Flow
 #———————————————————————————————————————————————————————————————————————————

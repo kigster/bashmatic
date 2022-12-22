@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 # © 2016-2022 Konstantin Gredeskoul
-# 
+#
 user.gitconfig.email() {
   if [[ -s ${HOME}/.gitconfig ]]; then
     grep email "${HOME}/.gitconfig" | sedx 's/.*=\s?//g'
@@ -36,13 +36,13 @@ user() {
 # https://github.com/pivotal-legacy/git_scripts
 #
 #———————————————————————————————————————————————————————————————————————————————————————————————————
-# 
+#
 # Please NOTE: these functions only support names in the format "Firstname Lastname".
 # It does NOT support punctuation, middle names, etc.
 export bashmatic_git_pairs="${HOME}/.pairs"
 
 user.pairs.set-file() {
-  [[ -s "$1" ]] || { 
+  [[ -s "$1" ]] || {
     error "Please pass a valid path to the .pairs file, typically in your home. You passed: [$1]"
     return 1
   }
@@ -81,8 +81,17 @@ user.first() {
   user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'
 }
 
-user.my.ip() {
-  dig +short myip.opendns.com @resolver1.opendns.com
+# @description Returns the public IP address of your office/station/etc.
+# Uses two available methods, more information can be obtained here:
+# @see https://apple.stackexchange.com/questions/20547/how-do-i-find-my-ip-address-from-the-command-line
+function user.my.ip() {
+  local result
+  result=$(dig +short myip.opendns.com @resolver1.opendns.com)
+  if [[ -n ${result} ]] ; then
+    echo "${result}"
+  else
+    curl -sSf "http://ipecho.net/plain"; echo
+  fi
 }
 
 user.my.reverse-ip() {
@@ -114,9 +123,9 @@ user.login-shell-path() {
 }
 
 # @description
-#    Determines the current session shell by looking at the 
+#    Determines the current session shell by looking at the
 #    command running under the current PID $$.
-#  
+#
 #    Prints current shell without the path, eg 'bash'
 #
 user.current-shell() {
@@ -145,6 +154,6 @@ user.current-shell-init-file() {
   [[ -z ${init_file} ]] && init_file="$0"
   touch "${init_file}"
   echo "${init_file}"
-}  
+}
 
 
