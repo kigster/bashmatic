@@ -949,11 +949,21 @@ local emulation="${ostype[1]}"
 
 
 * [bashmatic.is-developer()](#bashmaticis-developer)
+* [bashmatic.is-installed()](#bashmaticis-installed)
 
 ### `bashmatic.is-developer()`
 
 True if .envrc.local file is present. We take it as a sign
 you may be developing bashmatic.
+
+### `bashmatic.is-installed()`
+
+This function returns 1 if bashmatic is installed in the 
+location pointed to by ${BASHMATIC_HOME} or the first argument.
+
+#### Arguments
+
+* $1      The location to check for bashmatic instead of ${BASHMATIC_HOME}
 
 
 
@@ -1988,5 +1998,5 @@ Manually Download and Install ShellCheck
 
 ## Copyright & License
 
- * Copyright © 2017-2022 Konstantin Gredeskoul, All rights reserved.
+ * Copyright © 2017-2023 Konstantin Gredeskoul, All rights reserved.
  * Distributed under the MIT License.
