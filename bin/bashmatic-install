@@ -338,6 +338,8 @@ export bootstrap__sudoers_dir="/private/etc/sudoers.d"
 export bootstrap__git_method="https"
 export bootstrap__git_branch="main"
 
+export BASHMATIC_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
 function is-debug() {
   ((BASHMASTIC_DEBUG))
 }
