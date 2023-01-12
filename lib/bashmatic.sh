@@ -363,5 +363,32 @@ function bashmatic.auto-update-error() {
   fi
 }
 
+# @description This function returns 1 if bashmatic is installed in the 
+#              location pointed to by ${BASHMATIC_HOME} or the first argument.
+# @arg $1      The location to check for bashmatic instead of ${BASHMATIC_HOME}
+function bashmatic.is-installed() {
+  # shellcheck disable=SC2031
+  export bashmatic_home="${1:-"${BASHMATIC_HOME}"}"
+  export bashmatic_min_functions=917
+
+  set +e
+  /usr/bin/env bash -c "\
+    [[ -x \${bashmatic_home}/init.sh ]] || exit 1
+    source \${bashmatic_home}/init.sh >/dev/null 2>/dev/null; \
+    declare -i total; \
+    type bashmatic.functions 2>/dev/null | grep -q function || exit 2; \
+    total=\$(bashmatic.functions 1 | wc -l | sed -E 's/[ \\t]*//g'); \
+    if [[ \${total} -ge \${bashmatic_min_functions} ]]; then \
+      exit 0; \
+    else \
+      exit 3; \
+    fi \
+  "
+
+  local code=$?
+  return ${code}
+}
+
+
 
 
