@@ -15,6 +15,8 @@ else
   export __run_as_script=1 2>/dev/null
 fi
 
+[[ -z ${BASH_} ]]
+
 export BASHMATIC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1; pwd -P)"
 export BASHMATIC_HOME="${BASHMATIC_DIR}"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
@@ -67,15 +69,15 @@ function bdate() {
     command -v gdate >/dev/null && {
       command -v gdate
       return
-    } 
-  fi 
+    }
+  fi
   command -v date
 }
 
 function gdate.install() {
   [[ "${BASHMATIC_OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}" == "darwin" ]] || return 0
-  
-  command -v gdate >/dev/null && return 
+
+  command -v gdate >/dev/null && return
   command -v brew  >/dev/null && brew install -q coreutils
   command -v gdate >/dev/null && ln -sv "$(command -v gdate)" /usr/local/bin/date
 }
@@ -322,7 +324,9 @@ function __bashmatic.init-core() {
   # Load all library files into an array. This isn't really used besides showing the total
   # number of files, but it can come handy later. Plus, mapfile takes 26ms.
   if [[ $SHELL =~ zsh || ${BASH_MAJOR_VERSION} -lt 4 ]]; then
-    warning "Please for the love of science and binary upgrade your BASH already..."
+    warning "Please, for the love of technology and the larger cosmos, " \
+      "do yourself a favor and upgrade your BASH already..." \
+      "You are running version $(bash --version | head -1)"
     is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 "${BASHMATIC_LIB}"/*.sh | wc -l | tr -d '\n ') sources to load..."
   else
     local -a sources=( $(find "${BASHMATIC_HOME}/lib" -name '*.sh') )
