@@ -1,61 +1,69 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (6.0.3.1)
+    activesupport (6.1.7.3)
       concurrent-ruby (~> 1.0, >= 1.0.2)
-      i18n (>= 0.7, < 2)
-      minitest (~> 5.1)
-      tzinfo (~> 1.1)
-      zeitwerk (~> 2.2, >= 2.2.2)
+      i18n (>= 1.6, < 2)
+      minitest (>= 5.1)
+      tzinfo (~> 2.0)
+      zeitwerk (~> 2.3)
+    awesome_print (1.9.2)
     base62-rb (0.3.1)
     colored2 (3.1.2)
-    concurrent-ruby (1.1.6)
-    connection_pool (2.2.3)
-    equatable (0.6.1)
-    hashie (4.1.0)
+    concurrent-ruby (1.2.2)
+    connection_pool (2.3.0)
+    hashie (5.0.0)
     hiredis (0.6.3)
-    i18n (1.8.3)
+    i18n (1.12.0)
       concurrent-ruby (~> 1.0)
-    minitest (5.14.1)
-    pastel (0.7.4)
-      equatable (~> 0.6)
+    minitest (5.18.0)
+    pastel (0.8.0)
       tty-color (~> 0.5)
-    redis (4.2.1)
-    simple-feed (3.0.1)
+    rbtree (0.4.6)
+    redis (5.0.6)
+      redis-client (>= 0.9.0)
+    redis-client (0.14.0)
+      connection_pool
+    set (1.0.3)
+    simple-feed (3.1.2)
       activesupport
+      awesome_print
       base62-rb
       colored2
       connection_pool (~> 2)
       hashie
       hiredis
       redis
+      sorted_set
       tty-box
       tty-screen
-    strings (0.1.8)
-      strings-ansi (~> 0.1)
-      unicode-display_width (~> 1.5)
+    sorted_set (1.0.3)
+      rbtree
+      set (~> 1.0)
+    strings (0.2.1)
+      strings-ansi (~> 0.2)
+      unicode-display_width (>= 1.5, < 3.0)
       unicode_utils (~> 1.4)
     strings-ansi (0.2.0)
-    thread_safe (0.3.6)
-    tty-box (0.5.0)
-      pastel (~> 0.7.2)
-      strings (~> 0.1.6)
+    tty-box (0.7.0)
+      pastel (~> 0.8)
+      strings (~> 0.2.0)
       tty-cursor (~> 0.7)
-    tty-color (0.5.1)
+    tty-color (0.6.0)
     tty-cursor (0.7.1)
-    tty-screen (0.8.0)
-    tzinfo (1.2.10)
-      thread_safe (~> 0.1)
-    unicode-display_width (1.7.0)
+    tty-screen (0.8.1)
+    tzinfo (2.0.6)
+      concurrent-ruby (~> 1.0)
+    unicode-display_width (2.4.2)
     unicode_utils (1.4.0)
-    zeitwerk (2.3.1)
+    zeitwerk (2.6.7)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport (= 6.0.3.1)
-  simple-feed (= 3.0.1)
+  activesupport (= 6.1.7.3)
+  simple-feed (= 3.1.2)
 
 BUNDLED WITH
    2.1.4
