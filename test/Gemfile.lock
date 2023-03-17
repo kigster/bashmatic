@@ -1,22 +1,22 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (6.0.3.1)
+    activesupport (6.1.7.3)
       concurrent-ruby (~> 1.0, >= 1.0.2)
-      i18n (>= 0.7, < 2)
-      minitest (~> 5.1)
-      tzinfo (~> 1.1)
-      zeitwerk (~> 2.2, >= 2.2.2)
+      i18n (>= 1.6, < 2)
+      minitest (>= 5.1)
+      tzinfo (~> 2.0)
+      zeitwerk (~> 2.3)
     base62-rb (0.3.1)
     colored2 (3.1.2)
-    concurrent-ruby (1.1.6)
+    concurrent-ruby (1.2.2)
     connection_pool (2.2.3)
     equatable (0.6.1)
     hashie (4.1.0)
     hiredis (0.6.3)
-    i18n (1.8.3)
+    i18n (1.12.0)
       concurrent-ruby (~> 1.0)
-    minitest (5.14.1)
+    minitest (5.18.0)
     pastel (0.7.4)
       equatable (~> 0.6)
       tty-color (~> 0.5)
@@ -36,7 +36,6 @@ GEM
       unicode-display_width (~> 1.5)
       unicode_utils (~> 1.4)
     strings-ansi (0.2.0)
-    thread_safe (0.3.6)
     tty-box (0.5.0)
       pastel (~> 0.7.2)
       strings (~> 0.1.6)
@@ -44,17 +43,17 @@ GEM
     tty-color (0.5.1)
     tty-cursor (0.7.1)
     tty-screen (0.8.0)
-    tzinfo (1.2.10)
-      thread_safe (~> 0.1)
+    tzinfo (2.0.6)
+      concurrent-ruby (~> 1.0)
     unicode-display_width (1.7.0)
     unicode_utils (1.4.0)
-    zeitwerk (2.3.1)
+    zeitwerk (2.6.7)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport (= 6.0.3.1)
+  activesupport (= 6.1.7.3)
   simple-feed (= 3.0.1)
 
 BUNDLED WITH
