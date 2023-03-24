@@ -1,0 +1,319 @@
+#!/usr/bin/env bash
+# vi: ft=sh
+#
+# https://gist.github.com/kigster/8ddebf9fddff25620e64d558dd4d56b7
+#
+# © 2019-2022 Konstantin Gredeskoul, Inc., All rights reserved.
+# MIT LICENSE
+# ————————————————————————————————————————————————————————————————
+# This script verifies that the ruby interpreter (either the one in
+# the $PATH, or the one specified by the -r / --ruby option) is linked
+# with jemalloc library for efficient memory utilization.
+#
+# It works well on Linux and Mac OSX.
+#
+# BACKGROUND
+# ————————————————————————————————————————————————————————————————
+# Ruby versions 2.5 and earlier had a simpler method, typically
+# running the following command and expecting the output to
+# contain something like '-ljemalloc -lm ... '
+#
+#     ruby -r rbconfig -e "puts RbConfig.CONFIG['LIBS']"
+#
+# Unfortunately, this method no longer works with Ruby 2.6
+# and later, nor did it ever work with Linux.
+#
+# For this reason, the following script is provided to verify
+# if your Ruby is using jemalloc memory allocator or not.
+#
+# USAGE:
+#   curl -fSL http://bit.ly/ruby-jemalloc-check > ruby-jemalloc-check.sh
+#   chmod 755 ruby-jemalloc-check.sh
+#
+#   ./ruby-jemalloc-check.sh --help
+#   ./ruby-jemalloc-check.sh -r /usr/bin/ruby
+#
+# ————————————————————————————————————————————————————————————————
+
+set +e
+
+declare -g project_root
+project_root="$(dirname "$(
+  cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+  pwd -P
+)")"
+export project_root
+
+declare -g current_ruby
+declare -g -i with_jemalloc
+export with_jemalloc=0
+
+export jm_option_ruby=
+export jm_option_quiet=false
+
+export jm_action_check=false
+export jm_action_detect=false
+export jm_action_stats=false
+export jm_action_help=false
+
+export color_red="\e[1;31m"
+export color_green="\e[1;32m"
+export color_yellow="\e[1;33m"
+export color_blue="\e[1;34m"
+export clr="\e[0m"
+
+export bakred='\e[41m'   # Red
+export bakgrn='\e[42m'   # Green
+export bldylw='\e[1;33m' # Yellow
+export bldwht='\e[1;37m' # White
+
+export cross=" ${clr}${bakred}${bldwht} ✘ ${clr} "
+export check=" ${clr}${bakgrn}${bldwht} ✔︎ ${clr} "
+
+declare -g -a versions
+declare -g -a rubies
+mapfile -t versions < <(rbenv versions --bare)
+versions+=(/usr/bin/ruby /usr/local/bin/ruby /opt/hombrew/bin/ruby)
+export versions
+
+function jm.printf() {
+  if "${jm_option_quiet}"; then
+    echo >/dev/null
+  else
+    printf "$@"
+  fi
+}
+
+# @description prints the info about current version of ruby
+function jm.ruby.report() {
+  local rb="$1"
+  jm.printf "${color_yellow}${rb} ${color_blue}$(jm.ruby.describe "${rb}")${clr}\n"
+}
+
+# @description Prints ruby version under test
+function jm.ruby.describe() {
+  local rb="$1"
+  ${rb} -e 'puts "#{RUBY_VERSION} (#{RUBY_PLATFORM})"'
+}
+
+# @description detects jemalloc or exits
+function js.jemalloc.detect-or-exit() {
+  local rb="$1"
+  jm.jemalloc.detect-quiet "${rb}" || {
+    jm.printf "${color_red}ERROR: No jemalloc detected in ruby ${rb}${clr}\n"
+    exit 1
+  }
+}
+
+# @description prints jemalloc statistics if jemalloc is available
+function jm.jemalloc.stats() {
+  local rb="$1"
+  js.jemalloc.detect-or-exit ${rb}
+  MALLOC_CONF=stats_print:true ${rb} -e "exit" 2>&1 | less -S
+}
+
+# @description returns 0 if jemalloc was detected or 1 otherwise
+function jm.jemalloc.detect-quiet() {
+  local rb="$1"
+  MALLOC_CONF=stats_print:true ${rb} -e "exit" 2>&1 | grep -q "jemalloc statistics"
+}
+
+# @description detects if jemalloc is linked and if so prints the info to output
+function jm.jemalloc.detect-loud() {
+  local rb="$1"
+  shift
+  jm.printf "${color_yellow}$(jm.ruby.report "${rb}")${clr}"
+  jm.jemalloc.detect-quiet "${rb}"
+  local code=$?
+  if [[ ${code} -eq 0 ]]; then
+    jm.printf " ${check} ${color_green} — detected.\n"
+    code=0
+  else
+    jm.printf " ${cross} ${color_red} — not detected.\n"
+    code=1
+  fi
+  jm.printf "${clr}"
+  return "${code}"
+}
+
+function jm.jemalloc.stats-if-enabled() {
+  local rb="$1"; shift
+  local code="$1"; shift
+  [[ ${code} -eq 0 ]] && {
+    if ${jm_action_stats}; then
+      jm.jemalloc.stats "${rb}"
+    fi
+  }
+}
+
+# @description Prints the help screen and exits
+function usage() {
+  jm.printf "
+${color_green}USAGE:${clr}
+  ${color_yellow}jemalloc-check -c [ -r <ruby-path> ] ${clr}
+
+${color_green}DESCRIPTION:${clr}
+  This script either checks every discovered Ruby binary on the 
+  system, or Ruby provided in the arguments to -r/--ruby, is linked 
+  with jemalloc, the optimized for defragmentation memory allocator, 
+  which is a drop-in replacement for libc malloc.
+
+  The script has several actions:
+    - detect if the current ruby has Jemalloc linked (-d/--detect)
+    - detect if any of the Rubies are linked with Jemalloc (-c/--check)
+    - print jemalloc statistics if available (-s/--stats)
+    - print this help screen (-h/--help)
+
+  You can print statistics in either -d or -c modes. If more than one
+  Ruby is linked with jemalloc, it will print stats multiple times:
+  one for each Ruby
+
+${color_green}ACTIONS:${clr}
+  -d/--detect       Detect if the current (in the \$PATH) ruby binary is
+                    linked with jemalloc. Compatible with -s.
+
+  -c/--check        Find all rubies in the \$PATH and ~/.rbenv that
+                    have been linked with jemalloc
+
+  -s/--stats        Print the jemalloc stats (when linked with jemalloc)
+
+  -h/--help         This page (also printed when no arguments are provided)
+
+${color_green}OPTIONS:${clr}
+  -r/--ruby PATH    Path to the ruby binary to check (defaults to the
+                    first ruby found in the \$PATH)
+
+  -q/--quiet        Do not print output, exit with 1 if no jemalloc, or 0
+                    if jemalloc was found.
+
+"
+  exit 0
+}
+
+function line() {
+  jm.printf "${color_green}─────────────────────────────────────────────────────────────────────────────────────────────${clr}\n"
+}
+
+if [[ -z $* ]]; then
+  usage
+fi
+
+# Parse additional flags
+while :; do
+  case $1 in
+  -c | --check)
+    shift
+    export jm_action_check=true
+    ;;
+  -d | --detect)
+    shift
+    export jm_action_detect=true
+    ;;
+  -s | --stats)
+    shift
+    export jm_action_stats=true
+    ;;
+  -h | -\? | --help)
+    shift
+    export jm_action_help=true
+    ;;
+  -q | --quiet)
+    shift
+    export jm_option_quiet=true
+    ;;
+  -r | --ruby)
+    shift
+    if [[ -x $1 && $(basename "$1") == "ruby" ]]; then
+      export jm_option_ruby="$1"
+      export rubies=("$1")
+      export versions=("$(${1} --version)")
+    else
+      jm.printf "${color_red} Invalid ruby interpreter provided: $1${clr}\n"
+      exit 1
+    fi
+    shift
+    ;;
+  --) # End of all options; anything after will be passed to the action function
+    shift
+    break
+    ;;
+  *)
+    [[ -n $1 ]] && {
+      jm.printf "${color_red}ERROR: invalid option: $1${clr}\n"
+      exit 1
+    }
+    break
+    ;;
+  esac
+done
+
+if ${jm_action_help}; then
+  usage
+fi
+
+declare -g current_ruby
+declare -i code
+export code=0
+
+if [[ -z ${jm_option_ruby} ]]; then
+  jm.printf "${color_green}Discovering Ruby binaries...${clr}\n"
+  for version in "${versions[@]}"; do
+    unset ruby_binary
+    jm.printf "Checking for Ruby binary ${bldylw}%-30.30s -> " "${version}"
+    if [[ -x ${version} ]]; then
+      export ruby_binary="${version}"
+      jm.printf "  %-40.40s${clr}" "${ruby_binary}"
+    elif [[ "${version}" =~ ^[\.0-9]+$ ]]; then
+      export ruby_binary="${HOME}/.rbenv/versions/${version}/bin/ruby"
+      jm.printf "  %-40.40s${clr}" "${ruby_binary/${HOME}\//}"
+    else
+      jm.printf "  %-40.40s${clr}" ""
+    fi
+
+    if [[ -x "${ruby_binary}" ]]; then
+      jm.printf "${check}\n"
+    else
+      jm.printf "${cross}\n"
+      continue
+    fi
+    rubies+=("${ruby_binary}")
+  done
+  line
+fi
+
+if ${jm_action_detect} && [[ -z ${jm_option_ruby} ]]; then
+  current_ruby=$(command -v ruby)
+  if ${jm_option_quiet}; then
+    jm.jemalloc.detect-quiet "${current_ruby}"
+  else
+    jm.jemalloc.detect-loud "${current_ruby}"
+  fi
+  code=$?
+  ${jm_action_stats} && jm.jemalloc.stats-if-enabled "${current_ruby}" "${code}"
+  ((code)) || export with_jemalloc=$((with_jemalloc + 1))
+  exit ${code}
+fi
+
+for ruby in "${rubies[@]}"; do
+  current_ruby="$(realpath "${ruby}")"
+
+  if ${jm_action_check}; then
+    if ${jm_option_quiet}; then
+      jm.jemalloc.detect-quiet "${current_ruby}"
+    else
+      jm.jemalloc.detect-loud "${current_ruby}"
+    fi
+    code=$?
+    ${jm_action_stats} && jm.jemalloc.stats-if-enabled "${current_ruby}" "${code}"
+    ((code)) || export with_jemalloc=$((with_jemalloc + 1))
+  fi
+done
+
+line
+
+if [[ ${with_jemalloc} -eq 0 ]]; then
+  jm.printf "${color_red}ERROR: no rubies with jemalloc were found${clr}\n"
+  exit 1
+else
+  jm.printf "\n\t${color_blue}RESULT: ${color_green}${with_jemalloc} rubies have jemalloc enabled out of ${#rubies[@]}${clr}\n\n"
+fi

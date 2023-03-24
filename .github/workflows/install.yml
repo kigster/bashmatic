@@ -1,0 +1,32 @@
+name: Install
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule: # run once a day to make sure
+    - cron: "30 17 * * *"
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install using curl
+      run: |
+        rm -rf ~/.bashmatic
+        bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
+    - name: verify bashmatic is there
+      run: |
+        bash -c "[[ -d ~/.bashmatic && -f ~/.bashmatic/init.sh ]]"
+    - name: install bashmatic into an alternative location with a given tag
+      run: |
+        mkdir -p ~/workspace
+        rm -rfv ~/workspace/bashmatic
+        bash -c "$(curl -fsSL https://bashmatic.re1.re); \
+          bashmatic-install -p -d -q -f -b v3.1.2 -H ~/workspace/bashmatic"
+    - name: finally source bashmatic init.sh on CI
+      run: |
+        set +ex
+        source ~/.bashmatic/init.sh

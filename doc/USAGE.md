@@ -949,11 +949,21 @@ local emulation="${ostype[1]}"
 
 
 * [bashmatic.is-developer()](#bashmaticis-developer)
+* [bashmatic.is-installed()](#bashmaticis-installed)
 
 ### `bashmatic.is-developer()`
 
 True if .envrc.local file is present. We take it as a sign
 you may be developing bashmatic.
+
+### `bashmatic.is-installed()`
+
+This function returns 1 if bashmatic is installed in the 
+location pointed to by ${BASHMATIC_HOME} or the first argument.
+
+#### Arguments
+
+* $1      The location to check for bashmatic instead of ${BASHMATIC_HOME}
 
 
 
@@ -1929,6 +1939,51 @@ pdf.combine ~/merged.pdf 'my-book-chapter*'
 ---
 
 
+## File `bin/jemalloc-check`
+
+
+
+* [jm.ruby.report()](#jmrubyreport)
+* [jm.ruby.describe()](#jmrubydescribe)
+* [js.jemalloc.detect-or-exit()](#jsjemallocdetect-or-exit)
+* [jm.jemalloc.stats()](#jmjemallocstats)
+* [jm.jemalloc.detect-quiet()](#jmjemallocdetect-quiet)
+* [jm.jemalloc.detect-loud()](#jmjemallocdetect-loud)
+* [usage()](#usage)
+
+### `jm.ruby.report()`
+
+prints the info about current version of ruby
+
+### `jm.ruby.describe()`
+
+Prints ruby version under test
+
+### `js.jemalloc.detect-or-exit()`
+
+detects jemalloc or exits
+
+### `jm.jemalloc.stats()`
+
+prints jemalloc statistics if jemalloc is available
+
+### `jm.jemalloc.detect-quiet()`
+
+returns 0 if jemalloc was detected or 1 otherwise
+
+### `jm.jemalloc.detect-loud()`
+
+detects if jemalloc is linked and if so prints the info to output
+
+### `usage()`
+
+Prints the help screen and exits
+
+
+
+---
+
+
 ## File `bin/install-direnv`
 
 
@@ -1988,5 +2043,5 @@ Manually Download and Install ShellCheck
 
 ## Copyright & License
 
- * Copyright © 2017-2022 Konstantin Gredeskoul, All rights reserved.
+ * Copyright © 2017-2023 Konstantin Gredeskoul, All rights reserved.
  * Distributed under the MIT License.

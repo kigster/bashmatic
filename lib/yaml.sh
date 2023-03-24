@@ -3,7 +3,14 @@
 export BashMatic__DiffTool="ydiff"
 
 yaml.expand-aliases() {
-  ruby -e "require 'yaml'; require 'json'; puts YAML.dump(JSON.parse(JSON.pretty_generate(YAML.load(File.read('${1}')))))"
+  local file="${1}"
+  local temp=$(mktemp)
+  cat <<-RUBY > "${temp}"
+  require 'yaml'; 
+  puts YAML.dump(YAML.load(File.read('${file}'), aliases: true))
+RUBY
+  ruby "${temp}"
+  rm -f "${temp}"
 }
 
 yaml.diff() {
@@ -41,15 +48,20 @@ yaml.dump() {
   local f1="$1"
   shift
   [[ -f "$f1" ]] || {
-    h2 "USAGE: ${bldylw}yaml-dump file.yml"
+    h2 "USAGE: ${bldylw}yaml-dump file.yml" >&2
     return 1
   }
 
   [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
-  local t1="/tmp/${RANDOM}.$(basename "${f1}").$$.yml"
-  yaml.expand-aliases "$f1" >"$t1"
-  vim "$t1"
-  run "rm -rf ${t1}"
+  local t1="$(mktemp)"
+  export yaml_dump_file="$t1.$(basename "$f1")"
+  yaml.expand-aliases "$f1" > "${yaml_dump_file}"
+  cat "${yaml_dump_file}"
+}
+
+yaml.edit() {
+  yaml.dump "$@"
+  vim "${yaml_dump_file}"
 }
 
 yaml-dump() {
