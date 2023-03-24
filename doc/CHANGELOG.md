@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.5...HEAD)
+
+**Closed issues:**
+
+- Running commands using `run` does not show the command [\#125](https://github.com/kigster/bashmatic/issues/125)
+
 ## [v3.1.5](https://github.com/kigster/bashmatic/tree/v3.1.5) (2022-12-22)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.4...v3.1.5)
