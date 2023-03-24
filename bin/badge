@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+# vim: ft=ruby
+
+class SvgFormatter
+  attr_reader :left, :right, :color
+
+  def initialize(left, right, color = "#007ec6")
+    @left = left
+    @right = right
+    @color = color
+  end
+
+  def write!
+    $stdout.puts svg
+  rescue RuntimeError => e
+    @output.puts e.message
+    @output.puts 'SvgFormatter was unable to generate a badge.'
+  end
+
+  private
+
+  def svg
+    file_content = <<~SVGTEMPLATE
+      <?xml version="1.0"?>
+      <svg xmlns="http://www.w3.org/2000/svg" width="120" height="30">
+        <linearGradient id="a" x2="0" y2="100%">
+          <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+          <stop offset="1" stop-opacity=".1"/>
+        </linearGradient>
+        <rect rx="3" width="90" height="20" fill="#555"/>
+        <rect rx="3" x="51" width="39" height="20" fill="#{color}"/>
+        <rect rx="3" width="90" height="20" fill="url(#a)"/>
+        <g fill="#fff" text-anchor="middle" font-family="Cairo,DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+          <text x="24.5" y="15" fill="#010101" fill-opacity=".3">#{left}</text>
+          <text x="24.5" y="14">#{left}</text>
+          <text x="68.5" y="15" fill="#010101" fill-opacity=".3">#{right}</text>
+          <text x="69.5" y="14">#{right}</text>
+        </g>
+      </svg>
+SVGTEMPLATE
+    file_content
+  end
+end
+
+if ARGV.size < 2
+  puts "
+USAGE:
+  badge left-word right-word [ right hex-color ] > badge.svg
+
+EXAMPLE:
+  badge Ruby-API Docs > ruby-api.svg
+
+"
+  exit 1
+end
+
+SvgFormatter.new(*ARGV).write!
+
