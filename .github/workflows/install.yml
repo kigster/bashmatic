@@ -8,7 +8,7 @@ on:
     - cron: "30 17 * * *"
 
 jobs:
-  tests:
+  install:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,6 +29,4 @@ jobs:
     - name: finally source bashmatic init.sh on CI
       run: |
         set +ex
-        source ~/.bashmatic/init.sh >/dev/null
-        code=$?
-        return ${code}
+        source ~/.bashmatic/init.sh
