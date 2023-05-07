@@ -332,4 +332,22 @@ pall() {
   pids.all "$@"
 }
 
+# @description walks the process tree up the chain until it finds the top
+# process, whose parent PID is 1. Returns that process's arg list.
+function top-most-program() {
+  pid=$$
+  while true; do
+    declare -a output=($(ps -o ppid,pid,args -p $pid | grep -v PPID))
+    if [[ ${output[0]} -eq 1 ]] ; then
+      echo ${output[2]}
+      break
+    elif [[ ${output[0]} -gt 0 ]] ; then
+      pid=${output[0]}
+    elif [[ -z ${output} ]] ; then
+      return 1
+    fi
+  done
+}
+
+
 
