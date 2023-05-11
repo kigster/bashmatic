@@ -3,8 +3,7 @@
 
 source "${BASHMATIC_HOME}/lib/file-helpers.sh"
 
-# @description Creates a temporary file and returns it as STDOUT
-# shellcheck disable=SC2120
+# @description Creates a temporary file and returns it as STDOUT # shellcheck disable=SC2120
 function file.temp() {
   local host="${HOST:-${HOSTNAME:-$(hostname)}}"
   local user="${USER:-"$(whoami)"}"
@@ -34,9 +33,9 @@ function dir.temp() {
   trap "rm -rf ${dir}" EXIT
 }
 
-file.print-normalized-name() {
+function file.print-normalized-name() {
   local file="$1"
-  echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g; s/[^A-Za-z0-9.\-]/-/g; s/---+/--/g'
+  echo -e "${file}" | ascii-pipe | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g; s/[^A-Za-z0-9.\-]/-/g; s/---+/--/g' | tr -d '\r\n'
 }
 
 # @description This function will rename all files passed to it as follows: spaces
@@ -47,7 +46,7 @@ file.print-normalized-name() {
 #       file.normalize-files "My Word Document.docx" 
 #       # my-word-document.docx
 #              
-file.normalize-files() {
+function file.normalize-files() {
   trap 'return 1' INT
   run.set-all abort-on-error
   local file
@@ -78,15 +77,14 @@ file.normalize-files() {
 }
 
 # Replaces a given regex with a string
-file.gsub() {
+function file.gsub() {
   local file="$1"
   shift
   local find="$1"
   shift
   local replace="$1"
   shift
-  local
-   runtime_options="$*"
+  local runtime_options="$*"
 
   [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && {
     error "Invalid usage of file.sub — " \
@@ -110,7 +108,7 @@ function file.first-is-newer-than-second() {
 
 # Usage:
 #   (( $(file.exists-and-newer-than "/tmp/file.txt" 30) )) && echo "Yes!"
-file.exists-and-newer-than() {
+function file.exists-and-newer-than() {
   local file="${1}"
   shift
   local minutes="${1}"
@@ -123,7 +121,7 @@ file.exists-and-newer-than() {
 }
 
 # @description Ask the user whether to overwrite the file
-file.ask.if-exists() {
+function file.ask.if-exists() {
   local file="$1"
   shift
   local message="$*"
@@ -148,7 +146,7 @@ file.ask.if-exists() {
 # @example
 #     file.install-with-backup conf/.psqlrc ~/.psqlrc backup-strategy-function
 #
-file.install-with-backup() {
+function file.install-with-backup() {
   local source="$1"; shift
   if [[ ! -f "${source}" ]]; then
     error "file ${source} can not be found"
@@ -195,22 +193,22 @@ file.install-with-backup() {
 }
 
 # @description Prints the file's last modified date
-file.last-modified-date() {
+function file.last-modified-date() {
   stat -f "%Sm" -t "%Y-%m-%d" "$1"
 }
 
 # @description Prints the year of the file's last modified date
-file.last-modified-year() {
+function file.last-modified-year() {
   stat -f "%Sm" -t "%Y" "$1"
 }
 
 # @description Prints the file's last modified date expressed as millisecondsd
-file.last-modified-millis() { 
+function file.last-modified-millis() { 
   echo -n "$(/usr/bin/stat -f %m "$1")000"
 }
 
 # Return one field of stat -s call on a given file.
-file.stat() {
+function file.stat() {
   local file="$1"
   local field="$2"
 
@@ -232,7 +230,7 @@ file.stat() {
 }
 
 # @description Returns the file size in bytes
-file.size() {
+function file.size() {
   util.os
   if [[ ${BASHMATIC_OS} =~ linux ]]; then
     stat -c %s "$1"
@@ -242,7 +240,7 @@ file.size() {
 }
 
 # @description Prints the file size expressed in Mb (and up to 1 decimal point)
-file.size.mb() {
+function file.size.mb() {
   local file="$1"
   shift
   local s=$(file.size "${file}")
@@ -251,7 +249,7 @@ file.size.mb() {
 }
 
 # @description Prints the file size expressed in Gb (and up to 1 decimal point)
-file.size.gb() {
+function file.size.gb() {
   local file="$1"
   shift
   local s=$(file.size "${file}")
@@ -260,20 +258,20 @@ file.size.gb() {
 }
 
 # @description For each argument prints only those that represent existing files
-file.list.filter-existing() {
+function file.list.filter-existing() {
   for file in "$@"; do
     [[ -f "${file}" ]] && echo "${file}"
   done
 }
 
 # @description For each argument prints only those that represent non-emtpy files
-file.list.filter-non-empty() {
+function file.list.filter-non-empty() {
   for file in "$@"; do
     [[ -s "${file}" ]] && echo "${file}"
   done
 }
 
-file.source-if-exists() {
+function file.source-if-exists() {
   local file
   for file in "$@"; do
     [[ -f "${file}" ]] && source "${file}"
@@ -334,16 +332,16 @@ files.map.shell-scripts() {
   files.map "$1" '*.sh' "$2"
 }
 
-file.extension.remove() {
+function file.extension.remove() {
   local filename="$1"
   printf "${filename%.*}"
 }
 
-file.strip.extension() {
+function file.strip.extension() {
   file.extension.remove "$@"
 }
 
-file.extension() {
+function file.extension() {
   local filename="$1"
   printf "${filename##*.}"
 }
@@ -352,7 +350,7 @@ file.extension() {
 #    file.extension.replace .sh $(find lib -type f -name '*.bash')
 # replaces all files under lib/ mathcing *.sh and renames them
 # to the given extension.
-file.extension.replace() {
+function file.extension.replace() {
   local ext="$1"
   shift
 
@@ -372,37 +370,37 @@ file.extension.replace() {
 }
 
 # @description Prints the number of lines in the file
-file.count.lines() {
+function file.count.lines() {
   [[ -f "$1" ]] || return 1
   wc -l "$1" | awk '{print $1}' | tr -d '\n' 
 }
 
 # @description Prints the number of lines in the file
-file.count.words() {
+function file.count.words() {
   [[ -f "$1" ]] || return 1
   wc -w "$1" | awk '{print $1}' | tr -d '\n' 
 }
 
 # @description Invokes UNIX find command searching for files (not folders)
 #              matching the first argument in the name.
-file.find() {
+function file.find() {
   find . -name "*$1*" -type f -print
 }
 
 # @description Invokes UNIX find command searching for folders (not files)
 #              matching the first argument in the name.
-dir.find() {
+function dir.find() {
   find . -name "*$1*" -type d -print
 }
 
 # @description Prints all folders sorted by size, and size printed in Mb
-ls.mb(){
+function ls.mb(){
   # du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
   du -m -d 1 "$@" | sort -rn
 }
 
 # @description Prints all folders sorted by size, and size printed in Gb
-ls.gb(){
+function ls.gb(){
   # du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fGb %s\n", $1/1024/1024, $2 )}' | tail -10
   du -g -d 1 "$@" | sort -rn
 }
