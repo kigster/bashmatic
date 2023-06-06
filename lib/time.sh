@@ -9,7 +9,7 @@
 #——————————————————————————————————————————————————————————————————————————————
 
 # Install necessary dependencies on OSX
-.time.osx.coreutils() {
+function .time.osx.coreutils() {
   # install gdate quietly
   brew install coreutils 2>&1 | cat >/dev/null
   code=$?
@@ -21,7 +21,7 @@
 }
 
 # milliseconds
-.run.millis() {
+function .run.millis() {
   util.os
   local date_runnable
   date_runnable='date'
@@ -180,32 +180,32 @@ function time.a-command() {
 
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on linux vs OSX.
-time.date-from-epoch() {
+function time.date-from-epoch() {
   local epoch_ts
   epoch_ts="$1"
   printf "date --date='@${epoch_ts}'"
 }
 
-time.now.db() {
+function time.now.db() {
   date '+%F.%T.%S   ' | tr -d '\:\-\.'
 }
 
-time.now.file-extension() {
+function time.now.file-extension() {
   time.now.db
 }
 
-time.epoch-to-iso() {
+function time.epoch-to-iso() {
   local epoch_ts=$1
   eval "$(time.date-from-epoch "${epoch_ts}") -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
 }
 
-time.epoch-to-local() {
+function time.epoch-to-local() {
   local epoch_ts=$1
   [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch)
   eval "$(time.date-from-epoch "${epoch_ts}") \"+%m/%d/%Y, %r\""
 }
 
-time.epoch.minutes-ago() {
+function time.epoch.minutes-ago() {
   local mins=${1}
 
   [[ -z ${mins} ]] && mins=1
@@ -214,7 +214,7 @@ time.epoch.minutes-ago() {
   echo $((now_epoch - seconds))
 }
 
-time.duration.millis-to-secs() {
+function time.duration.millis-to-secs() {
   local duration="$1"
   local format="${2:-"%d.%d"}"
   local seconds=$((duration / 1000))
@@ -222,7 +222,7 @@ time.duration.millis-to-secs() {
   printf "${format}" ${seconds} ${leftover}
 }
 
-time.duration.humanize() {
+function time.duration.humanize() {
   local seconds=${1}
   local hours=$((seconds / 3600))
   local remainder=$((seconds - hours * 3600))
@@ -240,14 +240,19 @@ time.duration.humanize() {
   { printf "%02ds" ${secs}; }
 }
 
-epoch() {
+function epoch() {
   date +%s
 }
 
-millis() {
+# @description Returns epoch as a floating point number of seconds
+function epoch.float() {
+   ruby -e 'puts Time.now.to_f'
+}
+
+function millis() {
   .run.millis
 }
 
-today() {
+function today() {
   date +'%Y-%m-%d'
 }

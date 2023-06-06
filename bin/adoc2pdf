@@ -104,6 +104,11 @@ main() {
     return 1
   }
 
+  if [[ "$1" == --no-deps ]] ; then
+    shift
+    SKIP_DEPS=1
+  fi
+
   h6 "Ensuring all PDF dependencies are available..."
   ((SKIP_DEPS)) || ensure-dependencies
 
@@ -136,6 +141,8 @@ bundle exec --gemfile="${bashmatic_gemfile}" asciidoctor-pdf \\
       --verbose \\
       --quiet \\
       --timings \\
+      --attribute source-highlighter=rouge \\
+      --attribute rouge-style=base16.monokai \\
       --attribute toc \\
       --attribute toclevels=5 \\
       --attribute allow-uri-read \\
