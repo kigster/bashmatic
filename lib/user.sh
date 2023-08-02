@@ -85,9 +85,10 @@ user.first() {
 # Uses two available methods, more information can be obtained here:
 # @see https://apple.stackexchange.com/questions/20547/how-do-i-find-my-ip-address-from-the-command-line
 function user.my.ip() {
-  local result
-  result=$(dig +short myip.opendns.com @resolver1.opendns.com)
-  if [[ -n ${result} ]] ; then
+  local result code
+  result=$(dig +short +time=2 myip.opendns.com @resolver1.opendns.com 2>/dev/null)
+  code=$?
+  if [[ -n ${result} && ${code} -eq 0 ]] ; then
     echo "${result}"
   else
     curl -sSf "http://ipecho.net/plain"; echo
