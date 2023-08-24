@@ -11,6 +11,9 @@
 :icons: font
 :license: MIT
 
+== Please Donate 
+
+https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/donate.svg[Donate using Liberapay,height=30]]   https://liberapay.com/kigster/donate[image:https://img.shields.io/liberapay/goal/kigster.svg?logo=liberapay[https://img.shields.io/liberapay/goal/kigster,height=30]]
 
 == CI Matrix
 
