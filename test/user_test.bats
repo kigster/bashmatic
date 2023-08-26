@@ -11,6 +11,15 @@ function setup-pairs() {
   user.pairs.set-file "test/fixtures/.pairs"
 }
 
+@test "user.my.ip" {
+  set -e
+  local ip=$( curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g' | sed -E 's/^[\d\.]//g; s/\r//g;' 2>&1 )
+  local my_ip=$(user.my.ip)
+
+  [[ $my_ip == $ip ]]
+}
+
+
 @test "user.pairs.firstname" {
   set -e
   setup-pairs
