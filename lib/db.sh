@@ -67,14 +67,14 @@ db.config.parse() {
 db.config.connections-list() {
   [[ -f ${bashmatic_db_config} ]] || return 2
   ruby.handle-missing
-  gem.install colored2 >/dev/null
+  gem.install colorize >/dev/null
   __yaml_source="${bashmatic_db_config}" ruby <<RUBY
   require 'yaml'
-  require 'colored2'
-  h = YAML.load(File.read(ENV['__yaml_source']))
+  require 'colorize'
+  h = YAML.load(File.read(ENV['__yaml_source']), aliases: true)
   h.each_pair do |name, params|
     printf "%50s → %s@%s/%s\n",
-      name.bold.yellow,
+      name.yellow,
       params['username'].blue,
       params['host'].green,
       params['database'].cyan
