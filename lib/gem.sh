@@ -100,14 +100,21 @@ gem.gemfile.version() {
 # this ensures the cache is only at most 30 minutes old
 gem.cache-installed() {
   gem.configure-cache
-  if [[ ! -s "${LibGem__GemListCache}" || \
+  if [[ ! -f "${LibGem__GemListCache}" || ! -s "${LibGem__GemListCache}" || \
     -z "$(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null)" ]]; then
-    gem list > "${LibGem__GemListCache}" >/dev/null
+    mkdir -p $(dirname ${LibGem__GemListCache})
+    gem list > "${LibGem__GemListCache}" 2>/dev/null
   fi
+
+  [[ -s "${LibGem__GemListCache}" ]]
+}
+
+gem.cache-list() {
+  cat "${LibGem__GemListCache}"
 }
 
 gem.clear-cache() {
-  rm -f "${LibGem__GemListCache}" >/dev/null
+  cp /dev/null "${LibGem__GemListCache}"
 }
 
 gem.cache-refresh() {
