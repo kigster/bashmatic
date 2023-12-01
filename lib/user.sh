@@ -77,25 +77,36 @@ user.pairs.email() {
 }
 #———————————————————————————————————————————————————————————————————————————————————————————————————
 
-user.first() {
+function user.first() {
   user | tr '\n' ' ' | ruby -ne 'puts $_.split(/ /).first.capitalize'
 }
 
-# @description Returns the public IP address of your office/station/etc.
-# Uses two available methods, more information can be obtained here:
-# @see https://apple.stackexchange.com/questions/20547/how-do-i-find-my-ip-address-from-the-command-line
-function user.my.ip() {
-  local result
-  result=$(dig +short myip.opendns.com @resolver1.opendns.com)
-  if [[ -n ${result} ]] ; then
-    echo "${result}"
-  else
-    curl -sSf "http://ipecho.net/plain"; echo
-  fi
+# https://apple.stackexchange.com/questions/20547/how-do-i-find-my-ip-address-from-the-command-line
+function user.my.external-ip() {
+  ( curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g' | sed -E 's/^[\d\.]//g; s/\r//g;' 2>&1 )
 }
 
-user.my.reverse-ip() {
-  nslookup "$(user.my.ip)" | grep 'name =' | sedx 's/.*name = //g'
+function user.my.ip() {
+  user.my.external-ip | tr -d '\n'
+}
+#
+# https://apple.stackexchange.com/questions/20547/how-do-i-find-my-ip-address-from-the-command-line
+function user.my.local-ip() {
+  ifconfig -l | xargs -n1 ipconfig getifaddr
+}
+
+function user.my.reverse-ips() {
+  local ip="$(user.my.ip)"
+  local output=$(curl -s "https://api.hackertarget.com/reverseiplookup/?q=${ip}" 2>&1)
+
+  if [[ ${output} =~ Membership ]]; then
+    error "You have exceeded the number of free API calls to determine your reverse IP." \
+          "Please visit https://hackertarget.com/scan-membership/ if you wish to " \
+          "increase your limit." >&2
+    return 1
+  else
+    echo
+  fi
 }
 
 user.host() {
