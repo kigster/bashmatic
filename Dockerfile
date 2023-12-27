@@ -17,7 +17,7 @@
 #    $ encrypt word
 #    
 
-FROM ruby:3.1.2-slim
+FROM ruby:3.3-slim
 
 RUN apt-get update -y && \
     apt-get install -yqq \
