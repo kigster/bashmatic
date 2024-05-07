@@ -31,6 +31,7 @@
 * xref:#module-dropbox[dropbox]
 * xref:#module-file[file]
 * xref:#module-file-helpers[file-helpers]
+* xref:#module-files-normalize[files-normalize]
 * xref:#module-flatten[flatten]
 * xref:#module-ftrace[ftrace]
 * xref:#module-gem[gem]
@@ -2831,14 +2832,14 @@ db.config.connections-list ()
 { 
     [[ -f ${bashmatic_db_config} ]] || return 2
     ruby.handle-missing
-    gem.install colored2 > /dev/null
+    gem.install colorize > /dev/null
     __yaml_source="${bashmatic_db_config}" ruby <<RUBY
   require 'yaml'
-  require 'colored2'
-  h = YAML.load(File.read(ENV['__yaml_source']))
+  require 'colorize'
+  h = YAML.load(File.read(ENV['__yaml_source']), aliases: true)
   h.each_pair do |name, params|
     printf "%50s → %s@%s/%s\n",
-      name.bold.yellow,
+      name.yellow,
       params['username'].blue,
       params['host'].green,
       params['database'].cyan
@@ -3841,6 +3842,28 @@ dir.is-a-dir ()
 
 ----
 
+==== `dir.rsync-from-mac`
+
+[source,bash]
+----
+dir.rsync-from-mac () 
+{ 
+    dir.rsync-to "$1" "$2" "--iconv=utf-8-mac,utf-8 --xattrs" "${@:3}"
+}
+
+----
+
+==== `dir.rsync-from-mac-verbose`
+
+[source,bash]
+----
+dir.rsync-from-mac-verbose () 
+{ 
+    dir.rsync-to "$1" "$2" "--iconv=utf-8-mac,utf-8 --xattrs" "-v" "${@:3}"
+}
+
+----
+
 ==== `dir.rsync-to`
 
 [source,bash]
@@ -3851,19 +3874,40 @@ dir.rsync-to ()
     shift
     local to="$1"
     shift
-    [[ -d ${from} ]] || { 
-        error "usage: dir.rsync-to [ from-dir ] [ enclosing-to-dir ]" "Directory ${from} does not exist."
+    local -a extra_rsync_flags
+    local sudo=false
+    for flag in "$@"
+    do
+        if [[ ${flag} == "--sudo" ]]; then
+            sudo=true
+        else
+            extra_rsync_flags+=("${flag}")
+        fi
+    done
+    local extra_flags="${extra_rsync_flags[*]}"
+    [[ -d "${from}" ]] || { 
+        error "usage: dir.rsync-to [ from-dir ] [ enclosing-to-dir ] [ custom-flags ]" "Directory ${from} does not exist."
         return 1
     }
-    [[ -d ${to} ]] || { 
-        error "usage: dir.rsync-to [ from-dir ] [ enclosing-to-dir ]" "Directory ${to} does not exist."
+    [[ -d "${to}" ]] || { 
+        error "usage: dir.rsync-to [ from-dir ] [ enclosing-to-dir ] [ custom-flags ]" "Directory ${to} does not exist."
         return 1
     }
     command -v rsync > /dev/null || package.install rsync
-    h3 "Starting RSync: [${from} —> ${to}]"
-    local flags="avht"
-    run.ui.ask "Do you want do delete files in ${to} that don't match files in ${from}?"
-    rsync -avht "${from}" "${to}"
+    command -v rsync > /dev/null || { 
+        error "Unable to find rsync even after installing. Aborting"
+        return 2
+    }
+    local from_pwd="$(cd "${from}" || exit 1; pwd -P)"
+    h1.yellow "Starting RSync" "From    →   ${txtgrn}[${from_pwd}]" "Dest    →   ${txtcyn}[${to}]" "Flags   →   ${txtred}[${extra_flags}]"
+    local flags="-aht"
+    local command="rsync ${flags} ${extra_flags} \"${from_pwd}\" \"${to}\""
+    ${sudo} && command="sudo ${command}"
+    h1 "Rsync Command:" "${bldylw}${command}"
+    run.ui.press-any-key "Press any key to run this command, or Ctrl-C to abort."
+    h2 "Starting rsync process..."
+    run.set-next show-output-on
+    run "${command}"
 }
 
 ----
@@ -4396,8 +4440,7 @@ file.gsub ()
     shift
     local replace="$1"
     shift
-    local
-    runtime_options="$*"
+    local runtime_options="$*"
     [[ ! -s "${file}" || -z "${find}" || -z "${replace}" ]] && { 
         error "Invalid usage of file.sub — " "USAGE: file.gsub <file>    <find-regex>        <replace-regex>" "EG:    file.gsub ~/.bashrc '^export EDITOR=vi' 'export EDITOR=gvim'"
         return 1
@@ -4564,7 +4607,7 @@ file.normalize-files ()
 file.print-normalized-name () 
 { 
     local file="$1"
-    echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g; s/[^A-Za-z0-9.\-]/-/g; s/---+/--/g'
+    echo -e "${file}" | ascii-pipe | tr '[:upper:]' '[:lower:]' | sed -E 's/ /-/g; s/[^A-Za-z0-9.\-]/-/g; s/---+/--/g' | tr -d '\r\n'
 }
 
 ----
@@ -4764,6 +4807,21 @@ ls.mb ()
 === Module `file-helpers`
 
 
+=== Module `files-normalize`
+
+==== `files.normalize-tree`
+
+[source,bash]
+----
+files.normalize-tree () 
+{ 
+    local command="__files.normalize-tree"
+    ( "${command}" "$@" )
+}
+
+----
+
+
 === Module `flatten`
 
 ==== `flatten-file`
@@ -4892,9 +4950,22 @@ g-u ()
 gem.cache-installed () 
 { 
     gem.configure-cache
-    if [[ ! -s "${LibGem__GemListCache}" || -z "$(find "${LibGem__GemListCache}" -mmin -30 2> /dev/null)" ]]; then
-        gem list > "${LibGem__GemListCache}" > /dev/null
+    if [[ ! -f "${LibGem__GemListCache}" || ! -s "${LibGem__GemListCache}" || -z "$(find "${LibGem__GemListCache}" -mmin -30 2> /dev/null)" ]]; then
+        mkdir -p $(dirname ${LibGem__GemListCache})
+        gem list > "${LibGem__GemListCache}" 2> /dev/null
     fi
+    [[ -s "${LibGem__GemListCache}" ]]
+}
+
+----
+
+==== `gem.cache-list`
+
+[source,bash]
+----
+gem.cache-list () 
+{ 
+    cat "${LibGem__GemListCache}"
 }
 
 ----
@@ -4955,7 +5026,7 @@ gem.changelog-generate ()
 ----
 gem.clear-cache () 
 { 
-    rm -f "${LibGem__GemListCache}" > /dev/null
+    cp /dev/null "${LibGem__GemListCache}"
 }
 
 ----
@@ -5314,10 +5385,7 @@ git.current-branch ()
 ----
 git.generate-changelog () 
 { 
-    [[ -z ${GITHUB_TOKEN} ]] && { 
-        error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
-        return 1
-    }
+    local token=$(git config user.token)
     git.is-valid-repo || return 2
     gem.install github_changelog_generator
     local -a remote_parts
@@ -5330,7 +5398,7 @@ git.generate-changelog ()
         return 1
     }
     run "rm -f CHANGELOG.md"
-    run "github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${GITHUB_TOKEN} --no-verbose"
+    run "bundle exec github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${token} --no-verbose"
     [[ -s "CHANGELOG.md" ]] || { 
         error "CHANGELOG.md has not been generated."
         return 1
@@ -10559,6 +10627,32 @@ sig.list ()
 
 ----
 
+==== `top-most-program`
+
+[source,bash]
+----
+top-most-program () 
+{ 
+    pid=$$
+    while true; do
+        declare -a output=($(ps -o ppid,pid,args -p $pid | grep -v PPID))
+        if [[ ${output[0]} -eq 1 ]]; then
+            echo ${output[2]}
+            break
+        else
+            if [[ ${output[0]} -gt 0 ]]; then
+                pid=${output[0]}
+            else
+                if [[ -z ${output} ]]; then
+                    return 1
+                fi
+            fi
+        fi
+    done
+}
+
+----
+
 
 === Module `pipe`
 
@@ -14036,31 +14130,53 @@ user.login-shell-path ()
 
 ----
 
+==== `user.my.external-ip`
+
+[source,bash]
+----
+user.my.external-ip () 
+{ 
+    ( curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g' | sed -E 's/^[\d\.]//g; s/\r//g;' 2>&1 )
+}
+
+----
+
 ==== `user.my.ip`
 
 [source,bash]
 ----
 user.my.ip () 
 { 
-    local result
-    result=$(dig +short myip.opendns.com @resolver1.opendns.com)
-    if [[ -n ${result} ]]; then
-        echo "${result}"
-    else
-        curl -sSf "http://ipecho.net/plain"
-        echo
-    fi
+    user.my.external-ip | tr -d '\n'
 }
 
 ----
 
-==== `user.my.reverse-ip`
+==== `user.my.local-ip`
 
 [source,bash]
 ----
-user.my.reverse-ip () 
+user.my.local-ip () 
 { 
-    nslookup "$(user.my.ip)" | grep 'name =' | sedx 's/.*name = //g'
+    ifconfig -l | xargs -n1 ipconfig getifaddr
+}
+
+----
+
+==== `user.my.reverse-ips`
+
+[source,bash]
+----
+user.my.reverse-ips () 
+{ 
+    local ip="$(user.my.ip)"
+    local output=$(curl -s "https://api.hackertarget.com/reverseiplookup/?q=${ip}" 2>&1)
+    if [[ ${output} =~ Membership ]]; then
+        error "You have exceeded the number of free API calls to determine your reverse IP." "Please visit https://hackertarget.com/scan-membership/ if you wish to " "increase your limit." 1>&2
+        return 1
+    else
+        echo
+    fi
 }
 
 ----
