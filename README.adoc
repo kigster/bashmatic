@@ -1,7 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
 // vim: ft=asciidoc
-:author: Version v3.2.2
+:author: Version v3.3.0
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -33,6 +33,17 @@ https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/
 
 _Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun** - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
 
+
+[TIP]
+====
+We suggest that you learn about Bashmatic from the **https://github.com/kigster/bashmatic/blob/main/README.pdf[PDF version of this document]** which is much better for print.
+
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/main/doc/USAGE.md[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/main/doc/USAGE.pdf[PDF] version.
+
+* There is also an auto-generated file listing the source of every function and module. You can find it https://github.com/kigster/bashmatic/blob/main/doc/FUNCTIONS.adoc[FUNCTIONS].
+
+* Additionally please checkout the https://github.com/kigster/bashmatic/blob/main/doc/CHANGELOG.md[CHANGELOG] and the https://github.com/kigster/bashmatic/blob/main/doc/LICENSE.adoc[LICENSE].
+====
 
 ====
 After you install the library (the default location is `~/.bashmatic`), realize that you have a choice of either:
@@ -86,17 +97,6 @@ Start exploring _Bashmatic®_ below with our examples section. When you are read
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* :) 
 
-
-[TIP]
-====
-We suggest that you learn about Bashmatic from the **https://github.com/kigster/bashmatic/blob/main/README.pdf[PDF version of this document]** which is much better for print.
-
-* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/main/doc/USAGE.md[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/main/doc/USAGE.pdf[PDF] version.
-
-* There is also an auto-generated file listing the source of every function and module. You can find it https://github.com/kigster/bashmatic/blob/main/doc/FUNCTIONS.adoc[FUNCTIONS].
-
-* Additionally please checkout the https://github.com/kigster/bashmatic/blob/main/doc/CHANGELOG.md[CHANGELOG] and the https://github.com/kigster/bashmatic/blob/main/doc/LICENSE.adoc[LICENSE].
-====
 
 == Compatibility
 
