@@ -4,6 +4,11 @@
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/show...v3.2.0)
 
+**Merged pull requests:**
+
+- New features: badge generator, jemalloc-check, yaml tools [\#137](https://github.com/kigster/bashmatic/pull/137) ([kigster](https://github.com/kigster))
+- Bump activesupport from 7.0.2.4 to 7.0.4.1 [\#130](https://github.com/kigster/bashmatic/pull/130) ([dependabot[bot]](https://github.com/apps/dependabot))
+
 ## [show](https://github.com/kigster/bashmatic/tree/show) (2023-01-12)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.1.5...show)

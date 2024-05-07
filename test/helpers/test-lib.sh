@@ -14,14 +14,14 @@ export BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
 # shellcheck source=./../../lib/color.sh
 source "${BASHMATIC_HOME}/init.sh"
 
-export DEFAULT_MIN_WIDTH=80
-export UI_WIDTH=${UI_WIDTH:-${DEFAULT_MIN_WIDTH}}
+export DEFAULT_MIN_WIDTH=120
+export UI_WIDTH=${DEFAULT_MIN_WIDTH}
 
 declare -a test_files
 declare -a all_test_files
 
 if [[ -n $CI ]] ; then
-  export UI_WIDTH=80
+  export UI_WIDTH=${DEFAULT_MIN_WIDTH}
   output.constrain-screen-width ${UI_WIDTH}
   prefix=" ⏱  "
 
@@ -432,11 +432,22 @@ function specs.usage() {
 }
 
 function specs.set-width() {
-  output.constrain-screen-width "${w}"
+  local w="${1:-100}"
+  if [[ -n $CI ]] ; then
+    output.set-min-width "${w}"
+    output.set-max-width "${w}"
+    output.constrain-screen-width "${w}"
+  else
+    output.unconstrain-screen-width
+  fi
 }
 
 function specs.run() {
-  specs.set-width
+  local width=$(( $(output.screen-width.actual) - 20))
+
+  [[ -z ${width} || ${width} -lt 80 ]] && width=109
+
+  specs.set-width "${width}"
   specs.header
 
   export test_files=()
@@ -459,5 +470,5 @@ function specs.run() {
     dbgf specs.run.all-in-parallel "${test_files[@]}"
   fi
 }
-
+kkkkkkkkk
 

@@ -380,10 +380,7 @@ function git.cfg.get() {
 }
 
 function git.generate-changelog() {
-  [[ -z  ${GITHUB_TOKEN} ]] && {
-    error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
-    return 1
-  }
+  local token=$(git config user.token)
 
   git.is-valid-repo || return 2
   gem.install github_changelog_generator
@@ -401,7 +398,7 @@ function git.generate-changelog() {
   }
 
   run "rm -f CHANGELOG.md"
-  run "github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${GITHUB_TOKEN} --no-verbose"
+  run "bundle exec github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${token} --no-verbose"
 
   [[ -s "CHANGELOG.md" ]] || {
     error  "CHANGELOG.md has not been generated."
