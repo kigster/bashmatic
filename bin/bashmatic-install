@@ -192,7 +192,7 @@ function .install.git-sync() {
     echo
     return 1
   else
-    git checkout -q "${bootstrap__git_branch}" && git pull -q --rebase >/dev/null
+    git branch --set-upstream-to=origin/main main
     git checkout -q "${bootstrap__git_branch}" && git pull -q --rebase >/dev/null
   fi
 }
