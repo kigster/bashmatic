@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gem 'asciidoctor-pdf', github: 'asciidoctor/asciidoctor-pdf'
 gem 'coderay'
+gem 'faraday-retry'
 gem 'github_changelog_generator'
 gem 'hexapdf'
 gem 'matrix'

@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 # vim: ft=bash
 
+export simple_feed_version="3.1.2"
+
 setup() {
   load test_helper
 
@@ -32,14 +34,14 @@ teardown() {
   cp test/Gemfile.lock ${TMP}
   ( cd ${TMP} &&
     result="$(gem.gemfile.version simple-feed)" &&
-    [ "${result}" == "3.0.1" ] )
+    [ "${result}" == "${simple_feed_version}" ] )
 }
 
-@test "gem.gemfile.version simple-feed == 3.0.1" {
+@test "gem.gemfile.version simple-feed == ${simple_feed_version}" {
   gem.cache-refresh
   set -e
   result="$(gem.gemfile.version simple-feed test/Gemfile.lock)"
-  [ "${result}" == "3.0.1" ]
+  [ "${result}" == "${simple_feed_version}" ]
 }
 
 @test "gem.gemfile.version rails [alt-gemfile] == 4.2.11.3" {
