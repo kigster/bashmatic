@@ -1,5 +1,20 @@
 # Changelog
 
+## [v3.3.0](https://github.com/kigster/bashmatic/tree/v3.3.0) (2024-05-07)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.2.0...v3.3.0)
+
+**Merged pull requests:**
+
+- Adding rsync functions,  updating documentation, version 3.3.0 [\#157](https://github.com/kigster/bashmatic/pull/157) ([kigster](https://github.com/kigster))
+- Fixing gem cache [\#153](https://github.com/kigster/bashmatic/pull/153) ([kigster](https://github.com/kigster))
+- Fixing forward and reverse IP lookup. [\#150](https://github.com/kigster/bashmatic/pull/150) ([kigster](https://github.com/kigster))
+- Update README.adoc [\#148](https://github.com/kigster/bashmatic/pull/148) ([kigster](https://github.com/kigster))
+- Bump activesupport from 7.0.4.1 to 7.0.7.2 [\#146](https://github.com/kigster/bashmatic/pull/146) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump protocol-http1 from 0.14.4 to 0.15.1 [\#145](https://github.com/kigster/bashmatic/pull/145) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Adding several file-based functions & tree-rename [\#141](https://github.com/kigster/bashmatic/pull/141) ([kigster](https://github.com/kigster))
+- \[Snyk\] Security upgrade ruby from 3.1.2-slim to 3.2.1-slim [\#138](https://github.com/kigster/bashmatic/pull/138) ([kigster](https://github.com/kigster))
+
 ## [v3.2.0](https://github.com/kigster/bashmatic/tree/v3.2.0) (2023-03-24)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/show...v3.2.0)
