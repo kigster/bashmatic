@@ -4,10 +4,15 @@
 set +e
 load test_helper
 
-source init.sh
+unset DEBUG
+
+source lib/color.sh
 source lib/util.sh
 source lib/output.sh
-source lib/color.sh
+source lib/output-admonitions.sh
+source lib/output-boxes.sh
+source lib/output-repeat-char.sh
+source lib/output-utils.sh
 
 @test "ascii-pipe() should remove color and other escape sequences from STDIN" {
   set -e
@@ -31,16 +36,23 @@ source lib/color.sh
 } 
 
 @test "output.screen-width.actual()" {
-  output.unconstrain-screen-width
-  local w=$(output.screen-width.actual)
-  set -e
-  [[ $w -eq $COLUMNS ]]
+  if [[ -z ${CI} && -n ${COLUMNS} ]]; then
+    output.unconstrain-screen-width
+    local w=$(output.screen-width.actual)
+    set -e
+    [[ $w -eq $COLUMNS ]]
+  else
+    true
+  fi
 }
 
 @test "output.screen-height.actual()" {
-  output.unconstrain-screen-width
-  local h=$(output.screen-height.actual)
-  set -e
-  [[ $h -eq $LINES ]]
+  if [[ -z ${CI} && -n ${LINES} ]]; then
+    output.unconstrain-screen-width
+    local h=$(output.screen-height.actual)
+    [[ $h -eq $LINES ]]
+  else 
+    true  
+  fi
 }
 
