@@ -20,6 +20,13 @@ source "${BASHMATIC_HOME}/init.sh"
 export BashMatic__ColorLoaded=0
 source "${BASHMATIC_HOME}/lib/color.sh"
 
+if [[ -n $CI ]] ; then
+  export UI_WIDTH=120
+  output.constrain-screen-width "${UI_WIDTH}"
+  output.set-min-width "${UI_WIDTH}"
+  output.set-max-width "${UI_WIDTH}"
+fi
+
 function specs.main() {
   export TEST_DIR="${TEST_DIR:-"test"}"
   # shellcheck source=./../test/helpers/test-lib.sh
