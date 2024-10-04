@@ -1,0 +1,475 @@
+#!/usr/bin/env bash
+# vi: ft=sh
+#
+# https://gist.github.com/kigster/8ddebf9fddff25620e64d558dd4d56b7
+#
+# © 2019-2022 Konstantin Gredeskoul, Inc., All rights reserved.
+# MIT LICENSE
+# ————————————————————————————————————————————————————————————————
+# This script verifies that the ruby interpreter (either the one in
+# the $PATH, or the one specified by the -r / --ruby option) is linked
+# with jemalloc library for efficient memory utilization, and/or
+# support YJIT (Yet Another JIT) compiler.
+#
+# It works well on Linux and Mac OSX.
+#
+# BACKGROUND
+# ————————————————————————————————————————————————————————————————
+# Ruby versions 2.5 and earlier had a simpler method, typically
+# running the following command and expecting the output to
+# contain something like '-ljemalloc -lm ... '
+#
+#     ruby -r rbconfig -e "puts RbConfig.CONFIG['LIBS']"
+#
+# Unfortunately, this method no longer works with Ruby 2.6
+# and later, nor did it ever work with Linux.
+#
+# For this reason, the following script is provided to verify
+# if your Ruby is using jemalloc memory allocator or not.
+#
+# USAGE:
+#   curl -fSL http://bit.ly/ruby-jemalloc-check > ruby-check
+#   chmod 755 ruby-check
+#
+#   ruby-check --help
+#   ruby-check -r /usr/bin/ruby
+#   ruby-check -a -v # check all in verbose mode
+#
+# ————————————————————————————————————————————————————————————————
+
+set +e
+
+declare __ran_as_script
+
+# shellcheck disable=SC2235
+([[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
+  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
+
+declare -g project_root
+project_root="$(dirname "$(
+  cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+  pwd -P
+)")"
+export project_root
+
+declare -g current_ruby
+export with_jemalloc=0
+
+export rb_option_quiet=false
+export rb_option_verbose=false
+
+export rb_check_specified_ruby=
+export rb_check_all_rubies=false
+export rb_check_current_ruby=false
+
+export rb_action_je_stats=false
+export rb_action_yjit_stats=false
+export rb_action_yjit_pid=
+
+export rb_action_help=false
+
+export color_red="\e[1;31m"
+export color_green="\e[1;32m"
+export color_yellow="\e[1;33m"
+export color_blue="\e[1;34m"
+export clr="\e[0m"
+
+export bakred='\e[41m'   # Red
+export bakgrn='\e[42m'   # Green
+export bakcyn='\e[46m'   # Cyan
+export bldylw='\e[1;33m' # Yellow
+export bldwht='\e[1;37m' # White
+
+export cross=" ${clr}${bakred}${bldwht} ✘ ${clr} "
+export check=" ${clr}${bakgrn}${bldwht} ✔︎ ${clr} "
+
+declare -g -a rbenv_versions
+declare -g -a ruby_candidates
+declare -g -a rubies_to_check
+declare -g -a ruby_paths
+declare -g -i rubies_with_jemalloc
+declare -g -i rubies_with_yjit
+
+export rubies_with_jemalloc=0
+export rubies_with_yjit=0
+
+# Versions will contain
+mapfile -t rbenv_versions < <(rbenv versions --bare)
+export rbenv_versions
+
+export ruby_candidates=(/usr/bin/ruby /usr/local/bin/ruby /opt/hombrew/bin/ruby)
+
+function rb.normalize-versions() {
+  local -a rubies=()
+  local local=
+  # shellcheck disable=SC2002
+  [[ -f .ruby-version ]] && local="$(cat ".ruby-version" | tr -d '\n')"
+
+  rubies+=( ${rbenv_versions[@]} )
+  rubies+=( ${ruby_candidates[@]} )
+
+  for candidate in "${rubies[@]}"; do
+    if [[ -x ${candidate} ]]; then
+      ruby_paths+=("${candidate}")
+    elif [[ "${candidate}" =~ ^[\.0-9]+$ ]]; then
+      local version=${candidate}
+      # make local folder this version
+      rbenv local "${version}"
+      local ruby_path="$(rbenv which ruby)"
+      [[ -x ${ruby_path} ]] && ruby_paths+=("${ruby_path}")
+    fi
+  done
+
+  [[ -n ${local} && ${local} != $(rbenv local 2>/dev/null) ]] && rbenv local "${local}"
+}
+
+rb.normalize-versions
+
+function line() {
+  ${rb_option_verbose} && rb.printf "${color_green}──────────────────────────────────────────────────────────────────────────────────────────────────${clr}\n"  >&2
+}
+
+function rb.verbose() {
+  if ${rb_option_verbose}; then
+    printf "$@" >&2
+  fi
+}
+
+function rb.header() {
+  line
+  rb.verbose "${color_green}$*${clr}\n"
+  line
+}
+
+function rb.printf() {
+  if "${rb_option_quiet}"; then
+    echo >/dev/null
+  else
+    printf "$@" >&2
+  fi
+}
+
+function rb.output() {
+  printf "$@" >&2
+}
+
+function rb.error() {
+  for arg in "$@"; do
+    rb.printf "${color_red}ERROR: $arg${clr}\n"
+  done
+}
+
+function rb.info() {
+  rb.printf "${color_blue}$*${clr}\n"
+}
+
+# @description prints the info about current version of ruby
+function rb.ruby.report() {
+  local rb="$1"
+  rb.printf "${color_yellow}%-50.50s${color_blue} (v%-20.20s) ${clr}" "${rb}" "$(rb.ruby.describe "${rb}")"
+}
+
+# @description Prints ruby version under test
+function rb.ruby.describe() {
+  local rb="$1"
+  ${rb} -e 'puts "#{RUBY_VERSION} (#{RUBY_PLATFORM})"'
+}
+
+# @description detects jemalloc or exits
+function rb.jemalloc.detect-or-exit() {
+  local rb="$1"
+  rb.jemalloc.detect-quiet "${rb}" || {
+    rb.printf "${color_red}ERROR: No jemalloc detected in ruby ${rb}${clr}\n"
+    exit 1
+  }
+}
+
+# @description prints jemalloc statistics if jemalloc is available
+function rb.jemalloc.stats() {
+  local rb="$1"
+  MALLOC_CONF=stats_print:true ${rb} -e "exit" 2>&1
+}
+
+# @description returns 0 if jemalloc was detected or 1 otherwise
+function rb.jemalloc.detect-quiet() {
+  local rb="$1"
+  MALLOC_CONF=stats_print:true ${rb} -e "exit" 2>&1 | grep -q "jemalloc statistics"
+}
+
+# @description detects if jemalloc is linked and if so prints the info to output
+function rb.jemalloc.detect-loud() {
+  local rb="$1"
+  shift
+  rb.printf "${color_yellow}$(rb.ruby.report "${rb}")${clr}"
+  rb.jemalloc.detect-quiet "${rb}"
+  local code=$?
+  if [[ ${code} -eq 0 ]]; then
+    rb.printf " ${check} ${color_green} jemalloc detected"
+  else
+    rb.printf " ${cross} ${color_red} jemalloc not detected"
+  fi
+  rb.printf "${clr}"
+  echo
+  return "${code}"
+}
+
+function rb.jemalloc.stats-if-enabled() {
+  local rb="$1"; shift
+
+  if ${rb_action_je_stats}; then
+    rb.jemalloc.stats "${rb}"
+  fi
+}
+
+# @description Prints the help screen and exits
+function usage() {
+  rb.printf "
+${color_green}USAGE:${clr}
+  ${color_yellow}ruby-check -c [ -r <ruby-path> ] ${clr}
+
+${color_green}DESCRIPTION:${clr}
+  This script checks for two things for MRI (aka CRuby) Ruby.
+
+    1. jemalloc linked with the interpreter
+    2. yjit is available in the interpreter
+
+  Which Ruby interpreter was compiled with jemalloc and yjit support.
+
+  This script either checks every discovered Ruby binary on the
+  system (with --all), or the specific Ruby provided in the arguments
+  to -r/--ruby option.
+
+  with jemalloc, the optimized for defragmentation memory allocator,
+  which is a drop-in replacement for libc malloc.
+
+  The script has several actions:
+    - detect if the current ruby has Jemalloc linked (-d/--detect)
+    - detect if any of the Rubies are linked with Jemalloc (-c/--check)
+    - print jemalloc statistics if available (-s/--stats)
+    - print this help screen (-h/--help)
+
+  You can print statistics in either -d or -c modes. If more than one
+  Ruby is linked with jemalloc, it will print stats multiple times:
+  one for each Ruby
+
+${color_green}WHICH RUBY:${clr}
+  -c/--current      Detect if the current (in the \$PATH) ruby binary is
+                    linked with jemalloc. Compatible with -s.
+
+  -a/--all          Find all rubies in the \$PATH and ~/.rbenv that
+                    have been linked with jemalloc and yjit
+
+  -r/--ruby PATH    Path to the ruby binary to check (defaults to the
+                    first ruby found in the \$PATH)
+
+
+${color_green}ADDITIONAL ACTIONS:${clr}
+  -j/--jm-stats     Print the jemalloc stats (when linked with jemalloc)
+
+  -y/--yjit-stats   Print the YJIT stats (requires --pid)
+
+  -p/--pid          PID of the Ruby process to example for YJIT stats
+
+${color_green}OPTIONS:${clr}
+  -q/--quiet        Do not print output, exit with 1 if no jemalloc, or 0
+                    if jemalloc was found.
+
+  -v/--verbose      Print all discovered Ruby Interpreters before checking.
+
+  -h/--help         This page (also printed when no arguments are provided)
+"
+  exit 0
+}
+
+function rb.parse-opts() {
+  if [[ $# -eq 0 ]]; then
+    usage
+  fi
+
+  # Parse additional flags
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    # Ruby Selection
+    -a | --all)
+      shift
+      export rb_check_all_rubies=true
+      ;;
+
+    -c | --current)
+      shift
+      export rb_check_current_ruby=true
+      ;;
+
+    -r | --ruby)
+      shift
+      if [[ -x $1 && $(basename "$1") == "ruby" ]]; then
+        export rb_check_specified_ruby="$1"
+      else
+        rb.error "Invalid ruby interpreter provided: $1"
+        exit 1
+      fi
+      shift
+      ;;
+
+    # Additional Actions
+    -j | --jm-stats)
+      shift
+      export rb_action_je_stats=true
+      ;;
+
+    -y | --yjit-stats)
+      shift
+      export rb_action_yjit_stats=true
+      export rb_action_yjit_pid=$1
+
+      [[ ${rb_action_yjit_pid} =~ ^-?[0-9]+$ ]] || {
+        rb.error "Invalid PID provided to --yjit-stats: ${rb_action_yjit_pid}"
+        exit 1
+      }
+
+      shift
+      ;;
+
+    # Output Options
+    -h | -\? | --help)
+      shift
+      export rb_action_help=true
+      ;;
+
+    -q | --quiet)
+      shift
+      export rb_option_quiet=true
+      ;;
+
+    -v | --verbose)
+      shift
+      export rb_option_verbose=true
+      ;;
+
+    --) # End of all options; anything after will be passed to the action function
+      shift
+      break
+      ;;
+    *)
+      [[ -n $arg ]] && {
+        rb.printf "${color_red}ERROR: invalid option: $arg${clr}\n"
+        exit 1
+      }
+      break
+      ;;
+    esac
+  done
+}
+
+function rb.process.path() {
+  local search="$*"
+  local pid="$(ps auxww | grep "${search}" | grep -v grep | head -2 | awk '{print $2}')"
+  if [[ -n "${pid}" ]] ; then
+    lsof -p ${pid} | grep REG | grep ruby | head -1 | awk '{print $9}'
+  else
+    rb.error "No process found matching: ${search}"
+    return 1
+  fi
+}
+
+function rb.stats.print() {
+  local rb="$1"
+  ${rb_action_je_stats}   && rb.jemalloc.stats-if-enabled "${rb}"
+  ${rb_action_yjit_stats} && rb.yjit.stats-if-enabled "${rb}"
+}
+
+function rb.main() {
+  rb.parse-opts "$@"
+
+  if ${rb_action_help}; then
+    usage
+  fi
+
+  local -a rubies_to_check=()
+  local code
+  local current_ruby
+  local first_ruby_with_jemalloc
+
+  export code=0
+
+  if [[ ${rb_check_current_ruby} == "true" ]]; then
+    if [[ $(which ruby) =~ shims ]]; then
+      current_ruby="$(rbenv which ruby)"
+    else
+      current_ruby="$(which ruby)"
+    fi
+    rubies_to_check+=(${current_ruby})
+    rb.header "Checking Ruby ${current_ruby}..."
+
+  elif [[ ${rb_check_all_rubies} == "true" ]]; then
+    rb.header "Listing all detected interpreters on this system..."
+    for ruby in "${ruby_paths[@]}"; do
+      if [[ -x ${ruby} ]]; then
+        # shellcheck disable=SC2001
+        local ruby_path="$(echo "${ruby}" | sed "s|${HOME}|~|")"
+        version=$(${ruby} -e 'puts RUBY_VERSION')
+
+        rb.verbose "ruby ${bldylw}v%-13.13s → " "${version}"
+        rb.verbose "  %-40.40s${clr}" "${ruby_path}"
+        rb.verbose "${txtgrn} ${check}\n"
+        rubies_to_check+=("${ruby}")
+      else
+        rb.verbose "discovering ruby @ ${bldylw}%-10.10s → " "${ruby}"
+        rb.verbose "${txtred}  %-40.40s${clr}" "not found"
+        rb.verbose "${cross}\n"
+      fi
+    done
+  elif [[ ${rb_check_specified_ruby} ]]; then
+   rb.header "Checking specified ruby ${rb_check_current_ruby}..."
+   rubies_to_check+=("${rb_check_specified_ruby}")
+  else # default to the first ruby found
+    usage
+    # shellcheck disable=SC2317
+    rb.error "You did not specify which rubies to check."
+  fi
+
+  [[ ${#rubies_to_check[@]} -eq 0 ]] && {
+    rb.error "No rubies found to check."
+    exit 1
+  }
+
+  rb.header "Checking requested Rubies for jemalloc & YJIT support"
+
+  for ruby in "${rubies_to_check[@]}"; do
+    current_ruby="$(realpath "${ruby}")"
+    if ${rb_option_quiet}; then
+      rb.jemalloc.detect-quiet "${current_ruby}"
+      code=$?
+    else
+      rb.jemalloc.detect-loud "${current_ruby}"
+      code=$?
+    fi
+    if [[ ${code} -eq 0 ]]; then
+      [[ -z ${first_ruby_with_jemalloc} ]] && first_ruby_with_jemalloc="${ruby}"
+      ((rubies_with_jemalloc++))
+    fi
+  done
+
+  if [[ -n ${first_ruby_with_jemalloc} ]] && ${rb_action_je_stats}; then
+    rb.stats.print "${first_ruby_with_jemalloc}"
+  fi
+
+  if [[ ${rubies_with_jemalloc} -eq 0 ]]; then
+    rb.error "no rubies with jemalloc were found :-("
+    return 1
+  else
+    echo
+    rb.output "${txtgrn}${rubies_with_jemalloc} rubies have jemalloc enabled out of ${#rubies_to_check[@]} checked.${clr}\n"
+    return 0
+  fi
+}
+
+((__ran_as_script)) || return 0
+
+rb.main "$@"
+
+if [[ ${rubies_with_jemalloc} -gt 0 ]]; then
+  exit 0
+else
+  exit 1
+fi

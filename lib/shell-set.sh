@@ -2,7 +2,7 @@
 # ———————————————————————————————————————————————————————
 # BashMatic Utilities Library
 # ———————————————————————————————————————————————————————
-# © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
+# © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License.
 #
 # Distributed under the MIT LICENSE.
 #

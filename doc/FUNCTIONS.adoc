@@ -21,6 +21,7 @@
 * xref:#module-caller[caller]
 * xref:#module-color[color]
 * xref:#module-config[config]
+* xref:#module-datadog[datadog]
 * xref:#module-db[db]
 * xref:#module-db_cli[db_cli]
 * xref:#module-db_rails[db_rails]
@@ -2560,6 +2561,44 @@ config.set-format ()
 ----
 
 
+=== Module `datadog`
+
+==== `dd-start`
+
+[source,bash]
+----
+dd-start () 
+{ 
+    local log_dir="/opt/datadog-agent/logs"
+    command -V datadog-agent 2> /dev/null || { 
+        error "Datadog Agent does not appear to be in your \$PATH"
+        return 1
+    }
+    [[ -d ${log_dir} ]] || mkdir -p "${log_dir}"
+    /bin/ps -ef | grep -iq [d]atadog && { 
+        h1 'Stopping Datadog Agent...'
+        run "datadog-agent stop || sleep 5"
+        run "datadog-agent stop; ps -ef | grep [d]atadog | awk '{print \$2}'; sleep 1"
+        local still_running=$(mktemp)
+        /bin/ps -ef | grep -iq -E [d]atadog > ${still_running} && { 
+            warning "Some Datadog Agent processes either stayed running, or auto-restarted."
+            cat ${still_running}
+        }
+    }
+    /bin/ps -ef | grep -iq [d]atadog && { 
+        h1 'Starting Datadog Agent...'
+        run.set-next show-output-on
+        run "nohup datadog-agent start 1>>${log_dir}/stdout.log 2>>${log_dir}/stderr.log &"
+        hr
+        ps -ef | grep -i datadog
+        hr
+    }
+    /bin/ps -ef | grep -iq [d]atadog
+}
+
+----
+
+
 === Module `db`
 
 ==== `db.actions.connect`
@@ -3719,7 +3758,7 @@ db.top ()
             break
         else
             .output.set-indent 0
-            hl.green "DbTop© v1.1.0 © 2016-2022 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
+            hl.green "DbTop© v1.1.0 © 2016-2024 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
             cat "${tof}"
             cursor.at.y $(($(.output.screen-height) + 1))
             printf "${bldwht}Press Ctrl-C to quit.${clr}"

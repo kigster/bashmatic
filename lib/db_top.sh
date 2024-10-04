@@ -262,7 +262,7 @@ db.top() {
       break
     else
       .output.set-indent 0
-      hl.green "DbTop© v1.1.0 © 2016-2022 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
+      hl.green "DbTop© v1.1.0 © 2016-2024 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
       cat "${tof}"
       cursor.at.y $(($(.output.screen-height) + 1))
       printf "${bldwht}Press Ctrl-C to quit.${clr}"

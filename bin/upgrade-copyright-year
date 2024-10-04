@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# @copyright © 2016-2024 Konstantin Gredeskoul, All rights reserved.
+# @license MIT
+# 
+# vim: ft=bash
+
+([[ -n ${ZSH_EVAL_CONTEXT} && ${ZSH_EVAL_CONTEXT} =~ :file$ ]] ||
+  [[ -n $BASH_VERSION && $0 != "$BASH_SOURCE" ]]) && __ran_as_script=0 || __ran_as_script=1
+
+# shellcheck disable=2046
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
+source "${BASHMATIC_HOME}/init.sh"
+
+function bashmatic-update-copyright-year() {
+  set -e
+
+  local this_year="$(date '+%Y' | tr -d '\n')"
+  # Find all the four-digit years at the end of the string such as "2016-2020"
+  local -a prev_years=("$(rg "©" | grep -i copyright | tr -cd '[[0-9-\n]]' | grep -E '^\d{4}-\d{4}' | cut -d - -f 2 | sort | uniq | grep -v ${this_year})")
+  local -a files_with_copyright
+
+  for prev_year in ${prev_years[@]}; do
+    [[ -z ${prev_year} ]] && {
+      warning "unexpected blank year in the arary." \
+       "Might need to tweak the definition of prev_years" \
+       "prev_years array is: ${prev_years[@]}"
+      continue
+    }
+
+    info "Finding files with copyright year ${bldylw}${prev_year}..."
+
+    mapfile -t files_with_copyright < <(find "${BASHMATIC_HOME}" -type f -name '*.sh' -exec grep -q -- "-${prev_year}" {} \; -print)
+    
+    if [[ ${#files_with_copyright} -eq 0 ]]; then
+      info "No files found with copyright ending on ${bldred}${prev_year}."
+      continue
+    fi
+
+    for file in "${files_with_copyright[@]}"; do 
+      info "processing ${file}, replacing ${prev_year} with ${this_year}"
+      sed -i '' -E "s/\-${prev_year}/\-${this_year}/g" "${file}"
+    done
+  done
+}
+
+((__ran_as_script)) && bashmatic-update-copyright-year "$@"
+

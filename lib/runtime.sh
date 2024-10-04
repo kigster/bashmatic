@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #——————————————————————————————————————————————————————————————————————————————
-# © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
+# © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Ported from the licensed under the MIT license Project Pullulant, at
 # https://github.com/kigster/pullulant
 #
-# Any modifications, © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
+# Any modifications, © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
 # The following "global" variables define how the run framework executes
