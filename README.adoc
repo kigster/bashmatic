@@ -28,7 +28,6 @@ https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/
 | Gitter             | image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 |==========================
 
-
 == Introduction 
 
 _Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun** - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
