@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# © 2016-2022 Konstantin Gredeskoul, All rights reserved. MIT License.
+# © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License.
 #
 # Set me to a URL pointing to the VPN setup instructions
 export LibDeploy__VpnInfoUrl=${LibDeploy__VpnInfoUrl:-''}

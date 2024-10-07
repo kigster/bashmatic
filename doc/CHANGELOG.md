@@ -81,9 +81,8 @@
 
 - New feature: git.open.current\(\) will open  branch. [\#120](https://github.com/kigster/bashmatic/pull/120) ([kigster](https://github.com/kigster))
 - fAdding abbility to obfiscate sensitive vars [\#119](https://github.com/kigster/bashmatic/pull/119) ([kigster](https://github.com/kigster))
-- Fix the millis\(\) error [\#117](https://github.com/kigster/bashmatic/pull/117) ([kigster](https://github.com/kigster))
 
-## [v3.0.7](https://github.com/kigster/bashmatic/tree/v3.0.7) (2022-11-25)
+## [v3.0.7](https://github.com/kigster/bashmatic/tree/v3.0.7) (2022-11-15)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.6...v3.0.7)
 
@@ -91,17 +90,21 @@
 
 - Fix the millis\(\) error when loading init.sh [\#118](https://github.com/kigster/bashmatic/issues/118)
 
-## [v3.0.6](https://github.com/kigster/bashmatic/tree/v3.0.6) (2022-11-13)
-
-[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.5...v3.0.6)
-
 **Merged pull requests:**
 
+- Fix the millis\(\) error [\#117](https://github.com/kigster/bashmatic/pull/117) ([kigster](https://github.com/kigster))
 - Declare globally [\#116](https://github.com/kigster/bashmatic/pull/116) ([kigster](https://github.com/kigster))
 - Consolidating duplicate variables — cleaning up [\#115](https://github.com/kigster/bashmatic/pull/115) ([kigster](https://github.com/kigster))
 - Simplifying the reload function [\#114](https://github.com/kigster/bashmatic/pull/114) ([kigster](https://github.com/kigster))
 - Don't show the banner if no TTY is available [\#113](https://github.com/kigster/bashmatic/pull/113) ([kigster](https://github.com/kigster))
 - Video compression helpers such as `video.make.mp4` [\#111](https://github.com/kigster/bashmatic/pull/111) ([kigster](https://github.com/kigster))
+
+## [v3.0.6](https://github.com/kigster/bashmatic/tree/v3.0.6) (2022-10-27)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.0.5...v3.0.6)
+
+**Merged pull requests:**
+
 - Adding admonitions + fixing init.sh [\#110](https://github.com/kigster/bashmatic/pull/110) ([kigster](https://github.com/kigster))
 - Rename master to main [\#109](https://github.com/kigster/bashmatic/pull/109) ([kigster](https://github.com/kigster))
 - adding dir.with-file + gpg key generation [\#101](https://github.com/kigster/bashmatic/pull/101) ([kigster](https://github.com/kigster))
@@ -271,19 +274,16 @@
 
 - Adding new script bin/tablet for table-level ops [\#65](https://github.com/kigster/bashmatic/pull/65) ([kigster](https://github.com/kigster))
 - Video compression and renaming WAV files [\#64](https://github.com/kigster/bashmatic/pull/64) ([kigster](https://github.com/kigster))
+- Updating README with installer info [\#63](https://github.com/kigster/bashmatic/pull/63) ([kigster](https://github.com/kigster))
+- Add bash-it framework installation [\#61](https://github.com/kigster/bashmatic/pull/61) ([kigster](https://github.com/kigster))
 
 ## [v2.2.1](https://github.com/kigster/bashmatic/tree/v2.2.1) (2021-04-27)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.2.0...v2.2.1)
 
-## [v2.2.0](https://github.com/kigster/bashmatic/tree/v2.2.0) (2021-04-26)
+## [v2.2.0](https://github.com/kigster/bashmatic/tree/v2.2.0) (2021-04-27)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v2.1.2...v2.2.0)
-
-**Merged pull requests:**
-
-- Updating README with installer info [\#63](https://github.com/kigster/bashmatic/pull/63) ([kigster](https://github.com/kigster))
-- Add bash-it framework installation [\#61](https://github.com/kigster/bashmatic/pull/61) ([kigster](https://github.com/kigster))
 
 ## [v2.1.2](https://github.com/kigster/bashmatic/tree/v2.1.2) (2021-04-21)
 

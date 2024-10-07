@@ -3,7 +3,7 @@
 # vim: noexpandtab
 
 # grep '^[a-z\-]*:' Makefile | cut -d: -f 1 | tr '\n' ' '
-.PHONY:	 help install fonts-setup fonts-clean update-changelog update-functions update-usage update-readme regenerate-readme reduce-size-readme open-readme git-add update setup test docker-build docker-run docker-run-bash docker-run-zsh docker-run-fish file-stats-git file-stats-local shell-files release tag
+.PHONY:	 help install fonts-setup fonts-clean update-copyright update-changelog update-functions update-usage update-readme regenerate-readme reduce-size-readme open-readme git-add update setup test docker-build docker-run docker-run-bash docker-run-zsh docker-run-fish file-stats-git file-stats-local shell-files release tag
 
 red             		:= \033[0;31m
 bold             		:= \033[1;45m
@@ -82,7 +82,11 @@ bundle-install:			## Install all gems from the Gemfile
 				time bundle install -j 12 --quiet --gemfile="$(BASHMATIC_GEMFILE)"
 #—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
-update: 			update-changelog update-functions update-usage update-readme fonts-clean git-add ## Runs all of the updates, add locally modiofied files to git.
+update: 			bundle-install update-copyright update-changelog update-functions update-usage update-readme fonts-clean git-add ## Runs all of the updates, add locally modiofied files to git.
+
+update-copyright:		## Runs a script that updates the latest year in the string "© Copyright 2016-2020" with the current year.
+				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Updating Copyright Statements....$(clear)\n"
+				@bin/upgrade-copyright-year
 
 update-changelog: 		## Auto-generate the doc/CHANGELOG (requires GITHUB_TOKEN env var set)
 				@printf "\n$(bold)  👉    $(red)$(clear)  $(green)Regenerating CHANGELOG....$(clear)\n"

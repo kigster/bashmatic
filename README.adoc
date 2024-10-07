@@ -1,7 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
 // vim: ft=asciidoc
-:author: Version v3.3.0
+:author: Version v3.3.1
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -27,7 +27,6 @@ https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/
 | ShellCheck         | image:https://github.com/kigster/bashmatic/actions/workflows/lint.yml/badge.svg[Lint,link=https://github.com/kigster/bashmatic/actions/workflows/lint.yml]
 | Gitter             | image:https://badges.gitter.im/kigster/bashmatic.svg[link="https://gitter.im/kigster/bashmatic?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"]
 |==========================
-
 
 == Introduction 
 
