@@ -116,7 +116,7 @@ function ruby.detect-version() {
   
   while true; do
     if [[ -s "${current_dir}/${ruby_version_file_path}" ]]; then
-      export ruby_version_from_file="$(/usr/bin/cat "${current_dir}/${ruby_version_file_path}" | tr -d '\n')"
+      export ruby_version_from_file="$(tr -d '\n' < <(cat "${current_dir}/${ruby_version_file_path}"))"
 
       ruby.version-valid "${ruby_version_from_file}" && {
         log.info "Found file ${ruby_version_file_path} in"
