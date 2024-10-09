@@ -4,23 +4,28 @@
 # @uthor   Konstantin Gredeskoul
 # @project Bashmatic
 # @repo    https://github.com/kigster/bashmatic
-#
-# This script installs Ruby with Jemalloc, YJIT and OpenSSL bindings.
-# The version of ruby is read from .ruby-version file in the current
-# directory, any directory above the current, or the version can be 
-# passed as an argument, eg:
-#
-# @example Passing via arguments
-#      ruby-install [ -f | --force ] 3.3.5
-#
-# @example Reading .ruby-version
-#      echo '3.3.5' > .ruby-version
-#      ruby-install [ -f | --force ]
+# 
+# @dependencies Expected to be pre-installed
+#     - rbenv
+#     - ruby-build
 #
 # @description
-#      By the default, the installer will skip existing installations
-#      with the same ruby version. If you pass -f or --force, however,
-#      any existing installation will be entirely replaced.
+#     By the default, the installer will skip existing installations
+#     with the same ruby version. If you pass -f or --force, however,
+#     any existing installation will be entirely replaced.
+#
+#     This script installs Ruby with Jemalloc, YJIT and OpenSSL bindings.
+#     The version of ruby is read from .ruby-version file in the current
+#     directory, any directory above the current, or the version can be 
+#     passed as an argument, eg:
+#
+# @example Passing via arguments
+#     ruby-install [ -f | --force ] 3.3.5
+#
+# @example Reading .ruby-version
+#     echo '3.3.5' > .ruby-version
+#     ruby-install [ -f | --force ]
+#
 
 # We'll be catching $? manually, so for now turn off automatic erroring.
 set +e
@@ -39,6 +44,11 @@ fi
 
 if [[ "$*" =~ -q|--quiet ]]; then
   export option_quiet=true
+fi
+
+if [[ "$*" =~ -h|--help ]]; then
+  echo "Usage: ruby-install [ -f | --force ] [ -q | --quiet ] ruby-version" 
+  exit 0
 fi
 
 # ┌────────────────────────────────────────────────────────────────────────┐
@@ -222,6 +232,9 @@ function ruby.install() {
   log.warn " $(log.arrows)$(ruby -v)"
 }
 
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │  OS-X Pre-install Environment                                          │
+# └────────────────────────────────────────────────────────────────────────┘
 function ruby.pre-install-darwin() {
   local version="$1"
 
@@ -245,13 +258,18 @@ function ruby.pre-install-darwin() {
   export LDFLAGS="-L$HOMEBREW_PREFIX/opt/jemalloc/lib"
   export RUBY_CONFIGURE_OPTS="--enable-yjit --with-jemalloc"
 
-  local openssl_dir=/opt/homebrew/opt/openssl
-  if [[ -d ${openssl_dir} ]]; then
+  local openssl_dir="/opt/homebrew/opt/openssl@3"
+
+  if [[ -d "${openssl_dir}" ]]; then
     export RUBY_CONFIGURE_OPTS="${RUBY_CONFIGURE_OPTS} --with-openssl-dir=${openssl_dir}"
   fi
+
   set +x
 }
 
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │  Linux Pre-install Environment                                         │
+# └────────────────────────────────────────────────────────────────────────┘
 function ruby.pre-install-linux() {
   local version="$1"
   log.info "ruby.pre-install-linux()"
@@ -262,6 +280,9 @@ function ruby.pre-install-linux() {
   set +x
 }
 
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │  Installation                                                          │
+# └────────────────────────────────────────────────────────────────────────┘
 # sets ${ruby_version}
 ruby.detect-version "$@"
 ruby.install "${ruby_version}"
