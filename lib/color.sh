@@ -220,7 +220,7 @@ function color.enable() {
   export bg_mustard="\e[48;5;178m"
   export bg_pink="\e[48;5;89m"
   export bg_sky_blue="\e[48;5;39m"
-  export bg_yellow_on_gray="\e[90;7;43m"
+  export bg_yellow_on_gray="\e[7;33;43m"
 
   export fg_dark_red="\e[38;5;88m"
   export fg_bright_green="\e[38;5;82m"
@@ -353,4 +353,13 @@ function color.disable() {
   export BashMatic__ColorLoaded=0
 }
 
-
+function color.wheel() {
+  for x in 0 1 4 5 7 8; do 
+    for i in {30..37}; do 
+      for a in {40..47}; do 
+        echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; 
+      done; echo; 
+    done; 
+  done; 
+  echo "";
+}
