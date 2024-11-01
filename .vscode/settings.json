@@ -2,5 +2,6 @@
   "cSpell.words": [
     "Bashmatic",
     "rubygems"
-  ]
+  ],
+  "makefile.configureOnOpen": false
 }

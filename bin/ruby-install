@@ -6,15 +6,19 @@
 # @repo    https://github.com/kigster/bashmatic
 #
 # This script installs Ruby with Jemalloc, YJIT and OpenSSL bindings.
-# It works on Linux (with apt-get) and MacOS (using Brew). It uses 
+# It works on Linux (with apt-get) and MacOS (using Brew). It uses
 # rbenv and ruby-build to actuall install Ruby on both OSes.
 #
+# NOTE: This script deliberately has no dependency on Bashmatic
+#       libraries and can be copied elsewhere and run standalone.
+#
 # The version of ruby is read from .ruby-version file in the current
-# directory, any directory above the current, or the version can be 
+# directory, any directory above the current, or the version can be
 # passed as a command line argument, eg:
 #
 # @example Passing via arguments
 #      ruby-install [ -f | --force ] 3.3.5
+#      ruby-install 3.4.0-preview2
 #
 # @example Reading .ruby-version
 #      echo '3.3.5' > .ruby-version
@@ -32,7 +36,7 @@ export ruby_version_file_path=.ruby-version
 export ruby_version_from_file=
 export project_dir="$(pwd -P)"
 export current_dir="${project_dir}"
-export osname="$(uname -s | tr '[:upper:]' '[:lower:]')"  
+export osname="$(uname -s | tr '[:upper:]' '[:lower:]')"
 export rbenv_force_reinstall=false
 export option_quiet=false
 
@@ -75,12 +79,12 @@ log.error() {
   printf "\e[7;31m %s | ERROR  \e[0;31m ${line:0:100} \e[0m\n" "$(log.ts)"
 }
 
-is.a-function () {
-    if [[ -n $1 ]] && typeset -f "$1" > /dev/null 2>&1; then
-        return 0;
-    else
-        return 1;
-    fi
+is.a-function() {
+  if [[ -n $1 ]] && typeset -f "$1" >/dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 # ┌────────────────────────────────────────────────────────────────────────┐
@@ -89,14 +93,14 @@ is.a-function () {
 function ruby.version-valid() {
   local rv="${1:-${ruby_version}}"
 
-  [[ ${rv} =~ ^([0-9]\.[0-9]+\.[0-9]+)$ ]]
+  [[ ${rv} =~ ^([0-9]+\.[0-9]+\.[0-9]+([a-z0-9-]+)?)$ ]]
 }
 
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │ Ruby Version Detection
 # └────────────────────────────────────────────────────────────────────────┘
 # @description
-#   This is perhaps the main function that attempts to guess which version 
+#   This is perhaps the main function that attempts to guess which version
 #   we should be installing, assuming one wasn't provided as an CLI argument.
 #   The functions scans the current and all of the parent directories for
 #   the file .ruby-version
@@ -160,23 +164,25 @@ function ruby.detect-version() {
 # └────────────────────────────────────────────────────────────────────────┘
 function ruby.begin-install() {
   ruby.version-valid "${ruby_version}" || {
-     log.error "Can not install Ruby with invalid version."
-     log.error "Detected version [v${ruby_version}]"
-     exit 1
+    log.error "Can not install Ruby with invalid version."
+    log.error "Detected version [v${ruby_version}]"
+    exit 1
   }
 
-  log.info "OS detected: \033[1;31m${osname}"
-  
+  log.info "OS detected: \033[1;32m${osname^}"
+  if ruby.version-valid "${ruby_version}"; then
+    log.info "Ruby Version Validated: \033[1;32mv${ruby_version}..."
+  fi
+}
+
+function ruby.continue-install() {
   if ${rbenv_force_reinstall}; then
     log.warn "Force-installing version ${ruby_version} due to --force flag."
   else
     echo
     read -n 1 -s -r -p "Press any key to continue with the installation, or [Ctrl-C] to abort."
-    echo; echo
-  fi
-
-  if ruby.version-valid "${ruby_version}"; then
-    log.info "Starting installation of Ruby v${ruby_version}..."
+    echo
+    echo
   fi
 }
 
@@ -194,18 +200,18 @@ function ruby.install() {
 
   local pre_install_function="ruby.pre-install-${osname}"
   if is.a-function "${pre_install_function}"; then
-    ${pre_install_function} ${version}
+    ${pre_install_function} "${version}"
   fi
 
-  local time_begin=$(date '+%s')
- 
   # Build Ruby while enabling YJIT and JEMALLOC
   # Construct CLI flags for rbenv inst
   local extra_flags=
   if ${rbenv_force_reinstall}; then
     extra_flags="${extra_flags} --force"
+    log.warn "Force-installing Ruby ${version}"
   else
     extra_flags="${extra_flags} --skip-existing"
+    log.warn "Will skip if Ruby Version ${version} is already installed."
   fi
 
   if [[ ${option_quiet} == "false" ]]; then
@@ -213,32 +219,41 @@ function ruby.install() {
   fi
 
   ${option_quiet} && log.warn "Building Ruby ${version}, please wait..."
-  ${option_quiet} || log.warn "Building Ruby ${version} in verbose mode:" 
+  ${option_quiet} || log.warn "Building Ruby ${version} in verbose mode:"
 
   # Use up to 8 cores to compile ruby
-  [[ -n ${RUBY_MAKE_OPTS} ]] || export RUBY_MAKE_OPTS="-j 8"
+  [[ -n ${RUBY_MAKE_OPTS} ]] || export RUBY_MAKE_OPTS="--jobs=8"
 
+  ruby.build.print-env
+  ruby.continue-install
+
+  local time_begin=$(date '+%s')
   local code=0
-  rbenv install ${extra_flags} ${version}
+  # shellcheck disable=SC2086
+
+  rbenv install ${extra_flags} "${version}"
   code=$?
 
   if [[ ${code} -ne 0 ]]; then
     log.error "Ruby Installation of version ${version} failed, exit code ${code}"
     exit ${code}
   fi
-  
+
   local time_finish=$(date '+%s')
-  local duration=$(( time_begin - time_finish ))
-  log.info "Ruby v${version} has been built in ${duration} seconds."
+  local duration=$((time_begin - time_finish))
+  if [[ ${duration} -lt 2 ]]; then
+    log.warn "Ruby v${version} was already pre-existing on this system."
+  else
+    log.info "Ruby v${version} took ${duration} seconds to build."
+  fi
 
   set -e
-  rbenv local ${version}
+  rbenv local "${version}"
   export RUBY_YJIT_ENABLE=1
 
   log.info "Your Ruby Interpreter v${version}:"
-  log.warn " VERSION: $(log.arrows)$(ruby -v)"
-  log.warn " PATH:    $(log.arrows)$(command -V ruby)"
-  echo
+  log.warn "  VERSION: $(log.arrows)$(ruby -v)"
+  log.warn "  PATH:    $(log.arrows)$(command -V ruby)"
   log.info "Remember to add the following to your ~/.bashrc or ~/.zshrc:"
   log.warn "export RUBY_YJIT_ENABLE=1"
 
@@ -252,14 +267,14 @@ function ruby.pre-install-darwin() {
   local version="$1"
 
   log.info "ruby.pre-install-darwin()"
-  
+
   if command -v brew >/dev/null 2>&1; then
     echo "Found Homebrew located at $(command -v brew)"
   else
     log.warn "HomeBrew was not found on your Mac OS-X, Installing..."
     local code=0
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    code=$?     
+    code=$?
     if [[ ${code} -ne 0 ]]; then
       log.error "Failed to install Homebrew, exit code ${code}"
       log.error "Please go to https://brew.sh and install it manually."
@@ -267,15 +282,21 @@ function ruby.pre-install-darwin() {
     fi
   fi
 
-  set -x
+  set -e
 
-  brew update && brew upgrade rbenv ruby-build || true
+  (brew update && brew upgrade rbenv ruby-build) || true
+
   brew install jemalloc rust openssl@3
-  
+
   eval "$(rbenv init -)"
 
+  local malloc_include_dir="$(ruby.install.malloc-include-dir)"
+
   export RUBY_CFLAGS="-Wno-error=implicit-function-declaration"
-  export CPPFLAGS="-I$HOMEBREW_PREFIX/opt/jemalloc/include"
+  export CPPFLAGS="-I$HOMEBREW_PREFIX/opt/jemalloc/include -I$HOMEBREW_PREFIX/include"
+
+  [[ -d ${malloc_include_dir} ]] && export CPPFLAGS="${CPPFLAGS} -I${malloc_include_dir}"
+
   export LDFLAGS="-L$HOMEBREW_PREFIX/opt/jemalloc/lib"
   export RUBY_CONFIGURE_OPTS="--enable-yjit --with-jemalloc"
 
@@ -283,7 +304,47 @@ function ruby.pre-install-darwin() {
   if [[ -d ${openssl_dir} ]]; then
     export RUBY_CONFIGURE_OPTS="${RUBY_CONFIGURE_OPTS} --with-openssl-dir=${openssl_dir}"
   fi
-  set +x
+
+  set +e
+}
+
+# @description Find and symlink the malloc.h library
+function ruby.install.malloc-include-dir() {
+  local -a malloc_paths
+  local resulting_malloc_path
+
+  # Check the dev tools
+  if [[ -d /Library/Developer/CommandLineTools/SDKs ]]; then
+    local candidate="$(find /Library/Developer/CommandLineTools/SDKs -type f -name "malloc.h" | sort -n | grep 'malloc/malloc.h' | tail -1)"
+    if [[ -n ${candidate} && -s ${candidate} ]]; then
+      resulting_malloc_path="${candidate}"
+    fi
+  fi
+
+  if [[ -z ${resulting_malloc_path} ]]; then
+    malloc_paths=(
+      /usr/include/malloc.h
+      /usr/local/include/malloc.h
+      /opt/homebrew/include/malloc.h
+    )
+    malloc_paths+=(
+      /usr/include/malloc/malloc.h
+      /usr/local/include/malloc/malloc.h
+      /opt/homebrew/include/malloc/malloc.h
+    )
+
+    for path in "${malloc_paths[@]}"; do
+      if [[ -s ${path} ]]; then
+        resulting_malloc_path="${path}"
+        break
+      fi
+    done
+  fi
+
+  [[ -s ${resulting_malloc_path} ]] && {
+    printf "%s" "${resulting_malloc_path}" | sed -E 's#(/malloc)?/malloc.h##g'
+    return
+  }
 }
 
 # ┌────────────────────────────────────────────────────────────────────────┐
@@ -293,18 +354,28 @@ function ruby.pre-install-linux() {
   local version="$1"
   log.info "ruby.pre-install-linux()"
 
-  set -x
+  set -e
   sudo apt-get install libjemalloc2 rustc
-  set +x
+  set +e
   export RUBY_CONFIGURE_OPTS="--enable-yjit --with-jemalloc --with-openssl"
 
   command -V rbenv >/dev/null 2>&1 || {
-    set -x
+    set -e
     sudo apt-get install rbenv ruby-build
-    set +x
+    set +e
   }
 
   eval "$(rbenv init -)"
+}
+
+function ruby.build.print-env() {
+  log.warn "Build Configuration"
+  for var in RUBY_MAKE_OPTS RUBY_CFLAGS CPPFLAGS LDFLAGS RUBY_CONFIGURE_OPTS; do
+    log.info "$(log.arrows)\033[1;32m${var}"
+    for path in ${!var}; do
+      log.info "    \033[1;33m${path}"
+    done
+  done
 }
 
 # ┌────────────────────────────────────────────────────────────────────────┐
@@ -316,5 +387,3 @@ ruby.detect-version "$@"
 
 # Installs it
 ruby.install "${ruby_version}"
-
-
