@@ -232,7 +232,7 @@ function ruby.install() {
   log.info "Ruby v${version} has been built in ${duration} seconds."
 
   set -e
-  rbenv local ${version}
+  rbenv local "${version}"
   export RUBY_YJIT_ENABLE=1
 
   log.info "Your Ruby Interpreter v${version}:"

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#
 # vim: set ft=bash
 #——————————————————————————————————————————————————————————————————————————————
 # © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License.
@@ -8,8 +8,14 @@
 # Any modifications, © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License.
 #——————————————————————————————————————————————————————————————————————————————
 
+declare __bashmatic_date_executable
+export __bashmatic_date_executable="${__bashmatic_date_executable:-""}"
+
+declare __bashmatic_date_has_millis
+export __bashmatic_date_has_millis="${__bashmatic_date_has_millis:-""}"
+
 # Install necessary dependencies on OSX
-.time.osx.coreutils() {
+function .time.osx.coreutils() {
   # install gdate quietly
   brew install coreutils 2>&1 | cat >/dev/null
   code=$?
@@ -20,46 +26,83 @@
   fi
 }
 
-# milliseconds
-.run.millis() {
-  util.os
-  local date_runnable
-  date_runnable='date'
-  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
-    command -v gdate >/dev/null || .time.osx.coreutils
-    [[ -z $(command -v gdate) ]] && .time.osx.coreutils
-    [[ -n $(command -v gdate) ]] && date_runnable='gdate'
-    date_runnable=$(command -v gdate || command -v date)
+# Returns the executable that supports milliseconds if any
+.time.date-executable() {
+  if [[ -n "${__bashmatic_date_executable}" ]]; then
+    printf '%s' "${__bashmatic_date_executable}"
+    return 0
   fi
-  eval "${date_runnable} '+%s%3N'"
+
+  util.os
+  local date_executable
+  date_executable="$(command -v date)"
+
+  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
+    # install gdate if not there
+    [[ -z $(command -v gdate) ]] && .time.osx.coreutils
+    # if we can find it, set it
+    [[ -n $(command -v gdate) ]] && date_executable=$(command -v gdate)
+  fi
+
+  export __bashmatic_date_executable="${date_executable}"
+  printf '%s' "${date_executable}"
+}
+
+# @description Returns success if the date function supports milliseconds
+.time.ms-supported() {
+  [[ -n ${__bashmatic_date_has_millis} ]] && {
+    if ${__bashmatic_date_has_millis}; then
+      return 0
+    else
+      return 1
+    fi
+  }
+
+  local binary=$(.time.date-executable)
+
+  if [[ -z "$(${binary} --version 2>/dev/null)" ]]; then
+    export __bashmatic_date_has_millis=false
+    return 1
+  else
+    export __bashmatic_date_has_millis=true
+    return 0
+  fi
+}
+
+# Milliseconds since epoch (up to 3 digits)
+.run.millis() {
+  local date_executable=$(.time.date-executable)
+  if .time.ms-supported; then
+    eval "${date_executable} '+%s%3N'"
+  else
+    eval "${date_executable} '+%s%3N'"
+  fi
 }
 
 # milliseconds
 function time.now.with-ms() {
-  util.os
-  local date_runnable
-  date_runnable='date'
-  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
-    [[ -z $(command -v gdate) ]] && .time.osx.coreutils
-    [[ -n $(command -v gdate) ]] && date_runnable='gdate'
+  local date_executable=$(.time.date-executable)
+  if .time.ms-supported; then
+    ${date_executable} '+%T.%3N'
+  else
+    ${date_executable} '+%T'
   fi
-  ${date_runnable} '+%T.%3N'
 }
 
 # @description Prints the complete date with time up to milliseconds
 # @example
 #      2022-05-03 14:29:52.302
 function date.now.with-time() {
-  date '+%F ' | tr -d '\n'
+  date '+%F ' | sed -E 's/-/\//g' | tr -d '\n'
   time.now.with-ms
 }
 
 function date.now.with-time.and.zone() {
   (
-    date '+%F '
+    date '+%F ' | sed -E 's/-/\//g'
     time.now.with-ms
     date '+ %z'
-  ) | tr -d '\n';
+  ) | tr -d '\n'
 }
 
 # @description Starts a time for a given name space
@@ -89,7 +132,7 @@ function time.with-duration.end() {
     name="${name/ /_}"
   fi
   local var="__bashmatic_with_duration_ms${name}"
-  local started=$(.subst ${var})
+  local started=$(.subst "${var}")
   [[ -z ${started} ]] && started=${!var}
   [[ -z ${started} ]] && {
     error "No start time recorded for namespace ${name}."
@@ -180,14 +223,30 @@ function time.a-command() {
 
 # Returns the date command that constructs a date from a given
 # epoch number. Appears to be different on linux vs OSX.
-time.date-from-epoch() {
+time.date-from-epoch-cmd() {
   local epoch_ts
   epoch_ts="$1"
-  printf "date --date='@${epoch_ts}'"
+  shift
+  local format
+  format="$1"
+  shift
+
+  local date_executable=$(.time.date-executable)
+
+  if [[ "${BASHMATIC_OS}" == "darwin" ]]; then
+    printf "%s" "date -r ${epoch_ts} -u '${format}'"
+  else
+    printf "%s" "date --date='@${epoch_ts}' '${format}'"
+  fi
 }
 
 time.now.db() {
-  date '+%F.%T.%S   ' | tr -d '\:\-\.'
+  local executable="$(time.date-executable)"
+  if .time.ms-supported; then
+    ${executable} '+%F.%T.%3N'
+  else
+    ${executable} '+%F.%T'
+  fi
 }
 
 time.now.file-extension() {
@@ -196,13 +255,14 @@ time.now.file-extension() {
 
 time.epoch-to-iso() {
   local epoch_ts=$1
-  eval "$(time.date-from-epoch "${epoch_ts}") -u \"+%Y-%m-%dT%H:%M:%S%z\"" | sed 's/0000/00:00/g'
+  [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch)
+  eval "$(time.date-from-epoch-cmd \"${epoch_ts}\" '+%Y/%m/%d.%H:%M:%S %Z')" | sed 's/0000/00:00/g'
 }
 
 time.epoch-to-local() {
   local epoch_ts=$1
   [[ -z ${epoch_ts} ]] && epoch_ts=$(epoch)
-  eval "$(time.date-from-epoch "${epoch_ts}") \"+%m/%d/%Y, %r\""
+  eval "$(time.date-from-epoch-cmd "${epoch_ts}" '+%Y/%d/%m %r %Z')"
 }
 
 time.epoch.minutes-ago() {
@@ -216,7 +276,7 @@ time.epoch.minutes-ago() {
 
 time.duration.millis-to-secs() {
   local duration="$1"
-  local format="${2:-"%d.%d"}"
+  local format="${2:-"%d.%03d"}"
   local seconds=$((duration / 1000))
   local leftover=$((duration - 1000 * seconds))
   printf "${format}" ${seconds} ${leftover}

@@ -3,9 +3,9 @@
 
 load test_helper
 
+source lib/user.sh
 source lib/time.sh
 source lib/util.sh
-source lib/user.sh
 
 # duration 'sleep 1.1'
 # 0 minutes 1.100 seconds
@@ -96,7 +96,7 @@ source lib/user.sh
 @test "time.epoch-to-iso()" {
   set -e
   now=$(time.epoch-to-iso $(epoch))
-  [[ "${now}" =~ "00:00" ]]
+  [[ "${now}" =~ "UTC" ]]
 }
 
 @test 'time.epoch-to-local()' {
