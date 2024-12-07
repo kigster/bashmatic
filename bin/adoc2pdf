@@ -41,7 +41,22 @@ function install-fonts() {
   ) >/dev/null
 }
 
+
 function install-graphicsmagick() {
+  local function="install-graphicsmagick-${BASHMATIC_OS}"
+  eval "${function}"
+}
+
+function install-graphicsmagick-linux() {
+  local package="graphicsmagick"
+  sudo apt-get install -yqq ${package} || {
+    error "Failed to install ${package} package."
+    return 1
+  }
+  return 0
+}
+
+function install-graphicsmagick-darwin() {
   local package="graphicsmagick"
   brew.cache-reset
   brew.install.package ${package}
