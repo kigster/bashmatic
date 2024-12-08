@@ -46,7 +46,7 @@ GEM
       pdf-reader (~> 2.0)
       prawn (~> 2.2)
     public_suffix (4.0.6)
-    rexml (3.2.5)
+    rexml (3.3.9)
     ruby-rc4 (0.1.5)
     safe_yaml (1.0.5)
     treetop (1.6.11)
