@@ -15,25 +15,25 @@ else
   export __run_as_script=1 2>/dev/null
 fi
 
-export BASHMATIC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1; pwd -P)"
+script_source=${BASH_SOURCE[0]}
+[[ -z ${script_source} ]] && script_source="$0"
+
+export BASHMATIC_DIR="$(cd "$(dirname "${script_source}")" || exit 1; pwd -P)"
+
+[[ ! -f ${BASHMATIC_DIR}/init.sh ]] && {
+  echo "ERROR: Can not find Bashmatic Library."
+  ((__run_as_script)) && exit 1
+  ((__run_as_script)) || return 1
+}
+
 export BASHMATIC_HOME="${BASHMATIC_DIR}"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
+
+declare GLOBAL
 
 source "${BASHMATIC_LIB}/util.sh"
 
 export BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
-export GLOBAL="declare "
-
-if [[ ${BASH_MAJOR_VERSION} -eq 3 ]] ; then
-  export GLOBAL="declare"
-elif [[ ${BASH_MAJOR_VERSION} -gt 3 ]] ; then
-  export GLOBAL="declare -g"
-elif [[ $SHELL =~ zsh ]]; then
-  typeset -gx GLOBAL
-  GLOBAL="typeset -gx "
-else
-  export GLOBAL="declare"
-fi
 
 eval "
   ${GLOBAL} DEBUG                         ;
@@ -285,6 +285,19 @@ function __bashmatic.home.is-valid() {
   [[ -n ${BASHMATIC_HOME} && -d ${BASHMATIC_HOME} && -s ${BASHMATIC_HOME}/init.sh ]]
 }
 
+function __bashmatic.bash.version() {
+  if [[ -n ${BASH_VERSION} ]]; then
+    echo "${BASH_VERSION:0:1}"
+  else
+    /usr/bin/env bash --version | head -1 | sed -E 's/^.*version //g' | awk 'BEGIN{FS="."}{print $1}'
+  fi
+}
+
+# Public function
+function bashmatic.bash.version() {
+  __bashmatic.bash.version
+}
+
 function __bashmatic.init-core() {
   __bashmatic.unalias
 
@@ -321,10 +334,11 @@ function __bashmatic.init-core() {
 
   # Load all library files into an array. This isn't really used besides showing the total
   # number of files, but it can come handy later. Plus, mapfile takes 26ms.
-  if [[ $SHELL =~ zsh || ${BASH_MAJOR_VERSION} -lt 4 ]]; then
-    warning "Please, for the love of technology and the larger cosmos, " \
-      "do yourself a favor and upgrade your BASH already..." \
+  if [[ $BASHMATIC_CURRENT_SHELL == "bash" && ${BASH_MAJOR_VERSION} -lt 4 ]]; then
+    warning "Please, for the love of technology and the larger cosmos... " \
+      "Do yourself a favor and upgrade your BASH already..." \
       "You are running version $(bash --version | head -1)"
+
     is-debug && not-quiet && log.inf "Evaluating the library, total of $(ls -1 "${BASHMATIC_LIB}"/*.sh | wc -l | tr -d '\n ') sources to load..."
   else
     local -a sources=( $(find "${BASHMATIC_HOME}/lib" -name '*.sh') )
