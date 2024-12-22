@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+function installer() {
+  if [[ `uname -s` =~ Darwin ]]; then 
+    echo 'brew '
+  else   
+    echo 'sudo apt-get '
+  fi
+}
+
+export DEFAULT_RUBY_VERSION=3.3.6
+export RUBY_VERSION="${1:-"$( [[ -f .ruby-version ]] && cat .ruby-version || echo $DEFAULT_RUBY_VERSION)"}"
+export OPT_DIR=$( if [[ -d /opt/homebrew ]] ; then echo /opt/homebrew; else echo /usr/local; fi )
+export RUBY_CONFIGURE_OPTS="--with-jemalloc --enable-yjit --with-opt-dir=${OPT_DIR}" 
+
+export INSTALLER=$(installer)
+
+echo "System package installeri : ${INSTALLER}"
+echo "Installing Ruby Version   : ${RUBY_VERSION}"
+echo "RUBY_CONFIGURE_OPTS       : ${RUBY_CONFIGURE_OPTS}"
+
+set -ex
+
+${INSTALLER} install rbenv ruby-build || true
+${INSTALLER} upgrade rbenv ruby-build || true
+
+rbenv install -s ${RUBY_VERSION}
+
