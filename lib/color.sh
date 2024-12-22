@@ -8,7 +8,6 @@
 export BashMatic__ColorLoaded=${BashMatic__ColorLoaded:-"0"}
 
 [[ -z ${GLOBAL} ]] && export GLOBAL="declare "
-[[ ${SHELL} =~ zsh ]] && export GLOBAL="declare -g "
 
 if [[ ${BashMatic__ColorLoaded} -ne 1 ]]; then
   DECLARATIONS="
