@@ -16,7 +16,7 @@ export RUBY_CONFIGURE_OPTS="--with-jemalloc --enable-yjit --with-opt-dir=${OPT_D
 
 export INSTALLER=$(installer)
 
-echo "System package installeri : ${INSTALLER}"
+echo "System package installer  : ${INSTALLER}"
 echo "Installing Ruby Version   : ${RUBY_VERSION}"
 echo "RUBY_CONFIGURE_OPTS       : ${RUBY_CONFIGURE_OPTS}"
 
