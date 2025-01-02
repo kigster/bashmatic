@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
+[[ -d ${BASHMATIC_HOME} ]] || {
+  echo "Can't find Bashmatic, even after attempting an installation."
+  echo "Please install Bashmatic with the following command line:"
+  echo 'bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"'
+  exit 1
+}
+
+source "${BASHMATIC_HOME}/init.sh"
+output.constrain-screen-width 100
+
+[[ $BASHMATIC_OS == "darwin" ]] || {
+  error "This script only runs on MacOS"
+  exit 1
+}
+
+declare -a fonts=(
+  $(cat "${BASHMATIC_HOME}/conf/installed-fonts.txt")
+)
+
+# shellcheck disable=SC2034
+declare -a packages=(
+  $(cat "${BASHMATIC_HOME}/conf/installed-packages.txt")
+)
+
+declare -a everything
+
+everything+=("${fonts[@]}")
+everything+=("${packages[@]}")
+
+export temp_installed_casks=$(mktemp -t casks)
+export temp_installed_packages=$(mktemp -t packages)
+export temp_missing=$(mktemp -t missing)
+export temp_invalid=$(mktemp -t invalid)
+
+declare -a counters
+
+counters[0]=0 # total installed casks
+counters[1]=0 # total existing casks, but not installed
+
+counters[2]=0 # total installed packages
+counters[3]=0 # total existing packages, but not installed
+
+counters[4]=0 # total non-existent casks or packages
+
+brew list --formulae -1 >"${temp_installed_packages}"
+brew list --casks -1 >"${temp_installed_casks}"
+
+for package in "${everything[@]}"; do  
+
+  if grep -E -q "^$package$" "${temp_installed_casks}"; then
+    ((counters[0]++))
+    printf "${txtblu}( CASK ) ${txtgrn}%15.15s${clr} → %-30.30s ✅ \n" caskified "${package}"
+    continue
+  elif grep -E -q "^$package$" "${temp_installed_packages}"; then
+    printf "${txtblu}( PCKG ) ${txtgrn}%15.15s${clr} → %-30.30s ✅ \n" installed "${package}"
+    ((counters[2]++))
+    continue
+  fi
+
+  brew_item_valid=false
+
+  if brew info --cask "${package}" >/dev/null 2>&1; then
+    brew_item_valid=true
+    printf "${txtblu}( CASK ) ${txtpur}%15.15s${clr} → %-30.30s ✅ \n" "exists remotely" "${package}"
+    ((counters[1]++))
+
+  elif brew info "${package}" >/dev/null 2>&1; then
+    brew_item_valid=true
+
+    printf "${txtblu}( PCKG ) ${txtpur}%15.15s${clr} → %-30.30s ✅ \n" "exists remotely" "${package}"
+    ((counters[3]++))
+  fi
+
+  ${brew_item_valid} && continue
+
+  ((counters[4]++)) # increment invalid items
+   
+  printf "${clr}${bakred}${txtwht}${bakred}( BREW ) %15.15s → %-30.30s ${clr}${txtred}${clr}\n" "unknown package" "${package}"
+done
+
+
+  

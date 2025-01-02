@@ -198,7 +198,7 @@ function brew.reinstall.package() {
 
   # brew.cache-reset.delayed
 
-  brew.install.package "${package}"
+  brew.install.package "${package}" false
 }
 
 function package.uninstall() {
@@ -212,6 +212,7 @@ function package.install() {
 
 function brew.install.package() {
   local package="$1"
+  local retry_allowed="${2:-true}"
   local force=
   local verbose=
   local code
@@ -244,10 +245,12 @@ function brew.install.package() {
 
     hash -r >/dev/null
 
-    ((code)) && {
-      warning "Reinstalling ${package} as I couldn't find it after instal..."
-      brew.reinstall.package "${package}"
-    }
+    if [[ ${code} -ne 0 && ${retry_allowed} ]]; then
+      brew info "${package}" 2>/dev/null | grep -q 'Not installed' && {
+        warning "Installing ${package} as I couldn't find it after install..."
+        brew.reinstall.package "${package}"
+      }
+    fi
 
     # brew.cache-reset.delayed
     export LibRun__LastExitCode=0

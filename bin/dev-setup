@@ -119,129 +119,13 @@ export DevSetup__Version="0.4.1"
 
 .dev-setup.action.fonts() {
   export DevSetup__BrewFonts=(
-    font-advent-pro
-    font-andale-mono
-    font-anonymice-powerline
-    font-arvo
-    font-aurulent-sans-mono-nerd-font
-    font-average-mono
-    font-awesome-terminal-fonts
-    font-bitstream-vera-sans-mono-nerd-font
-    font-blex-mono-nerd-font
-    font-cascadia-mono
-    font-consolas-for-powerline
-    font-cousine
-    font-cutive-mono
-    font-d2coding
-    font-daddy-time-mono-nerd-font
-    font-dejavu-sans-mono-for-powerline
-    font-denk-one
-    font-envy-code-r
-    font-everson-mono
-    font-fantasque-sans-mono
-    font-fontawesome
-    font-ia-writer-mono
-    font-inconsolata
-    font-jetbrains-mono
-    font-kawkab-mono
-    font-lekton-nerd-font
-    font-menlo-for-powerline
-    font-meslo-for-powerline
-    font-miriam-mono-clm
-    font-monoid
-    font-monoisome
-    font-mononoki
-    font-monoton
-    font-noto-mono
-    font-office-code-pro
-    font-oswald
-    font-oxygen
-    font-oxygen-mono
-    font-powerline-symbols
-    font-pt-mono
-    font-roboto
-    font-roboto-mono-nerd-font
-    font-share-tech-mono
-    font-sometype-mono
-    font-source-code-pro
-    font-source-sans-pro
-    font-titillium
-    font-tulpen-one
-    font-ubuntu
-    font-victor-mono
+    $(cat "${BASHMATIC_HOME}/conf/installed-fonts.txt")
   )
 }
 .dev-setup.action.dev() {
   # List of Brew Formulas to install and link
   export DevSetup__BrewPackages=("${DevSetup__BrewPackages[@]}"
-    ack
-    asciidoc
-    asciidoctor
-    awscli
-    bash-completion@2
-    bat
-    cloc
-    coreutils
-    curl
-    direnv
-    git
-    geoip
-    gh
-    gnu-sed
-    findutils
-    gnu-indent
-    gnu-sed
-    gnutls
-    grep
-    gnu-tar
-    gawk
-    htop
-    libevent
-    imagemagick
-    jpeg
-    jq
-    lame
-    libffi
-    libgcrypt
-    libgpg-error
-    libheif
-    libiconv
-    libidn2
-    libksba
-    libmemcached
-    libmpc
-    libomp
-    libpng
-    libtasn1
-    libtiff
-    libtool
-    libunistring
-    libusb
-    libxml2
-    libxslt
-    libyaml
-    libzip
-    mysql-client
-    ncurses
-    netcat
-    openssl@1.1
-    p7zip
-    pandoc
-    pcre
-    pstree
-    readline
-    rsync
-    shellcheck
-    shfmt
-    subversion
-    the_silver_searcher
-    tree
-    vim
-    watch
-    wget
-    ydiff
-    yq
-    zlib
+    $(cat "${BASHMATIC_HOME}/conf/installed-packages.txt")
   )
 
   export DevSetup__BrewCasks=("${DevSetup__BrewCasks[@]}"
@@ -568,7 +452,9 @@ dev-setup.parse-opts() {
       local arguments="$1"
       for component in ${arguments}; do
         array.includes "${component}" "${components[@]}" || {
-          error "Invalid group: $1." "Valid groups are: ${bldgrn}$(array.to.csv "${components[@]}")"
+          error "${bldred}  Invalid group — [$1]"
+          
+          box-info "Valid groups are: " "$(array.to.csv "${components[@]}")"
           exit 1
         }
         export components_to_install=(${components_to_install[@]} "${component}")
@@ -852,7 +738,6 @@ dev-setup.install() {
     block_size=${#DevSetup__BrewFonts[@]}
     [[ "${block_size}" -gt 0 ]] && {
       h2 "Installing ${block_size} Open Source Fonts"
-      brew tap | grep -q cask-fonts || run "brew tap homebrew/cask-fonts"
       brew.cache-reset
       dev-setup.install.packages "brew.install.cask" "${DevSetup__BrewFonts[@]}" || {
         failures=$((failures + 1))
@@ -896,7 +781,7 @@ dev-setup.install() {
 }
 
 function dev-setup.invoke-actions() {
-  for c in $@; do
+  for c in "$@"; do
     dev-setup.run-action "${c}"
   done
   cursor.down 3
@@ -919,7 +804,7 @@ function dev-setup.main() {
   ((flag_verbose)) && run.inspect-variables-that-are starting-with flag_
   dev.setup.print-versions
 
-  [[ -z ${components_to_install[*]} ]] && export components_to_install=(${components[@]})
+  [[ -z ${components_to_install[*]} ]] && export components_to_install+=("${components[@]}")
   dev-setup.print-components "${components_to_install[@]}"
   dev-setup.run-actions "${components_to_install[@]}"
 }
