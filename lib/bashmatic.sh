@@ -127,11 +127,6 @@ function bashmatic.functions.runtime() {
   bashmatic.functions-from 'run*.sh' "$@"
 }
 
-# Setup
-function bashmatic.bash.version() {
-  echo "${BASH_VERSION:0:1}"
-}
-
 function bashmatic.bash.version-four-or-later() {
   [[ $(bashmatic.bash.version) -gt 3 ]]
 }

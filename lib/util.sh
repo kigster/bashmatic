@@ -11,9 +11,29 @@
 #
 # @requires A working Ruby installation.
 
-
+unset   __bashmatic_uname_binary
 declare __bashmatic_uname_binary
-export __bashmatic_uname_binary
+
+export GLOBAL="declare "
+
+unset   BASHMATIC_CURRENT_SHELL
+declare BASHMATIC_CURRENT_SHELL 
+
+function current.shell() {
+  ps -p $$ -o command | tail -1 | tr -d '-'
+}
+
+export BASHMATIC_CURRENT_SHELL="$(current.shell)" >/dev/null
+
+if [[ ${BASHMATIC_CURRENT_SHELL} == "bash" && -n ${BASH_VERSION} && ${BASH_VERSION:0:1} -eq 3 ]] ; then
+  export GLOBAL="declare "
+elif [[ ${BASHMATIC_CURRENT_SHELL} == "zsh" ]]; then
+  export GLOBAL="export "
+elif [[ ${BASHMATIC_CURRENT_SHELL} == "bash" && ${BASH_VERSION:0:1} -eq 3 ]] ; then
+  export GLOBAL="declare -g " >/dev/null
+else
+  export GLOBAL="declare "
+fi
 
 #
 # @description
@@ -22,24 +42,34 @@ export __bashmatic_uname_binary
 # @returns
 #   Aborts the process if none are found.
 function system.uname() {
-  command -v uname && return 0
+  command -v uname 2>/dev/null && {
+    export __bashmatic_uname_binary=$(command -v uname)
+  }
 
-  [[ -x ${__bashmatic_uname_binary} && -x ${__bashmatic_uname_binary} ]] && {
-    echo ${__bashmatic_uname_binary}
+  [[ -n ${__bashmatic_uname_binary} && ${__bashmatic_uname_binary} =~ uname$ ]] && {
+    echo -n "${__bashmatic_uname_binary}"
     return 0
   }
 
-  local -a uname_options=( "/bin/uname" "/usr/bin/uname" "/sbin/uname" "/usr/sbin/uname" )
-  local binary
+  local -a uname_options=( /bin/uname /usr/bin/uname /sbin/uname /usr/sbin/uname )
 
-  for binary in ${uname_options[@]} ; do
-    [[ -x ${binary} ]] && {
+  local binary
+ 
+  for binary in "${uname_options[@]}" ; do
+    [[ -s ${binary} ]] && {
       export __bashmatic_uname_binary="$(printf -- "%s" "${binary}")"
-      printf "%s" "${__bashmatic_uname_binary}"
+      echo "${__bashmatic_uname_binary}"
       return 0
     }
   done
 
+  export __bashmatic_uname_binary="$(which uname)"
+  [[ -s "${__bashmatic_uname_binary}" ]] && {
+    echo "${__bashmatic_uname_binary}"
+    return 0
+  }
+
+  echo -e "\e[1;31mERROR: Can not find uname on this system?\e[0m" >&2
   return 1
 }
 
@@ -47,7 +77,13 @@ function system.uname() {
 
 function system.save-os-name() {
   local _os=""
-  __os="$($(system.uname) -s | tr '[:upper:]' '[:lower:]' | tr -d '\n')"
+  local uname_cmd=$(system.uname)
+
+  [[ -x ${uname_cmd} ]] || {
+    return 1
+  }
+  
+  __os="$(${uname_cmd} -s | tr '[:upper:]' '[:lower:]' | tr -d '\n')"
   [[ -z "${BASHMATIC_OS_NAME}" ]] && export BASHMATIC_OS_NAME="${__os}" >/dev/null 2>&1
   export BASHMASTIC_OS="${BASHMATIC_OS_NAME}"
 }
