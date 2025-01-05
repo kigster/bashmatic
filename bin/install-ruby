@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # vim: ft=bash
-# © 2025 Konstantin Gredeskoul
+#
+# © 2025 Konstantin Gredeskoul <kig AT kig.re>
+#   All rights reserved.
+#   MIT License.
 #
 # This script uses rbenv/ruby-build to install Ruby on OS-X or Linux. It configures
 # Ruby build flags in such a way to ensure Ruby is linked with libjemalloc (which
@@ -9,12 +12,21 @@
 # 
 # The script has no dependencies on Bashmatic Library, and can be invoked and
 # executed as a standalone script. This is why it also exists as a Github Gist:
-# https://bit.ly/ruby-install-sh)
+# https://bit.ly/ruby-install-sh
 #
-#
-# This allows running it directly from the command line and is the recommended way:
+# This allows running it directly from the command line and is the recommended way,
+# eg to install Ruby 3.4.1 with YJIT and Jemalloc enabled:
 #
 #       bash -c "$(curl -fsSL https://bit.ly/ruby-install-sh)" -- 3.4.1
+# 
+# Or if you are comfortable using BASH alises, you can add this to your ~/.bashrc:
+#
+#       alias rb-install='bash -c "$(curl -fsSL https://bit.ly/ruby-install-sh)" -- '
+# 
+# And then, anytime you need a new Ruby installed, it just can't get any simpler than:
+#
+#       rb-install 3.4.1
+#       rb-install 3.3.6
 #
 #──────────────────────────────────────────────────────────────────────────────────
 # NOTE: On Linux you might need to set either $RBENV_HOME or $RBENV_ROOT variables.
@@ -164,6 +176,8 @@ ${INSTALLER} install ${INSTALLER_FLAGS} ${PACKAGES} || true
 
 export SH=$(basename $SHELL)
 export PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"
+
+# Initialize rbenv
 eval "$(rbenv init - $SH)"
 
 line
@@ -172,7 +186,8 @@ echo -e "Installing Ruby (using -s flag, i.e. skipping existing.)"
 echo -e "If you need to overwrite an existing installation, please"
 echo -e "uninstall it using first using the command ${txtylw}rbenv uninstall <version>${clr}"
 echo
-echo -e "${clr}❯ ${txtylw}rbenv install -s ${RUBY_VERSION}${clr} (Please wait...)\n"
+echo -e "${clr}❯ ${txtylw}rbenv install -s ${RUBY_VERSION}${clr}\n"
+echo -e "${txtpur} ⏳  Please wait while your Ruby is being cooked...${clr}\n"
 
 output="/tmp/ruby-$RUBY_VERSION/build"
 mkdir -p "$output"
@@ -193,7 +208,6 @@ if [[ $status -ne 0 ]]; then
     line
     cat ${NOW}.stderr
   }
-
 
   [[ -s ${NOW}.output ]] && { 
     echo -e "${txtcyn}NOTE    : → Standard Output is available in the file ${txtylw}${NOW}.output${clr}"
@@ -226,6 +240,8 @@ if [[ -s .ruby-version ]]; then
   mv .ruby-version "${temp_dir}/"
 fi
 
+# Print the final results of the installation.
+
 echo -e "${txtylw}Ruby $RUBY_VERSION Build, Platform, Architecture, YJIT:"
 echo -e "  ${txtgrn}$(ruby --version)${clr}\n"
 
@@ -235,6 +251,7 @@ echo -e "${txtgrn}$(ruby -e 'puts RbConfig::CONFIG["configure_args"].strip' | tr
 echo -e "${txtylw}Linked Libraries:"
 echo -e "  ${txtgrn}$(ruby -e 'pp RbConfig::CONFIG["MAINLIBS"]' | tr -d '"')\e[0m\n"
 
+# Restore .ruby-version in the current directory if it were moved.
 if [[ -n $temp_dir && -d $temp_dir && -s $temp_dir/.ruby-version ]]; then
   mv $temp_dir/.ruby-version .
 fi
