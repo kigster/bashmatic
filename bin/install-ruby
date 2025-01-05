@@ -1,29 +1,258 @@
 #!/usr/bin/env bash
 # vim: ft=bash
+#
+# © 2025 Konstantin Gredeskoul <kig AT kig.re>
+#   All rights reserved.
+#   MIT License.
+#
+# This script uses rbenv/ruby-build to install Ruby on OS-X or Linux. It configures
+# Ruby build flags in such a way to ensure Ruby is linked with libjemalloc (which
+# reduces the memory by half) and YJIT enabled. It has been tested on both Linux and
+# MacOS.
+# 
+# The script has no dependencies on Bashmatic Library, and can be invoked and
+# executed as a standalone script. This is why it also exists as a Github Gist:
+# https://bit.ly/ruby-install-sh
+#
+# This allows running it directly from the command line and is the recommended way,
+# eg to install Ruby 3.4.1 with YJIT and Jemalloc enabled:
+#
+#       bash -c "$(curl -fsSL https://bit.ly/ruby-install-sh)" -- 3.4.1
+# 
+# Or if you are comfortable using BASH alises, you can add this to your ~/.bashrc:
+#
+#       alias rb-install='bash -c "$(curl -fsSL https://bit.ly/ruby-install-sh)" -- '
+# 
+# And then, anytime you need a new Ruby installed, it just can't get any simpler than:
+#
+#       rb-install 3.4.1
+#       rb-install 3.3.6
+#
+#──────────────────────────────────────────────────────────────────────────────────
+# NOTE: On Linux you might need to set either $RBENV_HOME or $RBENV_ROOT variables.
+#
+# NOTE: To pass additional flags to "rbenv install <version>" set the variable
+#       $RBENV_INSTALL_FLAGS to the desired flags (default is -s). For example
+#       you may want to keep the sources around in case the build failed, by 
+#       setting $RBENV_INSTALL_FLAGS="-k".
+#
+# USAGE:
+#       # Argument overrides any other ruby version passing method
+#       install-ruby 3.4.1
+#    
+#       # if a file .ruby-version exists in the current directory, we install that version
+#       install-ruby 
+#    
+#       # or if $RUBY_VERSION is defined
+#       export RUBY_VERSION=3.5.5
+#       install-ruby 
+#────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function installer() {
-  if [[ `uname -s` =~ Darwin ]]; then 
-    echo 'brew '
-  else   
-    echo 'sudo apt-get '
-  fi
+# shellcheck disable=SC2086
+
+export txtblk='\e[0;30m'  # Black - Regular
+export txtred='\e[0;31m'  # Red
+export txtgrn='\e[0;32m'  # Green
+export txtylw='\e[0;33m'  # Yellow
+export txtblu='\e[0;34m'  # Blue
+export txtpur='\e[0;35m'  # Purple
+export txtcyn='\e[0;36m'  # Cyan
+export txtwht='\e[0;37m'  # White
+export errclr='\e[0;101m' # White on red
+export clr='\e[0m'        # Text Reset
+
+export INSTALL_RUBY_VERSION="0.1.0"
+export OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
+line() { echo "────────────────────────────────────────────────────────────────────────────────────────────────────────"; }
+now()  { date '+%F.%T.%S   ' | tr -d '\:\-\.'; }
+version() { echo -e "${txtylw}v$INSTALL_RUBY_VERSION${clr}"; }
+
+line 
+printf " \
+${txtgrn}Install Ruby [script version $(version)${txtgrn}] on ${OS^}
+  ${txtblu} 
+  A BASH script that automates installation and building of the Ruby Interpreter.
+  © 2025 Konstantin Gredeskoul, https://kig.re/, @kigster on Github.${clr}
+"
+
+export NOW=$(now | tr -d '\n ')
+
+if [[ $* =~ (-h|--help) ]]; then
+  executable="$(basename $0 2>&1)"
+  line
+  printf "
+${txtgrn}NAME:
+  ${txtylw}install-ruby
+
+${txtgrn}DESCRIPTION:
+  ${txtblu}A BASH script that automates installation and building of the Ruby Interpreter
+  linked with libjemalloc, with YJIT enabled, as well as OpenSSL and libyaml. 
+  
+  It works on Linux (Ubuntu) and MacOS (tested on Sequoia).
+
+${txtgrn}USAGE:
+  ${txtylw}${executable} [ ruby-version ] ${clr} # install Ruby Version pass as argument\n
+  ${txtylw}${executable}                  ${clr} # install Ruby Version from .ruby-version file\n
+  ${txtylw}export RUBY_VERSION=3.4.1 
+  ${txtylw}${executable}                  ${clr} # Install Ruby using the env variable as a version.
+
+"
+  line
+  exit 0
+fi
+
+export DEFAULT_RUBY_VERSION=${DEFAULT_RUBY_VERSION:-"3.4.1"}
+export RUBY_FILE_VERSION=$( test -f .ruby-version && cat .ruby-version )
+export RUBY_VERSION_ARG="$1"
+export RBENV_INSTALL_FLAGS="$RBENV_INSTALL_FLAGS --skip-existing"
+
+if [[ $RUBY_VERSION_ARG =~ ([0-9]+.[0-9]+) ]]; then
+  export RUBY_VERSION=$RUBY_VERSION_ARG
+fi
+
+export RUBY_VERSION="${RUBY_VERSION:-${RUBY_FILE_VERSION:-${DEFAULT_RUBY_VERSION}}}"
+
+if [[ $OS =~ darwin ]]; then
+  export PACKAGES="rbenv jemalloc rust"
+  export INSTALLER="brew "
+  export INSTALLER_FLAGS=" --quiet "
+  export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+  export RUBY_CFLAGS="-Wno-error=implicit-function-declaration"
+else
+  export PACKAGES="rbenv libjemalloc2 rustc"
+  export INSTALLER="sudo apt-get "
+  export INSTALLER_FLAGS=" -yqq --silent "
+fi
+
+export RBENV_ROOT="${RBENV_ROOT-"${RBENV_HOME:-"${HOME}/.rbenv"}"}"
+
+[[ -n $RBENV_ROOT && ! -d $RBENV_ROOT ]] && mkdir -p "$RBENV_ROOT"
+
+export OPT_DIR=$( if [[ -d /opt/homebrew ]] ; then echo /opt/homebrew; else echo /usr/local; fi )
+export RUBY_CONFIGURE_OPTS="--with-jemalloc --enable-yjit --with-opt-dir=${OPT_DIR}"
+export RUBY_YJIT_ENABLE=1
+
+line
+echo
+echo -e "${txtpur}System Package Installer  : ${txtcyn}${INSTALLER}"
+echo -e "${txtpur}Installer Flags           : ${txtcyn}${INSTALLER_FLAGS}"
+echo -e "${txtpur}Packages To Install       : ${txtcyn}${PACKAGES}"
+echo
+echo -e "${txtpur}RUBY Version to Install   : ${txtcyn}${RUBY_VERSION}"
+echo -e "${txtpur}RUBY YJIT Enabled?        : ${txtcyn}$( [[ $RUBY_CONFIGURE_OPTS =~ enable-yjit ]] && echo 'YES' || echo 'NO' )"
+echo -e "${txtpur}RBENV ROOT                : ${txtcyn}${RBENV_ROOT}"
+echo -e "${txtpur}RUBY_CONFIGURE_OPTS       : ${txtcyn}${RUBY_CONFIGURE_OPTS}"
+[[ -n $RUBY_CFLAGS ]] && echo -e "${txtpur}RUBY_CFLAGS               : ${txtcyn}${RUBY_CFLAGS}${clr}"
+echo
+line
+
+set -e
+
+if [[ $OS =~ darwin ]]; then
+  echo "Updating brew..."
+else
+  echo "Updating apt-get..."
+fi
+
+${INSTALLER} update >/dev/null
+
+command -V rbenv >/dev/null || {
+  echo "Installing rbenv..."
+  ${INSTALLER} install ${INSTALLER_FLAGS} rbenv
 }
 
-export DEFAULT_RUBY_VERSION=3.3.6
-export RUBY_VERSION="${1:-"$( [[ -f .ruby-version ]] && cat .ruby-version || echo $DEFAULT_RUBY_VERSION)"}"
-export OPT_DIR=$( if [[ -d /opt/homebrew ]] ; then echo /opt/homebrew; else echo /usr/local; fi )
-export RUBY_CONFIGURE_OPTS="--with-jemalloc --enable-yjit --with-opt-dir=${OPT_DIR}" 
+export RBENV_ROOT=${RBENV_ROOT:-$(rbenv --prefix)}
+[[ -d $RBENV_ROOT/plugins ]] || mkdir -p $RBENV_ROOT/plugins
 
-export INSTALLER=$(installer)
+# Perform this update in a sub-shell
+( cd $RBENV_ROOT/plugins ;
+  echo "Updating ruby-build..."
+  [[ -d ruby-build ]] || git clone https://github.com/rbenv/ruby-build.git >/dev/null
+  cd ruby-build && git pull
+)
 
-echo "System package installer  : ${INSTALLER}"
-echo "Installing Ruby Version   : ${RUBY_VERSION}"
-echo "RUBY_CONFIGURE_OPTS       : ${RUBY_CONFIGURE_OPTS}"
+${INSTALLER} install ${INSTALLER_FLAGS} ${PACKAGES} || true
 
-set -ex
+export SH=$(basename $SHELL)
+export PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"
 
-${INSTALLER} install rbenv ruby-build || true
-${INSTALLER} upgrade rbenv ruby-build || true
+# Initialize rbenv
+eval "$(rbenv init - $SH)"
 
-rbenv install -s ${RUBY_VERSION}
+line
+echo
+echo -e "Installing Ruby (using -s flag, i.e. skipping existing.)"
+echo -e "If you need to overwrite an existing installation, please"
+echo -e "uninstall it using first using the command ${txtylw}rbenv uninstall <version>${clr}"
+echo
+echo -e "${clr}❯ ${txtylw}rbenv install -s ${RUBY_VERSION}${clr}\n"
+echo -e "${txtpur} ⏳  Please wait while your Ruby is being cooked...${clr}\n"
+
+output="/tmp/ruby-$RUBY_VERSION/build"
+mkdir -p "$output"
+set +e
+rbenv install -s ${RUBY_VERSION} 1>${output}/${NOW}.stdout 2>${output}/${NOW}.stderr
+status=$?
+
+if [[ $status -ne 0 ]]; then
+  line
+  echo -e "${errclr}ERROR   : → Ruby ${RUBY_VERSION} installation has failed with status ${status}.${clr}"
+  sleep 0.5
+
+  [[ -s ${output}/${NOW}.stdout ]] && cp ${output}/${NOW}.stdout . 
+  [[ -s ${output}/${NOW}.stderr ]] && cp ${output}/${NOW}.stderr .
+
+  [[ -s ${NOW}.stderr ]] && { 
+    echo -e "${errclr}Standard Error:${clr}"
+    line
+    cat ${NOW}.stderr
+  }
+
+  [[ -s ${NOW}.output ]] && { 
+    echo -e "${txtcyn}NOTE    : → Standard Output is available in the file ${txtylw}${NOW}.output${clr}"
+  }
+
+  [[ -s ${NOW}.stderr || -s ${NOW}.stdout ]] || {
+    echo -e "${txtylw}WARNING : → No STDOUT or STDERR was generated.${clr}"
+  }
+  echo -e "${txtgrn}HINT    : → Set env variable RBENV_INSTALL_FLAGS=-k to keep Ruby Source code around.${clr}\n"
+  exit $status
+else
+  line
+  echo -e "\e[1m${txtgrn}SUCCESS : → Ruby ${RUBY_VERSION} installed successfully.${clr}"
+  line
+  echo
+fi
+
+rbenv global $RUBY_VERSION
+echo "RBENV Status about currently install versions:"
+rbenv versions
+echo
+line
+
+# Handle local .ruby-version
+declare temp_dir
+temp_dir=
+
+if [[ -s .ruby-version ]]; then
+  temp_dir=$(mktemp -d)
+  mv .ruby-version "${temp_dir}/"
+fi
+
+# Print the final results of the installation.
+
+echo -e "${txtylw}Ruby $RUBY_VERSION Build, Platform, Architecture, YJIT:"
+echo -e "  ${txtgrn}$(ruby --version)${clr}\n"
+
+echo -e "${txtylw}Configure Flags:"
+echo -e "${txtgrn}$(ruby -e 'puts RbConfig::CONFIG["configure_args"].strip' | tr -d '"' | tr -d "'" | sed 's/^\s*//g' | fold -w 60 -s | sed 's/^/  /g')\e[0m\n"
+
+echo -e "${txtylw}Linked Libraries:"
+echo -e "  ${txtgrn}$(ruby -e 'pp RbConfig::CONFIG["MAINLIBS"]' | tr -d '"')\e[0m\n"
+
+# Restore .ruby-version in the current directory if it were moved.
+if [[ -n $temp_dir && -d $temp_dir && -s $temp_dir/.ruby-version ]]; then
+  mv $temp_dir/.ruby-version .
+fi
 
