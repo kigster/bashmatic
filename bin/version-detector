@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+# @description This function attempts to deal with various arbitrary 
+#              strings that various programs produce when asked for
+#              their versions. Extracting an actual version out of \
+#              of it is not a simple task. This function covers perhaps
+#              high 90% of all executables, and returns just the version
+#              without any additional text.
+#
+# @example 
+#   * $ ruby --version
+#       ruby 3.3.6 (2024-11-05 revision 75015d4c1f) [arm64-darwin24]
+#
+#   * $ xcodebuild -version
+#       Xcode 16.2
+#       Build version 16C5032a
+#
+#   * $ go version
+#       go version go1.23.4 darwin/arm64
+#
+#   Using this script you get all versions neatly extracted:
+#   * $ version-detector ruby xcodebuild go
+#        3.3.6 <-- ruby
+#         16.2 <-- xcodebuild
+#       1.23.4 <-- go
+# 
+function version-of() {
+    local executable="$1"
+    command -v "${executable}" >/dev/null || {
+        echo "Invalid Command: ${executable}"
+        return 1
+    }
+    (${executable} --version 2>/dev/null ||
+        ${executable} -version 2>/dev/null ||
+        ${executable} version) |
+        sed -E 's/^([a-zA-Z(), -/]*) ?([0-9.]+) ?.*$/\2/g' |
+        sed -E 's/\.$//g' |
+        head -1
+}
+
+function usage() {
+    
+    exec="$(basename $0)"
+
+    echo -e " \
+${txtgrn}USAGE:
+  ${bldylw}${exec} program [ program program ... ]
+
+${txtgrn}DESCRIPTION:${clr}
+  This script runs the given program(s) and attempts to extract
+  just the version number from each executable.
+
+  For example: 
+    ${txtylw}$ ruby --version
+    ${txtcyn}ruby 3.3.6 (2024-11-05 revision 75015d4c1f) [arm64-darwin24]${clr}
+
+  Many programs respond to --version, some to -version, and some have
+  a version command, for example:
+
+    ${txtylw}go version
+    ${txtcyn}go version go1.23.4 darwin/arm64
+
+${txtgrn}EXAMPLES:${clr}
+  ${txtylw}${exec}$ ruby gem rake bundler${clr}
+                ruby -> 3.3.6
+                 gem -> 3.6.1
+                rake -> 13.2.1
+             bundler -> 2.6.2
+  ${clr}
+"
+  exit 0
+}
+
+
+[[ -z $* ]] && usage
+
+for program in "$@"; do
+  printf "%10.10s <-- %-10.10s\n" "$(version-of "${program}")" "${program}" 
+done
