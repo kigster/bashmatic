@@ -6,25 +6,35 @@
 # Ruby build flags in such a way to ensure Ruby is linked with libjemalloc (which
 # reduces the memory by half) and YJIT enabled. It has been tested on both Linux and
 # MacOS.
+# 
+# The script has no dependencies on Bashmatic Library, and can be invoked and
+# executed as a standalone script. This is why it also exists as a Github Gist:
+# https://bit.ly/ruby-install-sh)
 #
-# NOTE: On Linux you will need to pre-install rbenv, and set either
-#       $RBENV_HOME or $RBENV_ROOT variables.
 #
-# NOTE: 
-#       To pass additional flags to "rbenv install <version>" set the variable
+# This allows running it directly from the command line and is the recommended way:
+#
+#       bash -c "$(curl -fsSL https://bit.ly/ruby-install-sh)" -- 3.4.1
+#
+#──────────────────────────────────────────────────────────────────────────────────
+# NOTE: On Linux you might need to set either $RBENV_HOME or $RBENV_ROOT variables.
+#
+# NOTE: To pass additional flags to "rbenv install <version>" set the variable
 #       $RBENV_INSTALL_FLAGS to the desired flags (default is -s). For example
-#       you may want to keep the sources around in case the build failed.
+#       you may want to keep the sources around in case the build failed, by 
+#       setting $RBENV_INSTALL_FLAGS="-k".
 #
 # USAGE:
-#   # Argument overrides any other ruby version passing method
-#   install-ruby 3.4.1
-#
-#   # if a file .ruby-version exists in the current directory, we install that version
-#   install-ruby 
-#
-#   # or if $RUBY_VERSION is defined
-#   export RUBY_VERSION=3.5.5
-#   install-ruby 
+#       # Argument overrides any other ruby version passing method
+#       install-ruby 3.4.1
+#    
+#       # if a file .ruby-version exists in the current directory, we install that version
+#       install-ruby 
+#    
+#       # or if $RUBY_VERSION is defined
+#       export RUBY_VERSION=3.5.5
+#       install-ruby 
+#────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 # shellcheck disable=SC2086
 
@@ -39,8 +49,20 @@ export txtwht='\e[0;37m'  # White
 export errclr='\e[0;101m' # White on red
 export clr='\e[0m'        # Text Reset
 
+export INSTALL_RUBY_VERSION="0.1.0"
+export OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
 line() { echo "────────────────────────────────────────────────────────────────────────────────────────────────────────"; }
 now()  { date '+%F.%T.%S   ' | tr -d '\:\-\.'; }
+version() { echo -e "${txtylw}v$INSTALL_RUBY_VERSION${clr}"; }
+
+line 
+printf " \
+${txtgrn}Install Ruby [script version $(version)${txtgrn}] on ${OS^}
+  ${txtblu} 
+  A BASH script that automates installation and building of the Ruby Interpreter.
+  © 2025 Konstantin Gredeskoul, https://kig.re/, @kigster on Github.${clr}
+"
 
 export NOW=$(now | tr -d '\n ')
 
@@ -78,8 +100,6 @@ if [[ $RUBY_VERSION_ARG =~ ([0-9]+.[0-9]+) ]]; then
 fi
 
 export RUBY_VERSION="${RUBY_VERSION:-${RUBY_FILE_VERSION:-${DEFAULT_RUBY_VERSION}}}"
-
-export OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 if [[ $OS =~ darwin ]]; then
   export PACKAGES="rbenv jemalloc rust"
@@ -206,14 +226,14 @@ if [[ -s .ruby-version ]]; then
   mv .ruby-version "${temp_dir}/"
 fi
 
-echo -e "${txtpur}Ruby $RUBY_VERSION Build & Configuration Details:"
-echo -e "  \e[1;31m$(ruby --version)\e[0m\n"
+echo -e "${txtylw}Ruby $RUBY_VERSION Build, Platform, Architecture, YJIT:"
+echo -e "  ${txtgrn}$(ruby --version)${clr}\n"
 
-echo -e "${txtpur}Configure Flags:"
-echo -e "\e[1;32m$(ruby -e 'puts RbConfig::CONFIG["configure_args"].strip' | tr -d '"' | tr -d "'" | sed 's/^\s*//g' | fold -w 60 -s | sed 's/^/  /g')\e[0m\n"
+echo -e "${txtylw}Configure Flags:"
+echo -e "${txtgrn}$(ruby -e 'puts RbConfig::CONFIG["configure_args"].strip' | tr -d '"' | tr -d "'" | sed 's/^\s*//g' | fold -w 60 -s | sed 's/^/  /g')\e[0m\n"
 
-echo -e "${txtpur}Linked Libraries:"
-echo -e "  \e[1;33m$(ruby -e 'pp RbConfig::CONFIG["MAINLIBS"]' | tr -d '"')\e[0m\n"
+echo -e "${txtylw}Linked Libraries:"
+echo -e "  ${txtgrn}$(ruby -e 'pp RbConfig::CONFIG["MAINLIBS"]' | tr -d '"')\e[0m\n"
 
 if [[ -n $temp_dir && -d $temp_dir && -s $temp_dir/.ruby-version ]]; then
   mv $temp_dir/.ruby-version .
