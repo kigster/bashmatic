@@ -116,7 +116,7 @@ export RUBY_VERSION="${RUBY_VERSION:-${RUBY_FILE_VERSION:-${DEFAULT_RUBY_VERSION
 if [[ $OS =~ darwin ]]; then
   export PACKAGES="rbenv jemalloc rust"
   export INSTALLER="brew "
-  export INSTALLER_FLAGS=" --quiet --display-times "
+  export INSTALLER_FLAGS=" --quiet "
   export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
   export RUBY_CFLAGS="-Wno-error=implicit-function-declaration"
 else
@@ -151,11 +151,11 @@ set -e
 
 if [[ $OS =~ darwin ]]; then
   echo "Updating brew..."
-  ${INSTALLER} update ${INSTALLER_FLAGS} >/dev/null
 else
   echo "Updating apt-get..."
-  ${INSTALLER} update ${INSTALLER_FLAGS} >/dev/null
 fi
+
+${INSTALLER} update >/dev/null
 
 command -V rbenv >/dev/null || {
   echo "Installing rbenv..."
@@ -255,6 +255,4 @@ echo -e "  ${txtgrn}$(ruby -e 'pp RbConfig::CONFIG["MAINLIBS"]' | tr -d '"')\e[0
 if [[ -n $temp_dir && -d $temp_dir && -s $temp_dir/.ruby-version ]]; then
   mv $temp_dir/.ruby-version .
 fi
-
-
 
