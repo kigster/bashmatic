@@ -21,6 +21,9 @@ export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
 
 source "${BASHMATIC_LIB}/util.sh"
 
+# grab the command that started the current shell
+export SUBSHELL="$(ps -p $$ -ocomm| tail -1 | tr -d '-')"
+
 export BASH_MAJOR_VERSION="${BASH_VERSION:0:1}"
 export GLOBAL="declare "
 
@@ -321,7 +324,7 @@ function __bashmatic.init-core() {
 
   # Load all library files into an array. This isn't really used besides showing the total
   # number of files, but it can come handy later. Plus, mapfile takes 26ms.
-  if [[ $SHELL =~ zsh || ${BASH_MAJOR_VERSION} -lt 4 ]]; then
+  if [[ $SHELL =~ bash && $SUBSHELL == bash && ${BASH_MAJOR_VERSION} -lt 4 ]]; then
     warning "Please, for the love of technology and the larger cosmos, " \
       "do yourself a favor and upgrade your BASH already..." \
       "You are running version $(bash --version | head -1)"
