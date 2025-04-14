@@ -213,6 +213,7 @@ function .install.linux-requirements() {
 # OS-X
 #——————————————————————————————————————————————————————————————————————————————————————
 function .install.osx-permissions() {
+  local dir
   local -a dirs
   for dir in "${CHOWN_DIRS[@]}"; do
     is-verbose &&.puts "Checking (and possibly changing) permissions of ${bldylw}${dir}..."
@@ -225,9 +226,9 @@ function .install.osx-permissions() {
 
   .sudo-ask && .sudo-enable
 
-  for d in "${dirs[@]}"; do
+  for dir in "${dirs[@]}"; do
     set -x
-    sudo chown -R "${USER}" "${d}"
+    sudo chown -R "${USER}" "${dir}"
     set +x
   done
 }
