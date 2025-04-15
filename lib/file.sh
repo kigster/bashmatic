@@ -259,6 +259,7 @@ function file.size.gb() {
 
 # @description For each argument prints only those that represent existing files
 function file.list.filter-existing() {
+  local file
   for file in "$@"; do
     [[ -f "${file}" ]] && echo "${file}"
   done
@@ -266,6 +267,7 @@ function file.list.filter-existing() {
 
 # @description For each argument prints only those that represent non-emtpy files
 function file.list.filter-non-empty() {
+  local file
   for file in "$@"; do
     [[ -s "${file}" ]] && echo "${file}"
   done
@@ -361,6 +363,7 @@ function file.extension.replace() {
 
   ext=".$(echo "${ext}" | tr -d '.')"
 
+  local file
   local first=true
   for file in "$@"; do
     ${first} || printf " "
