@@ -287,7 +287,7 @@ function .install.darwin-requirements-xcode() {
         sleep 4
        .puts "Opening Apple website..."
         sleep 0.5
-        ## :TODO: As you havee commented about keeping the user informed...
+        ## :TODO: As you have commented about keeping the user informed...
         ## As the command tools must be paired with the version of Xcode installed,
         ## perhaps mentioning which one they were supposed to download from the site below
         ## using `xcodebuild -version` would be helpful...
@@ -392,7 +392,7 @@ ${bldylw}FLAGS:${clr}
                                 ${bldgrn}$ ~/.bashmatic/bin/bashmatic load-at-login ${clr}
 
                                 This above will install the Bashmatic hook into your shell 
-                                dotfile, eg ${txtcyn}~/.bash_profile.${clr} if you are on BASH,
+                                dotfile, e.g., ${txtcyn}~/.bash_profile.${clr} if you are on BASH,
                                 or ${txtcyn}~/.zshrc${clr} if you are on ZSH..
 
   -g, --skip-git                Do not abort if the destination has local changes
@@ -660,7 +660,7 @@ current_shell=$(.install.current-shell)
 
 set +e
 
-# Allow sourcing in bin/bashmatic-install and using its shell functions, eg:
+# Allow sourcing in bin/bashmatic-install and using its shell functions, e.g.:
 # source bin/bashmatic-install init
 if [[ ${current_shell} =~ "bash" ]] && [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
   echo >/dev/null
