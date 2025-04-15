@@ -1,5 +1,5 @@
 # Thi Dockerfile is provided so that we can eventually build 
-# linux support for the bin/setup script.
+# Linux support for the bin/setup script.
 #
 # vim: ft=Dockerfile
 # 
@@ -10,7 +10,7 @@
 #
 # Once in the container: 
 #    
-#    # Run specs in linux:
+#    # Run specs in Linux:
 #    $ specs
 #    
 #    # Test encryption:
