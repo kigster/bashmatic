@@ -110,7 +110,7 @@ function user.my.reverse-ips() {
 }
 
 user.host() {
-  local host=
+  local host
   host=$(user.my.reverse-ip)
   [[ -z ${host} ]] && host=$(user.my.ip)
   printf "${host}"
@@ -155,6 +155,7 @@ user.current-shell-init-file() {
 
 .user.pick-shell-init-file() {
   local init_file
+  local file
   for file in "$@"; do
     if [[ -s ${file} ]]; then
       init_file="${file}"
@@ -166,5 +167,12 @@ user.current-shell-init-file() {
   touch "${init_file}"
   echo "${init_file}"
 }
+
+## :TBD: As one I recently had need of, where's `user.home-dir`?
+## 
+## user.home-dir() {
+##   local user="${1:-$( whoami )}"
+##   printf '%s\n' $(bash -c "cd ~$(printf %q "${user}") && pwd")
+## }
 
 
