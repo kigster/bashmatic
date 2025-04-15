@@ -19,15 +19,17 @@
 array.has-element() {
   local search="$1"; shift
   local r="false"
-  local e
 
   [[ "$*" =~ ${search} ]] || {
     echo -n $r
     return 1
   }
+
+  local e
   for e in "${@}"; do
     [[ "$e" == "${search}" ]] && r="true"
   done
+  
   echo -n $r
   [[ $r == "false" ]] && return 1
   return 0
@@ -42,12 +44,14 @@ array.includes() {
   shift
 
   [[ "$*" =~ "${search}" ]] || return 1
-  
+
+  local e
   for e in "${@}"; do
     [[ "$e" == "${search}" ]] && {
       return 0
     }
   done
+  
   return 1
 }
 
@@ -102,19 +106,21 @@ array.includes-or-exit() {
 #   —> three
 array.join() {
   local sep="$1"; shift
-  local lines="$1"
+  local lines="$1"    ## better named `elem_per_line`
 
   if [[ ${lines} == true || ${lines} == false ]];  then
     shift
   else
+    ## :TBD: No warning (e.g., $ array.join " —> " "true" "${array[@]}") or error instead?
     lines=false
   fi
 
-  local elem
+  ## :TBD: Maybe just have two separate impl for each function usage based on nargs
   local len="$#"
   local last_index=$(( len - 1 ))
   local index=0
 
+  local elem
   for elem in "$@"; do
     if ${lines}; then
       printf "${sep}%s\n" "${elem}"
@@ -163,10 +169,13 @@ array.sort-numeric() {
 #     -5
 array.min() {
   local min="$1"; shift
+
+  local v
   for v in "$@"; do
     is.numeric "$v" || continue
     [[ ${v} -lt ${min} ]] && min="$v"
   done
+
   printf -- "%d" "${min}"
 }
 
@@ -220,10 +229,13 @@ function array.force-range() {
 #     30
 array.max() {
   local max="$1"; shift
+
+  local v
   for v in "$@"; do
     is.numeric "$v" || continue
     [[ ${v} -gt ${max} ]] && max="$v"
   done
+  
   printf -- "%d" "${max}"
 }
 
@@ -244,12 +256,16 @@ array.to.csv() {
   array.join ', ' false "$@"
 }
 
-array.to.bullet-list() {
-  array.join ' • ' true "$@"
+array.to.tsv() {
+  array.join '\t' false "$@"
 }
 
 array.to.piped-list() {
   array.join ' | ' false "$@"
+}
+
+array.to.bullet-list() {
+  array.join ' • ' true "$@"
 }
 
 # BASH implementation:
@@ -291,6 +307,8 @@ array.eval.in-groups-of() {
   local chunk="$1"; shift
   local function="$1"; shift
   local -a group
+
+  local item
   for item in "$@"; do
     index="$(( index + 1 ))"
     if [[ ${#group[@]} -eq ${chunk} ]]; then
