@@ -310,7 +310,7 @@ function pre-install-darwin() {
 }
 
 # function pre-install-linux() {
-#   # linux specific installation steps
+#   # Linux specific installation steps
 # }
 
 function pre-install() {
