@@ -2,7 +2,7 @@
 # vim: ft=bash
 #
 # @file install-direnv
-# @desription Installs direnv on OS-X or linux, and
+# @desription Installs direnv on OS-X or Linux, and
 #     wires it up to BASH, ZSH or FISH.
 
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
