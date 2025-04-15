@@ -112,7 +112,7 @@ function path.append() {
 
 # @description
 #   Prepends a new directory to the $PATH and prints to STDOUT,
-#   If one of the arguments already in the PATH its moved to the front.
+#   If one of the arguments is already in the PATH, it's moved to the front.
 #   DOES NOT mutate the actual $PATH
 function path.prepend() {
   local new_path="${PATH}"
