@@ -91,6 +91,7 @@ function dir.rsync-to() {
   local -a extra_rsync_flags
   local sudo=false
 
+  local flag
   for flag in "$@"; do
     if [[ ${flag} == "--sudo" ]]; then
       sudo=true
