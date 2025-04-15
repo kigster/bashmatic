@@ -48,18 +48,21 @@ function .ts() {
 }
 
 function .puts() {
+  local str
   for str in "$@"; do
     printf "${clr}${bldwht}${bakblu} INFORMATION ➜ ${clr}  ${txtblu}${str}${clr}\n"
   done
 }
 
 function .err() {
+  local str
   for str in "$@"; do
     printf "${clr}${bldwht}${bakred} ERROR       ➜ ${clr}  ${bldred}${str}${clr}\n"
   done
 }
 
 function .wrn() {
+  local str
   for str in "$@"; do
     printf "${clr}${txtblk}${bakylw} WARNING     ➜ ${clr}  ${bldylw}${str}${clr}\n"
   done
@@ -202,6 +205,7 @@ function .install.git-sync() {
 #——————————————————————————————————————————————————————————————————————————————————————
 
 function .install.linux-requirements() {
+  local package  # :TBD: why doesn't this looping variable appear below?
   for package in unzip git curl; do
     command -v "${command}" >/dev/null || {
       apt-get install "${command}" -yqq || sudo apt-get install "${command}" -yqq
@@ -246,9 +250,10 @@ function .install.brew-install() {
 function .install.brew-deps() {
   set +e
   is-verbose &&.puts "Installing required brew packages..."
-  local brew_cache=/tmp/brew_cache.$$
+  local brew_cache="/tmp/brew_cache.$$"
   trap "rm -f '${brew_cache}'" EXIT
   brew list --formulae -1 >"${brew_cache}"
+  local package
   for package in "${BREW_PACKAGES[@]}"; do
     is-verbose &&.puts "Checking/installing brew package ${bldylw}${package}..."
     grep -q "${package}" "${brew_cache}" || brew install "${package}" 1>/dev/null 2>&1
@@ -258,7 +263,6 @@ function .install.brew-deps() {
 # Uninstall Brew (just for completeness, we never actually use this)
 function .install.brew-uninstall() {
   echo y | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
-
 }
 
 function .install.darwin-requirements-xcode() {
@@ -283,6 +287,10 @@ function .install.darwin-requirements-xcode() {
         sleep 4
        .puts "Opening Apple website..."
         sleep 0.5
+        ## :TODO: As you havee commented about keeping the user informed...
+        ## As the command tools must be paired with the version of Xcode installed,
+        ## perhaps mentioning which one they were supposed to download from the site below
+        ## using `xcodebuild -version` would be helpful...
         open "https://developer.apple.com/download/more/?=command%20line%20tools"
         exit 1
       }
@@ -652,7 +660,7 @@ current_shell=$(.install.current-shell)
 
 set +e
 
-# Allow sourcing in bin/bashmatic-install and using it's shell functions, eg:
+# Allow sourcing in bin/bashmatic-install and using its shell functions, eg:
 # source bin/bashmatic-install init
 if [[ ${current_shell} =~ "bash" ]] && [[ -n ${BASH_VERSION} && "$0" != "${BASH_SOURCE[${last_index}]}" ]]; then
   echo >/dev/null
