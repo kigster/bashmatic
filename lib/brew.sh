@@ -172,6 +172,7 @@ function brew.cask.is-installed() {
 
 function brew.package.all-installed() {
   local -a installed_packages=($(brew.package.list))
+  local item
   for item in "$@"; do
     array.includes "${item}" "${installed_packages[@]}" || return 1
   done
@@ -180,6 +181,7 @@ function brew.package.all-installed() {
 
 function brew.cask.all-installed() {
   local -a installed_casks=($(brew.cask.list))
+  local item
   for item in "$@"; do
     array.includes "${item}" "${installed_casks[@]}" || return 1
   done
@@ -314,6 +316,7 @@ function brew.install.packages() {
   local force=
   [[ -n "${opts_force}" ]] && force="--force"
 
+  local package
   for package in "$@"; do
     brew.install.package "${package}"
   done
@@ -325,6 +328,7 @@ function brew.reinstall.packages() {
 
   [[ -n "${opts_force}" ]] && force="--force"
 
+  local package
   for package in "$@"; do
     brew.uninstall.package "${package}"
     brew.install.package "${package}"
@@ -338,6 +342,7 @@ function brew.uninstall.packages() {
   local force=
   [[ -n "${opts_force}" ]] && force="--force"
 
+  local package
   for package in "$@"; do
     brew.uninstall.package "${package}"
   done
