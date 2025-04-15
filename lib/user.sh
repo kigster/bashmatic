@@ -15,7 +15,7 @@ user.gitconfig.name() {
 }
 
 user.finger.name() {
-  [[ -n $(which finge) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
+  [[ -n $(which finger) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
 }
 
 user.username() {
