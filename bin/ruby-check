@@ -271,17 +271,17 @@ ${color_green}SELECING RUBIES:${clr}
   -c/--current          Detect if the current (in the \$PATH) ruby binary is
                         linked with jemalloc. Compatible with -s.
 
-  -a/--all              Find all rubies in the \$PATH and perform the check(s)
+  -a/--all              Find each Ruby binary in the \$PATH and perform the check(s)
 
-  -r/--ruby PATH        Path to the ruby binary to check (defaults to the
-                        first ruby found in the \$PATH)
+  -r/--ruby PATH        Path to the Ruby binary to check (defaults to the
+                        first one found in the \$PATH)
 
                         NOTE: the above flags require a select from the following
                         section, which specifies which checks to perform.
 
 
 ${color_green}RUBY CHECKS:${clr}
-  -j/--jm-stats         Strart a ruby process and print its the jemalloc stats 
+  -j/--jm-stats         Start a Ruby process and print its jemalloc stats 
                         (when linked with jemalloc)
 
   -y/--yjit-stats PID   Print the YJIT stats for another running Ruby PID.
