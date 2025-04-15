@@ -494,7 +494,7 @@ NOTE: Running `make update` is is required for submitting any pull request.
 
 === Docker Make Targets
 
-Bashmatic comes with a Dockerfile that can be used to run tests or jsut manually validate various functionality under linux, and possibly to experiment.
+Bashmatic comes with a Dockerfile that can be used to run tests or just manually validate various functionality under Linux, and possibly to experiment.
 
 Run `make docker-build` to create an docker image `bashmatic:latest`.
 
@@ -569,7 +569,7 @@ Let's get back to the Earth, and talk about how to install Bashmatic, and how to
 
 This final and most feature-rich example is not just an example – **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
 
-NOTE: the script relies on Homebrew behind the scenes, and therefore would not work on linux or Windows (unless Brew gets ported there).
+NOTE: the script relies on Homebrew behind the scenes, and therefore would not work on Linux or Windows (unless Brew gets ported there).
 
 It's located in https://github.com/kigster/bashmatic/blob/main/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
