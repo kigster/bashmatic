@@ -18,7 +18,7 @@
 
 # From 7z Man Page:
 #
-#  On linux/Unix, in order to backup directories you must use tar :
+#  On Linux/Unix, in order to backup directories you must use tar :
 #  - to backup a directory  : tar cf - directory | 7za a -si directory.tar.7z
 #  - to restore your backup : 7za x -so directory.tar.7z | tar xf -
 
