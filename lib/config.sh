@@ -73,6 +73,7 @@ function config.dig.pretty() {
   local -a args
   local -a keys
 
+  local a
   for a in "$@"; do
     if [[ $a =~ ^- ]]; then
       args+=("$a")
