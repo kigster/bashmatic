@@ -28,6 +28,7 @@ function audio.m4a.to.mp3() {
 
 
 function audio.m4as.to.mp3s() {
+  ## Should `folder` be local?
   folder="${1:-"."}"
   info "Converting the following files:"
   find "${folder}" -name '*.m4a'  
@@ -212,6 +213,7 @@ audio.dir.mp3-to-wav() {
   run "cd \"${from}\""
   trap "return 1" INT
 
+  ## Should `filename` be local?
   while read -d '' filename; do
     audio.file.mp3-to-wav "${filename}" "${to}" </dev/null
   done < <(find . -type f -name "*.mp3" -print0)
@@ -254,11 +256,12 @@ audio.dir.rename-wavs() {
       "or the folder where *.wav files to be renamed are."
       return 1
     }
-    cd "${dir}" || exit
+    cd "${dir}" || exit 1
   fi
 
-  local nfile
+  local file
   for file in $(ls -1 '*.wav'); do
+    local n
      n="$(.audio.karaoke.format "${file}" | sed 's/—/_/g')"
      h1 "${file}" "${n}"
      run "mv -vn \"${file}\" \"${n}\"";  
