@@ -19,6 +19,7 @@ function pdf.combine() {
 
   local files=""
 
+  local f
   for f in "$@"; do
     [[ -f "${f}" ]] && {
       info "Appending file ${bldylw}${f}"
