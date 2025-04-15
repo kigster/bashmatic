@@ -2,7 +2,7 @@
 # vim: ft=bash
 #
 # The purpose of this script is to bootstrap Bashmatic on a
-# new system. We are supporting OS-X and linux, although on
+# new system. We are supporting OS-X and Linux, although on
 # OS-X we do a lot more initialization to ensure Bashmatic
 # can properly function.
 #
