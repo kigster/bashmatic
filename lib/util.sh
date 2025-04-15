@@ -187,6 +187,7 @@ function util.remove-from-init-files() {
 
   declare -a shell_files=($(util.shell-init-files))
   local temp_holder=$(mktemp)
+  local init_file
   for init_file in "${shell_files[@]}"; do
     run.config.detail-is-enabled && inf "verifying file ${init_file}..."
     file="${init_file}"
@@ -270,6 +271,7 @@ function util.functions-matching() {
 function util.functions-matching.diff() {
   while true; do
     [[ -z "$1" ]] && break
+    local e
     for e in $(util.functions-matching "${1}"); do
       printf "${e/$1/}\n"
     done
