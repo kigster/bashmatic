@@ -8,20 +8,6 @@ run() {
   return "${LibRun__LastExitCode}"
 }
 
-# Waits until the user presses any key to continue.
-run.ui.press-any-key() {
-  local prompt="$*"
-  trap 'return 1' INT
-  [[ -z ${prompt} ]] && prompt="Press any key to continue..."
-  br
-  printf "    ${txtgrn}${italic}${prompt} ${clr}  "
-  read -r -s -n1 key
-  cursor.rewind
-  printf "                                                           "
-  cursor.up 2
-  cursor.rewind
-  echo
-}
 
 # Usage:
 #  run.ui.ask-user-value GITHUB_ORG "Please enter the name of your Github Organization:"

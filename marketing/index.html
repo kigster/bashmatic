@@ -12,6 +12,14 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
   
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  
+  <!-- and it's easy to individually load additional languages -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+  
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
@@ -56,7 +64,7 @@
         </div>
         <div class="terminal-body">
           <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">source ~/.bashmatic/init.sh</span></div>
-          <div class="terminal-line"><span class="terminal-output">Bashmatic v3.3.1 loaded successfully!</span></div>
+          <div class="terminal-line"><span class="terminal-output">    <span style="color  bashmatic.sh    ® 2015-2025 Konstantin Gredeskoul        v3.4.1   </span></div>
           <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">h1 "Hello, World!"</span></div>
           <div class="terminal-line terminal-output">
             <pre class="terminal-box">
@@ -138,7 +146,7 @@
       <div class="example animate-on-scroll">
         <h3><i class="fas fa-code"></i> DSL-like Function Example:</h3>
         <div class="code-container">
-          <pre>
+          <pre><code class="language-bash">
 # An example of a DSL-like function 
 function bashmatic.auto-update() {
   local dir="${1:-"${BASHMATIC_HOME}"}"
@@ -154,6 +162,7 @@ function bashmatic.auto-update() {
 
 # check if the function is defined and call it 
 is.a-function.invoke bashmatic.auto-update "$@"
+            </code>
           </pre>
         </div>
       </div>
@@ -161,7 +170,7 @@ is.a-function.invoke bashmatic.auto-update "$@"
       <div class="example animate-on-scroll">
         <h3><i class="fas fa-terminal"></i> UI Showcase Example:</h3>
         <div class="code-container">
-          <pre>
+          <pre><code class="language-bash">
 #!/usr/bin/env bash
 
 if [[ -f "${BASHMATIC_INIT}" ]]; then 
@@ -190,6 +199,7 @@ box.yellow-in-blue "Perhaps we should run some more commands!"
 
 run "mkdir -p hello"
 run "cd hello"
+            </code>
           </pre>
         </div>
       </div>
@@ -206,8 +216,10 @@ run "cd hello"
           <h3>Quick Install</h3>
           <p>The easiest way to install Bashmatic is with curl:</p>
           <div class="code-container">
-            <code class="typing-effect" data-text="bash -c &quot;$(curl -fsSL https://bashmatic.re1.re)&quot;; 
-            bashmatic-install -q"></code>
+            <pre>
+            <code class="typing-effect" data-text="bash -c &quot;$(curl -fsSL https://bashmatic.re1.re)&quot;
+bashmatic-install -q"></code>
+            </pre>
           </div>
         </div>
         <div class="step animate-on-scroll">
@@ -215,7 +227,9 @@ run "cd hello"
           <h3>Verify Installation</h3>
           <p>After installation, you can load it like so:</p>
           <div class="code-container">
-            <code>source ~/.bashmatic/init</code>
+            <pre>
+              <code>source ~/.bashmatic/init</code>
+            </pre>  
           </div>
         </div>
         <div class="step animate-on-scroll">
@@ -223,7 +237,9 @@ run "cd hello"
           <h3>Auto-loading (Optional)</h3>
           <p>To load Bashmatic when you open the terminal, add to your ~/.bash_profile:</p>
           <div class="code-container">
-            <code>[[ -f ~/.bashmatic/init ]] &amp;&amp; source ~/.bashmatic/init</code>
+            <pre>
+            <code class="language-bash">[[ -f ~/.bashmatic/init ]] &amp;&amp; source ~/.bashmatic/init</code>
+            </pre>
           </div>
           <p>This adds only about 134ms to your shell startup time.</p>
         </div>
@@ -328,5 +344,6 @@ run "cd hello"
 
   <!-- JavaScript -->
   <script src="assets/js/main.js"></script>
+  <script>hljs.highlightAll();</script>
 </body>
 </html> 

@@ -220,7 +220,7 @@ function __bashmatic.parse-arguments() {
 }
 
 function __bashmatic.print-path-config() {
-  is-debug && not-quiet && printf "${BASHMATIC_PREFIX}\n"
+  not-quiet && printf "${BASHMATIC_PREFIX}\n"
   is-debug || return 0
   echo "BASHMATIC_HOME[${BASHMATIC_HOME}]"
   echo "BASHMATIC_INIT[${BASHMATIC_INIT}]"

@@ -33,7 +33,7 @@ bashmatic.detect-subshell() {
   local len="${#BASH_SOURCE[@]}"
   local last_index=$((len - 1))
 
-  [[ -n ${BASHMATIC_DEBUG} ]] && {
+  (( BASHMATIC_DEBUG)) && {
     echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" >&2
     echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" >&2
     echo "\$0            = $0" >&2
@@ -102,4 +102,12 @@ function bashmatic.run-if-subshell() {
   fi
 }
 
-
+bashmatic.is-subshell-alt() {
+  local IN_SUB_SHELL=0
+  if [ "$$" -eq "$BASHPID" ]; then 
+    export IN_SUB_SHELL=0
+  else 
+    export IN_SUB_SHELL=1
+  fi
+  return ${IN_SUB_SHELL}
+}
