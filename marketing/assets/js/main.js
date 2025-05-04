@@ -220,23 +220,23 @@ function highlightSyntax() {
     const content = codeBlock.innerHTML;
     
     // Highlight comments
-    let highlighted = content.replace(/(#.+)$/gm, '<span class="code-comment">$1</span>');
+    // let highlighted = content.replace(/(#.+)$/gm, '<span class="code-comment">$1</span>');
     
     // Highlight functions and keywords
-    highlighted = highlighted.replace(/\b(function|local|return|if|then|else|fi|for|while|do|done|in|case|esac|echo|source|export)\b/g, '<span class="code-keyword">$1</span>');
+    //highlighted = highlighted.replace(/\b(function|local|return|if|then|else|fi|for|while|do|done|in|case|esac|echo|source|export)\b/g, `<span class="code-keyword">$1</span>`);
     
     // Highlight strings
-    highlighted = highlighted.replace(/(".*?")/g, '<span class="code-string">$1</span>');
-    highlighted = highlighted.replace(/('.*?')/g, '<span class="code-string">$1</span>');
+    // highlighted = highlighted.replace(/(".*?")/g, '<span class="code-string">$1</span>');
+    //  highlighted = highlighted.replace(/('.*?')/g, '<span class="code-string">$1</span>');
     
-    // Highlight variables
-    highlighted = highlighted.replace(/(\$\{[^}]+\})/g, '<span class="code-variable">$1</span>');
-    highlighted = highlighted.replace(/(\$[a-zA-Z0-9_]+)/g, '<span class="code-variable">$1</span>');
+     // Highlight variables
+     //     highlighted = highlighted.replace(/(\$\{[^}]+\})/g, '<span class="code-variable">$1</span>');
+     //     highlighted = highlighted.replace(/(\$[a-zA-Z0-9_]+)/g, '<span class="code-variable">$1</span>');
     
-    // Function names
-    highlighted = highlighted.replace(/([a-zA-Z0-9_.-]+)\(/g, '<span class="code-function">$1</span>(');
+     // Function names
+     //     highlighted = highlighted.replace(/([a-zA-Z0-9_.-]+)\(/g, '<span class="code-function">$1</span>(');
     
-    codeBlock.innerHTML = highlighted;
+     //codeBlock.innerHTML = highlighted;
   });
   
   // Add CSS for syntax highlighting
