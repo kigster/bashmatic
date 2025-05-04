@@ -48,7 +48,13 @@ function .run.initializer() {
   export LibRun__RetryExitCodes=()
 }
 
-trap "kill $$" INT
+function run.user.abort() {
+  echo
+  err "Ctrl-C pressed, aborting."
+  echo
+}
+
+trap "run.user.abort; kill $$" INT
 
 export SENSITIVE_VARS_REGEX="(password|api_key|token)"
 
@@ -365,10 +371,12 @@ function run.with.minimum-duration() {
 
   return ${result}
 }
-
-function run.ui.press-any-key() {
+# Waits until the user presses any key to continue.
+run.ui.press-any-key() {
   local prompt="$*"
-  [[ -z ${prompt} ]] && prompt="Press any key to continue..."
+  trap "run.user.abort; ((BASH_SUBSHELL)) && exit 11; ((BASH_SUBSHELL)) || return 11" INT
+
+  [[ -z ${prompt} ]] && prompt="Press any key to continue (or Ctrl-C to abort)..."
   br
   printf "    ${txtgrn}${italic}${prompt} ${clr}  "
   read -r -s -n1 key
