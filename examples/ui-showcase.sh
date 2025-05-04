@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: ft=bash
 
 if [[ -f "${BASHMATIC_INIT}" ]]; then 
    source "${BASHMATIC_INIT}"; 
@@ -6,13 +7,7 @@ else
    source ${BASHMATIC_HOME}/init.sh; 
 fi
 
-export BASH_SUBSHELL=1
-
-DELAY_SECONDS="${1:-3}"
-
-function pause-bar() {
-   progress.bar.auto-run "${1:-"2"}"
-}
+export DELAY_SECONDS="${1:-3}"
 
 function delay() {
    pause ${DELAY_SECONDS}
@@ -92,9 +87,9 @@ h3 "Let's look at ways to run commands and show some feedback to the user..."
 delay
 
 info "Instead of a sleep — we can show a progress bar that runs for however"
-info "many seconds we like — for example ${txtylw}progress.bar 3"
+info "many seconds we like — for example ${txtylw}progress.bar.auto-run 3"
 echo
-pause-bar $(pause-multiplier 4)
+progress.bar.auto-run 3
 echo
 run.ui.press-any-key
 
