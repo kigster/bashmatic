@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bashmatic® - Contributors</title>
+  <meta name="description" content="Contributors to the Bashmatic project - BASH-based DSL helpers for humans.">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/contributors.css">
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  
+  <!-- Chart.js for contribution graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <nav class="navbar">
+        <div class="logo">Bashmatic<span>®</span></div>
+        <ul class="nav-links">
+          <li><a href="index.html#features">Features</a></li>
+          <li><a href="index.html#examples">Examples</a></li>
+          <li><a href="index.html#installation">Installation</a></li>
+          <li><a href="index.html#documentation">Documentation</a></li>
+          <li><a href="contributors.html" class="active">Contributors</a></li>
+          <li><a href="https://github.com/kigster/bashmatic" target="_blank">GitHub <i class="fas fa-external-link-alt fa-xs"></i></a></li>
+        </ul>
+        <div class="menu-toggle">
+          <i class="fas fa-bars"></i>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contributors Section -->
+  <section class="contributors-section">
+    <div class="container">
+      <h1 class="section-title animate-on-scroll">Project Contributors</h1>
+      <p class="section-description animate-on-scroll">
+        Bashmatic is made possible by these amazing contributors who have dedicated their time and expertise to make this project better.
+      </p>
+      
+      <div class="contributors-graph-container animate-on-scroll">
+        <h2>Contribution Activity</h2>
+        <div class="graph-controls">
+          <button class="metric-btn active" data-metric="additions">Additions</button>
+          <button class="metric-btn" data-metric="deletions">Deletions</button>
+          <button class="metric-btn" data-metric="commits">Commits</button>
+        </div>
+        <div class="contributors-graph">
+          <canvas id="contributionsChart"></canvas>
+          <div class="loading-indicator">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading contribution data...</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="contributors-list-container animate-on-scroll">
+        <h2>Core Contributors</h2>
+        <div class="contributors-list" id="contributorsList">
+          <!-- Contributors will be loaded dynamically -->
+          <div class="loading-indicator">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading contributors...</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="join-contributing animate-on-scroll">
+        <h2>Join the Contributors</h2>
+        <p>
+          Want to contribute to Bashmatic? We welcome contributions of all sizes, from fixing typos to adding new features.
+        </p>
+        <div class="contribute-links">
+          <a href="https://github.com/kigster/bashmatic" target="_blank" class="btn">
+            <i class="fab fa-github"></i> Visit GitHub Repository
+          </a>
+          <a href="https://github.com/kigster/bashmatic/issues" target="_blank" class="btn btn-secondary">
+            <i class="fas fa-bug"></i> Report Issues
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-info">
+          <div class="footer-logo">Bashmatic<span>®</span></div>
+          <p>BASH-based DSL helpers for humans, sysadmins, and fun.</p>
+          <p>Make your BASH scripts more enjoyable, readable, and user-friendly.</p>
+          <div class="social-links">
+            <a href="https://github.com/kigster/bashmatic" target="_blank" data-tooltip="GitHub"><i class="fab fa-github"></i></a>
+            <a href="https://gitter.im/kigster/bashmatic" target="_blank" data-tooltip="Gitter"><i class="fab fa-gitter"></i></a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <h3>Resources</h3>
+          <ul>
+            <li><a href="https://github.com/kigster/bashmatic" target="_blank">GitHub Repository</a></li>
+            <li><a href="https://github.com/kigster/bashmatic/blob/main/README.pdf" target="_blank">Documentation</a></li>
+            <li><a href="https://github.com/kigster/bashmatic/blob/main/doc/CHANGELOG.md" target="_blank">Changelog</a></li>
+            <li><a href="https://github.com/kigster/bashmatic/blob/main/doc/LICENSE.adoc" target="_blank">License</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h3>Community</h3>
+          <ul>
+            <li><a href="contributors.html">Contributors</a></li>
+            <li><a href="https://gitter.im/kigster/bashmatic" target="_blank">Gitter Chat</a></li>
+            <li><a href="https://github.com/kigster/bashmatic/issues" target="_blank">Report Issues</a></li>
+            <li><a href="https://github.com/kigster/bashmatic/pulls" target="_blank">Contribute</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h3>Support</h3>
+          <ul>
+            <li><a href="https://liberapay.com/kigster/donate" target="_blank">Donate via Liberapay</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">
+        <p>&copy; 2023 Bashmatic. Open source under <a href="https://github.com/kigster/bashmatic/blob/main/doc/LICENSE.adoc" target="_blank">MIT License</a>.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/contributors.js"></script>
+</body>
+</html> 
