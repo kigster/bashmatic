@@ -36,7 +36,7 @@ function __is.validation.error() {
   shift
 
   is.a-function "${func}" || {
-    error "Invalid validation operation: ${bldylw}${func}"
+    error "Invalid validation operation:" " — ${func}()"
     # shellcheck disable=SC2046
     h2 "Supported operations:" $(is-validations)
     return 127
