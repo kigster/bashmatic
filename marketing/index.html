@@ -138,7 +138,7 @@
       <div class="example animate-on-scroll">
         <h3><i class="fas fa-code"></i> DSL-like Function Example:</h3>
         <div class="code-container">
-          <code>
+          <pre>
 # An example of a DSL-like function 
 function bashmatic.auto-update() {
   local dir="${1:-"${BASHMATIC_HOME}"}"
@@ -154,14 +154,14 @@ function bashmatic.auto-update() {
 
 # check if the function is defined and call it 
 is.a-function.invoke bashmatic.auto-update "$@"
-          </code>
+          </pre>
         </div>
       </div>
 
       <div class="example animate-on-scroll">
         <h3><i class="fas fa-terminal"></i> UI Showcase Example:</h3>
         <div class="code-container">
-          <code>
+          <pre>
 #!/usr/bin/env bash
 
 if [[ -f "${BASHMATIC_INIT}" ]]; then 
@@ -190,7 +190,7 @@ box.yellow-in-blue "Perhaps we should run some more commands!"
 
 run "mkdir -p hello"
 run "cd hello"
-          </code>
+          </pre>
         </div>
       </div>
     </div>
@@ -206,18 +206,16 @@ run "cd hello"
           <h3>Quick Install</h3>
           <p>The easiest way to install Bashmatic is with curl:</p>
           <div class="code-container">
-            <code class="typing-effect" data-text="bash -c &quot;$(curl -fsSL https://bashmatic.re1.re)&quot;; bashmatic-install -q"></code>
+            <code class="typing-effect" data-text="bash -c &quot;$(curl -fsSL https://bashmatic.re1.re)&quot;; 
+            bashmatic-install -q"></code>
           </div>
         </div>
         <div class="step animate-on-scroll">
           <span class="step-number">2</span>
           <h3>Verify Installation</h3>
-          <p>After installation, you can verify it works by running:</p>
+          <p>After installation, you can load it like so:</p>
           <div class="code-container">
-            <code>
-source ~/.bashmatic/init
-h1 "Bashmatic is installed!" "Hooray!"
-</code>
+            <code>source ~/.bashmatic/init</code>
           </div>
         </div>
         <div class="step animate-on-scroll">
@@ -225,7 +223,7 @@ h1 "Bashmatic is installed!" "Hooray!"
           <h3>Auto-loading (Optional)</h3>
           <p>To load Bashmatic when you open the terminal, add to your ~/.bash_profile:</p>
           <div class="code-container">
-            <code>[[ -f ~/.bashmatic/init` ]] && source ~/.bashmatic/init</code>
+            <code>[[ -f ~/.bashmatic/init ]] &amp;&amp; source ~/.bashmatic/init</code>
           </div>
           <p>This adds only about 134ms to your shell startup time.</p>
         </div>
@@ -242,7 +240,7 @@ h1 "Bashmatic is installed!" "Hooray!"
           <i class="fas fa-book"></i>
           <h3>Full Documentation</h3>
           <p>Comprehensive documentation with all functions and modules explained in detail.</p>
-          <a href="https://github.com/kigster/bashmatic/blob/main/README.pdf" target="_blank" class="btn" data-tooltip="View comprehensive PDF documentation">View Documentation <i class="fas fa-arrow-right"></i></a>
+          <a href="README.pdf" target="_blank" class="btn" data-tooltip="View comprehensive PDF documentation">View Documentation <i class="fas fa-arrow-right"></i></a>
         </div>
         <div class="doc-card">
           <i class="fas fa-code"></i>

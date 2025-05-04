@@ -252,7 +252,7 @@ header.header-hidden {
 
 .hero p {
   font-size: 1.3rem;
-  max-width: 800px;
+  max-width: 900px;
   margin: 30px auto;
   opacity: 0.9;
 }
@@ -506,7 +506,7 @@ code {
 }
 
 .install-steps {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   position: relative;
 }
@@ -543,6 +543,7 @@ code {
 }
 
 .step h3 {
+  color: black;
   display: inline-block;
   vertical-align: middle;
   font-size: 1.5rem;
@@ -818,7 +819,7 @@ footer:before {
 .typing-effect {
   display: inline-block;
   min-height: 1.2em;
-  min-width: 1ch;
+  min-width: 900px;
 }
 
 /* Pulse animation for specific elements */
@@ -991,7 +992,8 @@ footer:before {
 
 /* Terminal Demo */
 .terminal-demo {
-  max-width: 700px;
+  text-align: left;
+  max-width: 900px;
   margin: 40px auto;
   border-radius: 10px;
   overflow: hidden;
