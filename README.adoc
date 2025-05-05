@@ -30,14 +30,14 @@ https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/
 
 == Introduction 
 
-_Bashmatic®_ is a BASH framework, meaning its a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun** - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
+_Bashmatic®_ is a BASH framework, meaning it's a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun** - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
 
 
 [TIP]
 ====
 We suggest that you learn about Bashmatic from the **https://github.com/kigster/bashmatic/blob/main/README.pdf[PDF version of this document]** which is much better for print.
 
-* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/main/doc/USAGE.md[USAGE] file, or it's https://github.com/kigster/bashmatic/blob/main/doc/USAGE.pdf[PDF] version.
+* We recently began providing function documentation using a fork of `shdoc` utility. You can find the auto-generated documentation in the https://github.com/kigster/bashmatic/blob/main/doc/USAGE.md[USAGE] file, or its https://github.com/kigster/bashmatic/blob/main/doc/USAGE.pdf[PDF] version.
 
 * There is also an auto-generated file listing the source of every function and module. You can find it https://github.com/kigster/bashmatic/blob/main/doc/FUNCTIONS.adoc[FUNCTIONS].
 
@@ -105,7 +105,7 @@ And, finally, don't worry, *_Bashmatic®_* is totally open source and free to us
 
 **Not Currently Supported**
 
-* FISH (although you could use Bashmatic via `bin/bashmatic` script helper, or its executables)
+* FISH (although you could use Bashmatic via the `bin/bashmatic` script helper or its executables)
 
 == Project Motivation
 
@@ -494,7 +494,7 @@ NOTE: Running `make update` is is required for submitting any pull request.
 
 === Docker Make Targets
 
-Bashmatic comes with a Dockerfile that can be used to run tests or jsut manually validate various functionality under linux, and possibly to experiment.
+Bashmatic comes with a Dockerfile that can be used to run tests or just manually validate various functionality under Linux, and possibly to experiment.
 
 Run `make docker-build` to create an docker image `bashmatic:latest`.
 
@@ -558,7 +558,7 @@ Because:
 . It allows and reminds about a clean getaway (Ctrl-C)
 . It shares the exact command it runs and its timings so that you can eyeball issues like network congestions or network addresses, etc.
 . It shows in green exit code '0' of each command. Should any of the commands fail, you'll see it in red.
-. It's source code is terse, explicit, and easy to read. There is no magic. Just BASH functions.
+. Its source code is terse, explicit, and easy to read. There is no magic. Just BASH functions.
 
 NOTE: If you need to create a BASH installer, _Bashmatic®_ offers some incredible time savers.
 
@@ -569,7 +569,7 @@ Let's get back to the Earth, and talk about how to install Bashmatic, and how to
 
 This final and most feature-rich example is not just an example – **it's a working functioning tool that can be used to install a bunch of developer dependencies on your Apple Laptop**.
 
-NOTE: the script relies on Homebrew behind the scenes, and therefore would not work on linux or Windows (unless Brew gets ported there).
+NOTE: the script relies on Homebrew behind the scenes, and therefore would not work on Linux or Windows (unless Brew gets ported there).
 
 It's located in https://github.com/kigster/bashmatic/blob/main/bin/dev-setup[`bin/dev-setup`] and has many CLI flags:
 
@@ -785,7 +785,7 @@ The following conventions apply to all functions:
 * We use the "dot" for separating namespaces, hence `git.sync` and `gem.install`.
 * Function names should be self-explanatory and easy to read.
 * DO NOT abbreviate words.
-* All public functions must be written defensively: i.e. if the function is called from the Terminal without any arguments, and it requires arguments, the function _must print its usage info_ and a meaningful error message.
+* All public functions must be written defensively: i.e., if the function is called from the Terminal without any arguments, and it requires arguments, the function _must print its usage info_ and a meaningful error message.
 
 For instance:
 
@@ -931,7 +931,7 @@ run.set-all                          run.with.ruby-bundle-and-output
 run.set-all.list
 ----
 
-Using these functions you can write powerful shell scripts that display each command they run, it's status, duration, and can abort on various conditions. You can ask the user to confirm, and you can show a user message and wait for any key pressed to continue.
+Using these functions you can write powerful shell scripts that display each command they run, its status, duration, and can abort on various conditions. You can ask the user to confirm, and you can show a user message and wait for any key pressed to continue.
 
 ===== Examples of Runtime Framework
 ____

@@ -249,7 +249,7 @@ function run.post-command-with-output() {
 
 #
 # This is the workhorse of the entire BASH library.
-# It basically executes a statement, while processing it's output, error output,
+# It basically executes a statement, while processing its output, error output,
 # and status code in a consistent way, controllable via several global variables.
 # These variables are reset back to defaults after each run. The defaults hide
 # both stdout and error, and do NOT abort on failure.
@@ -379,6 +379,7 @@ run.ui.press-any-key() {
   [[ -z ${prompt} ]] && prompt="Press any key to continue (or Ctrl-C to abort)..."
   br
   printf "    ${txtgrn}${italic}${prompt} ${clr}  "
+  ## :TBD: Should `key` be local?
   read -r -s -n1 key
   cursor.rewind
   printf "                                                           "
@@ -412,6 +413,7 @@ function run.obfuscate-string-value() {
 }
 
 function run.print-obfuscated-vars() {
+  local var
   for var in "${OBFUSCATED_VARIABLES[@]}"; do
     run.inspect-variable "${var}"
   done
@@ -540,6 +542,7 @@ function run.inspect-variables() {
   h3bg "${title}"
   # trunk-ignore(shellcheck/SC2068)
   # shellcheck disable=SC2068
+  ## :TBD: Shouldn't `var` be local?
   for var in $@; do
     run.inspect-variable "${var}"
   done
@@ -552,6 +555,7 @@ function run.print-variables() {
   hl.yellow "${title}"
   # trunk-ignore(shellcheck/SC2068)
   # shellcheck disable=SC2068
+  ## :TBD: Shouldn't `var` be local?
   for var in $@; do
     run.print-variable "${var}"
   done
@@ -608,6 +612,7 @@ function run.inspect-variables-that-are() {
 #     run.inspect-vars BAxSHMATIC_
 #
 function run.inspect-vars() {
+  local var
   for var in "$@"; do
     run.inspect-variables-that-are starting-with "$var"
   done

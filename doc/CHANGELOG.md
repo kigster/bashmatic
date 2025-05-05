@@ -291,7 +291,7 @@
 
 **Fixed bugs:**
 
-- Hoping to fix parallel specs on linux [\#58](https://github.com/kigster/bashmatic/pull/58) ([kigster](https://github.com/kigster))
+- Hoping to fix parallel specs on Linux [\#58](https://github.com/kigster/bashmatic/pull/58) ([kigster](https://github.com/kigster))
 
 **Closed issues:**
 

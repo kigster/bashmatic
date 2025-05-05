@@ -179,7 +179,7 @@ function time.a-command() {
 }
 
 # Returns the date command that constructs a date from a given
-# epoch number. Appears to be different on linux vs OSX.
+# epoch number. Appears to be different on Linux vs OSX.
 time.date-from-epoch() {
   local epoch_ts
   epoch_ts="$1"

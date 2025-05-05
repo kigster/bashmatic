@@ -8,9 +8,9 @@
 
 # @description 
 #   Returns the first folder above the given that contains a file.
-# @arg1 file without the path to search for, eg ".evnrc"
+# @arg1 file without the path to search for, eg ".envrc"
 # @arg2 Starting file path to seartch
-# @output File path that's a sub-phat of the @arg2 contaning the file. if no file is found, 1 or 2 is returned.
+# @output File path that's a sub-path of the @arg2 contaning the file. if no file is found, 1 or 2 is returned.
 function dir.with-file() {
   local file="$1"
   local dir="${2:-$(pwd -P)}"
@@ -91,6 +91,7 @@ function dir.rsync-to() {
   local -a extra_rsync_flags
   local sudo=false
 
+  local flag
   for flag in "$@"; do
     if [[ ${flag} == "--sudo" ]]; then
       sudo=true

@@ -15,7 +15,7 @@ export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
 
   if [[ -f "${file}" && -n $(head -1 "$1" | ${GrepCommand} '#!.*(bash|ruby|env)') ]]; then
     printf "making file ${bldgrn}${file}${clr} executable since it's a script...\n"
-    chmod 755 "${file}"
+    chmod 755 "${file}"    # `ugo+x` is more technically correct, no?
     return 0
   else
     return 1
@@ -24,6 +24,7 @@ export bashmatic__temp_file_pattern=".bashmatic.${bashmatic__hostname}.${USER}."
 
 .file.remote_size() {
   local url="$1"
+  ## :TBD: Wouldn't `cut -d':' -f2` be cheaper than `awk`?
   printf $(($(curl -sI "${url}" | grep -i 'Content-Length' | awk '{print $2}') + 0))
 }
 

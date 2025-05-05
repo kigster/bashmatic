@@ -70,7 +70,7 @@ sig.list() {
   /bin/kill -l | sed -E 's/([ 0-9][0-9]\) SIG)//g; s/\s+/\n/g' | tr 'a-z' 'A-Z' | sort
 }
 
-# validate if it's a valid signal name, eg:
+# validate if it's a valid signal name, e.g.:
 # sig.is-valid HUP && echo yes
 sig.is-valid() {
   [[ -n $(kill -l "${1}" 2>/dev/null) ]]
@@ -78,6 +78,7 @@ sig.is-valid() {
 
 pid.stop-and-kill() {
   local pid="$1"
+  local delta
   delta=1
   sig=STOP
   while true; do
@@ -268,6 +269,7 @@ EXAMPLES:
 #     pids.stop-by-listen-tcp-ports 4232 9578 "${PORT}"
 #
 pids.stop-by-listen-tcp-ports() {
+  local port
   for port in "$@"; do
     pid.stop-if-listening-on-port "${port}"
   done
@@ -314,6 +316,7 @@ EXAMPLES:
     return 0
   fi
 
+  local pid
   for pid in $@; do
     if is.numeric "${pid}"; then
       pid.stop "${pid}"
@@ -335,8 +338,9 @@ pall() {
 # @description walks the process tree up the chain until it finds the top
 # process, whose parent PID is 1. Returns that process's arg list.
 function top-most-program() {
-  pid=$$
+  local pid=$$
   while true; do
+    ## :TBD: Should `output` be local instead of global?
     declare -a output=($(ps -o ppid,pid,args -p $pid | grep -v PPID))
     if [[ ${output[0]} -eq 1 ]] ; then
       echo ${output[2]}

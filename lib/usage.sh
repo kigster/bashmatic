@@ -16,6 +16,7 @@ function .usage.begin() {
 }
 
 .usage.title() {
+  local line
   for line in "$@"; do
     .output.boxed-text "${__color_bdr}" "${__color_fg}" "${__color_headers}$(.usage.hdr description) ${__color_fg}${line}"
   done
@@ -26,6 +27,7 @@ function .usage.begin() {
   .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr usage) ${__color_cmd}$1"
   shift
 
+  local line
   for line in "$@"; do
     .output.boxed-text "${__color_bdr}" "${__color_cmd}" "         ${line}"
   done
@@ -51,6 +53,7 @@ function .usage.flags() {
 
   local l_flags=0
   local l_desc=0
+  local arg
 
   # First we compute the length of the longest flag, and longest flag
   # description. Yes, I know — total overkill.
@@ -70,7 +73,7 @@ function .usage.flags() {
     l_flags=${LibUsage__MinFlagLen}
   fi
 
-  local n=0
+  n=0
   .output.boxed-text "${__color_bdr}" "${__color_headers}" "$(.usage.hdr flags)"
 
   for arg in "$@"; do
@@ -239,6 +242,7 @@ function usage-widget() {
   left_space="$(cursor.right 1) "
 
   if [[ ${#args[@]} -gt 2 ]]; then
+    local i
     for i in $(seq 2 50); do
       [[ -z ${args[$i]} ]] && break
 

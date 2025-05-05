@@ -23,8 +23,9 @@ cat <<EOF
 :toclevels: 5
 :icons: font
 EOF
-  local attrfile=".$1.attr"
+  local attrfile=".${file}.attr"
   if [[ -f "${attrfile}" ]]; then
+    ## :TBD: Shouldn't `attributes` be declared somewhere?
     attributes="$(cat "${attrfile}")"
     info  "Adding attributes from local file ${bldylw}${attrfile}:">&2
     cat "${attrfile}"
@@ -34,10 +35,10 @@ EOF
 }
 
 function install-fonts() {
-  ( 
-    cd "${BASHMATIC_HOME}" || exit
+  (
+    cd "${BASHMATIC_HOME}" || exit 1
     [[ -d .fonts ]] || run "tar xvzf .fonts.tar.gz"
-    cd - || exit
+    cd - || exit 1
   ) >/dev/null
 }
 
@@ -60,6 +61,7 @@ function install-graphicsmagick-darwin() {
   local package="graphicsmagick"
   brew.cache-reset
   brew.install.package ${package}
+  ## :TBD: Why `dir` as it doesn't appear to be used?
   local dir=$(brew --prefix ${package})
   brew.package.link ${package}
   return 0
@@ -97,6 +99,7 @@ function install-gems-manually() {
     text-hyphen
   )
 
+  local gem
   for gem in ${gems[@]}; do
     if [[ ${gem} =~ / ]]; then
       run "gem specific_install ${gem} --silent"

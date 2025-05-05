@@ -106,6 +106,7 @@ function validations.print-errors() {
   is.not-blank "${Bashmatic__IsSessionName}" &&
     hl.salmon "Reporing errors for ${Bashmatic__IsSessionName}"
 
+  local i
   for i in $(seq 1 "${error_count}"); do
     local error=${Bashmatic__IsErrors[$((i - 1))]}
     local value=${Bashmatic__IsValues[$((i - 1))]}

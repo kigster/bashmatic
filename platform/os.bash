@@ -245,7 +245,7 @@ function os.determine-system-type() {
 
   bash_version="${current_bash_version}"
   bash_path="${SHELL}"
-  # This seems to work on both linux and OS-X
+  # This seems to work on both Linux and OS-X
   load_average=$( uptime | sed -E 's/.*averages?: //g' )
   system_info_keys=($(os.attrs))
 

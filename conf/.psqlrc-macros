@@ -101,7 +101,7 @@
 \echo '——————————————————————————————————————————————————————————————————————————'
 
 \set pgss 'create extension pg_stat_statements;'
-\echo 'Type :pgss to create an extension for pg_stat_statements (assuming its available)'
+\echo 'Type :pgss to create an extension for pg_stat_statements (assuming it is available)'
 \echo 'Type \\q to exit. '
 \echo
 \echo '┌───────────────────────────────────────────────────────────────────────────┐'
