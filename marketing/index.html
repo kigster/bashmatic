@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bashmatic® - BASH-based DSL helpers for humans</title>
+  <title>BashMatic - BASH/DSL helpers for the rest of us.</title>
   <meta name="description" content="Bashmatic is a BASH framework with 900+ functions that make BASH programming easier, more enjoyable, and fun.">
   
   <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
   <link rel="stylesheet" href="assets/css/styles.css">
   
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
   
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"> -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   
@@ -28,13 +29,14 @@
   <header>
     <div class="container">
       <nav class="navbar">
-        <div class="logo">Bashmatic<span>®</span></div>
+        <a href="/"><div class="logo">BashMatic <span><img class="bashmatic-logo-img" 
+          src="assets/img/bashmatic-logo.png"/></span></div></a>
         <ul class="nav-links">
           <li><a href="#features">Features</a></li>
+          <li><a href="#demo">Demo</a></li>
           <li><a href="#examples">Examples</a></li>
           <li><a href="#installation">Installation</a></li>
-          <li><a href="#documentation">Documentation</a></li>
-          <li><a href="contributors.html">Contributors</a></li>
+          <li><a href="#documentation">Docs</a></li>
           <li><a href="https://github.com/kigster/bashmatic" target="_blank">GitHub <i class="fas fa-external-link-alt fa-xs"></i></a></li>
         </ul>
         <div class="menu-toggle">
@@ -50,8 +52,8 @@
     <div class="hero-decoration hero-decoration-2"></div>
     <div class="hero-decoration hero-decoration-3"></div>
     <div class="container">
-      <h1>Bashmatic<span>®</span> - BASH-based DSL helpers</h1>
-      <p class="animate-on-scroll">A powerful BASH framework with 900+ functions to make BASH programming easier, more enjoyable, and most importantly, fun.</p>
+      <h1>BashMatic <span class="bashmatic-version">3.4.1</span> &mdash; BASH-based DSL helpers</h1>
+      <p class="animate-on-scroll">A powerful BASH framework with 900+ helper functions to make your BASH scripting easier, more enjoyable, awesome looking, and most importantly, fun.</p>
       
       <div class="terminal-demo animate-on-scroll">
         <div class="terminal-header">
@@ -63,21 +65,22 @@
           <div class="terminal-title">Terminal</div>
         </div>
         <div class="terminal-body">
-          <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">source ~/.bashmatic/init.sh</span></div>
-          <div class="terminal-line"><span class="terminal-output">    <span style="color  bashmatic.sh    ® 2015-2025 Konstantin Gredeskoul        v3.4.1   </span></div>
-          <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">h1 "Hello, World!"</span></div>
-          <div class="terminal-line terminal-output">
-            <pre class="terminal-box">
-┌─────────────────────────────────────────────┐
-│               Hello, World!                 │
-└─────────────────────────────────────────────┘</pre>
-          </div>
-          <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">info "Bashmatic makes your scripts look awesome"</span></div>
-          <div class="terminal-line"><span class="terminal-output"><span class="terminal-info">INFO:</span> Bashmatic makes your scripts look awesome</span></div>
-          <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-command">run "echo 'Ready to get started?'"</span></div>
-          <div class="terminal-line"><span class="terminal-output">→ <span class="terminal-runtime">0.01s</span> echo 'Ready to get started?'</span></div>
-          <div class="terminal-line"><span class="terminal-output">Ready to get started?</span></div>
-          <div class="terminal-line"><span class="terminal-prompt">$</span> <span class="terminal-cursor"></span></div>
+          <div class="terminal-line"><span class="terminal-prompt">❯</span><span class="terminal-command">source ~/.bashmatic/init.sh</span></div>
+          <div class="terminal-line"><span class="terminal-output"><span 
+            style="color:#2e2;">       </span><span 
+            style="background-color:#2e2; color: #000;">  bashmatic.sh   </span><span 
+            style="background-color:#fb3; color: #000;">  &copy; 2015-2025 Konstantin Gredeskoul (MIT License)  </span><span 
+            style="background-color:#5af; color: #000;">  v3.4.1   </span><span
+            style="color:#5af;"></span></div>          
+          <div class="terminal-line"><span class="terminal-prompt">❯</span><span class="terminal-command">h1 "Hello World! Welcome to Bashmatic!"</span></div>
+          <div class="terminal-line terminal-output"><pre class="terminal-box">┌─────────────────────────────────────────────────────────────────────────────┐
+│  Hello World! Welcome to Bashmatic!                                         │
+└─────────────────────────────────────────────────────────────────────────────┘</pre></div>
+          <div class="terminal-line"><span class="terminal-prompt">❯</span> <span class="terminal-command">info "Bashmatic makes your scripts look awesome"</span></div>
+          <div class="terminal-line"><span class="terminal-output"><span class="terminal-info" style="color: #5af;">    Bashmatic makes your scripts look awesome</span></div>
+          <div class="terminal-line"><span class="terminal-prompt">❯</span> <span class="terminal-command">run "echo 'Ready to get started?'"</span></div>
+          <div class="terminal-line"><span class="terminal-output">→ <span class="terminal-runtime"> ✔︎ </span><span class="black">  </span><span class="terminal-runtime">echo 'Ready to get started?'                             〔     60 ms 〕    0</span></div>
+          <div class="terminal-line"><span class="terminal-prompt">❯</span> <span class="terminal-cursor"></span></div>
         </div>
       </div>
       
@@ -97,47 +100,60 @@
           <div class="feature-icon">
             <i class="fas fa-code"></i>
           </div>
-          <h3>900+ Helper Functions</h3>
+          <h3>Kitchen Sink of 900+ Helper Functions</h3>
           <p>Extensive collection of BASH functions to handle everything from UI feedback to file operations, package management, and more.</p>
         </div>
         <div class="feature-card animate-on-scroll">
           <div class="feature-icon">
             <i class="fas fa-terminal"></i>
           </div>
-          <h3>DSL-like Syntax</h3>
+          <h3>Ruby-inspired DSL-like Syntax</h3>
           <p>Compact and self-documenting code with a Ruby-inspired DSL style. Chain functions with && and || for clean, readable scripts.</p>
         </div>
         <div class="feature-card animate-on-scroll">
           <div class="feature-icon">
             <i class="fas fa-eye"></i>
           </div>
-          <h3>Visual Feedback</h3>
+          <h3>Constant Visual Feedback</h3>
           <p>Constant user feedback with colored output, progress bars, headers, and more, ensuring you always know what's happening.</p>
         </div>
         <div class="feature-card animate-on-scroll">
           <div class="feature-icon">
             <i class="fas fa-cog"></i>
           </div>
-          <h3>Command Running Framework</h3>
-          <p>The 'run' function provides auto-retrying, repeatable, runtime-measuring execution with consistent output formatting.</p>
+          <h3>Always Showing What's Running</h3>
+          <p>The 'run' function shows the command, its exit status, and the timing in milliseconds. You control if its output is shown and what happens if it fails.</p>
         </div>
         <div class="feature-card animate-on-scroll">
           <div class="feature-icon">
             <i class="fas fa-paint-brush"></i>
           </div>
-          <h3>Beautiful UI Elements</h3>
+          <h3>Widgets: Headers, Error Boxes, and more</h3>
           <p>Create visually appealing scripts with boxes, lines, headers, and progress bars that make your BASH scripts look professional.</p>
         </div>
         <div class="feature-card animate-on-scroll">
           <div class="feature-icon">
             <i class="fas fa-tachometer-alt"></i>
           </div>
-          <h3>Performance Optimized</h3>
+          <h3>Performance Optimized, under 200ms load</h3>
           <p>Despite offering 900+ functions, Bashmatic loads quickly (only ~134ms) and is optimized for efficiency.</p>
         </div>
       </div>
     </div>
   </section>
+
+
+  <!-- Examples Section -->
+  <section class="code-section" id="demo">
+    <div class="container">
+      <h2 class="section-title animate-on-scroll">Watch the 3-Minute Screencast</h2>
+      <div class="demo">
+        <h3><i class="fas fa-code"></i> Don't take our word for it...</h3>
+        <img class="asciinema" src="assets/img/bashmatic-demo.gif"></img>
+      </div>
+    </div>
+  </section>
+
 
   <!-- Examples Section -->
   <section class="code-section" id="examples">
@@ -160,7 +176,7 @@ function bashmatic.auto-update() {
   }
 }
 
-# check if the function is defined and call it 
+# check if the function is defined and, if so, call it.
 is.a-function.invoke bashmatic.auto-update "$@"
             </code>
           </pre>
@@ -168,37 +184,31 @@ is.a-function.invoke bashmatic.auto-update "$@"
       </div>
 
       <div class="example animate-on-scroll">
-        <h3><i class="fas fa-terminal"></i> UI Showcase Example:</h3>
+        <h3><i class="fas fa-terminal"></i> Writing a BASH Script that Depends on Bashmatic:</h3>
         <div class="code-container">
           <pre><code class="language-bash">
-#!/usr/bin/env bash
+#/usr/bin/env bash            
+# vim: ft=bash
 
-if [[ -f "${BASHMATIC_INIT}" ]]; then 
-  source "${BASHMATIC_INIT}" 
-else 
-  source ${BASHMATIC_HOME}/init
-fi
+# Decide where you'd like Bashmatic installed. The default is ~/.bashmatic
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -d ${BASHMATIC_HOME} ]] || {
+  bash -c "$(curl -fsSL https://bashmatic.re1.re)
+  bashmatic-install -q"
+}
 
-h1 "Welcome to My Awesome Script" "${bldylw}Version 1.0.1" \
-  "We hope you'll enjoy your demo!"
+source "${BASHMATIC_HOME}/init"
+# This constraints the width of all widgets to 100 characters wide.
+# Using it is optional, of course.
+output.constrain-screen-width 100
 
-info "info() prints an information message in blue."
-info "You can use other colors inside such as ${bldred}RED$(txt-info)"
+# Install Brew packages with caching, that skips already installed 
+brew.package.install rigrep rustc ruby
 
-hl.yellow "There are many kinds of headers."
-hl.green "Some are green..."
+# install gems, with caching that skips already installed gems
+gem.install git-smart standardrb
 
-h.red "MY MESSAGE IS VERY IMPORTANT"
-
-warning "A Warning is usually yellow and indicates something is awry, no? ⚠️  ${clr}"
-
-error "Perhaps we encountered an error!" \
-  "Well, there is a nice box for it too!"
-
-box.yellow-in-blue "Perhaps we should run some more commands!"
-
-run "mkdir -p hello"
-run "cd hello"
+success "All done, thank you!"
             </code>
           </pre>
         </div>
@@ -228,19 +238,26 @@ bashmatic-install -q"></code>
           <p>After installation, you can load it like so:</p>
           <div class="code-container">
             <pre>
-              <code>source ~/.bashmatic/init</code>
+              <code>
+❯ source ~/.bashmatic/init
+❯ bashmatic.functions 3
+# will print 900+ function names in 3 columns
+❯ os.info
+              </code>
             </pre>  
+            <img src="assets/img/bashmatic-os-info.png" width="499" style="margin-top: -40px;"></img>
           </div>
         </div>
         <div class="step animate-on-scroll">
           <span class="step-number">3</span>
           <h3>Auto-loading (Optional)</h3>
           <p>To load Bashmatic when you open the terminal, add to your ~/.bash_profile:</p>
-          <div class="code-container">
+          <div class="code-container">q
             <pre>
             <code class="language-bash">[[ -f ~/.bashmatic/init ]] &amp;&amp; source ~/.bashmatic/init</code>
             </pre>
           </div>
+          <br />
           <p>This adds only about 134ms to your shell startup time.</p>
         </div>
       </div>
@@ -266,7 +283,7 @@ bashmatic-install -q"></code>
         </div>
         <div class="doc-card">
           <i class="fas fa-file-alt"></i>
-          <h3>Usage Guide</h3>
+          <h3>Function Documentation</h3>
           <p>Learn how to use Bashmatic effectively with examples and best practices.</p>
           <a href="https://github.com/kigster/bashmatic/blob/main/doc/USAGE.md" target="_blank" class="btn" data-tooltip="Learn how to use Bashmatic in your projects">View Usage Guide <i class="fas fa-arrow-right"></i></a>
         </div>
@@ -283,7 +300,6 @@ bashmatic-install -q"></code>
           <p>Bashmatic is an open-source project maintained by dedicated contributors. Get involved by joining our community channels, reporting issues, or contributing to the codebase.</p>
           <ul class="community-links">
             <li><i class="fab fa-github"></i> <a href="https://github.com/kigster/bashmatic" target="_blank">GitHub Repository</a></li>
-            <li><i class="fas fa-users"></i> <a href="contributors.html">View Contributors</a></li>
             <li><i class="fab fa-gitter"></i> <a href="https://gitter.im/kigster/bashmatic" target="_blank">Gitter Chat</a></li>
             <li><i class="fas fa-bug"></i> <a href="https://github.com/kigster/bashmatic/issues" target="_blank">Report Issues</a></li>
             <li><i class="fas fa-code-branch"></i> <a href="https://github.com/kigster/bashmatic/pulls" target="_blank">Submit Pull Requests</a></li>
@@ -315,7 +331,7 @@ bashmatic-install -q"></code>
           <h3>Resources</h3>
           <ul>
             <li><a href="https://github.com/kigster/bashmatic" target="_blank">GitHub Repository</a></li>
-            <li><a href="https://github.com/kigster/bashmatic/blob/main/README.pdf" target="_blank">Documentation</a></li>
+            <li><a href="README.pdf" target="_blank">Documentation</a></li>
             <li><a href="https://github.com/kigster/bashmatic/blob/main/doc/CHANGELOG.md" target="_blank">Changelog</a></li>
             <li><a href="https://github.com/kigster/bashmatic/blob/main/doc/LICENSE.adoc" target="_blank">License</a></li>
           </ul>
@@ -323,7 +339,6 @@ bashmatic-install -q"></code>
         <div class="footer-links">
           <h3>Community</h3>
           <ul>
-            <li><a href="contributors.html">Contributors</a></li>
             <li><a href="https://gitter.im/kigster/bashmatic" target="_blank">Gitter Chat</a></li>
             <li><a href="https://github.com/kigster/bashmatic/issues" target="_blank">Report Issues</a></li>
             <li><a href="https://github.com/kigster/bashmatic/pulls" target="_blank">Contribute</a></li>
@@ -337,7 +352,8 @@ bashmatic-install -q"></code>
         </div>
       </div>
       <div class="copyright">
-        <p>&copy; 2023 Bashmatic. Open source under <a href="https://github.com/kigster/bashmatic/blob/main/doc/LICENSE.adoc" target="_blank">MIT License</a>.</p>
+        <p>&copy; 2015-2025 Konstantin Gredeskoul & Bashmatic Authors. Open sourced under <a href="https://github.com/kigster/bashmatic/blob/main/doc/LICENSE.adoc" target="_blank">MIT License</a>.</p>
+        <br />
       </div>
     </div>
   </footer>
