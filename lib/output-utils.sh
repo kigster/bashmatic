@@ -171,5 +171,34 @@ function dbgf() {
   return ${code}
 }
 
+# @description Print a message one character at a time.
+# If the first argument is numeric (or a float) it is interpreted
+# as the floationg point delay in seconds between characters. 
+# The default is 30ms (so 0.03). The rest of the arguments are single-line sentences
+# between which teletype prints a newline.
+function teletype() {
+  local delay="$1"
+  if is.numeric "${delay}"; then
+    shift
+  else
+    delay="0.04"
+  fi
+
+  local message
+  local index
+  index=0
+  for message in "$@"; do
+    ((index)) && echo
+    for i in $(seq 0 $((${#message} - 1))); do
+      local char="${message:$i:1}"
+      printf -- "${char}"
+      echo "$char" | grep -q $'\t' || [[ "${char}" == " " ]] || {
+        sleep "${delay}"
+      }
+    done
+    ((index+=1))
+  done
+  echo
+}
 
 
