@@ -11,9 +11,6 @@
 :icons: font
 :license: MIT
 
-== Please Donate 
-
-https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/donate.svg[Donate using Liberapay,height=30]]   https://liberapay.com/kigster/donate[image:https://img.shields.io/liberapay/goal/kigster.svg?logo=liberapay[https://img.shields.io/liberapay/goal/kigster,height=30]]
 
 == CI Matrix
 
@@ -31,6 +28,10 @@ https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/
 == Introduction 
 
 _Bashmatic®_ is a BASH framework, meaning it's a collection of BASH functions (almost 900 of them) that, we hope, make BASH programming **easier, more enjoyable, and more importantly, fun** - due to the library's focus on providing the developer with a constant feedback about what is happening, while a script that uses Bashmatic's helpers is running.
+
+== Please Donate 
+
+https://liberapay.com/kigster/donate[image:https://liberapay.com/assets/widgets/donate.svg[Donate using Liberapay,height=30]]   https://liberapay.com/kigster/donate[image:https://img.shields.io/liberapay/goal/kigster.svg?logo=liberapay[https://img.shields.io/liberapay/goal/kigster,height=30]]
 
 
 [TIP]
