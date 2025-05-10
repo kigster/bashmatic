@@ -1,0 +1,64 @@
+pre.nohighlight {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #222;
+}
+
+pre.nohighlight code.colored {
+    display: inline-block !important;
+    margin: 0 !important;
+    border-width: 0;
+    background-color: #222;
+}
+
+pre.nohighlight code.colored-fw {
+    margin-top: -20 !important;
+    width: 100% !important;
+    background-color: #222;
+}
+
+
+.custom-code-coloring .fg-black {
+    color: #777 !important;
+}
+
+.custom-code-coloring .fg-yellow {
+    color: #ff0 !important;
+}
+
+.custom-code-coloring .fg-white {
+    color: #fff !important;
+}
+
+.custom-code-coloring .fg-green {
+    color: #0f0 !important;
+}
+
+.custom-code-coloring .fg-red {
+    color: #f00 !important;
+}
+
+.custom-code-coloring .fg-cyan {
+    color: #0ef !important;
+}
+
+.custom-code-coloring .fg-blue {
+    color: #07f !important;
+}
+
+.custom-code-coloring .fg-magenta {
+    color: #b0e !important;
+}
+
+.custom-code-coloring .bg-orange {
+    background-color: #e80 !important;
+}
+
+.custom-code-coloring .bg-green {
+    background-color: #3a4 !important;
+}
+
+.custom-code-coloring .bg-red {
+    background-color: #f00 !important;
+}

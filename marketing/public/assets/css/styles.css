@@ -74,21 +74,22 @@ a:hover {
   z-index: 1;
 }
 
-.btn {
+a.btn {
   display: inline-block;
-  padding: 12px 24px;
+  padding: 24px 12px;
   border-radius: var(--border-radius);
   background: var(--primary-gradient);
   color: white;
   text-decoration: none;
   font-weight: 600;
-  text-align: center;
+  text-align: center !important;
   cursor: pointer;
   transition: var(--transition);
   border: none;
   box-shadow: 0 4px 6px rgba(247, 147, 30, 0.25);
   position: relative;
   overflow: hidden;
+  width: 200px;
   z-index: 1;
 }
 
@@ -101,17 +102,28 @@ a:hover {
   height: 100%;
   background: rgba(255, 255, 255, 0.2);
   transition: var(--transition);
+  text-align: center !important;
   z-index: -1;
 }
 
 .btn:hover:before {
-  left: 0;
+  left: 100px;
+  top: 0px;
+  width: 100%;
+  text-wrap: wrap;
+  font-size: 16px;
+  padding: 24px;
+  opacity: 0.8;
+  text-align: center !important;
 }
 
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(247, 147, 30, 0.3);
   color: white;
+  width: 200px;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .btn-secondary {
@@ -438,6 +450,7 @@ header.header-hidden {
 .example {
   margin-bottom: 60px;
   position: relative;
+  text-align: center;
 }
 
 .example h3 {
@@ -448,13 +461,19 @@ header.header-hidden {
 }
 
 .code-container {
+  text-align: left;
   background-color: #1e1e1e;
   border-radius: var(--border-radius);
   padding: 0px;
-  overflow-x: auto;
+  overflow-x: hidden;
+  overflow-y: hidden;
   position: relative;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   border-left: 4px solid var(--primary-color);
+  max-width: 800px;
+  min-width: 600px;
+  margin: 10px auto;
+  scrollbar-width: none;
 }
 
 .code-container::-webkit-scrollbar {
@@ -469,10 +488,11 @@ header.header-hidden {
 }
 
 code {
-  font-family: 'Source Code Pro', Consolas, Monaco, 'Andale Mono', monospace;
+  font-family: 'Fantasque Sans Mono', 'Source Code Pro', Consolas, Monaco, 'Andale Mono', monospace;
   color: #f8f8f2;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 1.095em;
+  line-height: 1.1;
+  font-weight: 400;
 }
 
 .copy-btn {
@@ -608,6 +628,7 @@ code {
   height: 3px;
   background: var(--primary-gradient);
   transition: var(--transition);
+  text-wrap: wrap;
 }
 
 .doc-card:hover {
@@ -618,7 +639,7 @@ code {
 .doc-card i {
   font-size: 50px;
   margin-bottom: 25px;
-  background: linear-gradient(to right, var(--primary-color) 0%, #ff7200 100%);
+  background: linear-gradient(to right, var(--primary-color) 0%, #942 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
@@ -648,6 +669,10 @@ code {
   color: white;
   margin-bottom: 15px;
   font-size: 1.4rem;
+}
+
+.icon-container {
+  margin-top: 20px;
 }
 
 /* Footer */
@@ -1014,6 +1039,14 @@ footer:before {
   .community-links {
     grid-template-columns: 1fr;
   }
+  
+  .code-container { 
+    min-width: 500px !important;  
+  }
+
+  .code-container pre code {
+    font-size: 19px !important;
+  }
 }
 
 /* Terminal Demo */
@@ -1025,6 +1058,9 @@ footer:before {
   overflow: hidden;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   font-family: 'Fantasque Sans Mono Bold', 'Source Code Pro', Consolas, Monaco, 'Andale Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1 !important;
   background-color: #1e1e1e;
   transform: perspective(800px) rotateX(5deg);
   transition: var(--transition);
@@ -1076,7 +1112,7 @@ footer:before {
 .terminal-body {
   padding: 15px;
   color: #f8f8f2;
-  line-height: 1.5;
+  line-height: 1;
   max-height: 350px;
   overflow-y: auto;
 }
@@ -1165,6 +1201,14 @@ footer:before {
   
   .terminal-box {
     font-size: 12px;
+  }
+
+  .code-container { 
+    min-width: 600px !important;  
+  }
+
+  .code-container pre code {
+    font-size: 14px !important;
   }
 }
 
