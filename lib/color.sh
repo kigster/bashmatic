@@ -144,6 +144,36 @@ function color.current-background() {
   printf "\e]11;?\a"
 }
 
+function color.enable.octal() {
+  ((BashMatic__OctalColorLoaded)) && return 
+
+  export clr='\033[0m' # Text Reset
+  export txtblk='\033[0;30m' # Black - Regular
+  export txtred='\033[0;31m' # Red
+  export txtgrn='\033[0;32m' # Green
+  export txtylw='\033[0;33m' # Yellow
+  export txtblu='\033[0;34m' # Blue
+  export txtpur='\033[0;35m' # Purple
+  export txtcyn='\033[0;36m' # Cyan
+  export txtwht='\033[0;37m' # White
+
+  export bldblk='\033[1;30m' # Black - Bold
+  export bldred='\033[1;31m' # Red
+  export bldgrn='\033[1;32m' # Green
+  export bldylw='\033[1;33m' # Yellow
+  export bldblu='\033[1;34m' # Blue
+  export bldpur='\033[1;35m' # Purple
+  export bldcyn='\033[1;36m' # Cyan
+  export bldwht='\033[1;37m' # White
+
+  export bold='\033[1m'
+  export italic='\033[3m'
+  export underlined='\033[4m'
+  export strikethrough='\033[9m'
+
+  export BashMatic__OctalColorLoaded=1
+}
+
 function color.enable() {
   export BashMatic__ColorLoaded=1
 
