@@ -1,0 +1,153 @@
+# !/usr/bin/env bash
+# vim: ft=bash
+
+# Check if the user is in the project's root directory; and if not, try to
+# find it and cd into it.
+project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+current_dir="$(pwd)"
+
+if [[ "${project_root}" != "${current_dir}" ]]; then
+  cd "${project_root}" >/dev/null || exit 1
+  current_dir="$(pwd)"
+fi
+
+export project_root current_dir
+
+# shellcheck disable=SC1091
+source "${project_root}/init"
+
+color.enable.octal
+
+declare default_sort_column
+declare os_specific_flags
+
+declare sort_by
+export sort_by="${default_sort_column}"
+
+declare -a sort_by_options
+if [[ ${BASHMATIC_OS} == darwin ]]; then
+  export sort_by_options=(pid %cpu rss time user)
+  default_sort_column="" 
+  os_specific_flags=""
+elif [[ ${BASHMATIC_OS} == linux ]]; then
+  export sort_by_options=(pid pcpu rsz start_time user)
+  default_sort_column="pcpu" 
+  os_specific_flags=""
+else
+  error "Operating system ${BASHMATIC_OS^} is unsupported."
+fi
+
+declare -a args
+export args=()
+
+if [[ ${#@} -gt 0 ]]; then
+  if [[ $1 == "-h" || $1 == "--help" ]]; then
+    echo -e "\n${bldgrn}DESCRIPTION:${clr}"
+    echo -e "  Colored and sorted process monitoring utility that uses"
+    echo -e "  human-readable units and colors to emphasize high CPU or"
+    echo -e "  high RAM processes. Process arguments are truncated to approx"
+    echo -e "  screen width. Widen your terminal to see longer commands."
+    echo -e "  You can sort by any column /bin/ps supports. Run man 'ps'"
+    echo -e "  and find the section STANDARD FORMAT SPECIFIERS."
+
+    echo -e "\n${bldgrn}USAGE:${clr}"
+    echo -e "  ${txtpur}# general usage pattern"
+    echo -e "  ${txtylw}bin/process-list [-][sort-column] [ -- [ ps args ] ]${clr}\n"
+
+    echo -e "  ${txtpur}# sorting in ascending order, and descending order"
+    echo -e "  ${txtylw}bin/process-list  [sort-column]${clr}"
+    echo -e "  ${txtylw}bin/process-list -[sort-column]${clr}\n"
+
+    echo -e "  ${txtpur}# print top 10 processes owned by ubuntu by CPU"
+    echo -e "  ${txtylw}bin/process-list pcpu -- -u ubuntu | tail -10 ${clr}\n"
+
+    if [[ $0 =~ list ]]; then
+    echo -e "${bldgrn}SEE ALSO:${txtcyn}"
+    echo -e "  ${txtylw}bin/process-watch${clr} — like 'top', but uses process-list"
+    echo -e "                      and accepts the same arguments.\n"
+    fi
+
+    echo -e "${bldgrn}SORT COLUMNS:${txtcyn}"
+    echo -e "  • $(echo "${sort_by_options[*]}" | sed 's/ /\n  • /g')${clr}\n"
+
+    echo -e "${bldgrn}FLAGS:${clr}"
+    echo -e "  -h, --help    Show this help message"
+    echo -e "  see 'man ps' for more flags."
+    exit 0
+  fi
+  
+  if [[ " ${sort_by_options[*]} " =~ " ${1/-/} " ]]; then
+    export sort_by=$1
+    shift
+  fi
+
+  if [[ "$1" == "--" ]]; then
+    shift
+    args=($@)
+  fi
+fi
+
+if [[ ${BASHMATIC_OS} == darwin ]]; then
+  case sort_by in
+    pcpu)
+      os_specific_flags="${os_specific_flags} -r"
+      shift;
+      ;;
+    rss | rsz)
+      os_specific_flags="${os_specific_flags} -m"
+      shift;
+      ;;
+  esac
+elif [[ -z ${os_specific_flags} ]];  then
+  os_specific_flags=""
+fi
+
+
+declare width
+width=$(( $(screen.width) + 50 ))
+
+if [[ -z ${args[*]} ]]; then
+  args=( -e )
+fi
+
+columns=$(array.join "," "${sort_by_options[@]}")
+
+if [[ ${BASHMATIC_OS} == linux && -n ${sort_by} ]]; then
+  os_specific_flags="${os_specific_flags} --sort=${sort_by}"
+fi
+
+# echo /bin/ps -o${columns},args -w ${os_specific_flags} ${args[@]}
+# run.ui.press-any-key
+
+/bin/ps -o${columns},args -w ${os_specific_flags} ${args[@]} | \
+    awk "{
+      if (NR == 1) {
+        next;
+      }
+      
+      process_color=\"${txtblu}${italic}\";
+
+      cpu_color=\"${txtgrn}\";
+      if (\$2 > 5.0) {
+        cpu_color=\"${bldred}\";
+        process_color=\"${txtred}\";
+      } else if (\$2 > 1.0) {
+        cpu_color=\"${bldylw}\";
+        process_color=\"${txtylw}\";
+      }
+
+      rss_color=\"${txtcyn}\";
+      if (\$3/1024.0 > 5000) {
+        rss_color=\"${bldred}\";
+        process_color=\"${red}\";
+      } else if (\$3/1024.0 > 700) {
+        rss_color=\"${bldylw}\";
+        process_color=\"${txtylw}\";
+      }
+
+      printf(\"${txtcyn}%10d${clr} | %s%5.1f%% CPU${clr} |%s%7.0f Mb RSS${clr} | ⏱  %9s | ${txtpur}%-8.8s${clr} |\", \$1, cpu_color, \$2, rss_color, \$3/1024.0, \$4, \$5); 
+      \$1=\$2=\$3=\$4=\$5=\"\"; 
+      printf(\"%s%s${clr}\n\", process_color, \$0)
+    }"  | cut -c1-${width}
+
+    

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+FREQUENCY="${FREQUENCY:-"0.9"}"
+
+# Check if the user is in the project's root directory; and if not, try to
+# find it and cd into it.
+project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+
+export DEFAULT_SORT_COLUMN="${DEFAULT_SORT_COLUMN:-"-pcpu"}"
+export procs_executable="process-list"
+
+[[ -f util/ui-library.sh ]] && source util/ui-library.sh
+
+if [[ $1 == "-h" || $1 == "--help" ]]; then
+  "${project_root}/${procs_executable}" -h | sed 's/list/watch/g'
+  printf "
+${txtgrn}REFRESH FREQUENCY${clr}
+  To change refresh frequency, set FREQUENCY variable to number of
+  seconds (could be fractional). The default is ${FREQUENCY}.
+"
+else
+  if [[ -z $1 ]]; then
+    watch -c -n ${FREQUENCY} "${project_root}/${procs_executable}" "${DEFAULT_SORT_COLUMN}"
+  else
+    watch -c -n ${FREQUENCY} "${project_root}/${procs_executable}" "$@"
+  fi
+fi
