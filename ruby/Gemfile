@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem 'asciidoctor-pdf', '>= 1.5.3'
+gem 'asciidoctor-pdf', '>= 1.6.1'
 gem 'prawn'
 gem 'prawn-svg', '>= 0.36.0'
 gem 'gmagick'
