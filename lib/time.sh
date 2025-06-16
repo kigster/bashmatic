@@ -99,7 +99,7 @@ function time.with-duration.end() {
   local duration=$((finished - started))
 
   duration="$(time.duration.millis-to-secs "${duration}")"
-  printf -- "$* %s\n" "${duration} sec"
+  printf -- "$* %7.3f %s\n" "${duration}" "sec"
 }
 
 function time.with-duration.clear() {
