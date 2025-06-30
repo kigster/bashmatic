@@ -15,13 +15,33 @@
 # @description Generate a destination file name for the compressed items.
 function .destination-file-name() {
   local source="$1"
+  local ext="$2"
   local dest
+
+  [[ -z ${ext} ]] && ext="${source/*./}"
+
   if [[ "${source}" =~ " " ]]; then
-    dest="$(echo "${source}" | sed -E 's/\.(.*)$/ (Compressed).\1/g')"
+    dest="$(echo "${source}" | tr '[:upper:]' '[:lower:]' | sed -E "s/\.([a-zA-Z]+)\$/ (Compressed)\.${ext}/g")"
   else
-    dest="$(echo "${source}" | sed -E 's/\.(.*)$/-compressed.\1/g')"
+    dest="$(echo "${source}" | tr '[:upper:]' '[:lower:]' | sed -E "s/\.([a-zA-Z]+)\$/-compressed\.${ext}/g")"
   fi
   printf -- "%s" "${dest}"
+}
+
+function .rename.compressed() {
+  local extension="${1:-"mov"}"
+  local -a files
+  mapfile -t files < <(find . -name "*-compressed.${extension}" -type f)
+  for file in "${files[@]}"; do
+    local nfile=$(echo "${file}" | tr '[:upper:]' '[:lower:]' | sed -E 's/-compressed\.([a-zA-Z]*)/.\1/g')
+    if [[ -f "${nfile}" ]]; then
+      warning "Destination [$nfile] already exists, skipping..."
+      continue
+    else
+      run.set-next show-output-on
+      run "mv -v \"${file}\" \"${nfile}\""
+    fi
+  done
 }
 
 #
@@ -135,22 +155,21 @@ function video.encode() {
   set +e
   local file="$1"
   shift
-  local algo="${1:-"11"}"
+  local algo="${1}"
   shift
   local output="${1}"
   shift
 
-  [[ -z "${output}" ]] && output=$(video.filename.encoded "${file}" "${algo}")
-  output="${output/\.*/\.mkv}"
+  [[ -z "${output}" ]] && { 
+    output=$(video.filename.encoded "${file}" "${algo}")
+    output="${output/\.*/\.mkv}"
+  }
+
   [[ "${file}" == "${output}" ]] && output="${output/.mkv/-converted.mkv}"
 
   is.an-existing-file "${output}" && {
-    info "File ${output} already exists, making a backup..."
-    local t="$(time.now.db | tr -d ' ')"
-    # shellcheck disable=SC2001
-    local backup_output="$(echo "${output}" | sed "s/\.\(.*\)$/-${t}.\1/g")"
-    info "Backing up a name clashing file to ${backup_output}..."
-    mv -v "${output}" "${backup_output}"
+    info "File ${output} already exists, skipping."
+    return 1
   }
 
   h2 "Starting \"${ffmpeg_binary}\" conversion, source file size is ${bldred}$(file.size.mb "${file}")" \
@@ -214,13 +233,13 @@ function video.squeeze() {
 
     dest="$(.destination-file-name "${file}")"
     arrow.blk-on-blu "Compressing \"${file}\""
-    video.encode "${file}" "11" "${dest}"
+    video.encode "${file}" "22" "${dest}"
   done
 }
 
 function video.shrink() {
   [[ -z "$*" ]] && {
-    printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mp4${clr}\n"
+    printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mov${clr}\n"
     return 0
   }
 
@@ -229,8 +248,20 @@ function video.shrink() {
       warning "File ${file} does not exist..."
       continue
     }
-    dest="$(.destination-file-name "${file}")"
-    h1 "Compressing \"${file}\"" "To \"${dest}\""
+
+    local dest="$(.destination-file-name "${file}" "mkv")"
+
+    [[ "${dest}" == ".mkv" ]] && {
+      error "Invalid destination file name: [${dest}]"
+      return 1
+    }
+
+    if [[ -f "${dest}" ]]; then
+      warning "Destination file already exists: [${dest}]" 
+      continue
+    fi
+
+    h1 "Compressing [${file}]" "To [${dest}]"
     video.encode "${file}" "shrinkwrap" "${dest}"
   done
 }
@@ -255,5 +286,14 @@ function video.make.mp4() {
   run "ffmpeg -n -loglevel error -stats -i \"${file}\" -c:v libx265 -b:v 4M -x265-params pass=2 \"${target}\""
 }
 
+function video.mov-to-mkv() {
+  local -a files
+  mapfile -t files < <(find . -maxdepth 1 -iname *.mov -type f)
+  local file
+  video.shrink "${files[@]}"
+  h2bg "Renaming files with '-compressed.*' in them..."
+  .rename.compressed mkv
+}
 
+# for file in $(ls -1 *.mov); do video.shrink "${file}"; done
 
