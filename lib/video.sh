@@ -295,5 +295,32 @@ function video.mov-to-mkv() {
   .rename.compressed mkv
 }
 
+function video.compress-mp4-file() {
+  local file="$1"
+  local target="${2:-"${file/.mp4/-compressed.mp4}"}"
+  local executable="$(.video.ffmpeg-run)"
+
+  [[ "${file}" =~ \.mp4$ ]] || return 1
+  local command="${executable} -n -loglevel error -i \"${file}\" -vcodec libx264 -crf 28 -preset faster -tune film \"${target}\""
+  h1bg "${command}"
+  eval "${command}"
+
+  # local before="$(file.size "${file}")"
+  # local after="$(file.size "${target}")"
+  # local duration=$(time.with-duration.end "${token}")
+  # if [[ ${before} -lt ${after} ]]; then
+  #   reduction=$((100 * (after - before) / before))
+  #   warning "${output} was generated with ${reduction}%% increase in file size" \
+  #     "from ${before} to ${after}" \
+  #     "and took ${duration}"
+  # else
+  #   reduction=$((100 * (before - after) / before))
+  #   success "${output} was generated with ${reduction}%% reduction in file size" \
+  #     "from ${before} to ${after}" \
+  #     "and took ${duration}"
+  # fi
+  # return 0
+}
+
 # for file in $(ls -1 *.mov); do video.shrink "${file}"; done
 
