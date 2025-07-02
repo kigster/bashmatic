@@ -20,40 +20,24 @@ export UI_WIDTH=${DEFAULT_MIN_WIDTH}
 declare -a test_files
 declare -a all_test_files
 
-if [[ -n $CI ]] ; then
-  export UI_WIDTH=${DEFAULT_MIN_WIDTH}
+export UI_WIDTH=${DEFAULT_MIN_WIDTH}
+output.constrain-screen-width ${UI_WIDTH}
+prefix=" ⏱  "
+
+function test-group() {
   output.constrain-screen-width ${UI_WIDTH}
-  prefix=" ⏱  "
+  h1bg "$(echo "${prefix}$* ")"
+}
 
-  function test-group() {
-    output.constrain-screen-width ${UI_WIDTH}
-    h1  bg "$(echo "${prefix}$* " | tr '[:lower:]' '[:upper:]')"
-  }
-  function test-group-ok() {
-    output.constrain-screen-width ${UI_WIDTH}
-    arrow.blk-on-grn "Tests passed in ${bakblu}${bldwht}${1} "
-  }
-  function test-group-failed() {
-    output.constrain-screen-width ${UI_WIDTH}
-    arrow.blk-on-red "Some tests failed in ${bakpur}${bldwht}${1} "
-  }
-
-else
+function test-group-ok() {
   output.constrain-screen-width ${UI_WIDTH}
+  h2bg "Tests passed in:" " ⏲  ${1} "
+}
 
-  function test-group() {
-    arrow.blk-on-ylw "$@"
-    echo
-  }
-  function test-group-ok() {
-    status.ok "Tests passed in ${1}"
-    echo
-  }
-  function test-group-failed() {
-    status.failed "Some tests failed in ${1}"
-    echo
-  }
-fi
+function test-group-failed() {
+  output.constrain-screen-width ${UI_WIDTH}
+  arrow.blk-on-red "Some tests failed in:" "${bakpur}${bldwht}${1} "
+}
 
 # @description Initialize specs
 function specs.init() {
@@ -76,7 +60,7 @@ function specs.init() {
 
   export True=1
   export False=0
-  export GrepCommand="$(which grep) -E -e "
+  export GrepCommand="$(command -v grep) -E "
 
   export Bashmatic__Test=${True}
 
@@ -252,7 +236,7 @@ function specs.run.many-files() {
   if [[ ${flag_file_count_failed} -gt 0 ]]; then
     error "Total of ${flag_file_count_failed} out of ${flag_file_count} Test Suites had errors in ${bldylw}${duration}."
   else
-    success "All ${flag_file_count} Test Suites had passed ${bldylw}${duration}."
+    h2bg "All ${flag_file_count} Test Suites had passed ${bldylw}${duration}."
   fi
 
   return "${result}"
@@ -465,10 +449,9 @@ function specs.run() {
   [[ ${#test_files[@]} -gt 0 ]] && h4bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
 
   if [[ ${flag_parallel_tests} -eq 0 ]] ;  then
-    dbgf specs.run.many-files "${test_files[@]}"
+    specs.run.many-files "${test_files[@]}"
   else
-    dbgf specs.run.all-in-parallel "${test_files[@]}"
+    specs.run.all-in-parallel "${test_files[@]}"
   fi
 }
-kkkkkkkkk
 

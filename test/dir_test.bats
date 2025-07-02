@@ -35,9 +35,9 @@ setup() {
 
 @test "dir.short-home ${HOME}/workspace/project" {
   export HOME
-  export 
+  local dest=$(mktemp)
   local dir="$(dir.short-home "${HOME}/workspace/project")"
-  echo "${dir}" > /tmp/a
+  echo "${dir}" > "${dest}"
   [[ "${dir}" == '~/workspace/project' ]]
   [[ -z $(echo "${dir}" | grep "${HOME}") ]]
 }
@@ -67,7 +67,7 @@ setup() {
 }
 
 @test "dir.is-a-dir() on a non-existing dir" {
-  dir="/tmp/azsdfasdfasd9asd/oazsifoasdufolids/sld5-1474905687.${RANDOM}"
+  local dir="(mktemp -d)"
   [[ $(dir.is-a-dir "${dir}") -eq false ]]
 }
 
