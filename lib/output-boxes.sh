@@ -7,11 +7,11 @@
 #————————————————————
 
 status.ok() {
-   cursor.right 5; section.cyan "       $*" ; cursor.up 2;  ok:; cursor.down 2;
+   cursor.right 5; section.purple "       $*" ; cursor.up 2;  ok:; cursor.down 2;
 }
 
 status.failed() {
-   cursor.right 5; section.red "       $*" ; cursor.up 2;  not-ok:; cursor.down 2;
+   cursor.right 5; section.red   "       $*" ; cursor.up 2;  not-ok:; cursor.down 2;
 }
 
 section.green() {

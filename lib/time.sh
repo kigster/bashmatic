@@ -185,6 +185,8 @@ time.date-from-epoch() {
   epoch_ts="$1"
   if command -v gdate >/dev/null; then
     printf "gdate --date='@${epoch_ts}'"
+  elif [[ $BASHMATIC_OS == "linux" ]]; then
+    printf "date --date='@${epoch_ts}'"
   else
     printf "date -r ${epoch_ts}"
   fi

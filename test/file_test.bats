@@ -24,15 +24,15 @@ source lib/util.sh
 source lib/bashmatic.sh
 
 @test 'file.count.lines()' {
-  local lines=$(file.count.lines test/fixtures/Gemfile.lock.1)
+  local lines=$(file.count.lines test/fixtures/Gemfile.lock)
   set -e
-  [[ ${lines} -eq 799 ]]
+  [[ ${lines} -eq 211 ]]
 }
 
 @test 'file.count.words()' {
-  local words=$(file.count.words test/fixtures/Gemfile.lock.1)
+  local words=$(file.count.words test/fixtures/Gemfile.lock)
   set -e
-  [[ ${words} -eq 1991 ]]
+  [[ ${words} -eq 518 ]]
 }
 
 @test 'file.print-normalized-name' {
