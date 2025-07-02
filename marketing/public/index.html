@@ -144,7 +144,7 @@ is.a-function.invoke bashmatic.auto-update "$@"
 # vim: ft=bash
 
 # The simplest way to install bashmatic is via the URL directly,
-# which by the default installs it into ~/ (your $HOME)
+# which by the default installs it into ~/.bashmatic (in your home)
 bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
 
 # But if you'd rather inspect the install script (I don't blame you!)
@@ -152,6 +152,9 @@ bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
 # and run it with --help to see all the possible installation options:
 curl -fsSL https://bashmatic.re1.re > /tmp/bashmatic-installer
 chmod 755 /tmp/bashmatic-installer
+/tmp/bashmatic-installer --help
+
+# Install with the --quiet flag on (by the default minimize output)
 /tmp/bashmatic-installer -q
 
 # Once Bashmatic is installed, let's load it into our current shell
