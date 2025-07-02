@@ -44,6 +44,7 @@
 * xref:#module-json[json]
 * xref:#module-maths[maths]
 * xref:#module-memory[memory]
+* xref:#module-menus[menus]
 * xref:#module-net[net]
 * xref:#module-nvm[nvm]
 * xref:#module-openssl[openssl]
@@ -212,6 +213,7 @@ array.eval.in-groups-of ()
     local function="$1"
     shift
     local -a group
+    local item
     for item in "$@"
     do
         index="$(( index + 1 ))"
@@ -316,11 +318,11 @@ array.has-element ()
     local search="$1"
     shift
     local r="false"
-    local e
     [[ "$*" =~ ${search} ]] || { 
         echo -n $r
         return 1
     }
+    local e
     for e in "${@}"
     do
         [[ "$e" == "${search}" ]] && r="true"
@@ -342,6 +344,7 @@ array.includes ()
     [[ -z $search ]] && return 1
     shift
     [[ "$*" =~ "${search}" ]] || return 1
+    local e
     for e in "${@}"
     do
         [[ "$e" == "${search}" ]] && { 
@@ -410,10 +413,10 @@ array.join ()
     else
         lines=false
     fi
-    local elem
     local len="$#"
     local last_index=$(( len - 1 ))
     local index=0
+    local elem
     for elem in "$@"
     do
         if ${lines}; then
@@ -436,6 +439,7 @@ array.max ()
 { 
     local max="$1"
     shift
+    local v
     for v in "$@"
     do
         is.numeric "$v" || continue
@@ -454,6 +458,7 @@ array.min ()
 { 
     local min="$1"
     shift
+    local v
     for v in "$@"
     do
         is.numeric "$v" || continue
@@ -525,6 +530,17 @@ array.to.piped-list ()
 
 ----
 
+==== `array.to.tsv`
+
+[source,bash]
+----
+array.to.tsv () 
+{ 
+    array.join '\t' false "$@"
+}
+
+----
+
 ==== `array.uniq`
 
 [source,bash]
@@ -562,17 +578,6 @@ asciidoc.rouge-themes ()
 
 
 === Module `audio`
-
-==== `æ.mp3`
-
-[source,bash]
-----
-æ.mp3 () 
-{ 
-    audio.make.mp3 "$@"
-}
-
-----
 
 ==== `audio.dir.mp3-to-wav`
 
@@ -623,11 +628,12 @@ audio.dir.rename-wavs ()
             error "First argument is either blank (current directory)" "or the folder where *.wav files to be renamed are."
             return 1
         }
-        cd "${dir}" || exit
+        cd "${dir}" || exit 1
     fi
-    local nfile
+    local file
     for file in $(ls -1 '*.wav')
     do
+        local n
         n="$(.audio.karaoke.format "${file}" | sed 's/—/_/g')"
         h1 "${file}" "${n}"
         run "mv -vn \"${file}\" \"${n}\""
@@ -1606,6 +1612,7 @@ brew.cache-reset.delayed ()
 brew.cask.all-installed () 
 { 
     local -a installed_casks=($(brew.cask.list))
+    local item
     for item in "$@"
     do
         array.includes "${item}" "${installed_casks[@]}" || return 1
@@ -1762,6 +1769,7 @@ brew.install.packages ()
 { 
     local force=
     [[ -n "${opts_force}" ]] && force="--force"
+    local package
     for package in "$@"
     do
         brew.install.package "${package}"
@@ -1789,6 +1797,7 @@ brew.is-installed ()
 brew.package.all-installed () 
 { 
     local -a installed_packages=($(brew.package.list))
+    local item
     for item in "$@"
     do
         array.includes "${item}" "${installed_packages[@]}" || return 1
@@ -1878,6 +1887,7 @@ brew.reinstall.packages ()
     local force=
     local result=0
     [[ -n "${opts_force}" ]] && force="--force"
+    local package
     for package in "$@"
     do
         brew.uninstall.package "${package}"
@@ -1991,6 +2001,7 @@ brew.uninstall.packages ()
 { 
     local force=
     [[ -n "${opts_force}" ]] && force="--force"
+    local package
     for package in "$@"
     do
         brew.uninstall.package "${package}"
@@ -2296,7 +2307,7 @@ color.enable ()
     export bg_mustard="\e[48;5;178m"
     export bg_pink="\e[48;5;89m"
     export bg_sky_blue="\e[48;5;39m"
-    export bg_yellow_on_gray="\e[90;7;43m"
+    export bg_yellow_on_gray="\e[7;33;43m"
     export fg_dark_red="\e[38;5;88m"
     export fg_bright_green="\e[38;5;82m"
     export fg_sky_blue="\e[38;5;39m"
@@ -2333,6 +2344,64 @@ color.enable ()
     export fg_mustard="\e[38;5;178m"
     export fg_pink="\e[38;5;89m"
     export fg_purr="\e[38;5;219m"
+}
+
+----
+
+==== `color.enable.octal`
+
+[source,bash]
+----
+color.enable.octal () 
+{ 
+    ((BashMatic__OctalColorLoaded)) && return
+    export clr='\033[0m'
+    export txtblk='\033[0;30m'
+    export txtred='\033[0;31m'
+    export txtgrn='\033[0;32m'
+    export txtylw='\033[0;33m'
+    export txtblu='\033[0;34m'
+    export txtpur='\033[0;35m'
+    export txtcyn='\033[0;36m'
+    export txtwht='\033[0;37m'
+    export bldblk='\033[1;30m'
+    export bldred='\033[1;31m'
+    export bldgrn='\033[1;32m'
+    export bldylw='\033[1;33m'
+    export bldblu='\033[1;34m'
+    export bldpur='\033[1;35m'
+    export bldcyn='\033[1;36m'
+    export bldwht='\033[1;37m'
+    export bold='\033[1m'
+    export italic='\033[3m'
+    export underlined='\033[4m'
+    export strikethrough='\033[9m'
+    export BashMatic__OctalColorLoaded=1
+}
+
+----
+
+==== `color.wheel`
+
+[source,bash]
+----
+color.wheel () 
+{ 
+    local x
+    for x in 0 1 4 5 7 8
+    do
+        local i
+        for i in {30..37}
+        do
+            local a
+            for a in {40..47}
+            do
+                echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "
+            done
+            echo
+        done
+    done
+    echo ""
 }
 
 ----
@@ -2479,6 +2548,7 @@ config.dig.pretty ()
 { 
     local -a args
     local -a keys
+    local a
     for a in "$@"
     do
         if [[ $a =~ ^- ]]; then
@@ -3915,6 +3985,7 @@ dir.rsync-to ()
     shift
     local -a extra_rsync_flags
     local sudo=false
+    local flag
     for flag in "$@"
     do
         if [[ ${flag} == "--sudo" ]]; then
@@ -4434,6 +4505,7 @@ file.extension.replace ()
         return 1
     }
     ext=".$(echo "${ext}" | tr -d '.')"
+    local file
     local first=true
     for file in "$@"
     do
@@ -4580,6 +4652,7 @@ file.last-modified-year ()
 ----
 file.list.filter-existing () 
 { 
+    local file
     for file in "$@"
     do
         [[ -f "${file}" ]] && echo "${file}"
@@ -4594,6 +4667,7 @@ file.list.filter-existing ()
 ----
 file.list.filter-non-empty () 
 { 
+    local file
     for file in "$@"
     do
         [[ -s "${file}" ]] && echo "${file}"
@@ -6449,6 +6523,7 @@ validations.print-errors ()
     local error_count="${#Bashmatic__IsErrors}"
     ((error_count)) || return 0
     is.not-blank "${Bashmatic__IsSessionName}" && hl.salmon "Reporing errors for ${Bashmatic__IsSessionName}"
+    local i
     for i in $(seq 1 "${error_count}")
     do
         local error=${Bashmatic__IsErrors[$((i - 1))]}
@@ -6812,6 +6887,116 @@ memory.size-to-bytes ()
         fi
     fi
     printf "%d" "${bytes}"
+}
+
+----
+
+
+=== Module `menus`
+
+==== `menu.select`
+
+[source,bash]
+----
+menu.select () 
+{ 
+    local prompt="$1"
+    local outvar="$2"
+    clear
+    shift
+    shift
+    local -a options
+    options=("$@")
+    cur=0
+    index=0
+    count=${#options[@]}
+    local max_height=$(( $(screen.height) - 5 ))
+    local from=0
+    local visible_size=$(( max_height > count ? count : max_height ))
+    local to=$((visible_size))
+    local action
+    local delta
+    local -a esc
+    esc=$(echo -en "\e")
+    if [[ $visible_size -lt $count ]]; then
+        prompt="${prompt} (Use arrows ⇅ to scroll by one, or ⇆ to scroll by page)"
+    fi
+    while true; do
+        printf "${txtylw}$prompt${clr}\n\n"
+        index=0
+        ((from < 0)) && from=0
+        ((to > count)) && to=$((count - 1))
+        for o in "${options[@]:${from}:${to}}"
+        do
+            if [[ $index -ge ${max_height} ]]; then
+                break
+            fi
+            if [[ $((from + index)) -eq $cur ]]; then
+                printf "${esc}[1;7;33m ❯ %-120.120s${clr}\n" "$o"
+            else
+                printf "   ${txtgrn}%-120.120s${clr}\n" "$o"
+            fi
+            ((index++))
+        done
+        read -r -s -n3 key
+        if [[ ${key} == "${esc}[A" ]]; then
+            ((cur--))
+            ((cur < 0)) && { 
+                ((cur = 0))
+                ((from = 0))
+                ((to = visible_size))
+            }
+            ((cur < from)) && { 
+                ((from = cur))
+                ((to = from + visible_size))
+            }
+        else
+            if [[ ${key} == "${esc}[B" ]]; then
+                ((cur++))
+                if ((cur >= count)); then
+                    ((cur = count - 1))
+                else
+                    if ((cur >= to )); then
+                        ((to = cur + 1))
+                        ((from = to - visible_size))
+                    fi
+                fi
+            else
+                if [[ ${key} == "${esc}[C" && ${count} -gt ${visible_size} ]]; then
+                    ((cur -= visible_size))
+                    ((to -= visible_size))
+                    ((from -= visible_size))
+                    ((cur < 0)) && { 
+                        ((cur = 0))
+                        ((from = 0))
+                        ((to = visible_size))
+                    }
+                    ((from < 0)) && ((from = 0))
+                    ((to < max_height)) && ((to = visible_size))
+                else
+                    if [[ ${key} == "${esc}[D" && ${count} -gt ${visible_size} ]]; then
+                        ((cur += visible_size))
+                        ((to += visible_size))
+                        ((from += visible_size))
+                        ((cur >= count)) && { 
+                            delta=$(( cur - count + 1))
+                            ((cur -= delta))
+                            ((from -= delta))
+                            ((to -= delta))
+                        }
+                        ((to > count)) && ((to = count))
+                        ((from != to - max_height)) && ((from = to - max_height))
+                    else
+                        if [[ ${key} == "" ]]; then
+                            break
+                        fi
+                    fi
+                fi
+            fi
+        fi
+        echo -en "\e[$((visible_size + 2))A"
+    done
+    printf -v $outvar "${options[${cur}]}"
 }
 
 ----
@@ -8210,6 +8395,18 @@ divider ()
 
 ----
 
+==== `divider__`
+
+[source,bash]
+----
+divider__ () 
+{ 
+    local color="${1:-${fg_bright_green}}"
+    printf "${color}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${clr}"
+}
+
+----
+
 ==== `divider.yellow`
 
 [source,bash]
@@ -8219,18 +8416,6 @@ divider.yellow ()
     printf "${clr}\n${txtylw}"
     divider__ "${txtylw}${bakylw}"
     printf "${clr}${txtylw}${clr}\n"
-}
-
-----
-
-==== `divider__`
-
-[source,bash]
-----
-divider__ () 
-{ 
-    local color="${1:-${fg_bright_green}}"
-    printf "${color}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${clr}"
 }
 
 ----
@@ -9540,7 +9725,7 @@ status.failed ()
 status.ok () 
 { 
     cursor.right 5
-    section.cyan "       $*"
+    section.purple "       $*"
     cursor.up 2
     ok:
     cursor.down 2
@@ -9884,6 +10069,39 @@ success ()
 
 ----
 
+==== `teletype`
+
+[source,bash]
+----
+teletype () 
+{ 
+    local delay="$1"
+    if is.numeric "${delay}"; then
+        shift
+    else
+        delay="0.04"
+    fi
+    local message
+    local index
+    index=0
+    for message in "$@"
+    do
+        ((index)) && echo
+        for i in $(seq 0 $((${#message} - 1)))
+        do
+            local char="${message:$i:1}"
+            printf -- "${char}"
+            echo "$char" | grep -q '	' || [[ "${char}" == " " ]] || { 
+                sleep "${delay}"
+            }
+        done
+        ((index+=1))
+    done
+    echo
+}
+
+----
+
 ==== `warn`
 
 [source,bash]
@@ -9962,18 +10180,6 @@ package.ensure.is-installed ()
 
 
 === Module `path`
-
-==== `PATH.uniqify`
-
-[source,bash]
-----
-PATH.uniqify () 
-{ 
-    local _p="$(printf "${PATH}" | sed 's/:/\n/g' | uniq | tr '\n' ':')"
-    [[ "${_p}" == "${PATH}" ]] || export PATH="${_p}"
-}
-
-----
 
 ==== `path.absolute`
 
@@ -10208,6 +10414,18 @@ path.uniq ()
 
 ----
 
+==== `PATH.uniqify`
+
+[source,bash]
+----
+PATH.uniqify () 
+{ 
+    local _p="$(printf "${PATH}" | sed 's/:/\n/g' | uniq | tr '\n' ':')"
+    [[ "${_p}" == "${PATH}" ]] || export PATH="${_p}"
+}
+
+----
+
 
 === Module `pdf`
 
@@ -10220,6 +10438,7 @@ pdf.combine ()
     local merged="${1}"
     shift
     local files=""
+    local f
     for f in "$@"
     do
         [[ -f "${f}" ]] && { 
@@ -10398,6 +10617,7 @@ EXAMPLES:
 pid.stop-and-kill () 
 { 
     local pid="$1"
+    local delta
     delta=1
     sig=STOP
     while true; do
@@ -10607,6 +10827,7 @@ EXAMPLES:
 "
         return 0
     fi
+    local pid
     for pid in $@
     do
         if is.numeric "${pid}"; then
@@ -10625,6 +10846,7 @@ EXAMPLES:
 ----
 pids.stop-by-listen-tcp-ports () 
 { 
+    local port
     for port in "$@"
     do
         pid.stop-if-listening-on-port "${port}"
@@ -10672,7 +10894,7 @@ sig.list ()
 ----
 top-most-program () 
 { 
-    pid=$$
+    local pid=$$
     while true; do
         declare -a output=($(ps -o ppid,pid,args -p $pid | grep -v PPID))
         if [[ ${output[0]} -eq 1 ]]; then
@@ -11092,7 +11314,7 @@ ruby.compiled-with ()
 ----
 ruby.default-gems () 
 { 
-    declare -a DEFAULT_RUBY_GEMS=(bundler rubocop relaxed-rubocop rubocop-performance warp-dir colored2 sym pry pry-doc pry-byebug rspec rspec-its awesome_print activesupport pivotal_git_scripts git-smart travis awscli irbtools kramdown-asciidoc asciidoctor kramdown gemsmith rspec rspec-its)
+    declare -a DEFAULT_RUBY_GEMS=(amazing_print asciidoctor aws bundler colored2 git-smart irbtools kramdown kramdown-asciidoc relaxed-rubocop rspec rspec-its rubocop ruby-lsp ruby-lsp-rails ruby-lsp-rspec ruby-lsp-rubyfmt sym warp-dir)
     export DEFAULT_RUBY_GEMS
     printf "${DEFAULT_RUBY_GEMS[*]}"
 }
@@ -11636,26 +11858,6 @@ run.ui.get-user-value ()
 
 ----
 
-==== `run.ui.press-any-key`
-
-[source,bash]
-----
-run.ui.press-any-key () 
-{ 
-    local prompt="$*"
-    [[ -z ${prompt} ]] && prompt="Press any key to continue..."
-    br
-    printf "    ${txtgrn}${italic}${prompt} ${clr}  "
-    read -r -s -n1 key
-    cursor.rewind
-    printf "                                                           "
-    cursor.up 2
-    cursor.rewind
-    echo
-}
-
-----
-
 ==== `run.ui.retry-command`
 
 [source,bash]
@@ -11949,6 +12151,7 @@ run.inspect-variables-that-are ()
 ----
 run.inspect-vars () 
 { 
+    local var
     for var in "$@"
     do
         run.inspect-variables-that-are starting-with "$var"
@@ -12078,6 +12281,7 @@ run.print-long-command ()
 ----
 run.print-obfuscated-vars () 
 { 
+    local var
     for var in "${OBFUSCATED_VARIABLES[@]}"
     do
         run.inspect-variable "${var}"
@@ -12132,7 +12336,8 @@ run.register-obfuscated-vars ()
 run.ui.press-any-key () 
 { 
     local prompt="$*"
-    [[ -z ${prompt} ]] && prompt="Press any key to continue..."
+    trap "run.user.abort; ((BASH_SUBSHELL)) && exit 11; ((BASH_SUBSHELL)) || return 11" INT
+    [[ -z ${prompt} ]] && prompt="Press any key to continue (or Ctrl-C to abort)..."
     br
     printf "    ${txtgrn}${italic}${prompt} ${clr}  "
     read -r -s -n1 key
@@ -12140,6 +12345,19 @@ run.ui.press-any-key ()
     printf "                                                           "
     cursor.up 2
     cursor.rewind
+    echo
+}
+
+----
+
+==== `run.user.abort`
+
+[source,bash]
+----
+run.user.abort () 
+{ 
+    echo
+    err "Ctrl-C pressed, aborting."
     echo
 }
 
@@ -12861,7 +13079,7 @@ bashmatic.detect-subshell ()
     export BASH_SUBSHELL_DETECTED=true
     local len="${#BASH_SOURCE[@]}"
     local last_index=$((len - 1))
-    [[ -n ${BASHMATIC_DEBUG} ]] && { 
+    (( BASHMATIC_DEBUG)) && { 
         echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2
         echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2
         echo "\$0            = $0" 1>&2
@@ -12872,6 +13090,23 @@ bashmatic.detect-subshell ()
         export BASH_IN_SUBSHELL=1
     fi
     return ${BASH_IN_SUBSHELL}
+}
+
+----
+
+==== `bashmatic.is-subshell-alt`
+
+[source,bash]
+----
+bashmatic.is-subshell-alt () 
+{ 
+    local IN_SUB_SHELL=0
+    if [ "$$" -eq "$BASHPID" ]; then
+        export IN_SUB_SHELL=0
+    else
+        export IN_SUB_SHELL=1
+    fi
+    return ${IN_SUB_SHELL}
 }
 
 ----
@@ -13383,7 +13618,15 @@ time.date-from-epoch ()
 { 
     local epoch_ts
     epoch_ts="$1"
-    printf "date --date='@${epoch_ts}'"
+    if command -v gdate > /dev/null; then
+        printf "gdate --date='@${epoch_ts}'"
+    else
+        if [[ $BASHMATIC_OS == "linux" ]]; then
+            printf "date --date='@${epoch_ts}'"
+        else
+            printf "date -r ${epoch_ts}"
+        fi
+    fi
 }
 
 ----
@@ -13995,6 +14238,7 @@ usage-widget ()
     local left_space
     left_space="$(cursor.right 1) "
     if [[ ${#args[@]} -gt 2 ]]; then
+        local i
         for i in $(seq 2 50)
         do
             [[ -z ${args[$i]} ]] && break
@@ -14071,7 +14315,7 @@ user.current-shell-init-file ()
 ----
 user.finger.name () 
 { 
-    [[ -n $(which finge) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
+    [[ -n $(which finger) ]] && finger "${USER}" | head -1 | sedx 's/.*Name: //g'
 }
 
 ----
@@ -14119,7 +14363,7 @@ user.gitconfig.name ()
 ----
 user.host () 
 { 
-    local host=
+    local host
     host=$(user.my.reverse-ip)
     [[ -z ${host} ]] && host=$(user.my.ip)
     printf "${host}"
@@ -14511,6 +14755,7 @@ util.functions-matching.diff ()
 { 
     while true; do
         [[ -z "$1" ]] && break
+        local e
         for e in $(util.functions-matching "${1}")
         do
             printf "${e/$1/}\n"
@@ -14707,6 +14952,7 @@ util.remove-from-init-files ()
     [[ -z ${search} ]] && return
     declare -a shell_files=($(util.shell-init-files))
     local temp_holder=$(mktemp)
+    local init_file
     for init_file in "${shell_files[@]}"
     do
         run.config.detail-is-enabled && inf "verifying file ${init_file}..."
@@ -14859,6 +15105,23 @@ watch.set-refresh ()
 
 === Module `video`
 
+==== `video.compress-mp4-file`
+
+[source,bash]
+----
+video.compress-mp4-file () 
+{ 
+    local file="$1"
+    local target="${2:-"${file/.mp4/-compressed.mp4}"}"
+    local executable="$(.video.ffmpeg-run)"
+    [[ "${file}" =~ \.mp4$ ]] || return 1
+    local command="${executable} -n -loglevel error -i \"${file}\" -vcodec libx264 -crf 28 -preset faster -tune film \"${target}\""
+    h1bg "${command}"
+    eval "${command}"
+}
+
+----
+
 ==== `video.encode`
 
 [source,bash]
@@ -14868,19 +15131,18 @@ video.encode ()
     set +e
     local file="$1"
     shift
-    local algo="${1:-"11"}"
+    local algo="${1}"
     shift
     local output="${1}"
     shift
-    [[ -z "${output}" ]] && output=$(video.filename.encoded "${file}" "${algo}")
-    output="${output/\.*/\.mkv}"
+    [[ -z "${output}" ]] && { 
+        output=$(video.filename.encoded "${file}" "${algo}")
+        output="${output/\.*/\.mkv}"
+    }
     [[ "${file}" == "${output}" ]] && output="${output/.mkv/-converted.mkv}"
     is.an-existing-file "${output}" && { 
-        info "File ${output} already exists, making a backup..."
-        local t="$(time.now.db | tr -d ' ')"
-        local backup_output="$(echo "${output}" | sed "s/\.\(.*\)$/-${t}.\1/g")"
-        info "Backing up a name clashing file to ${backup_output}..."
-        mv -v "${output}" "${backup_output}"
+        info "File ${output} already exists, skipping."
+        return 1
     }
     h2 "Starting \"${ffmpeg_binary}\" conversion, source file size is ${bldred}$(file.size.mb "${file}")" " • Source:      [${file}]" " • Destination: [${output}]" " • Algorithm:   [${algo}]"
     video.install.dependencies
@@ -14979,6 +15241,22 @@ video.make.mp4 ()
 
 ----
 
+==== `video.mov-to-mkv`
+
+[source,bash]
+----
+video.mov-to-mkv () 
+{ 
+    local -a files
+    mapfile -t files < <(find . -maxdepth 1 -iname *.mov -type f)
+    local file
+    video.shrink "${files[@]}"
+    h2bg "Renaming files with '-compressed.*' in them..."
+    .rename.compressed mkv
+}
+
+----
+
 ==== `video.shrink`
 
 [source,bash]
@@ -14986,7 +15264,7 @@ video.make.mp4 ()
 video.shrink () 
 { 
     [[ -z "$*" ]] && { 
-        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mp4${clr}\n"
+        printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-shrink *.mov${clr}\n"
         return 0
     }
     for file in "$@"
@@ -14995,8 +15273,16 @@ video.shrink ()
             warning "File ${file} does not exist..."
             continue
         }
-        dest="$(.destination-file-name "${file}")"
-        h1 "Compressing \"${file}\"" "To \"${dest}\""
+        local dest="$(.destination-file-name "${file}" "mkv")"
+        [[ "${dest}" == ".mkv" ]] && { 
+            error "Invalid destination file name: [${dest}]"
+            return 1
+        }
+        if [[ -f "${dest}" ]]; then
+            warning "Destination file already exists: [${dest}]"
+            continue
+        fi
+        h1 "Compressing [${file}]" "To [${dest}]"
         video.encode "${file}" "shrinkwrap" "${dest}"
     done
 }
@@ -15021,7 +15307,7 @@ video.squeeze ()
         }
         dest="$(.destination-file-name "${file}")"
         arrow.blk-on-blu "Compressing \"${file}\""
-        video.encode "${file}" "11" "${dest}"
+        video.encode "${file}" "22" "${dest}"
     done
 }
 
