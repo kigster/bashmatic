@@ -143,14 +143,20 @@ is.a-function.invoke bashmatic.auto-update "$@"
 #/usr/bin/env bash            
 # vim: ft=bash
 
-# Decide where you'd like Bashmatic installed. The default is ~/.bashmatic
-[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
-[[ -d ${BASHMATIC_HOME} ]] || {
-  bash -c "$(curl -fsSL https://bashmatic.re1.re)
-  bashmatic-install -q"
-}
+# The simplest way to install bashmatic is via the URL directly,
+# which by the default installs it into ~/ (your $HOME)
+bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
 
-source "${BASHMATIC_HOME}/init"
+# But if you'd rather inspect the install script (I don't blame you!)
+# or want to install Bashmatic in a customized way, download the script
+# and run it with --help to see all the possible installation options:
+curl -fsSL https://bashmatic.re1.re > /tmp/bashmatic-installer
+chmod 755 /tmp/bashmatic-installer
+/tmp/bashmatic-installer -q
+
+# Once Bashmatic is installed, let's load it into our current shell
+source ~/.bashmatic/init
+
 # This constraints the width of all widgets to 100 characters wide.
 # Using it is optional, of course.
 output.constrain-screen-width 100
@@ -180,9 +186,7 @@ success "All done, thank you!"
           <p>The easiest way to install Bashmatic is with curl:</p>
           <div class="code-container">
             <pre class="animated animate-on-scroll"><code>
-curl -fsSL https://bashmatic.re1.re >/tmp/installer
-chmod 755 /tmp/installer
-/tmp/installer -q
+bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q"
             </code>
             </pre>
           </div>
