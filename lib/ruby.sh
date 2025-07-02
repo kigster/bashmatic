@@ -73,31 +73,25 @@ ruby.top-versions() {
 
 ruby.default-gems() {
   declare -a DEFAULT_RUBY_GEMS=(
-    bundler
-    rubocop
-    relaxed-rubocop
-    rubocop-performance
-    warp-dir
-    colored2
-    sym
-    pry
-    pry-doc
-    pry-byebug
-    rspec
-    rspec-its
-    awesome_print
-    activesupport
-    pivotal_git_scripts
-    git-smart
-    travis
-    awscli
-    irbtools
-    kramdown-asciidoc
+    amazing_print
     asciidoctor
+    aws
+    bundler
+    colored2
+    git-smart
+    irbtools
     kramdown
-    gemsmith
+    kramdown-asciidoc
+    relaxed-rubocop
     rspec
     rspec-its
+    rubocop
+    ruby-lsp
+    ruby-lsp-rails
+    ruby-lsp-rspec
+    ruby-lsp-rubyfmt
+    sym
+    warp-dir
   )
 
   export DEFAULT_RUBY_GEMS
