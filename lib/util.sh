@@ -104,6 +104,10 @@ function util.random-string.of-length() {
   util.generate-password "$@"
 }
 
+function util.random-string() {
+  util.random-string.of-length 16
+}
+
 function util.ver-to-i() {
   version=${1}
   echo "${version}" | awk 'BEGIN{FS="."}{ printf "1%02d%03.3d%03.3d", $1, $2, $3}'
