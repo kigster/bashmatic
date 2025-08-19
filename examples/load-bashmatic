@@ -1,0 +1,13 @@
+# vim: ft=bash
+
+# allow the user to override the location
+export BASHMATIC_HOME="${BASHMATIC_HOMEs:-"${HOME}/.bashmatic"}"
+
+# load the init.sh file
+[[ -f ${BASHMATIC_HOME}/init.sh ]] && {
+  source ${BASHMATIC_HOME}/init.sh # add -q to make it silent
+  export PATH="${PATH}:${BASHMATIC_HOME}/bin"
+} || {
+  echo -e "\e[1;31mCan't find Bashmatic at ${BASHMATIC_HOME}...\e[0m"
+  echo -e "\e[1;33mEither reinstall Bashmatic, or update BASHMATIC_HOME variable.\e[0m"
+}

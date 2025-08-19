@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby 
+# vim: ft=ruby
+# 
+# Run this like so:
+# 
+# @example
+#    bin/ruby-benchmark | grep -v user.*system
+
+if RUBY_VERSION.to_s =~ /^3\.[3-9]+\.\d?$/
+  puts "Accepting Ruby Version : #{RUBY_VERSION}"
+else
+  warn "Your Ruby is too old   : #{RUBY_VERSION}"
+  exit 1
+end
+
+puts `gem install parallel amazing_print colored2 -N`
+
+require 'benchmark'
+require 'etc'
+require 'parallel'
+require 'amazing_print'
+require 'stringio'
+require 'colored2'
+
+input = ('a'..'z').map { |letter| [letter, letter] }.to_h
+
+N = 5_000_000
+
+cpu_count = Etc.nprocessors.to_i
+cpu_array = (0...cpu_count).to_a
+
+output = Array.new(cpu_count) { StringIO.new }
+
+work = ->(count) { count.times { input.map { |key, value| [key.to_sym, value] }.to_h } }
+
+warn "Starting the Benchmark: each CPU will shuffle alphabet into a map #{N} times.".bold.yellow
+
+results = Parallel.map(cpu_array, in_processes: cpu_count) do |cpu|
+  Benchmark.bm do |x|
+    x.report("cpu #{'%2d' % cpu}".green) { work[N] }
+  end
+end
