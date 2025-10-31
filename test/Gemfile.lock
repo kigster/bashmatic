@@ -17,23 +17,23 @@ GEM
     awesome_print (1.9.2)
     base62-rb (0.3.1)
     base64 (0.3.0)
-    benchmark (0.4.1)
-    bigdecimal (3.2.2)
+    benchmark (0.5.0)
+    bigdecimal (3.3.1)
     colored2 (4.0.3)
     concurrent-ruby (1.3.5)
-    connection_pool (2.5.3)
+    connection_pool (2.5.4)
     drb (2.2.3)
     hashie (5.0.0)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     logger (1.7.0)
-    minitest (5.25.5)
+    minitest (5.26.0)
     pastel (0.8.0)
       tty-color (~> 0.5)
     rbtree (0.4.6)
-    redis (5.4.0)
+    redis (5.4.1)
       redis-client (>= 0.22.0)
-    redis-client (0.25.0)
+    redis-client (0.26.1)
       connection_pool
     securerandom (0.4.1)
     set (1.1.2)
@@ -67,14 +67,15 @@ GEM
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.6.0)
     unicode_utils (1.4.0)
-    uri (1.0.3)
+    uri (1.1.0)
 
 PLATFORMS
+  arm64-darwin-20
   ruby
 
 DEPENDENCIES
-  activesupport
-  simple-feed
+  activesupport (= 8.0.2)
+  simple-feed (= 3.2.0)
 
 BUNDLED WITH
-   2.6.2
+   2.7.2
