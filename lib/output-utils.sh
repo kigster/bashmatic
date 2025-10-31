@@ -51,7 +51,8 @@ function info-debug() {
 }
 
 function warn() {
-  printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
+  printf -- "${LibOutput__LeftPrefix}${txtblk}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" >&2
+  echo
 }
 
 function warning() {
@@ -75,6 +76,10 @@ function error-title() {
 
 function error() {
   panel-error "ERROR" "$@"
+}
+
+function failure() {
+  error "@$"
 }
 
 function fatal() {
@@ -173,7 +178,7 @@ function dbgf() {
 
 # @description Print a message one character at a time.
 # If the first argument is numeric (or a float) it is interpreted
-# as the floationg point delay in seconds between characters. 
+# as the floationg point delay in seconds between characters.
 # The default is 30ms (so 0.03). The rest of the arguments are single-line sentences
 # between which teletype prints a newline.
 function teletype() {
@@ -196,9 +201,7 @@ function teletype() {
         sleep "${delay}"
       }
     done
-    ((index+=1))
+    ((index += 1))
   done
   echo
 }
-
-

@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+# shellcheck disable=SC2155
+export project_root="$(dirname "$(dirname "$(realpath "$0")")")"
+export file_maker_version="PSQLRC_VERSION"
+export psqlrc_path="${HOME}/.psqlrc"
+export psqlrc_dotfiles_path="${project_root}/conf/.psqlrc"
+
+# shellcheck disable=SC1091
+source "${project_root}/init"
+
+# @description: Get the version of the psqlrc file
+# @param file: The path to the psqlrc file
+# @return: The version of the psqlrc file as an integer or 0 if the version is not found or invalid
+# @example: if the version is 1.1.0, the return value will be 110
+function get.version.from.file() {
+    local file="$1"
+    local version
+    if [[ ! -f "${file}" ]]; then
+        printf "0"
+        return
+    fi
+
+    version=$(grep "${file_maker_version}" "${file}" | awk '{print $3}' | sed 's/[^0-9]//g')
+
+    if [[ -n "${version}" || ${version} =~ ^[0-9]+$ ]]; then
+        printf "%d" "${version}"
+    else
+        printf "0"
+    fi
+}
+
+function install.dotfiles() {
+    h1bg "Installing Bashmatic's ${psqlrc_path} dotfiles..."
+    # shellcheck disable=SC2086
+    warn "$(cp -v "${psqlrc_dotfiles_path}" ${HOME}/)"
+    warn "$(cp -v "${psqlrc_dotfiles_path}-macros" ${HOME}/)"
+    success "Dotfiles installed successfully." "Next time you run psql client, they will be loaded."
+}
+
+# @description: Main function to install the psqlrc file if it is not installed
+function main() {
+    if [[ ! -s "${psqlrc_path}" ]]; then
+        install.dotfiles
+        return 0
+    fi
+
+    local repo_version
+    local local_version
+
+    # Now deal with users that have ~/.psqlrc.
+    # It could be their custom one, or an older version of ours.
+    # if it's the custom one, we do not touch it. If it's ours, but older, we upgrade it.
+    if [[ -s "${psqlrc_path}" ]]; then
+        if cmp -s "${psqlrc_path}" "${psqlrc_dotfiles_path}"; then
+            success "Your ${psqlrc_path} is already up to date."
+        else
+            repo_version=$(get.version.from.file "${psqlrc_dotfiles_path}")
+            local_version=$(get.version.from.file "${psqlrc_path}")
+            if [[ ${local_version} -eq 0 ]]; then
+                warning  "Couldn't determine version of ${psqlrc_path}. Assuming custom version." \
+                         "Custom ${psqlrc_path} is not overwritten by design."
+                         "If you prefer to use our version, run:"
+                run.print-command "rm ~/.psqlrc"
+                echo
+                info "and then re-run this script."
+                return 1
+            fi
+
+            if [[ ${repo_version} -gt ${local_version} ]]; then
+                warn "Your ${psqlrc_path} is not up to date. Upgrading to the laetst version ${repo_version}..."
+                install.dotfiles
+            else
+                info "${psqlrc_path} is already up to date."
+            fi
+        fi
+    fi
+    return 0
+}
+
+main "$@"
+exit $?

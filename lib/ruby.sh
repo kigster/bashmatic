@@ -55,8 +55,8 @@ ruby.top-versions() {
   local filter="cat"
   [[ -n ${platform} ]] && filter="grep -E '^${platform}'"
 
-  eval "rbenv install ${arg}" | \
-    eval "${filter}" | \
+  eval "rbenv install ${arg}" |
+    eval "${filter}" |
     ruby -e '
       last_v = nil;
       last_m = nil;
@@ -97,6 +97,18 @@ ruby.default-gems() {
   export DEFAULT_RUBY_GEMS
 
   printf "${DEFAULT_RUBY_GEMS[*]}"
+}
+
+# @description Patch git smart to remove File.exists?() and replace with File.exist?()
+ruby.fix-git-smart() {
+  local dir=$(dirname $(gem which git-smart))
+  [[ -z ${dir} ]] && return 1
+
+  warning "Found folder for gem [git-smart], patching to fix File.exists?() issue..."
+
+  cd "${dir}/git-smart"
+  run "grep -q File.exists *.rb && sed -i ' ' 's/File.exists/File.exist/g' *.rb"
+  cd - >/dev/null
 }
 
 ruby.handle-missing() {
@@ -193,6 +205,7 @@ ruby.gems.install() {
 
 ruby.gems() {
   ruby.gems.install "$@"
+  ruby.fix-git-smart
 }
 
 interrupted() {
@@ -494,6 +507,3 @@ ruby.aliases() {
   alias berr="bundle exec rspec"
   alias rdb="set -ex; bundle exec rake db:drop:all; bundle exec rake db:create:all; bundle exec rake db:migrate db:seed; bundle exec rake db:test:prepare; set +ex"
 }
-
-
-

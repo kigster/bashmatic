@@ -2,7 +2,7 @@
 \set QUIET 1
 \timing 0
 \echo '┌───────────────────────────────────────────────────────────────────────────┐'
-\echo '│                       🔄  Loading shortcuts                               │'
+\echo '│ Loading shortcuts                                                         │'
 \echo '└───────────────────────────────────────────────────────────────────────────┘'
 \echo
 \pset border 0
@@ -76,7 +76,10 @@
 \set bigitems 'SELECT nspname || ''.'' || relname AS "relation", pg_size_pretty(pg_relation_size(C.oid)) AS "size" FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace) WHERE nspname IN (''public'') ORDER BY pg_relation_size(C.oid) DESC LIMIT 10;'
 
 \echo 'Type :dbsizes            — to see the sizes of the databases'
-\set dbsizes ' SELECT d.datname AS Name,  pg_catalog.pg_get_userbyid(d.datdba) AS Owner, CASE WHEN pg_catalog.has_database_privilege(d.datname, ''CONNECT'') THEN pg_catalog.pg_size_pretty(pg_catalog.pg_database_size(d.datname)) ELSE ''No Access'' END AS SIZE FROM pg_catalog.pg_database d ORDER BY CASE WHEN pg_catalog.has_database_privilege(d.datname, ''CONNECT'') THEN pg_catalog.pg_database_size(d.datname) ELSE NULL END DESC nulls first LIMIT 20;'
+\set dbsizes 'SELECT d.datname AS Name,  pg_catalog.pg_get_userbyid(d.datdba) AS Owner, CASE WHEN pg_catalog.has_database_privilege(d.datname, ''CONNECT'') THEN pg_catalog.pg_size_pretty(pg_catalog.pg_database_size(d.datname)) ELSE ''No Access'' END AS SIZE FROM pg_catalog.pg_database d ORDER BY CASE WHEN pg_catalog.has_database_privilege(d.datname, ''CONNECT'') THEN pg_catalog.pg_database_size(d.datname) ELSE NULL END DESC nulls first LIMIT 20;'
+
+\echo 'Type :schemasizes        — to see the sizes of the schemas'
+\set schemasizes ' SELECT  pg_catalog.pg_namespace.nspname, pg_size_pretty(SUM(pg_relation_size(pg_catalog.pg_class.oid))::BIGINT) FROM pg_catalog.pg_class INNER JOIN pg_catalog.pg_namespace ON relnamespace = pg_catalog.pg_namespace.oid GROUP BY pg_catalog.pg_namespace.nspname;'
 
 \echo 'Type :hitrate            — to get your database cache hit rate ration'
 \set hitrate 'SELECT sum(idx_blks_read) as idx_read, sum(idx_blks_hit)  as idx_hit, (sum(idx_blks_hit) - sum(idx_blks_read)) / sum(idx_blks_hit) as ratio FROM pg_statio_user_indexes;'
@@ -91,6 +94,22 @@
 \set ti 'select * from pg_stat_user_indexes where relname = '
 
 \echo '——————————————————————————————————————————————————————————————————————————'
+\echo 'Long Running Queries — Showing them and killing them.'
+
+\echo 'Type :stuck60s           - to print SELECT queries taking longer than 60 seconds';
+\set stuck60s 'SELECT pid, query FROM pg_stat_activity pa WHERE (now() - pa.query_start) > interval ''60 seconds'' and pa.query ilike ''select%'';';
+
+\echo 'Type :kill60s            - to kill SELECT queries taking longer than 60 seconds';
+\set kill60s  'SELECT pg_terminate_backend(pa.pid) FROM pg_stat_activity pa WHERE (now() - pa.query_start) > interval ''60 seconds'' and pa.query ilike ''select%'';';
+
+\echo 'Type :stuck N min'';      - to print SELECT queries taking longer than N minutes';
+\echo '                           which could be any interval argument, eg 1 hour etc.';
+\set stuck 'SELECT pid, query FROM pg_stat_activity pa WHERE pa.query ilike ''select%'' and (now() - pa.query_start) > interval ''';
+
+\echo 'Type :killq N min'';      - to kill SELECT queries taking longer than N minutes';
+\set killq 'SELECT pg_terminate_backend(pa.pid) FROM pg_stat_activity pa WHERE pa.query ilike ''select%'' and (now() - pa.query_start) > interval ''';
+
+\echo '——————————————————————————————————————————————————————————————————————————'
 \echo 'Prompt Management'
 \echo 'Type :p0                 - To return to the default prompt (requires Powerline Fonts)'
 \set p0 '\\set PROMPT1 ''%[%033[0;30;33m%]%[%033[0;43;30m%] %`date "+%H:%M:%S%p"`  %033[0;30;33m%]%033[0;43;37m%]%[%033[0;0;0m%]━%[%033[0;30;32m%]%033[0;42;30m%] %n@%M:%> %033[0;32m%%[%033[3;30;96m%]━%[%033[3;30;106m%]% %[%033[3;30;106m%]%/%x %033[0;96m%   %[%033[0m%]\n     ❯ '''
@@ -101,11 +120,11 @@
 \echo '——————————————————————————————————————————————————————————————————————————'
 
 \set pgss 'create extension pg_stat_statements;'
-\echo 'Type :pgss to create an extension for pg_stat_statements (assuming it is available)'
+\echo 'Type :pgss to create an extension for pg_stat_statements (assuming its available)'
 \echo 'Type \\q to exit. '
 \echo
 \echo '┌───────────────────────────────────────────────────────────────────────────┐'
-\echo '│                        ✅  Shortcuts Loaded.                              │'
+\echo '│ Shortcuts Loaded ✔︎                                                        │'
 \echo '└───────────────────────────────────────────────────────────────────────────┘'
 \echo
 \pset border 3
