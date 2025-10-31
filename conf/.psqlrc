@@ -1,8 +1,10 @@
--- vim: set filetsype=sql
+-- vim: ft=sql
 -- don't output commands as we run them
+-- © Konstantin Gredeskoul, MIT license, Fractional.AI
+
 -- set how to output numbers (this turns on thousdand separators)
-\set PSQLRC_VERSION  '1.0.1'
-\set PSQLRC_RELEASED 'Thu Dec 15 18:36:30 PST 2022'
+\set PSQLRC_VERSION  '1.1.1'
+\set PSQLRC_RELEASED 'Wed Feb  8 09:17:23 PST 2023'
 \set QUIET 1
 \encoding unicode
 \timing 0
@@ -10,32 +12,44 @@
 -- Autocomplete keywords (like SELECT) in upper-case, even if you started
 -- typing them in lower case.
 \set COMP_KEYWORD_CASE upper
+
 -- If a command is run more than once in a row, only store it once in the history.
 \set HISTCONTROL ignoredups
+
 -- Use a separate history file per-database.
-\set HISTFILE ~/.psql_history-:DBHOST-:DBNAME
--- Use table format (with headers across the top) by default, but switch to
--- expanded table format when there's a lot of data, which makes it much
--- easier to read.
+\set HISTFILE ~/.psql_history
+
+-- Use automatic horizontal or vertical format depending on the data and terminal width.
+-- You can always use horizontal with "\x off" or always vertical with "\x on".
+-- Finally, you can use macros ":nowrap" and ":wrap" to either truncate long output strings at the
+-- terminal boundary, or wrap them if they don't fit.
 \x auto
+\set nowrap '\\! tput rmam'
+\set wrap '\\! tput smam'
+
+-- These macros load additional macros that map to various administrative queries about the
+-- database or individual tables.
 \set m '\\i ~/.psqlrc-macros'
 \set macros '\\i ~/.psqlrc-macros'
+
 -- Verbose error reports.
 \set VERBOSITY verbose
-\echo '┌───────────────────────────────────────────────────────────────────────────┐'
-\echo '│ PostgreSQL PSQL Macros, Version v' :PSQLRC_VERSION ' (' :PSQLRC_RELEASED ') │'
-\echo '│ © 2015-2023 All Rights Reserved @kigster, MIT License 🌎  https://kig.re/  │'
-\echo '│                                                                           │'
-\echo '│ To switch between wide and narrow result views, type \\x<ENTER>            │'
-\echo '└───────────────────────────────────────────────────────────────────────────┘'
-\echo
+
 \pset border 0
 \pset tuples_only 1
-SELECT '    PostgreSQL Server Version: ' || regexp_replace(version(), 'PostgreSQL ([\d.]+) .*', '\1', 'g') as pg_version;
-\echo '┌───────────────────────────────────────────────────────────────────────────┐'
-\echo '│ 💡   To load and view macros, type :macros<ENTER> (or :m for short)        │'
-\echo '└───────────────────────────────────────────────────────────────────────────┘'
-\echo
+
+\echo '\033[0;34m'
+\echo -n '❯ PostgreSQL Client Version: '
+\! psql --version | cut -d ' ' -f 3
+\echo -n '\033[0;33m'
+SELECT '❯ PostgreSQL Server Version: ' || (SELECT regexp_replace(version(), 'PostgreSQL ([\d.]+) .*', '\1', 'g') as current_pg_version);
+\echo -n '\033[0;32m'
+\echo '┌───────────────────────────────────────────────────────────────────────────────┐'
+\echo '│ To load and view macros, type \033[0;34m:macros<ENTER>\033[0;32m (or :m for short)                │'
+\echo '│ To truncate wide results type \033[0;34m:nowrap<ENTER>\033[0;32m, or :wrap<ENTER> otherwise       │'
+\echo '│ To layout query results vertically, type \033[0;34m"\\x on|off|auto<ENTER>"\033[0;0m              │'
+\echo '└───────────────────────────────────────────────────────────────────────────────┘'
+\echo '\033[0;0m'
 
 \pset border 3
 \pset columns 0
@@ -47,8 +61,9 @@ SELECT '    PostgreSQL Server Version: ' || regexp_replace(version(), 'PostgreSQ
 \timing 1
 \pset tuples_only 0
 
-SET search_path TO public,extensions;
+-- Do not set search path since we use schemas here.
+-- SET search_path TO public,extensions;
 \set QUIET 0
 -- New Prompt, more compact, and works with back editing using readlines
-\set PROMPT1 '%[%033[0;30;33m%]%[%033[0;43;30m%] %`date "+%H:%M:%S%p"`  %033[0;30;33m%]%033[0;43;37m%]%[%033[0;0;0m%]━%[%033[0;30;32m%]%033[0;42;30m%] %n@%M:%> %033[0;32m%%[%033[3;30;96m%]━%[%033[3;30;106m%]% %[%033[3;30;106m%]%/%x %033[0;96m%   %[%033[0m%]\n     ❯ '
+\set PROMPT1 '%[%033[0;30;33m%]%[%033[0;43;30m%] %`date "+%H:%M:%S%p"`  %033[0;30;33m%]%033[0;43;37m%]%[%033[0;0;0m%]━%[%033[0;30;32m%]%033[0;42;30m%] %n@%M:%> %033[0;32m%%[%033[3;30;96m%]━%[%033[3;30;106m%]% %[%033[3;30;106m%]%/%x %033[0;96m%%[%033[0m%]\n❯ '
 \set PROMPT2 '%[%033[0;30;33m%] ⤷ %l%[%033[0m% ❯ '

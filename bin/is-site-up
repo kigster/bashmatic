@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+
+# author: Konstantin Gredeskoul
+# @description: Check
+
+# shellcheck disable=SC2155
+export project_root="$(dirname "$(dirname "$(realpath "$0")")")"
+
+# shellcheck disable=SC1091
+source "${project_root}/init"
+
+function is.url.alive() {
+  local name="$1" && shift # required argument
+  [[ -z "$name" ]] && return 1
+  local url="$1" # required argument
+  [[ -z "$url" ]] && return 1
+  [[ -n $1 ]] && shift
+  local retries="${1:-"10"}"
+  [[ -n $1 ]] && shift # defaults to 10 retries
+  local interval="${1:-"0.25"}" # defaults to ¼ second
+  [[ -n $1 ]] && shift
+
+  local counter=0
+  info "Waiting for the site ${name} @ [${url}] to be up..."
+
+  while :; do
+    (( counter++ ))
+    [[ $counter -gt $retries ]] && {
+      error "Site is down after $retries retries." "URL: ${url} ($name)"
+      return 1
+    }
+
+    if curl --silent --fail --output /dev/null "$url"; then
+      success "✅ Site ${name} @ ${url} is up and running..."
+      break # Exit the loop once the site is up
+    else
+      sleep "$interval"
+    fi
+  done
+}
+
+function ensure.dependencies() {
+  command -v curl >/dev/null 2>&1 || {
+    failure "curl is not installed. Please run 'just setup' to install it."
+    return 1
+  }
+}
+
+function usage() {
+  echo -e "\e[1;32mUSAGE:"
+  echo -e "  \e[1;33mbin/$(basename "$0") <site-name> <url> [<retries=10>] [<interval=0.25>]\e[0m\n"
+  echo -e "\e[1;32mDESCRIPTION:"
+  echo -e "  This script checks if a given URL is up and running. "
+  echo -e "  It will retry up to a given number of times with a given interval between retries."
+  return 1
+}
+
+function main() {
+  ensure.dependencies
+  is.url.alive "$@"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  if [[ $# -eq 0 || $* =~ ^(-h|--help)$ ]]; then
+    usage
+    exit 0
+  fi
+  main "$@"
+  exit $? # Exit with the status of the main function
+fi

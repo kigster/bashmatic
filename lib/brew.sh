@@ -103,6 +103,7 @@ function brew.upgrade.packages() {
 
   run "brew upgrade $*"
 }
+
 function brew.package.link() {
   local package="${1}"
   shift
@@ -363,4 +364,49 @@ function brew.service.restart() {
   run "brew services restart ${svc}"
 }
 
+function brew.bundle.install() {
+  local bundle_file="${1-"Brewfile"}"
+  [[ -n $1 ]] && shift
 
+  brew bundle check --file="${bundle_file}" || brew bundle install --file="${bundle_file}" --no-upgrade "$@"
+  return $?
+}
+
+# @description Add descriptions to all packages and casks listed int the Brewfile
+function brew.bundle.document() {
+  local bundle_file="${1-"Brewfile"}"
+  [[ -n $1 ]] && shift
+  local -a packages; packages=();
+  local -a casks=(); casks=();
+
+  mapfile -d ' ' -t packages < <(grep brew Brewfile | grep '^brew' | awk '{print $2}' | tr -d "'" | tr '\n' ' ')
+  mapfile -d ' ' -t casks    < <(grep cask Brewfile | grep '^cask' | awk '{print $2}' | tr -d "'" | tr '\n' ' ')
+
+  temp_brewfile="$(mktemp -t brewfile)"
+  grep -v -E '^(brew|cask)' ${bundle_file} | sed '/^$/d' > "${temp_brewfile}"
+
+  h1 "Processing Brewfile: ${bundle_file} with: " \
+     "$(grep '^brew' ${bundle_file} | wc -l | tr -d ' ') packages and $(grep '^cask' ${bundle_file} | wc -l | tr -d ' ') casks."
+
+  IFS=$'\n'
+  local -a descriptions; 
+
+  descriptions=("$(brew desc "${packages[@]}" | awk '{$1=""; print $0}')")
+  local i=0
+  for package in "${packages[@]}"; do
+    printf '%-40s %s\n' "brew '${package}'"   "# ${descriptions[i]}" >> "${temp_brewfile}"
+    i=$((i + 1))
+  done
+  
+  printf "\n\n" > "${temp_brewfile}"
+
+  descriptions=("$(brew desc "${packages[@]}" | awk '{$1=""; print $0}')")
+  local i=0
+  for cask in "${casks[@]}"; do
+    local description="$(brew desc "${cask}" | awk '{$1=""; print $0}')"
+    printf '%-40s %s\n' "cask '${package}'"   "# ${description}" >> "${temp_brewfile}"
+  done
+  
+  printf "\n\n" > "${temp_brewfile}"
+  run "mv \"\${temp_brewfile}\" \"${bundle_file}\""
+ }
