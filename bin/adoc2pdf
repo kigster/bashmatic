@@ -5,10 +5,6 @@
 [[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname $(cd $(dirname "${BASH_SOURCE[0]:-${(%):-%x}}") || exit 1; pwd -P))"
 source "${BASHMATIC_HOME}/init.sh" >/dev/null
 
-export bashmatic_gemfile="${BASHMATIC_HOME}/Gemfile"
-export bashmatic_gems="${HOME}/.bundle/gems/bashmatic"
-
-
 function adoc-header() {
   local file="$1"
 
@@ -72,8 +68,8 @@ function install-gems() {
 
   gem.cache-refresh
   gem.is-installed prawn-gmagick || run "gem install prawn-gmagick -- --with-opt-include=${dir}/include/GraphicsMagick"
-  run "mkdir -p ${bashmatic_gems}"
-  run "bundle install --gemfile=\"${bashmatic_gemfile}\" --path=\" ${bashmatic_gems}\"" 
+  run "mkdir -p ${BASHMATIC_GEMS}"
+  run "bundle check ${BASHMATIC_BUNDLER_ARGS} || bundle install -j 12 ${BASHMATIC_BUNDLER_ARGS}" 
 }
 
 function ensure-dependencies() {
@@ -148,8 +144,7 @@ main() {
   # as well as print it to STDOUT
   ( cat<<EOF
 #!/usr/bin/env bash
-export BUNDLE_PATH="${bashmatic_gems}"
-bundle exec --gemfile="${bashmatic_gemfile}" asciidoctor-pdf \\
+bundle exec ${BASHMATIC_BUNDLER_ARGS} asciidoctor-pdf \\
       --trace \\
       --verbose \\
       --quiet \\

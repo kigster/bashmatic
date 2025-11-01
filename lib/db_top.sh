@@ -26,13 +26,13 @@ function .db.primary-or-replica() {
     printf "${bldgrn} Replication Status on the Primary.${clr}${txtcyn}\n" >>"${toc}"
 
     # shellcheck disable=SC2116
-    ( eval "psql $* -X -P pager -c \"select client_addr, state, write_lag + flush_lag + replay_lag as REPLICATION_CUMULATIVE_LAG from pg_stat_replication\"" | grep -v 'rows)') 2>"${stderr}" 1>>"${toc}"
+    (eval "psql $* -X -P pager -c \"select client_addr, state, write_lag + flush_lag + replay_lag as REPLICATION_CUMULATIVE_LAG from pg_stat_replication\"" | grep -v 'rows)') 2>"${stderr}" 1>>"${toc}"
     code=$?
   elif echo "${dbname}" | grep -E -q "slave|replica"; then
     printf "${bldcyn} Replication Status on the Replica.${clr}${txtgrn}\n" >>"${toc}"
 
     # shellcheck disable=SC2116
-    ( eval "psql $* -X -P pager -c \"select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS\"" ) 2>"${stderr}" 1>>"${toc}"
+    (eval "psql $* -X -P pager -c \"select now() - pg_last_xact_replay_timestamp() AS REPLICATION_DELAY_SECONDS\"") 2>"${stderr}" 1>>"${toc}"
     code=$?
   else
     return
@@ -41,7 +41,9 @@ function .db.primary-or-replica() {
   ((code)) && {
     error "Unable to compute replication information for ${dbname}, psql exited with ${code}" >&2
     info "psql produced the following STDERR:" >&2
-    printf "${txtred}"; cat "${stderr}"; printf "${clr}\n" >&2
+    printf "${txtred}"
+    cat "${stderr}"
+    printf "${clr}\n" >&2
     rm -f "${stderr}"
     exit 1
   }
@@ -121,11 +123,11 @@ function .db.primary-or-replica() {
   printf "${bldwht}${bakblu} Truncated ${txtblu}${alert_color_bg}${bldwht}${alert_color_bg}${bldylw}$(printf " %2d Rows" $((fh - h)))  ${alert_color_fg}${bakylw}${clr}${alert_color_fg}${bakylw} Total: $((fh - 4)) Active Queries ${txtylw}${bakblk}${clr}\n" >>"${tof}"
 
   # shellcheck disable=2002
-  cat "${tof}.out" | \
-    grep -E -v -- ' select pid, client_addr ' | \
-    sed -E '/^--$/d' | \
-    head -"${h}" | \
-    cut -c -"${sw}" | \
+  cat "${tof}.out" |
+    grep -E -v -- ' select pid, client_addr ' |
+    sed -E '/^--$/d' |
+    head -"${h}" |
+    cut -c -"${sw}" |
     cat >>"${tof}"
 
   [[ ${code} -ne 0 ]] && {
@@ -196,7 +198,7 @@ db.top() {
   cp /dev/null "${tof}" >/dev/null
 
   for connection in "$@"; do
-    db.psql.args.config "${connection}" 1>/dev/null  || return 1
+    db.psql.args.config "${connection}" 1>/dev/null || return 1
 
     db.psql.args "${connection}" >"${tof}"
 
@@ -272,5 +274,3 @@ db.top() {
   done
   return ${code}
 }
-
-

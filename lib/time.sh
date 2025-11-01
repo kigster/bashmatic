@@ -59,7 +59,7 @@ function date.now.with-time.and.zone() {
     date '+%F '
     time.now.with-ms
     date '+ %z'
-  ) | tr -d '\n';
+  ) | tr -d '\n'
 }
 
 # @description Starts a time for a given name space

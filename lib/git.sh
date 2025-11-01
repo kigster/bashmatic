@@ -3,7 +3,7 @@
 
 function git.repo.latest-remote-tag() {
   local repo_url="$1"
-  git ls-remote --tags --sort="v:refname" "${repo_url}" | grep -E \-v '(latest|stable)' | grep -E -v '\^{}'| tail -1 | awk 'BEGIN{FS="/"}{print $3}'
+  git ls-remote --tags --sort="v:refname" "${repo_url}" | grep -E \-v '(latest|stable)' | grep -E -v '\^{}' | tail -1 | awk 'BEGIN{FS="/"}{print $3}'
 }
 
 function git.repo.latest-local-tag() {
@@ -50,7 +50,7 @@ function git.cfgu() {
 
 # used in tests
 function git.config.kigster() {
-  [[ $(git.cfgu name) == "Konstantin Gredeskoul" && \
+  [[ $(git.cfgu name) == "Konstantin Gredeskoul" &&
   $(git.cfgu email) == "kigster@gmail.com" ]] && return 0
 
   git.cfgu name "Konstantin Gredeskoul"
@@ -247,7 +247,7 @@ function git.repo.current() {
   local current_branch="$(git.branch.current)"
   local readme="README.md"
   for file in README.md README README.txt README.adoc CHANGELOG.md; do
-    if [[ -s "${file}" ]] ; then
+    if [[ -s "${file}" ]]; then
       export readme="${file}"
       break
     fi
@@ -340,7 +340,7 @@ function git.parse-remote() {
 }
 
 function git.is-valid-repo() {
-  if [[ ! -d .git ]] ; then
+  if [[ ! -d .git ]]; then
     error "Please run this script at the root of your project / git repo." >&2
     return 1
   fi
@@ -348,7 +348,7 @@ function git.is-valid-repo() {
 
 # @description Prints the value from github config
 # @arg1 [ local | global ] which config to look at (defaults to global)
-# @arg2... tokens to print 
+# @arg2... tokens to print
 # @example
 #   git.cfg.get github.token user.name user.email
 # dsf09098f09ds8f0s98df09809
@@ -357,14 +357,14 @@ function git.is-valid-repo() {
 function git.cfg.get() {
   local section="global"
 
-  if [[ "$1" == "local" || "$1" == "global" ]] ; then
+  if [[ "$1" == "local" || "$1" == "global" ]]; then
     section="$1"
     shift
   fi
 
   local command="get"
   local cmd
-  if [[ -z "$*" ]] ; then
+  if [[ -z "$*" ]]; then
     cmd="git config --${section} --list"
   elif [[ "$*" =~ ^[a-z\.]*$ ]]; then
     for token in "$@"; do
@@ -391,17 +391,18 @@ function git.generate-changelog() {
   local user=${remote_parts[3]}
   local repo=${remote_parts[4]}
   local host=${remote_parts[2]}
-  
+
   [[ ${host} =~ github.com ]] || {
     error "Can only generate changelog for Github Repos at the moment, sorry."
     return 1
   }
 
   run "rm -f CHANGELOG.md"
-  run "bundle exec github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${token} --no-verbose"
+  run "bundle install ${BASHMATIC_BUNDLER_ARGS}"
+  run "bundle exec ${BASHMATIC_BUNDLER_ARGS} -- github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${token} --no-verbose"
 
   [[ -s "CHANGELOG.md" ]] || {
-    error  "CHANGELOG.md has not been generated."
+    error "CHANGELOG.md has not been generated."
     return 1
   }
 
@@ -409,7 +410,3 @@ function git.generate-changelog() {
 
   return 0
 }
-
-
-
-

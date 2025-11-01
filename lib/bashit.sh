@@ -124,7 +124,6 @@ function bashit-prompt-minimal() {
 
 #—————————————————————————————————————————————————————————————————————
 
-
 # https://stackoverflow.com/questions/1891797/capturing-groups-from-a-grep-regex
 # using BASH to capture group out of the regex. And it's very fast.
 function bashit-list-prompts() {
@@ -176,6 +175,3 @@ function bashit-activate() {
 function bashit-refresh() {
   bashit-activate "$@"
 }
-
-
-

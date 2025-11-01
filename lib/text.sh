@@ -2,7 +2,8 @@
 # vim: ft=bash
 
 text.markdown-to-asciidoc() {
-  local file="$1"; shift
+  local file="$1"
+  shift
   local default_flags="--imagesdir=/assets/images --no-html-to-native"
 
   [[ -n $(command -v kramdoc) ]] || gem.install "kramdown-asciidoc"
@@ -12,7 +13,7 @@ text.markdown-to-asciidoc() {
     usage-box "text.markdown-to-asciidoc markdown-file [ flags ] © Converts a markdown doc to asciidoc using the kramdown-asciidoc ruby gem" \
       " " "Default flags: ${bldcyn}${default_flags}" \
       " " "To override pass any flags that are supported by ${bldred}kramdoc${bldylw}, see below:"
-    
+
     printf "\n${txtblu}"
     kramdoc --help | tail -16
     printf "${clr}\n"
@@ -50,4 +51,3 @@ text.chr() {
   [ "$1" -lt 256 ] || return 1
   printf "\\$(printf '%03o' "$1")"
 }
-

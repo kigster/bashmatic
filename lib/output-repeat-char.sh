@@ -5,7 +5,7 @@ export LibOutput__RepeatCharImplementation="product"
 
 # Repeat character implementations
 # See: https://stackoverflow.com/questions/5349718/how-can-i-repeat-a-character-in-bash
-# 
+#
 # source lib/output.sh; .output.repeat-char.set-implementation looping; time box.white-on-blue "HELLO! " "${bldylw}and good bye" "And fuck you" "TOO!"
 # real	0m0.598s
 .output.repeat-char.impl.looping() {
@@ -16,7 +16,7 @@ export LibOutput__RepeatCharImplementation="product"
   while true; do
     [[ $i -ge ${width} ]] && break
     printf -- "${char}"
-    i=$((i+1))
+    i=$((i + 1))
   done
 }
 
@@ -30,7 +30,7 @@ export LibOutput__RepeatCharImplementation="product"
   while true; do
     [[ $i -gt ${width} ]] && break
     line+=("${char}")
-    i=$((i+1))
+    i=$((i + 1))
   done
   printf "%s" "${line[@]}"
 }
@@ -45,7 +45,7 @@ export LibOutput__RepeatCharImplementation="product"
   while true; do
     [[ $i -gt ${width} ]] && break
     line="${line}${char}"
-    i=$((i+1))
+    i=$((i + 1))
   done
   printf -- "${line}"
 }
@@ -69,7 +69,7 @@ export LibOutput__RepeatCharImplementation="product"
 .output.repeat-char.impl.cache() {
   local char="${1}"
   local width="${2}"
-  is.a-variable LibOutput__CachedRepeats || { 
+  is.a-variable LibOutput__CachedRepeats || {
     declare -A LibOutput__CachedRepeats
     export LibOutput__CachedRepeats=()
   }
@@ -108,5 +108,3 @@ export LibOutput__RepeatCharImplementation="product"
   local width="${2}"
   printf "%s%d" "${width}" "$(text.ord "${char}")"
 }
-
-

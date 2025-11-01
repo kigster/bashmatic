@@ -18,6 +18,9 @@ fi
 export BASHMATIC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1; pwd -P)"
 export BASHMATIC_HOME="${BASHMATIC_DIR}"
 export BASHMATIC_LIB="${BASHMATIC_HOME}/lib"
+export BASHMATIC_GEMS="${HOME}/.bundle/gems/bashmatic"
+export BASHMATIC_BUNDLER_INSTALL_ARGS="--gemfile=\"${BASHMATIC_HOME}/Gemfile\" --path=\"${BASHMATIC_GEMS}\""
+export BASHMATIC_BUNDLER_ARGS="--gemfile=\"${BASHMATIC_HOME}/Gemfile\""
 
 source "${BASHMATIC_LIB}/util.sh"
 

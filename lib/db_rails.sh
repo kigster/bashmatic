@@ -33,5 +33,3 @@ db.rails.schema.checksum() {
     [[ -s ${schema} ]] && shasum.sha-only "${schema}"
   fi
 }
-
-

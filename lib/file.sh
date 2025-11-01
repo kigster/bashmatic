@@ -26,8 +26,8 @@ function dir.temp() {
   [[ -n ${BASHMATIC_DEBUG} ]] && {
     info "temporary folder is: ${dir}"
     inf "it exists?  "
-    [[ -d ${dir}  ]] && ok:
-    [[ -d ${dir}  ]] || not-ok:
+    [[ -d ${dir} ]] && ok:
+    [[ -d ${dir} ]] || not-ok:
   }
   printf "%s" "${dir}"
   trap "rm -rf ${dir}" EXIT
@@ -40,19 +40,19 @@ function file.print-normalized-name() {
 
 # @description This function will rename all files passed to it as follows: spaces
 #              are replaced by dashes, non printable characters are removed,
-#              and the filename is lower cased. 
+#              and the filename is lower cased.
 #
-# @example 
-#       file.normalize-files "My Word Document.docx" 
+# @example
+#       file.normalize-files "My Word Document.docx"
 #       # my-word-document.docx
-#              
+#
 function file.normalize-files() {
   trap 'return 1' INT
   run.set-all abort-on-error
   local file
   local counter=0
-  for file in "$@"; do  
-    [[ -f "${file}" ]] || { 
+  for file in "$@"; do
+    [[ -f "${file}" ]] || {
       error "File '${file}' does not exist, continue."
       continue
     }
@@ -68,12 +68,12 @@ function file.normalize-files() {
     else
       run.set-next show-output-on
       run "mv -fv \"${file}\" \"${new_name}\""
-      counter=$(( counter + 1 ))
+      counter=$((counter + 1))
     fi
   done
   hr
-  inf "Total of ${counter} files have been renamed."    
-  return 
+  inf "Total of ${counter} files have been renamed."
+  return
 }
 
 # Replaces a given regex with a string
@@ -140,35 +140,38 @@ function file.ask.if-exists() {
 #
 # @arg1 File to backup
 # @arg2 Destination
-# @arg3 [optional] Shortname of the optional backup strategy: 'bak' or 'folder'. 
+# @arg3 [optional] Shortname of the optional backup strategy: 'bak' or 'folder'.
 #                  If not provided, defaults to 'bak'
 # Alternatively, set LibFile__ForceOverwrite=1 to overwrite.
 # @example
 #     file.install-with-backup conf/.psqlrc ~/.psqlrc backup-strategy-function
 #
 function file.install-with-backup() {
-  local source="$1"; shift
+  local source="$1"
+  shift
   if [[ ! -f "${source}" ]]; then
     error "file ${source} can not be found"
     return 1
   fi
 
-  local dest="$1"; shift
+  local dest="$1"
+  shift
 
   [[ -z ${dest} ]] && {
     error "usage: file.install-with-backup <source> <dest> [ bak | folder ]"
-    return 1 
+    return 1
   }
 
-  local backup_strategy="${1:-"bak"}"; shift
+  local backup_strategy="${1:-"bak"}"
+  shift
   local backup_fn=".file.backup.strategy.${backup_strategy}"
 
   is.a-function "${backup_fn}" || {
     error "Invalid backup method '${backup_strategy}': supported are: 'bak' and 'folder'"
     return 1
-  } 
+  }
 
-  if [[ -f "${dest}" ]]; then 
+  if [[ -f "${dest}" ]]; then
     if [[ -z $(diff "${dest}" "${source}" 2>&1) ]]; then
       info: "The two files ${source} and ${dest} are identical."
       return 0
@@ -182,7 +185,7 @@ function file.install-with-backup() {
         info "creating a backup of ${dest}..."
         ${backup_fn} "${dest}" && {
           success "File ${dest} has been backed up."
-        } 
+        }
       fi
     fi
   fi
@@ -203,7 +206,7 @@ function file.last-modified-year() {
 }
 
 # @description Prints the file's last modified date expressed as millisecondsd
-function file.last-modified-millis() { 
+function file.last-modified-millis() {
   echo -n "$(/usr/bin/stat -f %m "$1")000"
 }
 
@@ -244,7 +247,7 @@ function file.size.mb() {
   local file="$1"
   shift
   local s=$(file.size "${file}")
-  local mb=$(echo $((s / 10/ 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
+  local mb=$(echo $((s / 10 / 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
   printf "%.2f MB" "${mb}"
 }
 
@@ -253,7 +256,7 @@ function file.size.gb() {
   local file="$1"
   shift
   local s=$(file.size "${file}")
-  local gb=$(echo $((s / 10 / 1024 / 1024 )) | sedx 's/([0-9][0-9])$/.\1/g')
+  local gb=$(echo $((s / 10 / 1024 / 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
   printf "%.1f Gb" "${gb}"
 }
 
@@ -375,13 +378,13 @@ function file.extension.replace() {
 # @description Prints the number of lines in the file
 function file.count.lines() {
   [[ -f "$1" ]] || return 1
-  wc -l "$1" | awk '{print $1}' | tr -d '\n' 
+  wc -l "$1" | awk '{print $1}' | tr -d '\n'
 }
 
 # @description Prints the number of lines in the file
 function file.count.words() {
   [[ -f "$1" ]] || return 1
-  wc -w "$1" | awk '{print $1}' | tr -d '\n' 
+  wc -w "$1" | awk '{print $1}' | tr -d '\n'
 }
 
 # @description Invokes UNIX find command searching for files (not folders)
@@ -397,15 +400,13 @@ function dir.find() {
 }
 
 # @description Prints all folders sorted by size, and size printed in Mb
-function ls.mb(){
+function ls.mb() {
   # du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fMb %s\n", $1/1024, $2 )}' | tail -10
   du -m -d 1 "$@" | sort -rn
 }
 
 # @description Prints all folders sorted by size, and size printed in Gb
-function ls.gb(){
+function ls.gb() {
   # du -k | grep -v '\''./.*\/'\' | sort -n | awk '{ printf("%20.1fGb %s\n", $1/1024/1024, $2 )}' | tail -10
   du -g -d 1 "$@" | sort -rn
 }
-
-

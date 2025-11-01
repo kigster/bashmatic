@@ -9,7 +9,7 @@
 function audio.m4a.to.mp3() {
   local file="$1"
   [[ -z "${file}" ]] && return 0
-  [[ -f "${file}" ]] || { 
+  [[ -f "${file}" ]] || {
     error "File does not exist: ${file}"
     return 1
   }
@@ -26,13 +26,13 @@ function audio.m4a.to.mp3() {
   run "${cmd}"
 }
 
-
 function audio.m4as.to.mp3s() {
   ## Should `folder` be local?
   folder="${1:-"."}"
   info "Converting the following files:"
-  find "${folder}" -name '*.m4a'  
-  hr; echo
+  find "${folder}" -name '*.m4a'
+  hr
+  echo
   info "Ctrl-C to abort."
   echo
   find "${folder}" -name '*.m4a' -exec bash -c 'source ~/.bashmatic/init.sh; audio.m4a.to.mp3 "{}"' \;
@@ -65,9 +65,9 @@ _term() {
 
 export child_pid=
 
-# @description Given a folder of MP3 files, and an optional KHz specification, 
+# @description Given a folder of MP3 files, and an optional KHz specification,
 #              perform a sequential conversion from AIF/WAV format to MP3.
-# @example 
+# @example
 #              audio.wav-to-mp3 [ file.wav | file.aif | file.aiff ] [ file.mp3 ]
 audio.make.mp3s() {
   local dir="${1:-"."}"
@@ -221,7 +221,6 @@ audio.dir.mp3-to-wav() {
   run "cd -"
 }
 
-
 # @description Rename function for one filename to another.
 #              This particular function deals with files of this format:
 #              Downloaded from karaoke-version.com:
@@ -233,18 +232,19 @@ audio.dir.mp3-to-wav() {
 }
 
 # @description This function receives a format specification, and an optional
-#              directory as a second argument. Format specification is meant to 
+#              directory as a second argument. Format specification is meant to
 #              map to a function .audio.<format>.format that's used as follows:
-#              .audio.<format>.format "file-name" => "new file name" 
-# @example 
+#              .audio.<format>.format "file-name" => "new file name"
+# @example
 #              audio.dir.rename-wavs karaoke ~/Karaoke
 audio.dir.rename-wavs() {
-  local format="$1"; shift
+  local format="$1"
+  shift
   local func=".audio.${format}.format"
 
-  is.a-function "${func}" || { 
+  is.a-function "${func}" || {
     error "Format not recognized: ${format}" \
-    "usage: audio.dir.rename-wavs <renaming-scheme> [ optional-dir ]"
+      "usage: audio.dir.rename-wavs <renaming-scheme> [ optional-dir ]"
     return 1
   }
 
@@ -252,8 +252,8 @@ audio.dir.rename-wavs() {
   local pwd="$(pwd -P)"
   if [[ -n "${dir}" ]]; then
     [[ ! -d "${dir}" ]] && {
-    error "First argument is either blank (current directory)" \
-      "or the folder where *.wav files to be renamed are."
+      error "First argument is either blank (current directory)" \
+        "or the folder where *.wav files to be renamed are."
       return 1
     }
     cd "${dir}" || exit 1
@@ -262,23 +262,20 @@ audio.dir.rename-wavs() {
   local file
   for file in $(ls -1 '*.wav'); do
     local n
-     n="$(.audio.karaoke.format "${file}" | sed 's/—/_/g')"
-     h1 "${file}" "${n}"
-     run "mv -vn \"${file}\" \"${n}\"";  
+    n="$(.audio.karaoke.format "${file}" | sed 's/—/_/g')"
+    h1 "${file}" "${n}"
+    run "mv -vn \"${file}\" \"${n}\""
   done
 
   run "cd \"${pwd}\""
 }
 
-# @description Renames wav files in the current folder (or the folder 
+# @description Renames wav files in the current folder (or the folder
 #              passed as an argument, based on the naming scheme downloaded
 #              from karaoke-version.com
-# @example 
+# @example
 #              audio.dir.rename-karaoke-wavs "~/Karaoke"
 #
 audio.dir.rename-karaoke-wavs() {
   audio.dir.rename-wavs karaoke "$@"
 }
-
-
-

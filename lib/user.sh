@@ -69,7 +69,7 @@ user.pairs.email() {
   [[ ! -s "${bashmatic_git_pairs}" || -z "$1" ]] && return
   local username="$(user.pairs.username "$1")"
   local domain="$(grep domain "${bashmatic_git_pairs}" | sed 's/.*domain://g' | tr -d ' ')"
-  [[ -n ${username} && -n "${domain}"  ]] || {
+  [[ -n ${username} && -n "${domain}" ]] || {
     error "Couldn't determine username or domain from ${bashmatic_git_pairs} file for input ${bldwht}$*"
     return 1
   }
@@ -83,7 +83,7 @@ function user.first() {
 
 # https://apple.stackexchange.com/questions/20547/how-do-i-find-my-ip-address-from-the-command-line
 function user.my.external-ip() {
-  ( curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g' | sed -E 's/^[\d\.]//g; s/\r//g;' 2>&1 )
+  (curl -s http://checkip.dyndns.org/ | sed 's/[a-zA-Z<>/ :]//g' | sed -E 's/^[\d\.]//g; s/\r//g;' 2>&1)
 }
 
 function user.my.ip() {
@@ -101,8 +101,8 @@ function user.my.reverse-ips() {
 
   if [[ ${output} =~ Membership ]]; then
     error "You have exceeded the number of free API calls to determine your reverse IP." \
-          "Please visit https://hackertarget.com/scan-membership/ if you wish to " \
-          "increase your limit." >&2
+      "Please visit https://hackertarget.com/scan-membership/ if you wish to " \
+      "increase your limit." >&2
     return 1
   else
     echo
@@ -126,7 +126,7 @@ user.login-shell() {
 user.login-shell-path() {
   if [[ -n $(command -v finger 2>/dev/null) ]]; then
     finger "${USER}" | grep Shell: | sed 's/^.*Shell: //g'
-  elif grep -q "${USER}" /etc/passwd 2>/dev/null ; then
+  elif grep -q "${USER}" /etc/passwd 2>/dev/null; then
     grep "${USER}" /etc/passwd | sed 's/.*://g'
   else
     command -v "$(user.current-shell)"
@@ -169,10 +169,8 @@ user.current-shell-init-file() {
 }
 
 ## :TBD: As one I recently had need of, where's `user.home-dir`?
-## 
+##
 ## user.home-dir() {
 ##   local user="${1:-$( whoami )}"
 ##   printf '%s\n' $(bash -c "cd ~$(printf %q "${user}") && pwd")
 ## }
-
-

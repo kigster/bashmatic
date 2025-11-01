@@ -19,7 +19,7 @@ pg.running.server-binaries() {
 
 # @description For each running server prints the data directory
 pg.running.data-dirs() {
-   ps -eo 'args' | $(which grep) '[p]ostgres.*-D' | awk 'BEGIN{FS="-D"}{print $2}' | awk '{print $1}' | sort
+  ps -eo 'args' | $(which grep) '[p]ostgres.*-D' | awk 'BEGIN{FS="-D"}{print $2}' | awk '{print $1}' | sort
 }
 
 # @description Grab the version from `postgres` binary in the PATH and remove fractional sub-version
@@ -27,5 +27,3 @@ pg.server-in-path.version() {
   is.command postgres || return 1
   $(which postgres) -V | sed -E 's/[^0-9.]//g;s/\..*$//g'
 }
-
-

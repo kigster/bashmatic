@@ -30,8 +30,10 @@ export LibProgress__BarChar="${LibProgress__BarChar__Default}"
 }
 
 .progress.bar() {
-  local full_cycle_seconds=${1:-"10"}; shift
-  local loops=${1:-"1"}; shift
+  local full_cycle_seconds=${1:-"10"}
+  shift
+  local loops=${1:-"1"}
+  shift
   local width=$1
 
   is.integer "${width}" && shift
@@ -98,7 +100,7 @@ progress.bar.auto-run() {
 progress.bar.launch-and-wait() {
   local command="$*"
 
-  run.print-command "${command}\n" 
+  run.print-command "${command}\n"
 
   ${command} 1>/dev/null 2>&1 &
   local pid=$!
@@ -113,14 +115,15 @@ progress.bar.launch-and-wait() {
   return 0
 }
 
-# Usage: 
+# Usage:
 # To render a red progress bar using the '❯' character:
 #
 # $ progress.bar.config BarColor=${bldred} BarChar="❯"
 #
 progress.bar.config() {
   while true; do
-    local setting="$1"; shift
+    local setting="$1"
+    shift
     [[ -z ${setting} ]] && break
 
     local key=${setting/=*/}
@@ -142,14 +145,14 @@ progress.bar.configure.color-red() {
 progress.bar.configure.color-yellow() {
   progress.bar.config BarColor="${bldylw}"
 }
-  
+
 progress.bar.configure.symbol-block() {
   progress.bar.config BarChar="${LibProgress__BarChar__Default}"
-}  
-  
+}
+
 progress.bar.configure.symbol-arrow() {
   progress.bar.config BarChar="❯"
-}  
+}
 
 progress.bar.configure.symbol-square() {
   progress.bar.config BarChar="◼︎"
@@ -158,6 +161,3 @@ progress.bar.configure.symbol-square() {
 progress.bar.configure.symbol-bar() {
   progress.bar.config BarChar="█"
 }
-
-
-

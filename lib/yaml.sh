@@ -5,7 +5,7 @@ export BashMatic__DiffTool="ydiff"
 yaml.expand-aliases() {
   local file="${1}"
   local temp=$(mktemp)
-  cat <<-RUBY > "${temp}"
+  cat <<-RUBY >"${temp}"
   require 'yaml'; 
   puts YAML.dump(YAML.load(File.read('${file}'), aliases: true))
 RUBY
@@ -55,7 +55,7 @@ yaml.dump() {
   [[ -n $(which ${BashMatic__DiffTool}) ]] || brew.package.install ${BashMatic__DiffTool}
   local t1="$(mktemp)"
   export yaml_dump_file="$t1.$(basename "$f1")"
-  yaml.expand-aliases "$f1" > "${yaml_dump_file}"
+  yaml.expand-aliases "$f1" >"${yaml_dump_file}"
   cat "${yaml_dump_file}"
 }
 
@@ -67,5 +67,3 @@ yaml.edit() {
 yaml-dump() {
   yaml.dump "$@"
 }
-
-

@@ -25,8 +25,9 @@ BASHMATIC_HOME			:= $(shell dirname $(MAKEFILE_PATH))
 BASHMATIC_VERSION		:= $(shell cat .version)
 BASHMATIC_TAG			:= "v$(BASHMATIC_VERSION)"
 BASHMATIC_RELEASE		:= "Release for Tag $(BASHMATIC_TAG)"
-BASHMATIC_GEMFILE		:="$(BASHMATIC_HOME)/Gemfile"
-BASHMATIC_GEMS			:="$(HOME)/.bundle/gems/bashmatic"
+BASHMATIC_GEMFILE		:= $(BASHMATIC_HOME)/Gemfile
+BASHMATIC_GEMS			:= $(HOME)/.bundle/gems/bashmatic
+BASHMATIC_BUNDLER_ARGS		:= --gemfile=${BASHMATIC_GEMFILE} --path=${BASHMATIC_GEMS}
 
 
 help:	   			## Prints help message auto-generated from the comments.
@@ -78,8 +79,8 @@ file-stats-git:			## Print all  files  known to `git ls-files` command
 
 bundle-install:			## Install all gems from the Gemfile
 				@mkdir -p $(BASHMATIC_GEMS)
-				bundle config set --local path "$(BASHMATIC_GEMS)"
-				time bundle install -j 12 --quiet --gemfile="$(BASHMATIC_GEMFILE)"
+				bundle config set --local path $(BASHMATIC_GEMS)
+				time bundle install -j 12 --quiet $(BASHMATIC_BUNDLER_ARGS)
 #—————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 
 update: 			bundle-install update-copyright update-changelog update-functions update-usage update-readme fonts-clean git-add ## Runs all of the updates, add locally modiofied files to git.

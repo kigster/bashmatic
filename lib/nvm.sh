@@ -38,7 +38,7 @@ function nvm.install() {
   # This both installs NVM and also evals the lines it outputs during installation matching NVM_DIR
   # this ensures that NVM is fully loaded after this line
   local temp="/tmp/nvm_$$"
-  (curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh 2>/dev/null| bash 2>/dev/null) | grep NVM_DIR > "${temp}"
+  (curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh 2>/dev/null | bash 2>/dev/null) | grep NVM_DIR >"${temp}"
   # Honestly we probably don't need to do this, since we still call nvm_load later...
   # But then we have to guess where NVM_DIR once again, when we can just eval it and be done with it...
   source "${temp}"
@@ -66,7 +66,7 @@ function nvm.use() {
 function nvm.load() {
   nvm.detect || nvm.install
   is.a-function nvm || {
-    [[ -s "$NVM_DIR/nvm.sh" ]]          && source "$NVM_DIR/nvm.sh"
+    [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
     [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
   }
 
@@ -89,12 +89,9 @@ function node.install.pin.version() {
 }
 
 function nvm.activate() {
-  is.an-existing-file .nvmrc && { 
+  is.an-existing-file .nvmrc && {
     export node_version=$(cat .nvmrc | tr -d 'v')
-    info "Detected node version ${node_version}"  
-  } 
+    info "Detected node version ${node_version}"
+  }
   nvm.load
 }
-
-
-

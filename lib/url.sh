@@ -141,20 +141,19 @@ url.http-code() {
   fi
 }
 
-
-
 # @description Returns 0 if the certificate is valid of the domain
 # passed as an argument.
 # @arg0 domain or a complete https url
 # @return 0 if certificate is valid, other codes if not
 function url.cert.is-valid() {
-  local url="$1"; shift
+  local url="$1"
+  shift
   [[ ${url} =~ https:// ]] || url="https://${url}"
   curl -L -q -I "${url}" "$@" 1>/dev/null 2>&1
 }
 
 # @description Prints the common name for which the SSL certificate is registered
-# @example 
+# @example
 #   ❯ url.cert.domain google.com
 #   *.google.com
 #
@@ -170,7 +169,7 @@ function url.host.is-valid() {
   local host="$1"
   local host="${host/https:\/\//}"
   host "${host}" >/dev/null || {
-    error "${host} does not appear to be a valid host.">&2
+    error "${host} does not appear to be a valid host." >&2
     return 255
   }
 }
@@ -184,10 +183,7 @@ function url.cert.info() {
 
   url.host.is-valid "${url}" || return 1
 
-  curl --insecure -vvI "${url}" 2>&1 | \
+  curl --insecure -vvI "${url}" 2>&1 |
     awk 'BEGIN { cert=0 } 
         /^\* SSL connection/ { cert=1 } /^\*/ { if (cert) print }'
 }
-
-
-

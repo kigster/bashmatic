@@ -24,5 +24,3 @@ caller.stack() {
 stack.frame() {
   caller.stack 0
 }
-
-

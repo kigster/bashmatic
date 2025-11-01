@@ -257,8 +257,9 @@ function usage-widget() {
   fi
 
   usage-box "${args[0]} © ${args[1]}" \
-    "$(cursor.up 1; cursor.left 5)" "$(cursor.right 10)" \
+    "$(
+      cursor.up 1
+      cursor.left 5
+    )" "$(cursor.right 10)" \
     "${details[@]}"
 }
-
-
