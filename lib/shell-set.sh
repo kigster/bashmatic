@@ -98,5 +98,3 @@ save-set-x() { shell-set.push-stack x; }
 save-restore-x() { shell-set.pop-stack x; }
 
 [[ -z "${SetOptsStack[*]}" ]] && shell-set.init-stack
-
-

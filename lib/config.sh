@@ -23,8 +23,8 @@ function config.get-format() {
 # @description Set the default config file
 function config.set-file() {
   export bashmatic__config_file="$1"
-  if [[ ${bashmatic__config_file} =~ \.yml$ || ${bashmatic__config_file} =~ \.yaml$ || \
-        ${bashmatic__config_file} =~ \.YML$ || ${bashmatic__config_file} =~ \.YAML$  ]];  then
+  if [[ ${bashmatic__config_file} =~ \.yml$ || ${bashmatic__config_file} =~ \.yaml$ ||
+    ${bashmatic__config_file} =~ \.YML$ || ${bashmatic__config_file} =~ \.YAML$ ]]; then
     config.set-format yaml
   elif [[ ${bashmatic__config_file} =~ \.json$ || ${bashmatic__config_file} =~ \.JSON$ ]]; then
     config.set-format json
@@ -94,5 +94,3 @@ function config.dig.pretty() {
   config.set-format "${format}"
   return 0
 }
-
-

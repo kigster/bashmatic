@@ -31,12 +31,12 @@ db.config.init-max-query-len() {
   local w=$(screen.width.actual)
   local max_query_len
 
-  max_query_len=$(( w - 20 ))
+  max_query_len=$((w - 20))
   max_query_len=$(array.force-range "${max_query_len}" 80 1000)
 
   ((flag_verbose)) && { attention "Queries will be truncated to ${max_query_len} characters" >&2; }
 
-  printf "%d" "${max_query_len}"  # characters
+  printf "%d" "${max_query_len}" # characters
 }
 
 # @description Returns a space-separated values of db host, db name, username and password
@@ -61,7 +61,7 @@ db.config.parse() {
   done
   is.a-function ruby.handle-missing || source "${BASHMATIC_LIB}/ruby.sh"
   ruby.handle-missing
-  ruby -e "${script[*]}"<"${bashmatic_db_config}"
+  ruby -e "${script[*]}" <"${bashmatic_db_config}"
 }
 
 db.config.connections-list() {
@@ -153,7 +153,8 @@ print-cli() {
 #    db.psql.connect production -c 'show all'
 #
 db.psql.connect() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
 
   if [[ -z ${dbname} ]]; then
     h1 "USAGE: db.connect connection-name" \
@@ -175,7 +176,10 @@ db.psql.connect() {
   [[ ${flag_quiet} -eq 0 ]] && {
     printf "${txtpur}export PGPASSWORD=[reducted]${clr}\n" >&2
     printf "${txtylw}$(which psql) ${args[*]}${clr}\n" >&2
-    (hr; echo) >&2
+    (
+      hr
+      echo
+    ) >&2
   }
 
   set +e
@@ -201,24 +205,29 @@ db.psql.connect() {
 # @example
 #    db.psql.connect.just-data production -c 'select datname from pg_database;'
 db.psql.connect.just-data() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
   # shellcheck disable=SC2046
   db.psql.connect "${dbname}" $(db.psql.args-data-only) "$@"
 }
 
 db.psql.explain() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
   db.psql.connect "${dbname}" -t -A -X --pset border=0 -c "'explain $*'"
 }
 
 db.psql.run() {
-  local dbname="$1"; shift
-  local query="$1"; shift
+  local dbname="$1"
+  shift
+  local query="$1"
+  shift
   db.psql.connect.just-data "${dbname}" -c "${query}" "@"
 }
 
 db.psql.run-multiple() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
   local commands
   for arg in "$@"; do
     if [[ ${arg} =~ \" ]]; then
@@ -227,28 +236,33 @@ db.psql.run-multiple() {
       commands="${commands} -c \"$(printf "%s" "${arg}")\""
     fi
   done
-  echo "${commands}">/tmp/a
+  echo "${commands}" >/tmp/a
   db.psql.connect "${dbname}" -t -A -X --pset border=0 "${commands}"
 }
 
 db.psql.list-users() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
   db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\du' | awk 'BEGIN{FS="|"}{print $2}'
 }
 
 db.psql.list-tables() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
   db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\dt' | awk 'BEGIN{FS="|"}{print $2}'
 }
 
 db.psql.list-indexes() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
   db.psql.connect "${dbname}" $(db.psql.args-data-only) -c '\\di' | awk 'BEGIN{FS="|"}{print $2}'
 }
 
 db.psql.connect.table-settings-show() {
-  local dbname="$1"; shift
-  local table="$1"; shift
+  local dbname="$1"
+  shift
+  local table="$1"
+  shift
   db.psql.connect "${dbname}" $(db.psql.args-data-only) \
     -c "SELECT relname, reloptions FROM pg_class WHERE relname='${table}';"
 }
@@ -259,13 +273,17 @@ db.psql.connect.table-settings-show() {
 #   db.psql.connect.table-settings-set prod users autovacuum_analyze_threshold 1000000
 #   db.psql.connect.table-settings-set prod users autovacuum_analyze_scale_factor 0
 db.psql.connect.table-settings-set() {
-  local dbname="$1"; shift
-  local table="$1"; shift
-  local setting="$1"; shift
-  local value="$1"; shift
+  local dbname="$1"
+  shift
+  local table="$1"
+  shift
+  local setting="$1"
+  shift
+  local value="$1"
+  shift
 
   [[ -z ${setting} || -z ${value} ]] && {
-    error "Either setting or value are not defined.">&2
+    error "Either setting or value are not defined." >&2
     return 1
   }
 
@@ -291,12 +309,12 @@ db.psql.db-settings() {
 #    db.psql.connect.db-settings-pretty primary
 #
 db.psql.connect.db-settings-pretty() {
-  db.psql.connect "$@" -A -X -q -c "\"show all\"" | \
-    grep -v 'rows)' | \
-    sort | \
-    awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" | \
-    sedx '/##\s*$/d' | \
-    GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' | \
+  db.psql.connect "$@" -A -X -q -c "\"show all\"" |
+    grep -v 'rows)' |
+    sort |
+    awk "BEGIN{FS=\"|\"}{ printf(\"%-40.40s %-30.30s ## %s\n\", \$1, \$2, \$3) }" |
+    sedx '/##\s*$/d' |
+    GREP_COLOR="1;32" grep -E -C 1000 -i --color=always -e '^([^ ]*)' |
     GREP_COLOR="3;0;34" grep -E -C 1000 -i --color=always -e '##.*$|$'
 }
 
@@ -348,7 +366,7 @@ db.psql.args.maintenance() {
   local temp_sql="$(file.temp sql)"
   local max_query_len=$(db.config.init-max-query-len)
 
-  cat <<SQL > "${temp_sql}"
+  cat <<SQL >"${temp_sql}"
 SELECT
     a.pid,
     a.state,
@@ -380,8 +398,10 @@ SQL
 }
 
 db.psql.table-locks() {
-  local db="$1"; shift
-  local table="$1"; shift
+  local db="$1"
+  shift
+  local table="$1"
+  shift
   local file="$(.db.locks.generate-sql "${table}")"
 
   db.psql.connect "${db}" "$*" -X -x --pset=pager -q -f "${file}" | GREP_COLOR=41 grep --color=always -E "(${table:-"table_name.*$"}|$)"
@@ -390,8 +410,10 @@ db.psql.table-locks() {
 }
 
 db.psql.table-locks-query() {
-  local db="$1"; shift
-  local table="$1"; shift
+  local db="$1"
+  shift
+  local table="$1"
+  shift
   local file="$(.db.locks.generate-sql "${table}")"
   printf "\n${txtgrn}"
   cat "${file}"
@@ -476,7 +498,8 @@ db.actions.run-multiple() {
 }
 
 db.actions.csv() {
-  local dbname=${1};  shift
+  local dbname=${1}
+  shift
   [[ -z ${dbname} ]] && return 1
   export flag_quiet=1
   db.psql.connect "${dbname}" -P border=0 -P fieldsep="," --csv -A -X -P pager=off -P footer=off -c "\"$*\""
@@ -488,16 +511,18 @@ export _bashmatic_db_explain=
 
 .db.actions.explain-json() {
   local flags
-  local dbname="$1"; shift
-  local query="$1"; shift
+  local dbname="$1"
+  shift
+  local query="$1"
+  shift
   local explain_sql="${__bashmatic_db_explain}"
   local explain_json
 
   if [[ -f "${query}" ]]; then
     local explain="query.explain"
     local explain_json="${query}.explain.json"
-    echo "${explain_sql}" > "${explain}"
-    cat "${query}" >> "${explain}"
+    echo "${explain_sql}" >"${explain}"
+    cat "${query}" >>"${explain}"
     flags="-f ${explain} -o ${explain_json}"
   else
     query="${query//\"/\\\"}"
@@ -529,25 +554,26 @@ db.actions.data-dir() {
 # @description Installs (if needed) pg_activity and starts it up against the connection
 db.actions.pga() {
   local name="$1"
-  command -v python3 >/dev/null    || brew.install.packages python3
-  command -v pg_activity>/dev/null || run "python3 -m pip install pg_activity psycopg2-binary"
-  command -v pg_activity>/dev/null || {
+  command -v python3 >/dev/null || brew.install.packages python3
+  command -v pg_activity >/dev/null || run "python3 -m pip install pg_activity psycopg2-binary"
+  command -v pg_activity >/dev/null || {
     local binary=$(find /usr/local/Cellar -type f -name 'pg_activity')
     run "ln -nfs ${binary} /usr/local/bin/pg_activity"
   }
-  command -v pg_activity>/dev/null || {
+  command -v pg_activity >/dev/null || {
     error "Can't find pg_activity even after install + symlink".
     return 1
   }
 
   local args=$(db.psql.args.config "${name}")
-  db.psql.args.config "${name}">/dev/null
+  db.psql.args.config "${name}" >/dev/null
 
   pg_activity "${args}" --verbose-mode=1 --rds --no-app --no-database --no-user
 }
 
 db.actions.list-tables() {
-  local dbname="$1"; shift
+  local dbname="$1"
+  shift
   db.psql.connect -q "${dbname}" $(db.psql.args-data-only) -c 'select relname from pg_stat_user_tables order by relname asc' "$@"
 }
 
@@ -583,5 +609,3 @@ db.actions.db-settings-pretty() {
 db.actions.db-settings-toml() {
   db.psql.connect.db-settings-toml "$@"
 }
-
-

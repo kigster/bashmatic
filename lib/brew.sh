@@ -22,7 +22,7 @@ function brew.binary() {
 }
 
 function brew.is-installed() {
-  command -v brew 2>&1 1>/dev/null && return 0 
+  command -v brew 2>&1 1>/dev/null && return 0
   return 1
 }
 
@@ -51,7 +51,7 @@ function brew.install() {
   else
     not-ok:
     info "Brew wasn't found — installing Homebrew, ${bldgrn}please wait..."
-    hl.yellow "Please enter your SUDO password, if prompted:"    
+    hl.yellow "Please enter your SUDO password, if prompted:"
     sudo echo
     run "/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
   fi
@@ -76,7 +76,7 @@ function brew.setup() {
 function brew.package.available-versions() {
   local package="$1"
   [[ -z "$1" ]] && return 1
-  
+
   brew search "${package}@" | tr -d 'a-z@A-Z =>-+' | sed '/^$/d' | sort -nr | tr '\n' ' '
 }
 
@@ -205,11 +205,11 @@ function brew.reinstall.package() {
 }
 
 function package.uninstall() {
-  brew.uninstall.packages "$@"    
+  brew.uninstall.packages "$@"
 }
 
 function package.install() {
-  brew.install.packages "$@"    
+  brew.install.packages "$@"
   hash -r 2>/dev/null
 }
 
@@ -376,37 +376,39 @@ function brew.bundle.install() {
 function brew.bundle.document() {
   local bundle_file="${1-"Brewfile"}"
   [[ -n $1 ]] && shift
-  local -a packages; packages=();
-  local -a casks=(); casks=();
+  local -a packages
+  packages=()
+  local -a casks=()
+  casks=()
 
   mapfile -d ' ' -t packages < <(grep brew Brewfile | grep '^brew' | awk '{print $2}' | tr -d "'" | tr '\n' ' ')
-  mapfile -d ' ' -t casks    < <(grep cask Brewfile | grep '^cask' | awk '{print $2}' | tr -d "'" | tr '\n' ' ')
+  mapfile -d ' ' -t casks < <(grep cask Brewfile | grep '^cask' | awk '{print $2}' | tr -d "'" | tr '\n' ' ')
 
   temp_brewfile="$(mktemp -t brewfile)"
-  grep -v -E '^(brew|cask)' ${bundle_file} | sed '/^$/d' > "${temp_brewfile}"
+  grep -v -E '^(brew|cask)' ${bundle_file} | sed '/^$/d' >"${temp_brewfile}"
 
   h1 "Processing Brewfile: ${bundle_file} with: " \
-     "$(grep '^brew' ${bundle_file} | wc -l | tr -d ' ') packages and $(grep '^cask' ${bundle_file} | wc -l | tr -d ' ') casks."
+    "$(grep '^brew' ${bundle_file} | wc -l | tr -d ' ') packages and $(grep '^cask' ${bundle_file} | wc -l | tr -d ' ') casks."
 
   IFS=$'\n'
-  local -a descriptions; 
+  local -a descriptions
 
   descriptions=("$(brew desc "${packages[@]}" | awk '{$1=""; print $0}')")
   local i=0
   for package in "${packages[@]}"; do
-    printf '%-40s %s\n' "brew '${package}'"   "# ${descriptions[i]}" >> "${temp_brewfile}"
+    printf '%-40s %s\n' "brew '${package}'" "# ${descriptions[i]}" >>"${temp_brewfile}"
     i=$((i + 1))
   done
-  
-  printf "\n\n" > "${temp_brewfile}"
+
+  printf "\n\n" >"${temp_brewfile}"
 
   descriptions=("$(brew desc "${packages[@]}" | awk '{$1=""; print $0}')")
   local i=0
   for cask in "${casks[@]}"; do
     local description="$(brew desc "${cask}" | awk '{$1=""; print $0}')"
-    printf '%-40s %s\n' "cask '${package}'"   "# ${description}" >> "${temp_brewfile}"
+    printf '%-40s %s\n' "cask '${package}'" "# ${description}" >>"${temp_brewfile}"
   done
-  
-  printf "\n\n" > "${temp_brewfile}"
+
+  printf "\n\n" >"${temp_brewfile}"
   run "mv \"\${temp_brewfile}\" \"${bundle_file}\""
- }
+}

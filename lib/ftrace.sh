@@ -3,7 +3,7 @@
 # This module can aid in debugging bash functions and their return values.
 #
 # It provides just four functions:
-# 
+#
 #  • ftrace-on and ftrace-off can be used to globally enable/disable tracing
 #
 #  • ftrace-in and ftrace-out should be used at the beginning and the end
@@ -38,18 +38,21 @@ ftrace-off() {
 }
 
 ftrace-in() {
-  local func=$1; shift
+  local func=$1
+  shift
   local args="$*"
 
   [[ -z ${TraceON} ]] && return
 
-  export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} + 1 ))
+  export __LibTrace__StackLevel=$((${__LibTrace__StackLevel} + 1))
   printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' "${func}" "${args}" >&2
 }
 
 ftrace-out() {
-  local func=$1; shift
-  local code=$1; shift
+  local func=$1
+  shift
+  local code=$1
+  shift
   local msg="$*"
 
   [[ -z ${TraceON} ]] && return
@@ -58,8 +61,5 @@ ftrace-out() {
   [[ ${code} -ne 0 ]] && color="${bldred}"
 
   printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' "${func}" "${code}" "${msg}" >&2
-  export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} - 1 ))
+  export __LibTrace__StackLevel=$((${__LibTrace__StackLevel} - 1))
 }
-
-
-

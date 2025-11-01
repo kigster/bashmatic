@@ -512,8 +512,8 @@ function run.inspect-variable() {
     elif is.numeric "${var_value}"; then
       avail_len=$((avail_len))
       if [[ ${dot_count} -gt 1 || ${dot_count} -gt 1 ]]; then
-       echo "XXX"
-       printf -- "${value_color}[%-*.*s]" "${avail_len}" "${avail_len}" "${var_value}"
+        echo "XXX"
+        printf -- "${value_color}[%-*.*s]" "${avail_len}" "${avail_len}" "${var_value}"
       else
         if [[ "${var_value}" =~ \. ]]; then
           printf -- "${value_color}%-*.2f" "$((avail_len))" "${var_value}"
@@ -579,21 +579,21 @@ function run.filter-out-sensitive-vars() {
 
 function run.variables-starting-with() {
   local prefix="${1}"
-  env | \
-    grep -E -e "^${prefix}" | \
-    grep '=' | \
-    sedx 's/=.*//g' | \
-    grep -v -E "${SENSITIVE_VARS_REGEX}" | \
+  env |
+    grep -E -e "^${prefix}" |
+    grep '=' |
+    sedx 's/=.*//g' |
+    grep -v -E "${SENSITIVE_VARS_REGEX}" |
     sort
 }
 
 function run.variables-ending-with() {
   local suffix="${1}"
-  env | \
-    grep -E -e ".*${suffix}=.*\$" | \
-    grep -v -E "${SENSITIVE_VARS_REGEX}" | \
-    grep '=' | \
-    sedx 's/=.*//g' | \
+  env |
+    grep -E -e ".*${suffix}=.*\$" |
+    grep -v -E "${SENSITIVE_VARS_REGEX}" |
+    grep '=' |
+    sedx 's/=.*//g' |
     sort
 }
 

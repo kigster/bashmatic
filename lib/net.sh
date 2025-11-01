@@ -45,9 +45,6 @@ function net.is-host-port-protocol-open() {
   local command="nmap"
   [[ ${protocol} =~ udp ]] && command="sudo nmap -sU"
 
-  command -v nmap>/dev/null || brew.install.package nmap >&2
+  command -v nmap >/dev/null || brew.install.package nmap >&2
   ${command} -Pn -p "${port}" "${host}" 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
 }
-
-
-

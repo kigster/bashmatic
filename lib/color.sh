@@ -145,9 +145,9 @@ function color.current-background() {
 }
 
 function color.enable.octal() {
-  ((BashMatic__OctalColorLoaded)) && return 
+  ((BashMatic__OctalColorLoaded)) && return
 
-  export clr='\033[0m' # Text Reset
+  export clr='\033[0m'       # Text Reset
   export txtblk='\033[0;30m' # Black - Regular
   export txtred='\033[0;31m' # Red
   export txtgrn='\033[0;32m' # Green
@@ -295,7 +295,6 @@ function color.enable() {
 
 [[ ${BashMatic__ColorLoaded} -eq 0 ]] && color.enable
 
-
 function txt-info() { printf "${clr}${txtblu}"; }
 function txt-err() { printf "${clr}${bldylw}${bakred}"; }
 function txt-warn() { printf "${clr}${bldylw}"; }
@@ -385,14 +384,15 @@ function color.disable() {
 
 function color.wheel() {
   local x
-  for x in 0 1 4 5 7 8; do 
+  for x in 0 1 4 5 7 8; do
     local i
-    for i in {30..37}; do 
+    for i in {30..37}; do
       local a
-      for a in {40..47}; do 
-        echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; 
-      done; echo; 
-    done; 
-  done; 
-  echo "";
+      for a in {40..47}; do
+        echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "
+      done
+      echo
+    done
+  done
+  echo ""
 }

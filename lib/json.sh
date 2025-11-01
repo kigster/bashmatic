@@ -54,5 +54,3 @@ json.end-hash() {
   [[ "$1" == "true" ]] && printf ","
   echo
 }
-
-

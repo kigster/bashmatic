@@ -37,39 +37,36 @@ function ssh.keys.generate() {
   local code=0
 
   local email
-  local date="$( time.now.db )"
+  local date="$(time.now.db)"
 
   ssh.key.filenames "$@"
 
-  if is.a-non-empty-file "${__bm__private_key_path}" ; then
+  if is.a-non-empty-file "${__bm__private_key_path}"; then
     warning "Private key already exists at the path:" "${bldred}${__bm__private_key_path}"
 
-    is.blank "${name}" && \
+    is.blank "${name}" &&
       info "NOTE You can pass an optional name argument to this function"
-      info "so that the key file will be unique."
+    info "so that the key file will be unique."
 
-    ( run.ui.ask "Replace the existing key (previous key will be backed up)?" )
-    
+    (run.ui.ask "Replace the existing key (previous key will be backed up)?")
+
     code=$?
 
-    ((code)) && return 1    
+    ((code)) && return 1
   fi
 
-  is.a-function user.gitconfig.email && \
+  is.a-function user.gitconfig.email &&
     email="$(user.gitconfig.email)"
-  
-  is.blank "${email}" && \
+
+  is.blank "${email}" &&
     run.ui.ask-user-value email "Please enter the email address for this key:"
 
-  if [[ -f "${__bm__private_key_path}"  ]]; then
-    for file in "${__bm__private_key_path}" "${__bm__public_key_path}"; do 
+  if [[ -f "${__bm__private_key_path}" ]]; then
+    for file in "${__bm__private_key_path}" "${__bm__public_key_path}"; do
       [[ -f ${file} ]] && run "mv ${file} ${file}.backup.${date}"
-    done 
+    done
   fi
 
   run.set-next show-output-on
   run "ssh-keygen -t rsa -b 4096 -C ${email}"
 }
-
-
-

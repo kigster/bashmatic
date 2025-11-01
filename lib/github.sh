@@ -42,5 +42,3 @@ github.validate() {
 github.clone() {
   test -n "$1" && github.validate && run "git clone git@github.com:$(github.org)/$1"
 }
-
-

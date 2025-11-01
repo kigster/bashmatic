@@ -25,7 +25,7 @@ function dd-start() {
     run "datadog-agent stop; ps -ef | grep [d]atadog | awk '{print \$2}'; sleep 1"
 
     local still_running=$(mktemp)
-    /bin/ps -ef | grep -iq -E [d]atadog > ${still_running} && {
+    /bin/ps -ef | grep -iq -E [d]atadog >${still_running} && {
       warning "Some Datadog Agent processes either stayed running, or auto-restarted."
       cat ${still_running}
     }
@@ -43,4 +43,3 @@ function dd-start() {
   # Return success if datadog is running, some other exit code if grep doesn't find anything
   /bin/ps -ef | grep -iq [d]atadog
 }
-

@@ -44,9 +44,9 @@
   local -a args=
   for arg in $@; do
     if [[ ${arg:0:1} == "-" ]]; then
-      flags=( ${flags[@]} "${arg}" )
+      flags=(${flags[@]} "${arg}")
     else
-      args=( ${args[@]} "${arg}" )
+      args=(${args[@]} "${arg}")
     fi
   done
   printf "${bldgrn}"
@@ -124,33 +124,33 @@ function 7z.archive() {
   for dir in "$@"; do
     dir_size="$(du -s "${dir}" | cut -f1)"
 
-    if [[ ${dir_size} -gt ${largest_size} ]] ; then
+    if [[ ${dir_size} -gt ${largest_size} ]]; then
       largest_size=${dir_size}
       largest_dir="${dir}"
     fi
 
-    size=$(( size + dir_size ));
+    size=$((size + dir_size))
     [[ -d "${dir}" ]] || {
       warning "DIRECTORY: [${dir}] does not exist. Skipping."
       skipped=$((skipped + 1))
       continue
     }
-    good=$(( good + 1 ))
-    directories+=( "${dir}" )
+    good=$((good + 1))
+    directories+=("${dir}")
   done
 
   if [[ ${good} -gt 0 ]]; then
     h2bg "Found ${good} existing directories, and ${skipped} bad ones." \
-      "The largest folder is [${largest_folder}], size is $(( largest_size / 1024 / 1024))Mb"
+      "The largest folder is [${largest_folder}], size is $((largest_size / 1024 / 1024))Mb"
 
     h1 "Archive:" "${bldylw}${archive}" \
-       "Total size of all the folders is $(( size / 1024 / 1024 / 1024 )) Gb."
+      "Total size of all the folders is $((size / 1024 / 1024 / 1024)) Gb."
 
     h2 "Directories:" "${directories[@]}"
 
     if [[ ${skipped} -gt 0 ]]; then
       run.ui.press-any-key "Since some of your arguments are invalid, now is your change to Ctrl-C..." \
-          "\n    ${bldred}Or press any key to continue..."
+        "\n    ${bldred}Or press any key to continue..."
     fi
   fi
 
@@ -158,14 +158,16 @@ function 7z.archive() {
   clear
 
   info "Starting compression..."
-  hr; echo
+  hr
+  echo
   printf "${txtblu}"
   set -x
   7z a -sdel -mmt18 -mx7 -ssc -bb1 "${archive}" "$@"
   local code=$?
   set +x
   printf "${clr}\n"
-  hr; echo
+  hr
+  echo
 
   ((code)) && {
     error "Archiving failed with code=${code}"
@@ -174,4 +176,3 @@ function 7z.archive() {
   }
   return ${code}
 }
-

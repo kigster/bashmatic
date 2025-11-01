@@ -129,5 +129,3 @@ jm.check() {
 
   jm.jemalloc.detect-loud
 }
-
-

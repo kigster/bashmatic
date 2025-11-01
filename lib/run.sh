@@ -8,7 +8,6 @@ run() {
   return "${LibRun__LastExitCode}"
 }
 
-
 # Usage:
 #  run.ui.ask-user-value GITHUB_ORG "Please enter the name of your Github Organization:"
 #  sets the value of $GITHUB_ORG to whatever user entered.
@@ -82,5 +81,3 @@ run.ui.ask() {
     eval "${func} 1"
   fi
 }
-
-

@@ -33,7 +33,7 @@ function flatten-file() {
   [[ -d "${dest}" ]] || errors+=("Directory [${dest}] does not exist.")
 
   [[ ${#errors[@]} -eq 0 ]] || {
-    error "${errors[@]}">&2
+    error "${errors[@]}" >&2
     return 1
   }
 
@@ -41,18 +41,17 @@ function flatten-file() {
   local space=" "
   local enclosing="$(dirname "$(dirname "${path}")")"
   target="$(echo "$(dirname "${path}")"—"$(basename "${path}")" | sed -E "s/[${space}_]/-/g;")"
-  target="${dest} ${bldred}${target/${enclosing/\/}}"
-  
+  target="${dest} ${bldred}${target/${enclosing/\//}/}"
+
   #  s/\//${space}•${space}/g; s/[_\/]/${space}/g;")"
 
-  if ((flag_verbose)) ; then
-    inf "COPY: ${bldgrn}\"${path}\" ➔ [${bldylw}\"${target}${bldgrns}\"]">&2
+  if ((flag_verbose)); then
+    inf "COPY: ${bldgrn}\"${path}\" ➔ [${bldylw}\"${target}${bldgrns}\"]" >&2
   else
-    printf "${txtblu}">&2
+    printf "${txtblu}" >&2
   fi
-  
+
   local command="cp -v \"${path}\" ${bldylw}\"${target}\""
   printf -- "${command}"
   return 0
 }
-

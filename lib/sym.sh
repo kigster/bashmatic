@@ -216,5 +216,3 @@ decrypt.secrets() {
     exit ${code}
   }
 }
-
-

@@ -192,6 +192,7 @@ DEPENDENCIES
   github_changelog_generator
   hexapdf
   matrix
+  openssl (~> 3.3.2)
   prawn
   prawn-table!
   pygments.rb

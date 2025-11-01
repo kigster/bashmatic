@@ -224,5 +224,3 @@ docker.images.inspect() {
   local name=${1:-"<none>"}
   docker.images-named "${name}" "docker.image.inspect"
 }
-
-

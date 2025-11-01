@@ -160,7 +160,7 @@ function video.encode() {
   local output="${1}"
   shift
 
-  [[ -z "${output}" ]] && { 
+  [[ -z "${output}" ]] && {
     output=$(video.filename.encoded "${file}" "${algo}")
     output="${output/\.*/\.mkv}"
   }
@@ -224,7 +224,7 @@ function video.squeeze() {
     printf -- "${bldgrn}USAGE:\n    ${bldylw}[ DEBUG=1 ] video-squeeze *.mp4 *.m4v${clr}\n"
     return 0
   }
- 
+
   for file in "$@"; do
     [[ -s "${file}" ]] || {
       warning "Skipping ${file}..."
@@ -257,7 +257,7 @@ function video.shrink() {
     }
 
     if [[ -f "${dest}" ]]; then
-      warning "Destination file already exists: [${dest}]" 
+      warning "Destination file already exists: [${dest}]"
       continue
     fi
 
@@ -273,7 +273,7 @@ function video.make.mp4() {
 
   [[ -s "${file}" ]] || {
     error "File [$file] does not exist."
-    return 1  
+    return 1
   }
 
   [[ "${file}" == "${target}" ]] && target="COMPRESSED-${target}"
@@ -323,4 +323,3 @@ function video.compress-mp4-file() {
 }
 
 # for file in $(ls -1 *.mov); do video.shrink "${file}"; done
-

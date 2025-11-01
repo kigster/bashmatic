@@ -2,7 +2,7 @@
 # vim: ft=sh
 
 zsh.install.oh-my-zsh() {
-  if [[ -d ${HOME}/.oh-my-zsh/ ]] ; then
+  if [[ -d ${HOME}/.oh-my-zsh/ ]]; then
     info "oh-my-zsh is already installed, updating..."
     run "cd ${HOME}/.oh-my-zsh"
     run "git pull || true"
@@ -11,7 +11,7 @@ zsh.install.oh-my-zsh() {
     run "sh -c \"\$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
   fi
 
-  if [[ -f ${HOME}/.zshrc ]] ; then
+  if [[ -f ${HOME}/.zshrc ]]; then
     run "sed -E -i '' 's/robbyrussell/agnoster/g' ${HOME}/.zshrc"
     run "sed -E -i '' 's/^plugins=.*$/plugins=(git wd golang osx aws brew zsh-completions)/g' ${HOME}/.zshrc"
   fi
@@ -36,7 +36,3 @@ zsh.install.plugins() {
 zsh.install() {
   zsh.install.plugins
 }
-
-
-
-

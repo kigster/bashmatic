@@ -3,13 +3,14 @@
 #
 # @description The width of this box is hardcoded to 90 charcters on the outside.
 
-export           box_top="┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-export       box_divider="┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
-export        box_bottom="┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+export box_top="┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+export box_divider="┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+export box_bottom="┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 export box_bottom_shadow="████████████████████████████████████████████████████████████████████████████████████████"
 
 function title-panel() {
-  local line="$1"; shift
+  local line="$1"
+  shift
   local shadow="${title_shadow_color}██${clr}"
 
   printf "${clr}\n
@@ -21,14 +22,16 @@ function title-panel() {
       .title.line "${shadow}" "${title_text_color}" "${line}"
     done
   fi
-    
+
   printf " ${title_border_color} ${box_bottom} ${shadow}\n"
   printf " ${title_shadow_color}   ${box_bottom_shadow}${clr}\n\n"
 }
 
 function .title.line() {
-  local shadow="$1"; shift
-  local text_color="$1"; shift
+  local shadow="$1"
+  shift
+  local text_color="$1"
+  shift
   printf " ${clr}${title_border_color} ┃  ${clr}${text_color}%-80.80s${clr}${title_border_color}   ┃ ${shadow}\n" "$*"
 }
 
@@ -40,11 +43,9 @@ function panel-error() {
   title-panel "$@"
 }
 
-
 function box-error() {
   panel-error "$@"
 }
-
 
 function panel-error-yellow() {
   export title_title_color="${bldwht}${bakred}"
@@ -81,7 +82,6 @@ function panel-green() {
 function box-success() {
   panel-green "$@"
 }
-
 
 function panel-info-blue-black() {
   export title_title_color="${txtblk}${bg_sky_blue}"
@@ -153,7 +153,7 @@ function title-box() {
   for line in "$@"; do
     len=$(ruby -e "puts '${line}'.size")
     len_actual=$(echo "${line}" | wc -c | tr -d ' ')
-    diff=$(( width - len ))
+    diff=$((width - len))
     # echo "len=${len}, len_actual=${len_actual}, diff=${diff}"
     printf " ${bold}${title_border_color} │  ${title_text_color}%${len_actual}.${len_actual}s${title_border_color}%${diff}.${diff}s${clr}${title_border_color}│ ${clr}${title_shadow_color}██${clr}\n" "${line}" " "
   done
@@ -216,4 +216,3 @@ function divider.yellow() {
   divider__ "${txtylw}${bakylw}"
   printf "${clr}${txtylw}${clr}\n"
 }
-

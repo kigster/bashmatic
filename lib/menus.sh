@@ -31,9 +31,9 @@ function menu.select() {
   index=0
   count=${#options[@]}
 
-  local max_height=$(( $(screen.height) - 5 ))
+  local max_height=$(($(screen.height) - 5))
   local from=0
-  local visible_size=$(( max_height > count ? count : max_height ))
+  local visible_size=$((max_height > count ? count : max_height))
   local to=$((visible_size))
   local action
   local delta
@@ -80,12 +80,12 @@ function menu.select() {
       if ((cur >= count)); then
         ((cur = count - 1))
       else
-        if ((cur >= to )) ; then
+        if ((cur >= to)); then
           ((to = cur + 1))
           ((from = to - visible_size))
         fi
       fi
-    elif [[ ${key} == "${esc}[C" && ${count} -gt ${visible_size}  ]]; then # page up
+    elif [[ ${key} == "${esc}[C" && ${count} -gt ${visible_size} ]]; then # page up
       ((cur -= visible_size))
       ((to -= visible_size))
       ((from -= visible_size))
@@ -103,7 +103,7 @@ function menu.select() {
       ((from += visible_size))
 
       ((cur >= count)) && {
-        delta=$(( cur - count + 1))
+        delta=$((cur - count + 1))
         ((cur -= delta))
         ((from -= delta))
         ((to -= delta))
@@ -118,6 +118,3 @@ function menu.select() {
   # export the selection to the requested output variable
   printf -v $outvar "${options[${cur}]}"
 }
-
-
-

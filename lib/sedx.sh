@@ -11,9 +11,12 @@ util.ensure-gnu-sed() {
     if [[ -z "${gsed_path}" ]]; then
       echo
       h3 "Please wait while we install gnu-sed using Brew..." \
-         "It's a required dependency for many key features." 1>&2
+        "It's a required dependency for many key features." 1>&2
 
-      ( brew install gnu-sed --force --quiet && brew unlink gnu-sed ; brew link gnu-sed --overwrite) 1>&2 >/dev/null
+      (
+        brew install gnu-sed --force --quiet && brew unlink gnu-sed
+        brew link gnu-sed --overwrite
+      ) 1>&2 >/dev/null
 
       hash -r 2>/dev/null
       gsed_path="$(command -v gsed 2>/dev/null)"
@@ -55,6 +58,3 @@ function sedx() {
   }
   ${bashmatic__sed_command} -E "$@"
 }
-
-
-

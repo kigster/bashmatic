@@ -88,5 +88,3 @@ repos.init-interrupt() {
 repos.was-interrupted() {
   [[ ${LibRepo__Interrupted} == true ]]
 }
-
-

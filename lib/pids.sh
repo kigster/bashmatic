@@ -265,7 +265,7 @@ EXAMPLES:
 }
 
 # @description Finds any PID listening on one of the provided ports and stop thems.
-# @example 
+# @example
 #     pids.stop-by-listen-tcp-ports 4232 9578 "${PORT}"
 #
 pids.stop-by-listen-tcp-ports() {
@@ -276,7 +276,7 @@ pids.stop-by-listen-tcp-ports() {
 }
 
 # @description Finds any PID listening the one port and an optional protocol (tcp/udp)
-# @example 
+# @example
 #     pid.stop-if-listening-on-port 3000 tcp
 #     pid.stop-if-listening-on-port 8126 udp
 #
@@ -286,8 +286,8 @@ pid.stop-if-listening-on-port() {
 
   local -a pids
   pids=($(lsof -i "${protocol}":"${port}" | grep -v PID | awk '{print $2}'))
-  local pids_string="${pids[*]}" 
-  if [[ ${#pids[@]} -eq 0 ]] ; then
+  local pids_string="${pids[*]}"
+  if [[ ${#pids[@]} -eq 0 ]]; then
     return 0
   else
     info "Found ${#pids[@]} processes attached to port ${port}/${protocol}."
@@ -342,16 +342,13 @@ function top-most-program() {
   while true; do
     ## :TBD: Should `output` be local instead of global?
     declare -a output=($(ps -o ppid,pid,args -p $pid | grep -v PPID))
-    if [[ ${output[0]} -eq 1 ]] ; then
+    if [[ ${output[0]} -eq 1 ]]; then
       echo ${output[2]}
       break
-    elif [[ ${output[0]} -gt 0 ]] ; then
+    elif [[ ${output[0]} -gt 0 ]]; then
       pid=${output[0]}
-    elif [[ -z ${output} ]] ; then
+    elif [[ -z ${output} ]]; then
       return 1
     fi
   done
 }
-
-
-

@@ -127,25 +127,25 @@ function validations.end() {
 # Part 2. "is" validations — no output, just return code
 #------------------------------------------------------------------
 
-# @description is.not-blank <arg> 
+# @description is.not-blank <arg>
 # @return true if the first argument is not blank
 function is.not-blank() {
   [[ -n "${1}" ]]
 }
 
-# @description is.blank <arg> 
+# @description is.blank <arg>
 # @return true if the first argument is blank
 function is.blank() {
   [[ -z "${1}" ]]
 }
 
-# @description is.empty <arg> 
+# @description is.empty <arg>
 # @return true if the first argument is blank or empty
 function is.empty() {
   is.blank "$@"
 }
 
-# @description is.not-a-blank-var <var-name> 
+# @description is.not-a-blank-var <var-name>
 # @return true if varaible passed by name is not blank
 function is.not-a-blank-var() {
   local var="$1"
@@ -169,7 +169,6 @@ function is.an-empty-file() {
 function is.a-directory() {
   [[ -d "${1}" ]]
 }
-
 
 # @description is.an-existing-file <file>
 # @return true if the file exits
@@ -204,7 +203,7 @@ function is.a-variable() {
     ;;
   zsh)
     eval "[[ -v ${var_name} ]]" && return 0
-    ;; 
+    ;;
   *)
     return 1
     ;;
@@ -230,7 +229,6 @@ function is.sourced-in() {
   [[ ${BASH_IN_SUBSHELL} -eq 0 ]]
 }
 
-
 # @description returns success if the current script is executing in a subshell
 function is.a-script() {
   bashmatic.detect-subshell
@@ -249,7 +247,7 @@ function is.an-integer() {
 }
 
 # @description returns success if the argument is numeric, eg. float
-function is.numeric() { 
+function is.numeric() {
   [[ $1 =~ ^[+-]?([0-9]+([.][0-9]*)?|\.[0-9]+)$ ]]
 }
 
@@ -275,12 +273,12 @@ function is.alias() {
 
 # @description returns success if the argument is a numerical zero
 function is.zero() {
-  [[ $1 -eq 0 ]] 
+  [[ $1 -eq 0 ]]
 }
 
 # @description returns success if the argument is not a zero
 function is.non.zero() {
-  [[ $1 -ne 0 ]] 
+  [[ $1 -ne 0 ]]
 }
 
 #------------------------------------------------------------------
@@ -305,5 +303,3 @@ function whenever() {
 function unless() {
   ! __is.validation.error "${2}" "${1}" __is.validation.ignore-error "${@:3}"
 }
-
-

@@ -72,6 +72,7 @@
 * xref:#module-shasum[shasum]
 * xref:#module-shdoc[shdoc]
 * xref:#module-shell-set[shell-set]
+* xref:#module-simple-prints[simple-prints]
 * xref:#module-ssh[ssh]
 * xref:#module-subshell[subshell]
 * xref:#module-sym[sym]
@@ -103,6 +104,70 @@
 7z.a () 
 { 
     7z.zip "$@"
+}
+
+----
+
+==== `7z.archive`
+
+[source,bash]
+----
+7z.archive () 
+{ 
+    local first="$1"
+    local archive
+    archive="$(echo "${first}" | sed 's/\/$//g; s/\//-/g; s/ /./g' | tr '[:upper:]' '[:lower:]')".7z
+    [[ ${archive} =~ .7z$ ]] || archive="${archive}.7z"
+    local -a directories
+    local skipped=0
+    local good=0
+    local size=0
+    local largest_size=0
+    local largest_folder
+    local dir_size
+    for dir in "$@"
+    do
+        dir_size="$(du -s "${dir}" | cut -f1)"
+        if [[ ${dir_size} -gt ${largest_size} ]]; then
+            largest_size=${dir_size}
+            largest_dir="${dir}"
+        fi
+        size=$(( size + dir_size ))
+        [[ -d "${dir}" ]] || { 
+            warning "DIRECTORY: [${dir}] does not exist. Skipping."
+            skipped=$((skipped + 1))
+            continue
+        }
+        good=$(( good + 1 ))
+        directories+=("${dir}")
+    done
+    if [[ ${good} -gt 0 ]]; then
+        h2bg "Found ${good} existing directories, and ${skipped} bad ones." "The largest folder is [${largest_folder}], size is $(( largest_size / 1024 / 1024))Mb"
+        h1 "Archive:" "${bldylw}${archive}" "Total size of all the folders is $(( size / 1024 / 1024 / 1024 )) Gb."
+        h2 "Directories:" "${directories[@]}"
+        if [[ ${skipped} -gt 0 ]]; then
+            run.ui.press-any-key "Since some of your arguments are invalid, now is your change to Ctrl-C..." "\n    ${bldred}Or press any key to continue..."
+        fi
+    fi
+    command -v 7z > /dev/null || brew install -q p7zip
+    clear
+    info "Starting compression..."
+    hr
+    echo
+    printf "${txtblu}"
+    set -x
+    7z a -sdel -mmt18 -mx7 -ssc -bb1 "${archive}" "$@"
+    local code=$?
+    set +x
+    printf "${clr}\n"
+    hr
+    echo
+    ((code)) && { 
+        error "Archiving failed with code=${code}"
+    } || { 
+        success "Archiving succeeded with exit code ${code}, and file size $(file.size.gb "${archive}")"
+    }
+    return ${code}
 }
 
 ----
@@ -1571,6 +1636,61 @@ bashmatic.version ()
 brew.binary () 
 { 
     brew.is-installed && command -v brew
+}
+
+----
+
+==== `brew.bundle.document`
+
+[source,bash]
+----
+brew.bundle.document () 
+{ 
+    local bundle_file="${1-"Brewfile"}"
+    [[ -n $1 ]] && shift
+    local -a packages
+    packages=()
+    local -a casks=()
+    casks=()
+    mapfile -d ' ' -t packages < <(grep brew Brewfile | grep '^brew' | awk '{print $2}' | tr -d "'" | tr '\n' ' ')
+    mapfile -d ' ' -t casks < <(grep cask Brewfile | grep '^cask' | awk '{print $2}' | tr -d "'" | tr '\n' ' ')
+    temp_brewfile="$(mktemp -t brewfile)"
+    grep -v -E '^(brew|cask)' ${bundle_file} | sed '/^$/d' > "${temp_brewfile}"
+    h1 "Processing Brewfile: ${bundle_file} with: " "$(grep '^brew' ${bundle_file} | wc -l | tr -d ' ') packages and $(grep '^cask' ${bundle_file} | wc -l | tr -d ' ') casks."
+    IFS='
+'
+    local -a descriptions
+    descriptions=("$(brew desc "${packages[@]}" | awk '{$1=""; print $0}')")
+    local i=0
+    for package in "${packages[@]}"
+    do
+        printf '%-40s %s\n' "brew '${package}'" "# ${descriptions[i]}" >> "${temp_brewfile}"
+        i=$((i + 1))
+    done
+    printf "\n\n" > "${temp_brewfile}"
+    descriptions=("$(brew desc "${packages[@]}" | awk '{$1=""; print $0}')")
+    local i=0
+    for cask in "${casks[@]}"
+    do
+        local description="$(brew desc "${cask}" | awk '{$1=""; print $0}')"
+        printf '%-40s %s\n' "cask '${package}'" "# ${description}" >> "${temp_brewfile}"
+    done
+    printf "\n\n" > "${temp_brewfile}"
+    run "mv \"\${temp_brewfile}\" \"${bundle_file}\""
+}
+
+----
+
+==== `brew.bundle.install`
+
+[source,bash]
+----
+brew.bundle.install () 
+{ 
+    local bundle_file="${1-"Brewfile"}"
+    [[ -n $1 ]] && shift
+    brew bundle check --file="${bundle_file}" || brew bundle install --file="${bundle_file}" --no-upgrade "$@"
+    return $?
 }
 
 ----
@@ -5511,7 +5631,8 @@ git.generate-changelog ()
         return 1
     }
     run "rm -f CHANGELOG.md"
-    run "bundle exec github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${token} --no-verbose"
+    run "bundle install ${BASHMATIC_BUNDLER_ARGS}"
+    run "bundle exec ${BASHMATIC_BUNDLER_ARGS} -- github_changelog_generator --project ${repo/\.git/} --user ${user} -t ${token} --no-verbose"
     [[ -s "CHANGELOG.md" ]] || { 
         error "CHANGELOG.md has not been generated."
         return 1
@@ -9902,6 +10023,17 @@ error: ()
 
 ----
 
+==== `failure`
+
+[source,bash]
+----
+failure () 
+{ 
+    error "@$"
+}
+
+----
+
 ==== `fatal`
 
 [source,bash]
@@ -10095,7 +10227,7 @@ teletype ()
                 sleep "${delay}"
             }
         done
-        ((index+=1))
+        ((index += 1))
     done
     echo
 }
@@ -10108,7 +10240,8 @@ teletype ()
 ----
 warn () 
 { 
-    printf -- "${LibOutput__LeftPrefix}${bldwht}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" 1>&2
+    printf -- "${LibOutput__LeftPrefix}${txtblk}${bakylw} « WARNING! » ${clr} ${bldylw}$*${clr}" 1>&2
+    echo
 }
 
 ----
@@ -11352,6 +11485,22 @@ ruby.ensure-rbenv-or-complain ()
 
 ----
 
+==== `ruby.fix-git-smart`
+
+[source,bash]
+----
+ruby.fix-git-smart () 
+{ 
+    local dir=$(dirname $(gem which git-smart))
+    [[ -z ${dir} ]] && return 1
+    warning "Found folder for gem [git-smart], patching to fix File.exists?() issue..."
+    cd "${dir}/git-smart"
+    run "grep -q File.exists *.rb && sed -i ' ' 's/File.exists/File.exist/g' *.rb"
+    cd - > /dev/null
+}
+
+----
+
 ==== `ruby.full-version`
 
 [source,bash]
@@ -11386,6 +11535,7 @@ ruby.gemfile-lock-version ()
 ruby.gems () 
 { 
     ruby.gems.install "$@"
+    ruby.fix-git-smart
 }
 
 ----
@@ -12982,6 +13132,74 @@ shell-set.push-stack ()
 shell-set.show-stack () 
 { 
     info "Current Shell Set Stack: ${bldylw}[${SetOptsStack[*]}]"
+}
+
+----
+
+
+=== Module `simple-prints`
+
+==== `print`
+
+[source,bash]
+----
+print () 
+{ 
+    local message="$1" && shift
+    local level="$1" && shift
+    local color="$1" && shift
+    level=${level:-"info"}
+    level="$(printf "%-10s" "${level}")"
+    color=${color:-"32"}
+    local message_color
+    message_color=${color}
+    color=$((color + 10))
+    time="$(date "+%H:%M:%S%p")"
+    printf "\e[1;${color}m%s | \e[1;${color}m%s \e[0m — \e[1;${message_color}m%s\e[0m\n" "${time}" "${level}" "${message}"
+}
+
+----
+
+==== `print.failure`
+
+[source,bash]
+----
+print.failure () 
+{ 
+    print "$1" "failure" "31" "$@"
+}
+
+----
+
+==== `print.info`
+
+[source,bash]
+----
+print.info () 
+{ 
+    print "$1" "info" "34" "$@"
+}
+
+----
+
+==== `print.success`
+
+[source,bash]
+----
+print.success () 
+{ 
+    print "$1" "success" "32" "$@"
+}
+
+----
+
+==== `print.warning`
+
+[source,bash]
+----
+print.warning () 
+{ 
+    print "$1" "warning" "33" "$@"
 }
 
 ----
@@ -14925,6 +15143,17 @@ util.random-number ()
 { 
     local limit="${1:-"1000000"}"
     printf $(((RANDOM % limit)))
+}
+
+----
+
+==== `util.random-string`
+
+[source,bash]
+----
+util.random-string () 
+{ 
+    util.random-string.of-length 16
 }
 
 ----

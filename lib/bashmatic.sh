@@ -21,8 +21,8 @@ export BASHMATIC_OS="${BASHMATIC_OS_NAME}"
 [[ -n $(type file.last-modified-millis 2>/dev/null) ]] || source "${BASHMATIC_LIB}/file.sh"
 
 function bashmatic.cd-into() {
- [[ -d ${BASHMATIC_HOME} ]] || return 1
- cd "${BASHMATIC_HOME}" || exit 1
+  [[ -d ${BASHMATIC_HOME} ]] || return 1
+  cd "${BASHMATIC_HOME}" || exit 1
 }
 
 function bashmatic.current-os() {
@@ -106,7 +106,7 @@ function bashmatic.functions-from() {
     sedx 's/\(\) *\{.*$//g' |
     /usr/bin/tr -d '()' |
     sedx '/^ *$/d' |
-    eval  "${GrepCommand} '^(_|\.)' -v" |
+    eval "${GrepCommand} '^(_|\.)' -v" |
     sort |
     uniq |
     columnize "$@"
@@ -144,7 +144,7 @@ function bashmatic.bash.exit-unless-version-four-or-later() {
 }
 
 function __rnd() {
-  echo -n $(( (1009 * RANDOM) % 44311 + (917 * RANDOM) % 34411 ))
+  echo -n $(((1009 * RANDOM) % 44311 + (917 * RANDOM) % 34411))
 }
 
 bashmatic.bash.version-four-or-later && {
@@ -199,9 +199,9 @@ function bashmatic.source() {
         cursor.rewind -120
         local code=$?
         local t2=$(millis)
-        local duration=$(( t2 - t1 ))
-        total=$(( total + duration ))
-        files=$(( files + 1 ))
+        local duration=$((t2 - t1))
+        total=$((total + duration))
+        files=$((files + 1))
       }
 
       bashmatic.bash.version-four-or-later && {
@@ -223,7 +223,7 @@ function bashmatic.source() {
 
   bashmatic.bash.version-four-or-later && {
     # save the current timestamp into the cache marker
-    [[ ${#load_cache[@]} -gt 0 ]] && millis > "${__bashmatic_library_last_sourced}"
+    [[ ${#load_cache[@]} -gt 0 ]] && millis >"${__bashmatic_library_last_sourced}"
   }
 
   is-debug && printf "${files} sourced in, taking ${total}ms total.\n"
@@ -357,13 +357,13 @@ function bashmatic.auto-update-error() {
   else
     output.constrain-screen-width 60
     box.black-on-yellow \
-        "${bldwht}Warning! BASHMATIC_HOME contains local modifications." \
-        "Automatic update is disabled until git state is clean again." |
-        tee -a "${__bashmatic_auto_update_help_file}" >&2
+      "${bldwht}Warning! BASHMATIC_HOME contains local modifications." \
+      "Automatic update is disabled until git state is clean again." |
+      tee -a "${__bashmatic_auto_update_help_file}" >&2
   fi
 }
 
-# @description This function returns 1 if bashmatic is installed in the 
+# @description This function returns 1 if bashmatic is installed in the
 #              location pointed to by ${BASHMATIC_HOME} or the first argument.
 # @arg $1      The location to check for bashmatic instead of ${BASHMATIC_HOME}
 function bashmatic.is-installed() {
@@ -388,7 +388,3 @@ function bashmatic.is-installed() {
   local code=$?
   return ${code}
 }
-
-
-
-

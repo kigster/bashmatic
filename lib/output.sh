@@ -214,7 +214,7 @@ function .output.current-screen-width() {
 }
 
 function .output.screen-width() {
-  if output.is-terminal ; then
+  if output.is-terminal; then
     printf -- "%d" $(output.screen-width.actual)
     return 0
   fi

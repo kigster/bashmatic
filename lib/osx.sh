@@ -314,7 +314,7 @@ https.servers() { osx.local-servers https; }
 
 # @description This function checks the architecture of the CPU, but
 #       also is able to detect when M1 system is running under Rosetta.
-# @return an array of two items:  [ intel | m1 ] [ native | rosetta 
+# @return an array of two items:  [ intel | m1 ] [ native | rosetta
 # @example
 #     local -a ostype=( $(osx.detect-cpu) )
 #     local cpu=${ostype[0]}
@@ -331,8 +331,6 @@ function osx.detect-cpu() {
   elif [ "${arch_name}" = "arm64" ]; then
     echo m1 native
   else
-    echo unknown unknown 
+    echo unknown unknown
   fi
 }
-
-

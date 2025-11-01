@@ -18,5 +18,3 @@ function asciidoc.rouge-themes() {
   info "${bldlyw}:source-highlighter: ${bldgrn}rouge"
   info "${bldlyw}:rouge-style: ${bldgrn}monokai"
 }
-
-

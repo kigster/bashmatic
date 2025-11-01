@@ -4,7 +4,7 @@
 # @description Options minicom (or installs it), and conects to the last modified device under /dev
 # @args Any arguments you would pass to minicom, eg,
 # @example Spool the session to a log file:
-#   serial.console 
+#   serial.console
 #
 
 BashmaticSerial__DefaultBaud=9600
@@ -30,24 +30,22 @@ function serial.console {
   command -v mimicom >/dev/null || {
     command -v brew >/dev/null && {
       info "Installing missing software: ${bldylw}minicom$(txt-info)..." >&2
-      brew install minicom 
+      brew install minicom
     }
   }
 
   [[ -z "${BashmaticSerial__DefaultDevice}" ]] && serial.device
-  [[ -z "${BashmaticSerial__DefaultBaud}"   ]] && serial.baud
+  [[ -z "${BashmaticSerial__DefaultBaud}" ]] && serial.baud
 
   local baud=${BashmaticSerial__DefaultBaud}
   local modem=${BashmaticSerial__DefaultDevice}
 
   if [ ! -z "$modem" ]; then
-    hr 
+    hr
     h3 "minicom -D $modem  -b $baud $*"
     sleep 1
-    minicom -D "$modem"  -b "$baud" "$@"
+    minicom -D "$modem" -b "$baud" "$@"
   else
     echo "No USB modem device found in /dev"
   fi
 }
-
-

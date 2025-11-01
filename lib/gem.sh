@@ -55,7 +55,7 @@ gem.global.versions() {
   local gem=$1
   [[ -z ${gem} ]] && return
   gem.cache-installed
-  grep -E -e "^${gem} " < "${LibGem__GemListCache}" | sedx "s/^${gem} //g;s/[(),]//g"
+  grep -E -e "^${gem} " <"${LibGem__GemListCache}" | sedx "s/^${gem} //g;s/[(),]//g"
 }
 
 gem.remote.version() {
@@ -92,18 +92,18 @@ gem.gemfile.version() {
     return 1
   }
 
-  grep -E -e " ${gem} \([0-9]" "${gemfile}" | \
-      awk '{print $2}' | \
-      sed 's/[()]//g'
+  grep -E -e " ${gem} \([0-9]" "${gemfile}" |
+    awk '{print $2}' |
+    sed 's/[()]//g'
 }
 
 # this ensures the cache is only at most 30 minutes old
 gem.cache-installed() {
   gem.configure-cache
-  if [[ ! -f "${LibGem__GemListCache}" || ! -s "${LibGem__GemListCache}" || \
+  if [[ ! -f "${LibGem__GemListCache}" || ! -s "${LibGem__GemListCache}" ||
     -z "$(find "${LibGem__GemListCache}" -mmin -30 2>/dev/null)" ]]; then
     mkdir -p $(dirname ${LibGem__GemListCache})
-    gem list > "${LibGem__GemListCache}" 2>/dev/null
+    gem list >"${LibGem__GemListCache}" 2>/dev/null
   fi
 
   [[ -s "${LibGem__GemListCache}" ]]
@@ -233,7 +233,7 @@ gem.changelog-generate() {
 
   gem.install github_changelog_generator
 
-  [[ -z  ${GITHUB_TOKEN} ]] && {
+  [[ -z ${GITHUB_TOKEN} ]] && {
     error "Please set GITHUB_TOKEN to avoid hitting 50 reqs/minute API limit."
     exit 1
   }
@@ -251,5 +251,3 @@ g-i() {
 g-u() {
   gem.uninstall "$@"
 }
-
-

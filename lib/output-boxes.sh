@@ -7,11 +7,19 @@
 #————————————————————
 
 status.ok() {
-   cursor.right 5; section.purple "       $*" ; cursor.up 2;  ok:; cursor.down 2;
+  cursor.right 5
+  section.purple "       $*"
+  cursor.up 2
+  ok:
+  cursor.down 2
 }
 
 status.failed() {
-   cursor.right 5; section.red   "       $*" ; cursor.up 2;  not-ok:; cursor.down 2;
+  cursor.right 5
+  section.red "       $*"
+  cursor.up 2
+  not-ok:
+  cursor.down 2
 }
 
 section.green() {
@@ -64,7 +72,7 @@ attention() {
 
 # ———————————————————
 # Left Aligned Arrows
-#                    
+#
 
 arrow-right() {
   .output.left-as-is "$@"
@@ -85,7 +93,6 @@ arrow.wht-on-blu() { arrow-right "${bakblu}" "${txtwht}" "$@"; }
 arrow.wht-on-cyn() { arrow-right "${bakcyn}" "${txtwht}" "$@"; }
 arrow.wht-on-pur() { arrow-right "${bakpur}" "${txtwht}" "$@"; }
 arrow.wht-on-red() { arrow-right "${bakred}" "${txtwht}" "$@"; }
-
 
 #————————————————————
 # Boxes
@@ -204,13 +211,13 @@ h.e() {
 }
 
 #————————————————————
-# Centered           
+# Centered
 #————————————————————
 h.orange-center() {
   center "${white_on_orange}" "$@"
 }
 
-h.salmon-center() { 
+h.salmon-center() {
   center "${white_on_salmon}" "$@"
 }
 
@@ -223,7 +230,7 @@ h.salmon-center-black() {
 }
 
 # ———————————————————
-# LEFT aligned       
+# LEFT aligned
 # ———————————————————
 h.orange() {
   left "${white_on_orange}" "$@"
@@ -337,7 +344,7 @@ h8() {
   section.cyan "$@"
 }
 
-# 
+#
 # Boxes with filled backgrounds of various colors
 
 h1bg() {
@@ -361,12 +368,10 @@ h5bg() {
 }
 
 # Aliases to the above
-h1.blue()   { h1bg "${@}"; }
-h2.green()  { h2bg "${@}"; }
+h1.blue() { h1bg "${@}"; }
+h2.green() { h2bg "${@}"; }
 h3.yellow() { h3bg "${@}"; }
-h4.red()    { h4bg "${@}"; }
+h4.red() { h4bg "${@}"; }
 hdr() {
   h1 "$@"
 }
-
-
