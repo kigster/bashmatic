@@ -191,7 +191,7 @@ For instance, here we are installing Bashmatic into a non-default destination, w
 [source,bash]
 ----
 bash -c "$(curl -fsSL https://bashmatic.re1.re); \
-    bashmatic-install -d -v -f -b v2.4.1 -H ~/workspace/bashmatic"
+    bashmatic-install -d -v -f -b v3.5.1 -H ~/workspace/bashmatic"
 ----
 
 ====
