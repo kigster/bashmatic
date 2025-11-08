@@ -32,7 +32,7 @@ function system.uname() {
   local -a uname_options=( "/bin/uname" "/usr/bin/uname" "/sbin/uname" "/usr/sbin/uname" )
   local binary
 
-  for binary in ${uname_options[@]} ; do
+  for binary in "${uname_options[@]}" ; do
     [[ -x ${binary} ]] && {
       export __bashmatic_uname_binary="$(printf -- "%s" "${binary}")"
       printf "%s" "${__bashmatic_uname_binary}"
@@ -358,6 +358,7 @@ function .subst() {
       printf "${!var}"
       ;;
     zsh)
+      # shellcheck disable=SC2296
       printf "${(P)var}"
       ;;
     *)

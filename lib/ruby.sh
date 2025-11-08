@@ -150,7 +150,7 @@ ruby.gems.install() {
 
   [[ ${#gems[@]} -eq 0 ]] && {
     error 'Unable to determine what gems to install. ' \
-      "Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" \
+      "Argument is empty, so is ${DEFAULT_RUBY_GEMS[*]}" \
       "USAGE: ${bldgrn}ruby.gems ${bldred} rails rubocop puma pry"
     return 1
   }
@@ -222,7 +222,7 @@ ruby.gems.uninstall() {
   [[ ${#gems[@]} -eq 0 ]] && declare -a gems=($(ruby.default-gems))
   local -a existing=($(ruby.installed-gems))
   [[ ${#gems[@]} -eq 0 ]] && {
-    error "Unable to determine what gems to remove. Argument is empty, so is ${DEFAULT_RUBY_GEMS[@]}" \
+    error "Unable to determine what gems to remove. Argument is empty, so is ${DEFAULT_RUBY_GEMS[*]}" \
       "USAGE: ${bldgrn}ruby.gems.uninstall ${bldred} rails rubocop puma pry"
     return 1
   }

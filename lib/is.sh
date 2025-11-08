@@ -181,7 +181,7 @@ function is.an-existing-file() {
 function is.a-function.invoke() {
   local func="$1"
   shift
-  is.a-function "${func}" && eval "${func} \"$@\""
+  is.a-function "${func}" && "${func}" "$@"
 }
 
 # @description verifies that the argument is a valid shell function

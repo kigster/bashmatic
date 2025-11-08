@@ -4,7 +4,7 @@ export LibRun__AskDeclineFunction="exit"
 export LibRun__AskDeclineFunction__Default="exit"
 
 run() {
-  .run $@
+  .run "$@"
   return "${LibRun__LastExitCode}"
 }
 

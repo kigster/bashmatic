@@ -1,10 +1,6 @@
 #! /usr/bin/env bash
 # vim: ft=bash
 
-# © 2025 Fractional.ai
-
-export project_root="$(dirname "$(dirname "$(realpath "$0")")")"
-
 function print() {
   local message="$1" && shift
   local level="$1" && shift

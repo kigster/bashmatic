@@ -40,13 +40,13 @@
     run "rm -f ${archive}"
   }
 
-  local -a flags=
-  local -a args=
-  for arg in $@; do
+  local -a flags=()
+  local -a args=()
+  for arg in "$@"; do
     if [[ ${arg:0:1} == "-" ]]; then
-      flags=(${flags[@]} "${arg}")
+      flags=("${flags[@]}" "${arg}")
     else
-      args=(${args[@]} "${arg}")
+      args=("${args[@]}" "${arg}")
     fi
   done
   printf "${bldgrn}"

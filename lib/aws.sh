@@ -6,8 +6,8 @@
 #   aws.rds.hostname
 aws.rds.hostname() {
   local name=${1}
-  [[ -z $(which jq) ]] && out=$(brew.install.package jq 2>/dev/null 1>/dev/null)
-  [[ -z $(which aws) ]] && out=$(brew.install.package awscli 2>/dev/null 1>/dev/null)
+  [[ -z $(which jq) ]] && brew.install.package jq >/dev/null 2>&1
+  [[ -z $(which aws) ]] && brew.install.package awscli >/dev/null 2>&1
 
   [[ -n ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g' | ${GrepCommand} "^${name}\."
   [[ -z ${name} ]] && aws rds describe-db-instances | jq '.[][].Endpoint.Address' | sedx 's/"//g'

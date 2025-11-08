@@ -41,7 +41,7 @@ export LibProgress__BarChar="${LibProgress__BarChar__Default}"
 
   local delay_seconds=$(ruby -e "printf('%.6f', ${full_cycle_seconds}.to_f / ${width}.to_f)")
 
-  trap ".progress.abort" INT STOP
+  trap ".progress.abort" INT
 
   [[ -z "${LibProgress__BarColor}" ]] && LibProgress__BarColor=${LibProgress__BarColor__Default}
   [[ -z "${LibProgress__BarChar}" ]] && LibProgress__BarChar=${LibProgress__BarChar__Default}

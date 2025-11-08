@@ -204,7 +204,7 @@ ____run.configure() {
     return
   }
 
-  for feature in $@; do
+  for feature in "$@"; do
     local func="____run.set.${type}.${feature}"
     if [[ -z $(type "${func}" 2>/dev/null) ]]; then
       error "LibRun feature was not recognized:" "${feature}"

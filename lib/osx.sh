@@ -92,7 +92,7 @@ change-underscan() {
     printf "%s\n\n" "USAGE: change-underscan percent"
     printf "%s\n" "   eg: change-underscan   5  # underscan by 5%"
     printf "%s\n" "   eg: change-underscan -10  # overscan by 10%"
-    return -1
+    return 1
   fi
 
   local file="/var/db/.com.apple.iokit.graphics"
@@ -140,7 +140,7 @@ change-underscan() {
     }
   else
     error "It does not appear that anything changed, sorry."
-    return -1
+    return 1
   fi
 
   h2 "Now, please unplug the problem monitor temporarily..."

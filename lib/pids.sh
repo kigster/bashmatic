@@ -192,8 +192,8 @@ pids-with-args() {
 
   local -a additional=()
   local -a matching=()
-  for arg in $@; do
-    array.includes "${arg}" "${permitted[@]}" && additional=(${additional[@]} $arg) && continue
+  for arg in "$@"; do
+    array.includes "${arg}" "${permitted[@]}" && additional=("${additional[@]}" "$arg") && continue
     matching=("${matching[@]}" "${arg}")
   done
 
@@ -317,7 +317,7 @@ EXAMPLES:
   fi
 
   local pid
-  for pid in $@; do
+  for pid in "$@"; do
     if is.numeric "${pid}"; then
       pid.stop "${pid}"
     else

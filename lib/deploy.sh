@@ -76,7 +76,7 @@ deploy.slack() {
 }
 
 deploy.slack-ding() {
-  deploy.slack "<!here> $@"
+  deploy.slack "<!here> $*"
 }
 
 ################################################################################

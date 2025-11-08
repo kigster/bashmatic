@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # @description fr
 function package.ensure.is-installed() {
   for pkg in "$@"; do
