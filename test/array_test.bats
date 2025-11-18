@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load test_helper
-set -e 
+set -e
 source lib/array.sh
 source lib/is.sh
 source lib/util.sh
@@ -9,14 +9,33 @@ source lib/user.sh
 
 set +e
 
+@test "array.reverse" {
+  set -e
+  declare -a my_array
+  my_array=(zero one two three four five six seven eight nine ten)
+  declare -a reversed_array
+  array_reverse=( $(array.reverse "${my_array[@]}") )
+
+  [[ ${#my_array[@]} -eq 11 ]] &&
+  [[ ${my_array[0]} == "zero" ]] &&
+  [[ ${my_array[1]} == "one" ]] &&
+  [[ ${my_array[-2]} == "nine" ]] &&
+  [[ ${my_array[-1]} == "ten" ]] &&
+  [[ ${#array_reverse[@]} -eq 11 ]] &&
+  [[ ${array_reverse[0]} == "ten" ]] &&
+  [[ ${array_reverse[1]} == "nine" ]] &&
+  [[ ${array_reverse[9]} == "one" ]] &&
+  [[ ${array_reverse[10]} == "zero" ]]
+}
+
 @test "array.from.command" {
   set -e
   command="echo one; echo 'twenty two'; echo three; echo; echo four"
   array.from.command my_array "${command}"
-  [[ ${#my_array[@]} -eq 4 ]] && 
-  [[ ${my_array[0]} == "one" ]] && 
-  [[ ${my_array[1]} == "twenty two" ]] && 
-  [[ ${my_array[2]} == "three" ]] && 
+  [[ ${#my_array[@]} -eq 4 ]] &&
+  [[ ${my_array[0]} == "one" ]] &&
+  [[ ${my_array[1]} == "twenty two" ]] &&
+  [[ ${my_array[2]} == "three" ]] &&
   [[ ${my_array[3]} == "four" ]]
 }
 

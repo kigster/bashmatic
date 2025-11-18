@@ -7,7 +7,7 @@
 # Any modifications, © 2016-2020 Konstantin Gredeskoul, All rights reserved. MIT License.
 #———————————————————————————————————————————————————————————————————————————————
 
-# @description 
+# @description
 #   Returns "true" if the first argument is a member of the array
 #   passed as the second argument:
 #
@@ -35,11 +35,11 @@ array.has-element() {
   return 0
 }
 
-# @description 
+# @description
 #   Similar to array.has-elements, but does not print anything, just
 #   returns 0 if includes, 1 if not.
 array.includes() {
-  local search="$1"; 
+  local search="$1";
   [[ -z $search ]] && return 1
   shift
 
@@ -86,11 +86,11 @@ array.includes-or-exit() {
   array.includes-or-complain "$@" || exit 1
 }
 
-# @description 
+# @description
 #   Joins a given array with a custom string.
-# @arg1 
-#   Separator to use 
-# @arg2 
+# @arg1
+#   Separator to use
+# @arg2
 #   Print split one per line? (true/false), defaults to false.
 # @arg3 .
 #   array.
@@ -158,7 +158,7 @@ array.sort-numeric() {
   IFS="${IFS_previous}"
 }
 
-# @description 
+# @description
 #   Returns a minimum integer from an array.
 #   Non-numeric elements are ignored and skipped over.
 #   Negative numbers are supported, but non-integers are not.
@@ -179,7 +179,7 @@ array.min() {
   printf -- "%d" "${min}"
 }
 
-# @description 
+# @description
 #   Given a numeric argument, and an additional array of numbers,
 #   determines the min/max range of the array and prints out the
 #   number if it's within the range of array's min and max.
@@ -202,7 +202,7 @@ function array.force-range() {
   [[ "${#@}" -gt 0 ]] || {
     error "Please pass additional arguments to define min/max" >&2
     return 1
- } 
+ }
 
   local min=$(array.min "$@")
   local max=$(array.max "$@")
@@ -211,14 +211,14 @@ function array.force-range() {
     n=${min}
   elif [[ $n -gt ${max} ]]; then
     n=${max}
-  else 
+  else
     n=${n}
   fi
 
   printf -- "%d" "${n}"
 }
 
-# @description 
+# @description
 #   Returns a maximum integer from an array.
 #   Non-numeric elements are ignored and skipped over.
 #   Negative numbers are supported, but non-integers are not.
@@ -282,7 +282,7 @@ array.from.command.bash() {
 # https://unix.stackexchange.com/questions/29724/how-to-properly-collect-an-array-of-lines-in-zsh
 array.from.command.zsh() {
   local array_name="$1"; shift
-  local command="$*" 
+  local command="$*"
   eval "declare -a ${array_name}"
   eval "${array_name}=(\"\${(@f)\$(command)}\"); export ${array_name}; true"
   return
@@ -294,7 +294,7 @@ array.from.command.zsh() {
 # @example Create an array of matching files:
 #       array.from.command music_files "find . -type f -name '*.mp3'"
 #       echo "You have ${#music[@]} music files."
-# 
+#
 array.from.command() {
   local func="array.from.command.$(user.current-shell)"
   is.a-function "${func}" || return 1
@@ -326,4 +326,22 @@ array.eval.in-groups-of() {
   return 0
 }
 
+# @description Reverses an array received as an argument
+# @return another array reversed compared to the original
+function array.reverse() {
+    # Original array
+    local -a original_array
+    original_array=( $@ )
+    local size="${#original_array[@]}"
+    local i
+    i=$((size - 1))
+    
+    
+    while true; do
+      echo -n "${original_array[$i]}" " "
+      ((i--))
+      [[ $i -lt 0 ]] && break
+    done
+    echo
+}
 
