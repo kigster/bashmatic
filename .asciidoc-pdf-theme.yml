@@ -1,21 +1,18 @@
-extends: default
-base:
+default-sans:
   border-color: 612e0a
   font:
-    size: 10
+    size: 11
     color: 222222
     family: Lato
-    weight: 500
-  line-height-length: 11
-  line-height: $base-line-height-length / $base-font-size
+    weight: 400
+  line-height: 1.1
 vertical-spacing: $base-line-height-length
 code:
   background-color: 191919
   font-color: $base-font-color
   border-color: 303030
   line-height-length: 11
-  line-height: $code-line-height-length / $code-font-size
-  font:  
+  font:
     size: 7
     family: Cascadia
     weight: 800
@@ -25,7 +22,7 @@ pre:
   border-color: 756600f2
   line-height-length: 11
   line-height: $code-line-height-length / $code-font-size
-  font:  
+  font:
     size: 8
     family: Cascadia
     weight: 800
@@ -64,9 +61,9 @@ title_page:
     font:
       color: ff4f2f
       family: Barlow
-      style: semibold
+      style: Bold
       size: 30
-      weight: 200
+      weight: 600
   author:
     font:
       color: 5f1f00
@@ -79,10 +76,10 @@ title_page:
       color: 111
       family: Cairo
       style: bold
-      size: 18
+      size: 14
       weight: 200
 abstract:
-  font-color: 
+  font-color:
 blockquote:
   border-color: $base-border-color
   cite:
@@ -115,7 +112,7 @@ footer:
   border-color: 222222
 font:
   catalog:
-    merge: true # set value to true to merge catalog with theme you're extending
+    merge: false # set value to true to merge catalog with theme you're extending
     Barlow:
       bold: barlowcondensed-semibold.ttf
       bold_italic: barlowcondensed-semibolditalic.ttf
@@ -123,14 +120,14 @@ font:
       normal: barlowcondensed-regular.ttf
       semibold: barlowcondensed-semibold.ttf
       semibold_italic: barlowcondensed-semibolditalic.ttf
-    Cairo:  
+    Cairo:
       bold: cairo-bold.ttf
       bold_italic: cairo-black.ttf
       italic: cairo-black.ttf
       normal: cairo-regular.ttf
       black: cairo-black.ttf
       semibold: cairo-semibold.ttf
-    AdventPro: 
+    AdventPro:
       normal: adventpro-light.ttf
       bold: adventpro-bold.ttf
       semibold: adventpro-semibold.ttf
@@ -166,7 +163,6 @@ font:
       semibold_italic: lato-semibolditalic.ttf
       thin: lato-thin.ttf
       thin_italic: lato-thinitalic.ttf
-
 page:
   background-color: FFFFFF
   layout: portrait
@@ -175,5 +171,5 @@ page:
 toc:
   :toclevels: 5
   font:
-    size: 8
-    family: Barlow
+    size: 11
+    family: AdventPro

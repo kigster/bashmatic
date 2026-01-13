@@ -94,3 +94,13 @@ aws.ec2() {
     ;;
   esac
 }
+
+aws.get-user() {
+  aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f2
+}
+
+aw() {
+  local username=$(aws.get-user)
+  command -V aws-vault >/dev/null 2>&1 || package.install aws-vault
+  aws-vault exec ${username} -- aws "$@"
+}
