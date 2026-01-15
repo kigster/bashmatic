@@ -48,3 +48,35 @@ function net.is-host-port-protocol-open() {
   command -v nmap >/dev/null || brew.install.package nmap >&2
   ${command} -Pn -p "${port}" "${host}" 2>&1 | ascii-pipe | grep -q -E "${port}/${protocol} open "
 }
+
+# @description Resolves the IP address of a host and returns a single IP. If 
+# the host has multiple IP addresses, it returns the last one, sorted numerically.
+function net.host.ip() {
+  local host="$1"
+  local ip=$(nslookup "${host}" 2>/dev/null | tail +4 |  grep -E 'Address:\s+\d'  | awk '{print $2}' | sort -n | tail -1)
+  [[ -n ${ip} && ${ip} =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && printf '%s' "${ip}" || return 1
+}
+
+# @description Resolves the IP addresses of a host and returns them as a space-separated list suitable
+# for insertion into a shell array.
+function net.host.ips() {
+  local host="$1"
+  nslookup "${host}" 2>/dev/null | tail +4 |  grep -E 'Address:\s+\d'  | awk '{print $2}' | sort -n | tr '\n' ' ' | sed -E 's/ +$//g'
+}
+
+# @description Resolves the IP addresses of a list of hosts and returns them as a space-separated list suitable
+# for insertion into a shell array.
+function net.hosts.ips() {
+  local host ip
+  while true; do
+    host="${1:-}"; shift
+    [[ -z ${host} ]] && break
+    ip=$(net.host.ips "${host}" | sed -E 's/ +/, /g')
+    if [[ -n ${ip} ]]; then
+      printf "%30.30s → %s\n" "${host}" "${ip}"
+    else
+      printf "%30.30s → %s\n" "${host}" "not found"
+    fi
+  done
+}
+
