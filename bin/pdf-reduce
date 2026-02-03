@@ -46,7 +46,7 @@ source "${BASHMATIC_HOME}/init.sh" >/dev/null
 #
 
 function pdf.ensure-gs() {
-  [[ -x /usr/local/bin/gs ]] && return
+  [[ -x /usr/local/bin/gs || -x /opt/homebrew/bin/gs ]] && return
   brew.install.package ghostscript
 }
 
@@ -73,7 +73,7 @@ function pdf.do.shrink() {
   inf "Starting conversion, please wait..."
 
   (
-    /usr/local/bin/gs \
+    $(brew --prefix)/bin/gs \
       -q -dNOPAUSE -dBATCH -dSAFER \
       -sDEVICE=pdfwrite \
       -dCompatibilityLevel=1.3 \

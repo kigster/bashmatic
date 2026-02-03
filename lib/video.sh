@@ -80,7 +80,7 @@ function .video.convert.compress-21() {
 
 # @description Given two arguments (from), (to), performs a video recompression
 function .video.convert.compress-22() {
-  $(.video.ffmpeg-run) -y -i "${1}" -preset faster -vcodec libx264 -crf 28 -tune film -vf 'scale=iw/2:ih/2' "${2}"
+  $(.video.ffmpeg-run) -y -i "${1}" -preset faster -vcodec libx264 -crf 28 -tune film -vf 'scale=iw/1:ih/1' "${2}"
 }
 
 # @description Given two arguments (from), (to), performs a video recompression
