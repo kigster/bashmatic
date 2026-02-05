@@ -473,5 +473,19 @@ export GREP_CMD="$(command -v /usr/bin/grep || command -v /bin/grep || command -
 # grab our shell command
 export SHELL_COMMAND="$(/bin/ps -p $$ -o args | ${GREP_CMD} -v -E 'ARGS|COMMAND' | /usr/bin/cut -d ' ' -f 1 | sed -E 's/-//g')"
 
+if ! command -v realpath >/dev/null; then
+  function realpath() {
+    local path="$1"
+    local dir
+  
+    if [[ -d "$path" ]]; then
+      (cd -- "$path" && pwd)
+    else
+      dir="$(dirname -- "$path")"
+      (cd -- "$dir" && printf '%s/%s\n' "$(pwd)" "$(basename -- "$path")")
+    fi
+  }
+fi
+
 bashmatic.load "$@"
 source ${BASHMATIC_HOME}/lib/runtime.sh

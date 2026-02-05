@@ -3,7 +3,8 @@
 
 # © 2025 Fractional.ai
 
-export project_root="$(dirname "$(dirname "$(realpath "$0")")")"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+export project_root="$(cd -- "$script_dir/.." && pwd)"
 
 function print() {
   local message="$1" && shift
