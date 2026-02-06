@@ -64,13 +64,18 @@ function net.host.ips() {
   nslookup "${host}" 2>/dev/null | tail +4 |  grep -E 'Address:\s+\d'  | awk '{print $2}' | sort -n | tr '\n' ' ' | sed -E 's/ +$//g'
 }
 
+function net.this.host.ips() {
+  net.hosts.ips "$(hostname)"
+}
+
 # @description Resolves the IP addresses of a list of hosts and returns them as a space-separated list suitable
 # for insertion into a shell array.
 function net.hosts.ips() {
   local host ip
   while true; do
-    host="${1:-$(hostname)}"; shift
+    host="$1"; shift
     [[ -z ${host} ]] && break
+
     ip=$(net.host.ips "${host}" | sed -E 's/ +/, /g')
     if [[ -n ${ip} ]]; then
       printf "%30.30s → %s\n" "${host}" "${ip}"
