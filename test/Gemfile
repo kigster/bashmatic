@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
 gem 'simple-feed', '=3.2.0'
-gem 'activesupport', '=8.0.2'
+gem 'activesupport', '~> 8'
