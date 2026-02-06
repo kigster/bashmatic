@@ -29,3 +29,31 @@ load test_helper
   set -e
   [[ $(net.host.ips one.one.one.one) == "1.0.0.1 1.1.1.1" ]]
 }
+
+@test "net.localhost.ipv4s()" {
+  source lib/net.sh
+  set -e
+  local -a ips=($(ifconfig -a | grep inet | awk '{print $2}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -n))
+  local -a local_ips=($(net.localhost.ipv4s | sort -n))
+
+  local len=${#ips[@]}
+  
+  for i in $(seq "${len}"); do
+    local j=$((i - 1))
+    assert_equal "${ips[${j}]}" "${local_ips[${j}]}"
+  done
+}
+
+@test "net.localhost.ipv6s()" {
+  source lib/net.sh
+  set -e
+  local -a ips=($(ifconfig -a | grep inet6 | awk '{print $2}' | sort -n))
+  local -a local_ips=($(net.localhost.ipv6s | sort -n))
+
+  local len=${#ips[@]}
+  
+  for i in $(seq "${len}"); do
+    local j=$((i - 1))
+    assert_equal "${ips[${j}]}" "${local_ips[${j}]}"
+  done
+}

@@ -52,7 +52,7 @@ function net.is-host-port-protocol-open() {
 # @description Resolves the IP address of a host and returns a single IP. If 
 # the host has multiple IP addresses, it returns the last one, sorted numerically.
 function net.host.ip() {
-  local host="$1"
+  local host="${1:-$(hostname)}"
   local ip=$(nslookup "${host}" 2>/dev/null | tail +4 |  grep -E 'Address:\s+\d'  | awk '{print $2}' | sort -n | tail -1)
   [[ -n ${ip} && ${ip} =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && printf '%s' "${ip}" || return 1
 }
@@ -60,7 +60,7 @@ function net.host.ip() {
 # @description Resolves the IP addresses of a host and returns them as a space-separated list suitable
 # for insertion into a shell array.
 function net.host.ips() {
-  local host="$1"
+  local host="${1:-$(hostname)}"
   nslookup "${host}" 2>/dev/null | tail +4 |  grep -E 'Address:\s+\d'  | awk '{print $2}' | sort -n | tr '\n' ' ' | sed -E 's/ +$//g'
 }
 
@@ -69,7 +69,7 @@ function net.host.ips() {
 function net.hosts.ips() {
   local host ip
   while true; do
-    host="${1:-}"; shift
+    host="${1:-$(hostname)}"; shift
     [[ -z ${host} ]] && break
     ip=$(net.host.ips "${host}" | sed -E 's/ +/, /g')
     if [[ -n ${ip} ]]; then
@@ -77,6 +77,13 @@ function net.hosts.ips() {
     else
       printf "%30.30s → %s\n" "${host}" "not found"
     fi
-  done
+  done | sed 's/\n\n/\n/g'
 }
 
+function net.localhost.ipv4s() {
+  ifconfig -a | grep inet | awk '{print $2}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'
+}
+
+function net.localhost.ipv6s() {
+  ifconfig -a | grep inet6 | awk '{print $2}'
+}

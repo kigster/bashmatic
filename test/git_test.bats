@@ -26,16 +26,16 @@ fi
   ${git_skip}
   repo=$(git.repo)
   set -e
-  [[ ${repo} =~ ${REPO_URL} ]]
+  assert_equal "${repo}" "${REPO_URL}"
 }
 
-@test "git.repo.current()" {
+@test "git.repo.readme-url()" {
   ${git_skip}
   set -e
-  url="$(git.repo.current)"
+  url="$(git.repo.readme-url)"
   repo="$(git.repo)"
   current_branch="$(git.branch.current)"
-  [[ "${url}" == "${REPO_URL}/blob/${current_branch}/README.adoc" ]]
+  assert_equal "${url}" "${REPO_URL}/blob/${current_branch}/README.adoc"
 }
 
 @test "git.repo.latest-local-tag regex" {
