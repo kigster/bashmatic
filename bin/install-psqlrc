@@ -2,7 +2,7 @@
 # vim: ft=bash
 
 # shellcheck disable=SC2155
-export project_root="$(dirname "$(dirname "$(realpath "$0")")")"
+export project_root="$(dirname "$(dirname "$(realpath_portable "$0")")")"
 export file_maker_version="PSQLRC_VERSION"
 export psqlrc_path="${HOME}/.psqlrc"
 export psqlrc_dotfiles_path="${project_root}/conf/.psqlrc"

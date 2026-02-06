@@ -13,7 +13,7 @@ source lib/git.sh
 source lib/github.sh
 source lib/util.sh
 
-export REPO_URL="https://github.com/kigster/bashmatic.git"
+export REPO_URL="https://github.com/kigster/bashmatic"
 
 set -e
 
