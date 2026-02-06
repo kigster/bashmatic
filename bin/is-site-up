@@ -5,7 +5,7 @@
 # @description: Check
 
 # shellcheck disable=SC2155
-export project_root="$(dirname "$(dirname "$(realpath "$0")")")"
+export project_root="$(dirname "$(dirname "$(realpath_portable "$0")")")"
 
 # shellcheck disable=SC1091
 source "${project_root}/init"

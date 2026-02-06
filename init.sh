@@ -63,6 +63,108 @@ declare -a OBFUSCATED_VARIABLES
 export OBFUSCATED_VARIABLES=()
 export GLOBAL
 
+
+
+# realpath_bash3 [-e] PATH
+#  -e: require the full path to exist
+#
+# Notes:
+# - Always returns an absolute path.
+# - Canonicalizes the directory portion using `cd -P` + `pwd -P`.
+# - If `readlink` is available, it will also resolve a symlink final component.
+function realpath_portable() {
+  local must_exist=0
+  if [[ "$1" == "-e" ]]; then
+    must_exist=1
+    shift
+  fi
+
+  if [[ $# -ne 1 ]]; then
+    printf 'usage: realpath_bash3 [-e] PATH\n' >&2
+    return 2
+  fi
+
+  local p="$1"
+  local dir base oldpwd physdir out
+
+  # Basic existence check if requested.
+  if [[ $must_exist -eq 1 && ! -e "$p" ]]; then
+    return 1
+  fi
+
+  # Split into dir + base (Bash 3 parameter expansion, no arrays needed).
+  if [[ "$p" == */* ]]; then
+    dir="${p%/*}"
+    base="${p##*/}"
+    [[ -n "$dir" ]] || dir="/"
+  else
+    dir="."
+    base="$p"
+  fi
+
+  oldpwd="$(pwd)" || return 1
+
+  # Canonicalize directory portion physically.
+  if cd -P -- "$dir" 2>/dev/null; then
+    physdir="$(pwd -P)" || { cd -- "$oldpwd" >/dev/null 2>&1; return 1; }
+    cd -- "$oldpwd" >/dev/null 2>&1 || return 1
+  else
+    # If dir doesn't exist and -e wasn't requested, fall back to absolute-ish.
+    cd -- "$oldpwd" >/dev/null 2>&1 || true
+    if [[ "$p" = /* ]]; then
+      printf '%s\n' "$p"
+    else
+      printf '%s/%s\n' "$oldpwd" "$p"
+    fi
+    return 0
+  fi
+
+  # Join carefully (avoid //).
+  if [[ "$physdir" == "/" ]]; then
+    out="/$base"
+  else
+    out="$physdir/$base"
+  fi
+
+  # If final component is a symlink and readlink exists, resolve it too.
+  if command -v readlink >/dev/null 2>&1; then
+    local target
+    if target="$(readlink -- "$out" 2>/dev/null)"; then
+      if [[ "$target" = /* ]]; then
+        out="$target"
+      else
+        # target is relative to physdir
+        out="$physdir/$target"
+      fi
+      # Normalize again after resolving final symlink target.
+      # (Resolve parent dir physically; keep basename even if nonexistent.)
+      local d b
+      d="${out%/*}"
+      b="${out##*/}"
+      [[ -n "$d" ]] || d="/"
+      if cd -P -- "$d" 2>/dev/null; then
+        d="$(pwd -P)" || { cd -- "$oldpwd" >/dev/null 2>&1; return 1; }
+        cd -- "$oldpwd" >/dev/null 2>&1 || return 1
+        [[ "$d" == "/" ]] && out="/$b" || out="$d/$b"
+      fi
+    fi
+  fi
+
+  printf '%s\n' "$out"
+}
+
+function realpath() {
+  if [[ -x /bin/realpath ]]; then
+    /bin/realpath "$@"
+  elif [[ -x /usr/bin/realpath ]]; then
+    /usr/bin/realpath "$@"
+  elif command -v realpath >/dev/null 2>&1; then
+    realpath "$@"
+  else
+    realpath_portable "$@"
+  fi
+}
+
 #————————————————————————————————————————————————————————————————————————————————————————————————————
 # Initialization and Setup
 #————————————————————————————————————————————————————————————————————————————————————————————————————

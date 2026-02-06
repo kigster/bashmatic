@@ -3,7 +3,7 @@
 
 # © 2025 Fractional.ai
 
-export project_root="$(dirname "$(dirname "$(realpath "$0")")")"
+export project_root="$(dirname "$(dirname "$(realpath_portable "$0")")")"
 
 function print() {
   local message="$1" && shift

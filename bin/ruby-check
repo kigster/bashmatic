@@ -466,7 +466,7 @@ function rb.main() {
   rb.header "Checking requested Rubies for jemalloc & YJIT support"
 
   for ruby in "${rubies_to_check[@]}"; do
-    current_ruby="$(realpath "${ruby}")"
+    current_ruby="$(realpath_portable "${ruby}")"
     if ${rb_option_quiet}; then
       rb.jemalloc.detect-quiet "${current_ruby}"
       code=$?
