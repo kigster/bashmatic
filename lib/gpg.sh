@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # vim: ft=bash
 #———————————————————————————————————————————————————————————————————————————————
-# © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License
+# © 2016-2026 Konstantin Gredeskoul, All rights reserved. MIT License
 # Ported from the licensed under the MIT license Project Pullulant.
-# Changes are © 2016-2024 Konstantin Gredeskoul All rights reserved. MIT License
+# Changes are © 2016-2026 Konstantin Gredeskoul All rights reserved. MIT License
 #———————————————————————————————————————————————————————————————————————————————
 #
 # @description GPG related utilities
