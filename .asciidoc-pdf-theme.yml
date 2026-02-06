@@ -1,39 +1,50 @@
-default-sans:
-  border-color: 612e0a
-  font:
-    size: 11
-    color: 222222
-    family: Lato
-    weight: 400
-  line-height: 1.1
-vertical-spacing: $base-line-height-length
-code:
-  background-color: 191919
-  font-color: $base-font-color
-  border-color: 303030
-  line-height-length: 11
-  font:
-    size: 7
-    family: Cascadia
-    weight: 800
-pre:
-  background-color: fdea7266
-  font-color: $base-font-color
-  border-color: 756600f2
-  line-height-length: 11
-  line-height: $code-line-height-length / $code-font-size
-  font:
-    size: 8
-    family: Cascadia
-    weight: 800
+extends: default-sans
+base:
+  font-color: 111111
+  font-size: 10
+  font: Lato
 heading:
   line-height-length: 20
   font:
     color: f16b04
-    family: Barlow
+    family: Arvo
     style: bold
-    size: 17
   line-height: $heading-line-height-length / $heading-font-size
+  h1:
+    font: Arvo
+    font-size: 24
+    font-color: FF8000
+  h2:
+    font: Arvo
+    font-size: 21
+    font-color: F03000
+  h3:
+    font: Arvo
+    font-size: 18
+    font-color: 902000
+footer:
+  border-color: FFFFFF
+  recto:
+    center:
+      content: '© 2026 Konstantin Gredeskoul – Page {page-number}'
+code:
+  background-color: 191919
+  font-color: $base-font-color
+  line-height-length: 10
+  font:
+    size: 8
+    family: "Cascadia Mono"
+    weight: 400
+pre:
+  background-color: fdea7266
+  font-color: $base-font-color
+  line-height-length: 11
+  line-height: $code-line-height-length / $code-font-size
+  font:
+    size: 8
+    family: "Cascadia Mono"
+    weight: 400
+vertical-spacing: $base-line-height-length
 image:
   border-radius: 15
 admonition:
@@ -108,8 +119,6 @@ table:
     background-color: $table-background-color
 header:
   font-color: 666666
-footer:
-  border-color: 222222
 font:
   catalog:
     merge: false # set value to true to merge catalog with theme you're extending
@@ -138,7 +147,7 @@ font:
       bold_italic: arvo-bolditalic.ttf
       italic: arvo-italic.ttf
       normal: arvo-regular.ttf
-    Cascadia:
+    Cascadia Mono:
       normal: cascadiamono-regular.ttf
       bold: cascadiamono-bold.ttf
       bold_italic: cascadiamono-semibold.ttf
@@ -166,8 +175,8 @@ font:
 page:
   background-color: FFFFFF
   layout: portrait
-  margin: [0.75in, 1in, 0.75in, 1in]
-  size: Letter
+  margin: [0.75in, 0.75in, 0.75in, 0.75in]
+  size: letter
 toc:
   :toclevels: 5
   font:

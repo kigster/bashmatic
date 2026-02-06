@@ -42,6 +42,7 @@
 * xref:#module-is[is]
 * xref:#module-jemalloc[jemalloc]
 * xref:#module-json[json]
+* xref:#module-letsencrypt[letsencrypt]
 * xref:#module-maths[maths]
 * xref:#module-memory[memory]
 * xref:#module-menus[menus]
@@ -132,18 +133,18 @@
             largest_size=${dir_size}
             largest_dir="${dir}"
         fi
-        size=$(( size + dir_size ))
+        size=$((size + dir_size))
         [[ -d "${dir}" ]] || { 
             warning "DIRECTORY: [${dir}] does not exist. Skipping."
             skipped=$((skipped + 1))
             continue
         }
-        good=$(( good + 1 ))
+        good=$((good + 1))
         directories+=("${dir}")
     done
     if [[ ${good} -gt 0 ]]; then
-        h2bg "Found ${good} existing directories, and ${skipped} bad ones." "The largest folder is [${largest_folder}], size is $(( largest_size / 1024 / 1024))Mb"
-        h1 "Archive:" "${bldylw}${archive}" "Total size of all the folders is $(( size / 1024 / 1024 / 1024 )) Gb."
+        h2bg "Found ${good} existing directories, and ${skipped} bad ones." "The largest folder is [${largest_folder}], size is $((largest_size / 1024 / 1024))Mb"
+        h1 "Archive:" "${bldylw}${archive}" "Total size of all the folders is $((size / 1024 / 1024 / 1024)) Gb."
         h2 "Directories:" "${directories[@]}"
         if [[ ${skipped} -gt 0 ]]; then
             run.ui.press-any-key "Since some of your arguments are invalid, now is your change to Ctrl-C..." "\n    ${bldred}Or press any key to continue..."
@@ -900,6 +901,19 @@ audio.make.mp3s ()
 
 === Module `aws`
 
+==== `aw`
+
+[source,bash]
+----
+aw () 
+{ 
+    local username=$(aws.get-user)
+    command -V aws-vault > /dev/null 2>&1 || package.install aws-vault
+    aws-vault exec ${username} -- aws "$@"
+}
+
+----
+
 ==== `aws.ec2`
 
 [source,bash]
@@ -918,6 +932,17 @@ aws.ec2 ()
             return 1
         ;
     esac
+}
+
+----
+
+==== `aws.get-user`
+
+[source,bash]
+----
+aws.get-user () 
+{ 
+    aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f2
 }
 
 ----
@@ -1547,9 +1572,9 @@ bashmatic.source ()
                 cursor.rewind -120
                 local code=$?
                 local t2=$(millis)
-                local duration=$(( t2 - t1 ))
-                total=$(( total + duration ))
-                files=$(( files + 1 ))
+                local duration=$((t2 - t1))
+                total=$((total + duration))
+                files=$((files + 1))
             }
             bashmatic.bash.version-four-or-later && { 
                 ((code)) || load_cache[${file}]=${t1}
@@ -3109,7 +3134,7 @@ db.config.init-max-query-len ()
 { 
     local w=$(screen.width.actual)
     local max_query_len
-    max_query_len=$(( w - 20 ))
+    max_query_len=$((w - 20))
     max_query_len=$(array.force-range "${max_query_len}" 80 1000)
     ((flag_verbose)) && { 
         attention "Queries will be truncated to ${max_query_len} characters" 1>&2
@@ -3948,7 +3973,7 @@ db.top ()
             break
         else
             .output.set-indent 0
-            hl.green "DbTop© v1.1.0 © 2016-2024 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
+            hl.green "DbTop© v1.1.0 © 2016-2026 Konstantin Gredeskoul • © All Rights Reserved • MIT License —— "
             cat "${tof}"
             cursor.at.y $(($(.output.screen-height) + 1))
             printf "${bldwht}Press Ctrl-C to quit.${clr}"
@@ -4128,7 +4153,8 @@ dir.rsync-to ()
         error "Unable to find rsync even after installing. Aborting"
         return 2
     }
-    local from_pwd="$(cd "${from}" || exit 1; pwd -P)"
+    local from_pwd="$(cd "${from}" || exit 1
+pwd -P)"
     h1.yellow "Starting RSync" "From    →   ${txtgrn}[${from_pwd}]" "Dest    →   ${txtcyn}[${to}]" "Flags   →   ${txtred}[${extra_flags}]"
     local flags="-aht"
     local command="rsync ${flags} ${extra_flags} \"${from_pwd}\" \"${to}\""
@@ -4823,7 +4849,7 @@ file.normalize-files ()
         else
             run.set-next show-output-on
             run "mv -fv \"${file}\" \"${new_name}\""
-            counter=$(( counter + 1 ))
+            counter=$((counter + 1))
         fi
     done
     hr
@@ -4870,7 +4896,7 @@ file.size.gb ()
     local file="$1"
     shift
     local s=$(file.size "${file}")
-    local gb=$(echo $((s / 10 / 1024 / 1024 )) | sedx 's/([0-9][0-9])$/.\1/g')
+    local gb=$(echo $((s / 10 / 1024 / 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
     printf "%.1f Gb" "${gb}"
 }
 
@@ -4885,7 +4911,7 @@ file.size.mb ()
     local file="$1"
     shift
     local s=$(file.size "${file}")
-    local mb=$(echo $((s / 10/ 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
+    local mb=$(echo $((s / 10 / 1024)) | sedx 's/([0-9][0-9])$/.\1/g')
     printf "%.2f MB" "${mb}"
 }
 
@@ -5077,7 +5103,7 @@ flatten-file ()
     local space=" "
     local enclosing="$(dirname "$(dirname "${path}")")"
     target="$(echo "$(dirname "${path}")"—"$(basename "${path}")" | sed -E "s/[${space}_]/-/g;")"
-    target="${dest} ${bldred}${target/${enclosing/\/}}"
+    target="${dest} ${bldred}${target/${enclosing/\//}/}"
     if ((flag_verbose)); then
         inf "COPY: ${bldgrn}\"${path}\" ➔ [${bldylw}\"${target}${bldgrns}\"]" 1>&2
     else
@@ -5103,7 +5129,7 @@ ftrace-in ()
     shift
     local args="$*"
     [[ -z ${TraceON} ]] && return
-    export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} + 1 ))
+    export __LibTrace__StackLevel=$((${__LibTrace__StackLevel} + 1))
     printf "    %*s ${bldylw}%s${bldblu}(%s)${clr}\n" ${__LibTrace__StackLevel} ' ' "${func}" "${args}" 1>&2
 }
 
@@ -5146,7 +5172,7 @@ ftrace-out ()
     local color="${bldgrn}"
     [[ ${code} -ne 0 ]] && color="${bldred}"
     printf "    %*s ${bldylw}%s() ${color} ➜  %d %s\n\n" ${__LibTrace__StackLevel} ' ' "${func}" "${code}" "${msg}" 1>&2
-    export __LibTrace__StackLevel=$(( ${__LibTrace__StackLevel} - 1 ))
+    export __LibTrace__StackLevel=$((${__LibTrace__StackLevel} - 1))
 }
 
 ----
@@ -5847,28 +5873,6 @@ git.repo-is-clean ()
 
 ----
 
-==== `git.repo.current`
-
-[source,bash]
-----
-git.repo.current () 
-{ 
-    local url="$(git.repo)"
-    local current_branch="$(git.branch.current)"
-    local readme="README.md"
-    for file in README.md README README.txt README.adoc CHANGELOG.md
-    do
-        if [[ -s "${file}" ]]; then
-            export readme="${file}"
-            break
-        fi
-    done
-    local full_url="${url}/blob/${current_branch}/${readme}"
-    printf -- "%s" "${full_url}"
-}
-
-----
-
 ==== `git.repo.latest-local-tag`
 
 [source,bash]
@@ -5901,6 +5905,43 @@ git.repo.next-local-tag ()
     local tag=$(git.repo.latest-local-tag)
     [[ -z ${tag} ]] && tag="0.0.0"
     ruby -e "prefix='${tag}'.gsub(/^([^\d]+).*/, '\1'); version='${tag}'.gsub(/[^\d.]/, '').split(/\./).map(&:to_i); version[2]+=1; puts \"#{prefix}#{version.join('.')}\""
+}
+
+----
+
+==== `git.repo.open`
+
+[source,bash]
+----
+git.repo.open () 
+{ 
+    command -v open > /dev/null || { 
+        error "open command not found, please install it first."
+        return 1
+    }
+    open -a 'Safari' "$(git.repo)"
+}
+
+----
+
+==== `git.repo.readme-url`
+
+[source,bash]
+----
+git.repo.readme-url () 
+{ 
+    local url="$(git.repo)"
+    local current_branch="$(git.branch.current)"
+    local readme="README.md"
+    for file in README.md README README.txt README.adoc CHANGELOG.md
+    do
+        if [[ -s "${file}" ]]; then
+            export readme="${file}"
+            break
+        fi
+    done
+    local full_url="${url}/blob/${current_branch}/${readme}"
+    printf -- "%s" "${full_url}"
 }
 
 ----
@@ -6253,7 +6294,7 @@ gpg.my-keys ()
             else
                 [[ -n ${index} ]] && printf "${bldred}Invalid answer, expecting a number between 1 and ${len}.${clr}\n"
                 run.ui.ask-user-value index "Which key would you like to print [1-${len}]? ${clr}"
-                index=$(( index - 1  ))
+                index=$((index - 1))
             fi
         done
     else
@@ -6912,6 +6953,129 @@ json.file-to-array ()
 ----
 
 
+=== Module `letsencrypt`
+
+==== `letsencrypt.ensure-certbot`
+
+[source,bash]
+----
+letsencrypt.ensure-certbot () 
+{ 
+    command -v certbot > /dev/null 2>&1 || { 
+        package.install certbot
+    }
+    mkdir -p "${CERTBOT_CONFIG_DIR}"
+    mkdir -p "${CERTBOT_LOG_DIR}"
+    mkdir -p "${CERTBOT_WORK_DIR}"
+    chown "${USER}" "${CERTBOT_CONFIG_DIR}"
+    chown "${USER}" "${CERTBOT_LOG_DIR}"
+    chown "${USER}" "${CERTBOT_WORK_DIR}"
+}
+
+----
+
+==== `letsencrypt.help`
+
+[source,bash]
+----
+letsencrypt.help () 
+{ 
+    printf "${bldblu}USAGE: \n"
+    printf "  ${txtylw}letsencrypt.ssl <action> [options]${txtrst}\n\n"
+    printf "${bldblu}ACTIONs:${txtrst}\n"
+    printf "  ${txtylw}obtain${txtrst} <domain> <email>        Obtain an SSL certificate for the specified domain.\n"
+    printf "  ${txtylw}renew${txtrst}                          Renew all SSL certificates.\n"
+    printf "  ${txtylw}install-dns-provider${txtrst}           Install the DNS provider plugin for Certbot.\n"
+    printf "  ${txtylw}help${txtrst}                           Show this help message.\n\n"
+    printf "${bldblu}NOTE:${txtrst}\n"
+    printf "  At the momement, only the ${txtylw}${DNS_PROVIDER}${txtrst} DNS provider is supported.\n"
+}
+
+----
+
+==== `letsencrypt.install-dns-provider`
+
+[source,bash]
+----
+letsencrypt.install-dns-provider () 
+{ 
+    pip install --upgrade pip
+    pip install certbot-dns-${DNS_PROVIDER}
+}
+
+----
+
+==== `letsencrypt.obtain-ssl-certificate`
+
+[source,bash]
+----
+letsencrypt.obtain-ssl-certificate () 
+{ 
+    local domain="$1"
+    local email="$2"
+    if [ -z "$domain" ] || [ -z "$email" ]; then
+        error "Domain and Email are required to obtain an SSL certificate."
+        return 1
+    fi
+    certbot certonly --dns-${DNS_PROVIDER} --dns-${DNS_PROVIDER}-credentials "${DNS_CREDENTIALS_FILE}" -d "${domain}" --dns-dnsmadeeasy-propagation-seconds 120 --email "${email}" --agree-tos --non-interactive --config-dir "${CERTBOT_CONFIG_DIR}" --work-dir "${CERTBOT_WORK_DIR}" --logs-dir "${CERTBOT_LOG_DIR}"
+}
+
+----
+
+==== `letsencrypt.renew-ssl-certificates`
+
+[source,bash]
+----
+letsencrypt.renew-ssl-certificates () 
+{ 
+    local domain="$1"
+    certbot renew --dns-${DNS_PROVIDER} --dns-${DNS_PROVIDER}-credentials "${DNS_CREDENTIALS_FILE}" --dns-dnsmadeeasy-propagation-seconds 120 -d "${domain}" --non-interactive --config-dir "${CERTBOT_CONFIG_DIR}" --work-dir "${CERTBOT_WORK_DIR}" --logs-dir "${CERTBOT_LOG_DIR}"
+}
+
+----
+
+==== `letsencrypt.ssl`
+
+[source,bash]
+----
+letsencrypt.ssl () 
+{ 
+    set +e
+    local action="$1"
+    shift
+    if [ -z "${action}" ]; then
+        letsencrypt.help
+        return 1
+    fi
+    letsencrypt.ensure-certbot
+    [[ -f ${DNS_CREDENTIALS_FILE} ]] || { 
+        error "DNS credentials file not found." "Please create [${DNS_CREDENTIALS_FILE}]"
+        return 1
+    }
+    case "${action}" in 
+        obtain)
+            letsencrypt.obtain-ssl-certificate "$@"
+        ;
+        renew)
+            letsencrypt.renew-ssl-certificates "$@"
+        ;
+        install-dns-provider)
+            letsencrypt.install-dns-provider "$@"
+        ;
+        help)
+            letsencrypt.help
+            return 0
+        ;
+        *)
+            error "Unknown action [${action}] or no action specified"
+            return 1
+        ;
+    esac
+}
+
+----
+
+
 === Module `maths`
 
 ==== `maths.eval`
@@ -7031,9 +7195,9 @@ menu.select ()
     cur=0
     index=0
     count=${#options[@]}
-    local max_height=$(( $(screen.height) - 5 ))
+    local max_height=$(($(screen.height) - 5))
     local from=0
-    local visible_size=$(( max_height > count ? count : max_height ))
+    local visible_size=$((max_height > count ? count : max_height))
     local to=$((visible_size))
     local action
     local delta
@@ -7077,7 +7241,7 @@ menu.select ()
                 if ((cur >= count)); then
                     ((cur = count - 1))
                 else
-                    if ((cur >= to )); then
+                    if ((cur >= to)); then
                         ((to = cur + 1))
                         ((from = to - visible_size))
                     fi
@@ -7100,7 +7264,7 @@ menu.select ()
                         ((to += visible_size))
                         ((from += visible_size))
                         ((cur >= count)) && { 
-                            delta=$(( cur - count + 1))
+                            delta=$((cur - count + 1))
                             ((cur -= delta))
                             ((from -= delta))
                             ((to -= delta))
@@ -7144,6 +7308,53 @@ net.fast-scan ()
 
 ----
 
+==== `net.host.ip`
+
+[source,bash]
+----
+net.host.ip () 
+{ 
+    local host="${1:-$(hostname)}"
+    local ip=$(nslookup "${host}" 2> /dev/null | tail +4 | grep -E 'Address:\s+\d' | awk '{print $2}' | sort -n | tail -1)
+    [[ -n ${ip} && ${ip} =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && printf '%s' "${ip}" || return 1
+}
+
+----
+
+==== `net.host.ips`
+
+[source,bash]
+----
+net.host.ips () 
+{ 
+    local host="${1:-$(hostname)}"
+    nslookup "${host}" 2> /dev/null | tail +4 | grep -E 'Address:\s+\d' | awk '{print $2}' | sort -n | tr '\n' ' ' | sed -E 's/ +$//g'
+}
+
+----
+
+==== `net.hosts.ips`
+
+[source,bash]
+----
+net.hosts.ips () 
+{ 
+    local host ip
+    while true; do
+        host="${1:-$(hostname)}"
+        shift
+        [[ -z ${host} ]] && break
+        ip=$(net.host.ips "${host}" | sed -E 's/ +/, /g')
+        if [[ -n ${ip} ]]; then
+            printf "%30.30s → %s\n" "${host}" "${ip}"
+        else
+            printf "%30.30s → %s\n" "${host}" "not found"
+        fi
+    done | sed 's/\n\n/\n/g'
+}
+
+----
+
 ==== `net.is-host-port-protocol-open`
 
 [source,bash]
@@ -7180,6 +7391,28 @@ net.local-subnet ()
 { 
     local subnet="$(ifconfig -a | grep inet | grep broadcast | grep -v 'inet 169' | grep -v 'inet 127' | awk '{print $2}' | cut -d '.' -f 1,2,3 | sort | uniq | head -1).0/24"
     printf '%s' "${subnet}"
+}
+
+----
+
+==== `net.localhost.ipv4s`
+
+[source,bash]
+----
+net.localhost.ipv4s () 
+{ 
+    ifconfig -a | grep inet | awk '{print $2}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'
+}
+
+----
+
+==== `net.localhost.ipv6s`
+
+[source,bash]
+----
+net.localhost.ipv6s () 
+{ 
+    ifconfig -a | grep inet6 | awk '{print $2}'
 }
 
 ----
@@ -8732,7 +8965,7 @@ title-box ()
     do
         len=$(ruby -e "puts '${line}'.size")
         len_actual=$(echo "${line}" | wc -c | tr -d ' ')
-        diff=$(( width - len ))
+        diff=$((width - len))
         printf " ${bold}${title_border_color} │  ${title_text_color}%${len_actual}.${len_actual}s${title_border_color}%${diff}.${diff}s${clr}${title_border_color}│ ${clr}${title_shadow_color}██${clr}\n" "${line}" " "
     done
     printf " ${title_border_color} └─────────────────────────────────────────────────────────────────────────────────────┘ ${clr}${title_shadow_color}██${clr}
@@ -12988,36 +13221,6 @@ shasum.sha-only-stdin ()
 
 ----
 
-==== `shasum.to-hash`
-
-[source,bash]
-----
-shasum.to-hash () 
-{ 
-    local hash_name="$1"
-    shift
-    local index=0
-    local last_sha
-    for file in $(shasum.sha "$@")
-    do
-        index=$((index + 1))
-        if [[ $((index % 2)) == 0 ]]; then
-            is-dbg && info "${last_sha} <- ${bldpur}${file}"
-            eval "${hash_name}['${file}']=${last_sha}"
-        else
-            last_sha="${file}"
-        fi
-    done
-    is-dbg && { 
-        local count=$((index / 2))
-        eval "local size=\${#${hash_name}[@]}"
-        h.yellow "Total ${count} files, ${size} hash entries in a Hash Variable '${hash_name}'"
-    }
-    return
-}
-
-----
-
 
 === Module `shdoc`
 
@@ -13297,7 +13500,7 @@ bashmatic.detect-subshell ()
     export BASH_SUBSHELL_DETECTED=true
     local len="${#BASH_SOURCE[@]}"
     local last_index=$((len - 1))
-    (( BASHMATIC_DEBUG)) && { 
+    ((BASHMATIC_DEBUG)) && { 
         echo "BASH_SOURCE[*] = ${BASH_SOURCE[*]}" 1>&2
         echo "BASH_SOURCE[${last_index}] = ${BASH_SOURCE[${last_index}]}" 1>&2
         echo "\$0            = $0" 1>&2
@@ -14469,7 +14672,8 @@ usage-widget ()
             fi
         done
     fi
-    usage-box "${args[0]} © ${args[1]}" "$(cursor.up 1; cursor.left 5)" "$(cursor.right 10)" "${details[@]}"
+    usage-box "${args[0]} © ${args[1]}" "$(cursor.up 1
+cursor.left 5)" "$(cursor.right 10)" "${details[@]}"
 }
 
 ----

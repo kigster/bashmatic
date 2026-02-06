@@ -1,5 +1,44 @@
 # Changelog
 
+## [v3.6.1](https://github.com/kigster/bashmatic/tree/v3.6.1) (2026-02-06)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.5.0...v3.6.1)
+
+## [v3.5.0](https://github.com/kigster/bashmatic/tree/v3.5.0) (2025-07-02)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.4.1...v3.5.0)
+
+**Implemented enhancements:**
+
+- Twiddles [\#192](https://github.com/kigster/bashmatic/pull/192) ([plroebuck](https://github.com/plroebuck))
+
+**Fixed bugs:**
+
+- bashmatic issues plea to upgrade bash when it is already the latest version available [\#190](https://github.com/kigster/bashmatic/issues/190)
+
+**Merged pull requests:**
+
+- Upgrade Ruby Gems and fix time.sh tests [\#204](https://github.com/kigster/bashmatic/pull/204) ([kigster](https://github.com/kigster))
+- Fixing video conversion routines [\#203](https://github.com/kigster/bashmatic/pull/203) ([kigster](https://github.com/kigster))
+- MacOS & Linux compatible process-list + menus [\#196](https://github.com/kigster/bashmatic/pull/196) ([kigster](https://github.com/kigster))
+- Bump rack from 3.1.12 to 3.1.14 in /marketing [\#195](https://github.com/kigster/bashmatic/pull/195) ([dependabot[bot]](https://github.com/apps/dependabot))
+- \[Snyk\] Security upgrade ruby from 3.2.6-slim to 3.4.3-slim [\#193](https://github.com/kigster/bashmatic/pull/193) ([kigster](https://github.com/kigster))
+
+## [v3.4.1](https://github.com/kigster/bashmatic/tree/v3.4.1) (2025-03-17)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.3.0...v3.4.1)
+
+**Merged pull requests:**
+
+- Fix the warning for low bash version [\#191](https://github.com/kigster/bashmatic/pull/191) ([kigster](https://github.com/kigster))
+- \[Snyk\] Security upgrade prawn-svg from 0.32.0 to 0.36.0 [\#188](https://github.com/kigster/bashmatic/pull/188) ([kigster](https://github.com/kigster))
+- Two ruby-install scripts; both work on Linux & Mac [\#187](https://github.com/kigster/bashmatic/pull/187) ([kigster](https://github.com/kigster))
+- Version detector that's relatively generic [\#186](https://github.com/kigster/bashmatic/pull/186) ([kigster](https://github.com/kigster))
+- Install Ruby on MacOS/Linux Script; v3.2.3 [\#185](https://github.com/kigster/bashmatic/pull/185) ([kigster](https://github.com/kigster))
+- Generate PDF on Linux [\#184](https://github.com/kigster/bashmatic/pull/184) ([kigster](https://github.com/kigster))
+- \[Snyk\] Security upgrade ruby from 3.2.1-slim to 3.2.6-slim [\#183](https://github.com/kigster/bashmatic/pull/183) ([kigster](https://github.com/kigster))
+- Initial checking with updated copyright, ruby-check [\#179](https://github.com/kigster/bashmatic/pull/179) ([kigster](https://github.com/kigster))
+
 ## [v3.3.0](https://github.com/kigster/bashmatic/tree/v3.3.0) (2024-05-07)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.2.0...v3.3.0)
@@ -291,7 +330,7 @@
 
 **Fixed bugs:**
 
-- Hoping to fix parallel specs on Linux [\#58](https://github.com/kigster/bashmatic/pull/58) ([kigster](https://github.com/kigster))
+- Hoping to fix parallel specs on linux [\#58](https://github.com/kigster/bashmatic/pull/58) ([kigster](https://github.com/kigster))
 
 **Closed issues:**
 

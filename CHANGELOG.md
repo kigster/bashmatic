@@ -1,5 +1,9 @@
 # Changelog
 
+## [v3.6.1](https://github.com/kigster/bashmatic/tree/v3.6.1) (2026-02-06)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.5.0...v3.6.1)
+
 ## [v3.5.0](https://github.com/kigster/bashmatic/tree/v3.5.0) (2025-07-02)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.4.1...v3.5.0)

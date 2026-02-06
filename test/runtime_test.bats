@@ -1,4 +1,5 @@
 # vim: ft=bash
+
 load test_helper
 
 source lib/sedx.sh

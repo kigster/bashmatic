@@ -240,9 +240,19 @@ function git.repo() {
   printf -- "%s" "${url}"
 }
 
+function git.repo.open() {
+  command -v open >/dev/null || {
+    error "open command not found, please install it first."
+    return 1
+  }
+  open -a 'Safari' "$(git.repo)"
+}
+
+
+
 # @description Returns a URL on Github website that points to the
 # .  README on the current branch.
-function git.repo.current() {
+function git.repo.readme-url() {
   local url="$(git.repo)"
   local current_branch="$(git.branch.current)"
   local readme="README.md"

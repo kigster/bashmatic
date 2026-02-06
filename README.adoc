@@ -1,7 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
 // vim: ft=asciidoc
-:author: Version v3.5.0
+:author: Version v3.6.1
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -331,7 +331,10 @@ function install_bashmatic() {
       ((code)) && sudo apt-get update -yq && sudo apt-get install curl -yqq
       ;;
     Darwin)
-      command -v brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      command -v brew >/dev/null || \
+        /bin/bash -c \
+         "$(curl -fsSL \
+         https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       hash -r
       brew install curl
       ;;
@@ -340,7 +343,8 @@ function install_bashmatic() {
       ;;
     esac
   }
-  [[ -d ~/.bashmatic ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q -m https"
+  [[ -d ~/.bashmatic ]] || \
+    bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install -q -m https"
   return 0
 }
 ----

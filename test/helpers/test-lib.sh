@@ -2,14 +2,13 @@
 # vim: ft=bash
 #
 # Bashmatic Utilities
-# © 2016-2024 Konstantin Gredeskoul, All rights reserved. MIT License.
+# © 2016-2026 Konstantin Gredeskoul, All rights reserved. MIT License.
 # Distributed under the MIT LICENSE.
 
 # IMPORTANT: Overrride this variable if your tests are located in a different folder, eg 'specs'
 # shellcheck disable=2046
 
 export BATS_SOURCES_CORE="https://github.com/bats-core/bats-core.git"
-# readonly BATS_SOURCES_SUPPORT="https://github.com/bats-core/bats-support"
 
 # shellcheck source=./../../lib/color.sh
 source "${BASHMATIC_HOME}/init.sh"
@@ -26,12 +25,13 @@ prefix=" ⏱  "
 
 function test-group() {
   output.constrain-screen-width ${UI_WIDTH}
-  h1bg "$(echo "${prefix}$* ")"
+  # h3bg "$(echo "${prefix}$* ")"
 }
 
 function test-group-ok() {
   output.constrain-screen-width ${UI_WIDTH}
-  h2bg "Tests passed in:" " ⏲  ${1} "
+  arrow.wht-on-grn "Tests passed in: ⏲ ${1} "
+  echo
 }
 
 function test-group-failed() {
@@ -99,9 +99,9 @@ function specs.find-project-root() {
   done
 
   error "Can't find project root containing directory '${TEST_DIR}'" \
-        "If your tests are located in differently named folder (eg 'specs'), please set" \
-        "the environment variable before running specs, eg:" \
-        "\$ ${bldylw}\export TEST_DIR=specs; specs" >&2
+    "If your tests are located in differently named folder (eg 'specs'), please set" \
+    "the environment variable before running specs, eg:" \
+    "\$ ${bldylw}\export TEST_DIR=specs; specs" >&2
 
   return 1
 }
@@ -111,16 +111,15 @@ function specs.find-project-root() {
 function specs.install.bats.brew() {
   hl.subtle "Verifying Bats is brew-installed"
   run "brew tap kaos/shell"
-  brew.install.packages bats-core bats-assert bats-file
+  brew bats-core bats-assert bats-file bats-support
 }
 
 function specs.install.bats.sources() {
   inf "Checking that Bats is installed from sources..."
   if [[ -x ${BatsPrefix}/bin/bats ]]; then
     printf "${bldgrn}YES ✔"
-    ok: 
+    ok:
     info "NOTE: you can clean/reinstall bats framework by passing -r / --reinstall flag."
-    return 0
   else
     printf "${bldred}NOPE 𐄂"
     not-ok:
@@ -141,6 +140,15 @@ function specs.install.bats.sources() {
     exit 1
   }
 
+  run "mkdir -p ${ProjectRoot}/test/test_helper && cd ${ProjectRoot}/test/test_helper" && {
+    h3bg "Installing Bats Support, Assert, and File plugins..."
+    [[ -d bats-support ]] || run "git clone https://github.com/bats-core/bats-support.git" bats-support
+    [[ -d bats-assert ]]  || run "git clone https://github.com/bats-core/bats-assert.git" bats-assert
+    [[ -d bats-file ]]    || run "git clone https://github.com/bats-core/bats-file.git" bats-file
+  
+    run "cd ${ProjectRoot}"
+  }
+
   specs.set-width
   # Let's update Bats if needed, and run its installer.
   run "cd ${BatsSource} && git reset --hard && git pull --rebase 2>/dev/null || true"
@@ -148,7 +156,7 @@ function specs.install.bats.sources() {
 
   specs.set-width
 
-  run "./install.sh ${prefix}" >/dev/null 2>&1  
+  run "./install.sh ${prefix}" >/dev/null 2>&1
   run "cd ${ProjectRoot}"
   run 'hash -r'
 
@@ -185,6 +193,8 @@ function specs.validate-bats() {
   }
 }
 
+export TEST_HELPER_LOADED=0
+
 #------------------------------------------------------------------
 # Spec Runner
 function specs.run.one-file() {
@@ -199,16 +209,17 @@ function specs.run.one-file() {
   export flag_file_count=$((flag_file_count + 1))
   [[ ${flag_bats_args} == "-t" ]] && printf "${txtgrn}"
 
+  echo -n -e "       ${bldblu}test/"
   ${bats} "${flag_bats_args}" "${file}"
   local exitcode=$?
   local end=$(millis)
-  local ms=$(( end - start ))
+  local ms=$((end - start))
 
   if [[ ${exitcode} -eq 0 ]]; then
     test-group-ok "${ms}ms"
     return 0
   else
-    test-group-failed  "${ms}ms"
+    test-group-failed "${ms}ms"
     export flag_file_count_failed=$((flag_file_count_failed + 1))
     return "${exitcode}"
   fi
@@ -243,12 +254,12 @@ function specs.run.many-files() {
 }
 
 function specs.utils.cpu-cores() {
-   command -v nproc >/dev/null || {
-     printf "%d" 4
-     return 
-   }
+  command -v nproc >/dev/null || {
+    printf "%d" 4
+    return
+  }
 
-   nproc --all | tr -d '\n'
+  nproc --all | tr -d '\n'
 }
 
 function specs.install-parallel.linux() {
@@ -266,7 +277,7 @@ function specs.run.all-in-parallel() {
   command -v parallel >/dev/null || {
     warning "Can't find command [parallel] even after an attempted install."
     info "Switching to serial test mode."
-    
+
     dbgf specs.run.many-files "${test_files[@]}"
     return $?
   }
@@ -293,7 +304,7 @@ function specs.utils.get-filename() {
   candidates=("test/${file}" "test/${file}.bats" "test/${file}_test.bats")
   [[ ${file} =~ / ]] && candidates+=("${file}")
 
-  for test_file in "${candidates[@]}" ; do
+  for test_file in "${candidates[@]}"; do
     is.a-non-empty-file "${test_file}" && {
       printf "%s" "${test_file}"
       return 0
@@ -399,7 +410,7 @@ function specs.usage() {
   printf "    \n"
   printf "    NOTE: this script can be run not just inside Bashmatic Repo. It works\n"
   printf "          very well when invoked from another project, as long as the bin directory\n"
-  printf "          is in the PATH. So make sure to set somewhere:\n" 
+  printf "          is in the PATH. So make sure to set somewhere:\n"
   printf "          ${bldylw}export PATH=\${BASHMATIC_HOME}/bin:\${PATH}\n\n"
   hr
   echo
@@ -417,7 +428,7 @@ function specs.usage() {
 
 function specs.set-width() {
   local w="${1:-100}"
-  if [[ -n $CI ]] ; then
+  if [[ -n $CI ]]; then
     output.set-min-width "${w}"
     output.set-max-width "${w}"
     output.constrain-screen-width "${w}"
@@ -426,8 +437,23 @@ function specs.set-width() {
   fi
 }
 
+# Load a library from the `${BATS_TEST_DIRNAME}/test_helper' directory.
+#
+# Globals:
+#   none
+# Arguments:
+#   $1 - name of library to load
+# Returns:
+#   0 - on success
+#   1 - otherwise
+load_lib() {
+  local name="$1"
+  load "${BASHMATIC_HOME}/test/test_helper/${name}/load"
+}
+
+
 function specs.run() {
-  local width=$(( $(output.screen-width.actual) - 20))
+  local width=$(($(output.screen-width.actual) - 20))
 
   [[ -z ${width} || ${width} -lt 80 ]] && width=109
 
@@ -444,14 +470,13 @@ function specs.run() {
   dbgf specs.validate-bats
   dbgf specs.add-all-files # Populates all_test_files[@] if not already populated
 
-  [[ -z "${test_files[*]}" ]] && test_files=( ${all_test_files[@]} )
+  [[ -z "${test_files[*]}" ]] && test_files=(${all_test_files[@]})
 
-  [[ ${#test_files[@]} -gt 0 ]] && h4bg "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
+  [[ ${#test_files[@]} -gt 0 ]] && panel-info "Begin Automated Testing -> Testing ${#test_files[@]} File(s)"
 
-  if [[ ${flag_parallel_tests} -eq 0 ]] ;  then
+  if [[ ${flag_parallel_tests} -eq 0 ]]; then
     specs.run.many-files "${test_files[@]}"
   else
     specs.run.all-in-parallel "${test_files[@]}"
   fi
 }
-

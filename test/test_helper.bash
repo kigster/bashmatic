@@ -24,9 +24,11 @@ load.deps() {
   for dep in "${deps[@]}"; do
     local file="${TEST_BREW_PREFIX}/lib/bats-${dep}/load.bash"
     if [[ -f ${file} ]]; then
+      h.yellow "Loading Bats ${dep} plugin from Brew..."
       load "${file}"
     else
-      echo "Can't load plugin ${dep}" >&2
+      h.green "Loading Bats ${dep} plugin from sources..."
+      load "${ProjectRoot}/test/test_helper/bats-${dep}/load"
     fi
   done
 }
@@ -43,8 +45,8 @@ emulate_bats_env() {
 }
 
 fixtures() {
-  FIXTURE_ROOT="$BATS_TEST_DIRNAME/fixtures/$1"
-  RELATIVE_FIXTURE_ROOT="${FIXTURE_ROOT#$BATS_CWD/}"
+  export FIXTURE_ROOT="$BATS_TEST_DIRNAME/fixtures/$1"
+  export RELATIVE_FIXTURE_ROOT="${FIXTURE_ROOT#$BATS_CWD/}"
 }
 
 make_bats_test_suite_tmpdir() {
@@ -78,3 +80,7 @@ test_helper::cleanup_tmpdir() {
     rm -rf "$BATS_EMULATED_RUN_TMPDIR"
   fi
 }
+
+load ${BASHMATIC_HOME}/test/test_helper/bats-support/load
+load ${BASHMATIC_HOME}/test/test_helper/bats-assert/load
+load ${BASHMATIC_HOME}/test/test_helper/bats-file/load
