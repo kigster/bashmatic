@@ -10,13 +10,13 @@
 function pid.alive() {
   local pid="$1"
   [[ -z ${pid} ]] && {
-    error "usage: pid.alive PID"
+    panel-error "usage: pid.alive PID"
     return 1
   }
 
   is.numeric "${pid}" || {
-    error "The argument to pid.alive() must be a numeric Process ID"
-    return 1
+    panel-error "The argument to pid.alive() must be a numeric Process ID"
+    return 1:$
   }
 
   [[ -n "${pid}" && -n $(ps -p "${pid}" | grep -v TTY) ]]
@@ -38,12 +38,12 @@ USAGE:
   }
 
   is.numeric "${pid}" || {
-    error "First argument to pid.sig must be numeric."
+    panel-error "First argument to pid.sig must be numeric."
     return 1
   }
 
   is.numeric "${signal}" || sig.is-valid "${signal}" || {
-    error "First argument to pid.sig must be numeric."
+    panel-error "First argument to pid.sig must be numeric."
     return 1
   }
 
@@ -131,15 +131,16 @@ EXAMPLES:
 
 # Normalize search pattern, by inserting a '[' in the beginning
 # This only works with regular strings, not a regexp
-pids.normalize.search-string() {
-  local pattern="$*"
+function pids.normalize.search-string() {
+  local pattern="$1"
   # convert a simple pattern, eg. "puma" into eg. "[p]uma"
   [[ "${pattern:0:1}" == '[' ]] || pattern="[${pattern:0:1}]${pattern:1}"
   printf "${pattern}"
 }
 
-pids.matching() {
+function pids.matching() {
   local pattern="${1}"
+  local exclude_pattern="${2}"
 
   if [[ -z "${pattern}" ]]; then
     printf "
@@ -147,36 +148,38 @@ DESCRIPTION:
   Finds process IDs matching a given string.
 
 USAGE:
-  ${bldgrn}pids.matching string${clr}
+  ${bldgrn}pids.matching match_regex [exclude_regex]${clr}
 
 EXAMPLES:
-  ${bldgrn}pids.matching sidekiq${clr}
+  # Return all sidekiq pids except the master process
+  ${bldgrn}pids.matching sidekiq master${clr}
 "
     return 0
   fi
 
-  pattern="$(pids.normalize.search-string "${pattern}")"
-  pids.matching.regexp "${pattern}"
+  local include_pattern="$(pids.normalize.search-string "${pattern}"})"
+  pids.matching.regexp "${include_pattern}" "${exclude_pattern}"
 }
 
-pids.matching.regexp() {
-  local pattern="${1}"
+function pids.matching.regexp() {
+  local include_pattern="${1}"
+  local exclude_pattern="${2}"
 
-  if [[ -z "${pattern}" ]]; then
+  if [[ -z "${include_pattern}" ]]; then
     printf "
 DESCRIPTION:
   Finds process IDs matching a given regexp.
 
 USAGE:
-  ${bldgrn}pids.matching regular-expression${clr}
+  ${bldgrn}pids.matching.regexp exclude-regex${clr}
 
 EXAMPLES:
-  ${bldgrn}pids.matching '[s]idekiq\s+' ${clr}
+  ${bldgrn}pids.matching.regexp '[s]idekiq\s+' [ exlcude-pattern ]${clr}
 "
     return 0
   fi
 
-  ps -ef | ${GrepCommand} "${pattern}" | ${GrepCommand} -v grep | awk '{print $2}' | sort -n
+  eval "ps -ef | ${GrepCommand} \"${include_pattern}\" | ${GrepCommand} -v \"grep${exclude_pattern}\" | awk '{print \$2}' | sort -n"
 }
 
 # prints PIDs with other information such as CPU, MEM, etc.
