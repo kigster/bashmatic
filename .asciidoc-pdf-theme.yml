@@ -1,127 +1,185 @@
 extends: default-sans
+page:
+  background-color: FFFFFF
+  layout: portrait
+  margin: [0.75in, 0.75in, 0.75in, 0.75in]
+  size: letter
 base:
-  font-color: 111111
-  font-size: 10
-  font: Lato
-heading:
-  line-height-length: 20
   font:
-    color: f16b04
-    family: Arvo
+    color: 050505
+    size: 10
+    family: Lato
+    style: normal
+    weight: 700
+    line-height: 1.2
+heading:
+  margin-left: 0
+  margin-top: 30
+  margin-bottom: 10
+  line-height: 1.2
+  font:
+    family: Barlow
     style: bold
-  line-height: $heading-line-height-length / $heading-font-size
+    line-height: 1.4
   h1:
-    font: Arvo
-    font-size: 24
-    font-color: FF8000
+    font-family: AdventPro
+    font-weight: 700
+    font-size: 5em
+    font-color: 000000
+    letter-spacing: -0.4em
   h2:
-    font: Arvo
-    font-size: 21
-    font-color: F03000
+    font:
+      family: AdventPro
+      weight: 700
+      size: 2.4em
+      color: EF4010
+      letter-spacing: -0.2em
   h3:
-    font: Arvo
-    font-size: 18
-    font-color: 902000
+    font:
+      family: Barlow
+      weight: Semibold
+      size: 1.9em
+      color: CF4010
+  h4:
+    font:
+      family: Barlow
+      weight: Semibold
+      size: 1.4em
+      color: AF2010
+  h5:
+    font:
+      family: Barlow
+      weight: Semibold
+      size: 1.2em
+      color: 800000
+
 footer:
-  border-color: FFFFFF
+  border:
+    color: 606060
   recto:
     center:
-      content: '© 2026 Konstantin Gredeskoul – Page {page-number}'
+      content: "© 2026 Konstantin Gredeskoul – Page {page-number} of {page-count}"
 code:
+  border-radius: 10
   background-color: 191919
-  font-color: $base-font-color
-  line-height-length: 10
+  padding: 10px
   font:
+    color: $base-font-color
+    line-height: 1.15
     size: 8
-    family: "Cascadia Mono"
+    family: "Fantasque Sans Mono"
     weight: 400
+
 pre:
-  background-color: fdea7266
-  font-color: $base-font-color
-  line-height-length: 11
-  line-height: $code-line-height-length / $code-font-size
+  border-radius: 10
+  background-color: 191919
+  line-height: 1.15
   font:
-    size: 8
+    size: 7.6
     family: "Cascadia Mono"
     weight: 400
-vertical-spacing: $base-line-height-length
 image:
   border-radius: 15
 admonition:
-  column-rule-color: $base-border-color
+  column-rule-color: A0A0A0
+  font-style: italic
   icon:
     caution:
-      stroke-color: D6A623
+      stroke-color: F08F00
     note:
-      stroke-color: 1040A3
+      stroke-color: 5090FF
     tip:
-      stroke-color: 609000
+      stroke-color: 50B050
     warning:
-      stroke-color: E6A623
+      stroke-color: F04010
+p:
+  margin-bottom: 14
+ul:
+  marker:
+    offset: 10
+  li:
+    spacing: 4
+    margin-bottom: 14
+    line-height: 1.1
+ol:
+  marker:
+    offset: 10
+  li:
+    spacing: 4
+    margin-bottom: 14
+    line-height: 1.1
 link:
-  font-color: 2353FF
+  font:
+    color: 4090F0
 literal:
-  font-color: 102840
+  font:
+    color: 102840
 mark:
   background-color: 0030A0
 key:
   background-color: F0F0FF
-  border-color: A0A0A0
+  border:
+    color: A0A0A0
 title_page:
   title:
     font:
       color: ff4f2f
       family: Barlow
-      style: Bold
-      size: 30
-      weight: 600
+      style: bold
+      size: 3em
+      weight: 700
   author:
     font:
-      color: 5f1f00
-      family: Cairo
+      color: 5F1F00
+      family: Barlow
       style: bold
-      size: 18
-      weight: 200
+      size: 2em
+      weight: 600
   subtitle:
     font:
-      color: 111
-      family: Cairo
-      style: bold
-      size: 14
-      weight: 200
-abstract:
-  font-color:
+      color: 111111
+      family: Barlow
+      style: italic
+      size: 1.5em
+      weight: 400
 blockquote:
-  border-color: $base-border-color
+  border-radius: 10
+  border:
+    color: F0F0F0
   cite:
-    font-color: 503004
-    background-color: 9F7987
+    font:
+      color: 503004
+    background:
+      color: 9F7987
 verse:
-  border-color: $blockquote-border-color
+  border-color: 555555
   cite:
-    font-color: $blockquote-cite-font-color
+    font-color: 444444
 conum:
-  font-color: $literal-font-color
+  font-color: 222222
 example:
-  background-color: $page-background-color
-  border-color: $base-border-color
+  background-color: FFFFFF
+  border-color: A0A0A0
 sidebar:
-  background-color: aaf594ad
-  border-color: 145700e6
+  background-color: F0F0F0
+  border-color: 505050
   title:
-    font-color: $heading-font-color
+    font-color: FF0000
 thematic-break:
-  border-color: $base-border-color
+  border-color: F0F0F0
 table:
-  background-color: $page-background-color
+  background-color: FFFFFF
   border-color: 222222
   foot:
-    background-color: $table-background-color
+    background-color: B0B0B0
 header:
-  font-color: 666666
+  font:
+    color: FF8000
 font:
   catalog:
-    merge: false # set value to true to merge catalog with theme you're extending
+    merge: true # set value to true to merge catalog with theme you're extending
+    NotoSans:
+      normal: NotoSans-variablefont.ttf
     Barlow:
       bold: barlowcondensed-semibold.ttf
       bold_italic: barlowcondensed-semibolditalic.ttf
@@ -153,6 +211,11 @@ font:
       bold_italic: cascadiamono-semibold.ttf
       italic: cascadiamono-semilight.ttf
       semibold: cascadiamono-semibold.ttf
+    Fantasque Sans Mono:
+      normal: fantasquesansmnerdfont-regular.ttf
+      bold: fantasquesansmnerdfont-bold.ttf
+      italic: fantasquesansmnerdfont-italic.ttf
+      bold_italic: fantasquesansmnerdfont-bolditalic.ttf
     Lato: # for file in $(ls -1 ~/Library/Fonts/Lato-*ttf); do n=$(echo $file| tr '[:upper:]' '[:lower:]' | xargs basename); echo $n; cp -v $file $n ; done
       black: lato-black.ttf
       black_italic: lato-blackitalic.ttf
@@ -167,18 +230,20 @@ font:
       light_italic: lato-lightitalic.ttf
       medium: lato-medium.ttf
       medium_italic: lato-mediumitalic.ttf
-      regular: lato-regular.ttf
+      normal: lato-regular.ttf
       semibold: lato-semibold.ttf
       semibold_italic: lato-semibolditalic.ttf
       thin: lato-thin.ttf
       thin_italic: lato-thinitalic.ttf
-page:
-  background-color: FFFFFF
-  layout: portrait
-  margin: [0.75in, 0.75in, 0.75in, 0.75in]
-  size: letter
+    NotoSans:
+      normal: notosans-variablefont.ttf
+      italic: notosans-variablefont-italic.ttf
+fallback-font-family: Lato
+
 toc:
-  :toclevels: 5
+  toclevels: 5
   font:
-    size: 11
-    family: AdventPro
+    size: 1em
+    family: NotoSans
+    style: normal
+    weight: 400

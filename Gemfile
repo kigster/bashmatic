@@ -3,6 +3,7 @@
 source 'https://rubygems.org'
 
 gem 'asciidoctor-pdf', github: 'asciidoctor/asciidoctor-pdf'
+gem 'pdf-reader'
 gem 'coderay'
 gem 'faraday-retry'
 gem 'github_changelog_generator'
@@ -17,4 +18,4 @@ gem 'rouge'
 gem 'specific_install'
 gem 'text-hyphen'
 gem 'ttfunk', git: 'https://github.com/prawnpdf/ttfunk.git' # , '=1.7.0'
-gem 'openssl', '~> 3.3.2'
+gem 'openssl'

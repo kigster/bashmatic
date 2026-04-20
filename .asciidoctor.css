@@ -1,8 +1,16 @@
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
 /* Remove comment around @import statement below when using as a custom stylesheet */
-/* @import url("//fonts.googleapis.com/css?family=Cairo:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700");*/
-/* @import url('https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding:wght@400;700&family=Cairo:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap'); */
-@import url("https://fonts.googleapis.com/css2?Cairo,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inconsolata:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Odibee+Sans&display=swap");
+
+:root {
+  --font-body: "Dosis", "Inter", "Lato", "Helvetica Neue", Arial, sans-serif;
+  --font-body-weight: 500;
+  --font-body-line-height: 1.2;
+  --font-heading: "Odibee Sans, Oswald, sans-serif", sans-serif;
+  --font-heading-weight: 600;
+  --font-heading-line-height: 1.6;
+}
+
 article,
 aside,
 details,
@@ -34,13 +42,18 @@ script {
   display: none !important;
 }
 html {
-  font-family: sans-serif;
+  font-family: var(--font-body);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-line-height);
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 }
 body {
   margin: 0;
   min-width: 1024px;
+  font-family: var(--font-body);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-line-height);
 }
 a {
   background: transparent;
@@ -53,7 +66,7 @@ a:hover {
   outline: 0;
 }
 h1 {
-  font-size: 2em;
+  font-size: 1.8em;
   margin: 0.67em 0;
 }
 abbr[title] {
@@ -61,7 +74,7 @@ abbr[title] {
 }
 b,
 strong {
-  font-weight: bold;
+  font-weight: 700;
 }
 dfn {
   font-style: italic;
@@ -86,7 +99,7 @@ pre {
   white-space: pre-wrap;
 }
 q {
-  quotes: "\201C""\201D""\2018""\2019";
+  quotes: "\201C" "\201D" "\2018" "\2019";
 }
 small {
   font-size: 80%;
@@ -143,6 +156,7 @@ html input[type="button"],
 input[type="reset"],
 input[type="submit"] {
   -webkit-appearance: button;
+  appearance: button;
   cursor: pointer;
 }
 button[disabled],
@@ -156,6 +170,7 @@ input[type="radio"] {
 }
 input[type="search"] {
   -webkit-appearance: textfield;
+  appearance: textfield;
   -moz-box-sizing: content-box;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
@@ -193,10 +208,10 @@ body {
   color: rgba(0, 0, 0, 0.8);
   padding: 0;
   margin: 0;
-  font-family: "Cairo", "DejaVu Serif", serif;
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: var(--font-body-weight);
   font-style: normal;
-  line-height: 1;
+  line-height: var(--font-body-line-height);
   position: relative;
   cursor: auto;
 }
@@ -239,6 +254,7 @@ img {
 }
 body {
   -webkit-font-smoothing: antialiased;
+  font-family: var(--font-body);
   width: 100%;
 }
 img,
@@ -288,7 +304,7 @@ table.tableblock > .title,
 .hdlist > .title {
   line-height: 1.45;
   color: #7a2518;
-  font-weight: 400;
+  font-weight: 600;
   margin-top: 0;
   margin-bottom: 0.25em;
 }
@@ -330,17 +346,18 @@ a img {
   border: none;
 }
 p {
-  font-family: inherit;
   font-weight: 400;
   font-size: 1em;
   line-height: 1.6;
   margin-bottom: 1.25em;
+  font-family: var(--font-body);
   text-rendering: optimizeLegibility;
 }
 p aside {
   font-size: 0.875em;
   line-height: 1.35;
   font-style: italic;
+  font-family: var(--font-body);
 }
 h1,
 h2,
@@ -350,8 +367,8 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Cairo", "DejaVu Sans", sans-serif;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-weight: 400;
   font-style: normal;
   color: #ba3925;
   letter-spacing: 1px;
@@ -373,22 +390,24 @@ h6 small {
   line-height: 0;
 }
 h1 {
-  font-size: 2.125em;
+  font-size: 2.5em;
 }
 h2 {
-  font-size: 1.6875em;
+  font-size: 2em;
 }
 h3,
 #toctitle,
 .sidebarblock > .content > .title {
-  font-size: 1.375em;
+  font-size: 1.5em;
 }
-h4,
+h4 {
+  font-size: 1.25em;
+}
 h5 {
-  font-size: 1.125em;
+  font-size: 1.15em;
 }
 h6 {
-  font-size: 1em;
+  font-size: 1.05em;
 }
 hr {
   border: solid #ddddd8;
@@ -412,8 +431,8 @@ small {
   line-height: inherit;
 }
 code {
-  font-family: "Fantasque Sans Mono", "Inconsolata", "DejaVu Sans Mono",
-    monospace;
+  font-family:
+    "Fantasque Sans Mono", "Inconsolata", "DejaVu Sans Mono", monospace;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.9);
   width: 100%;
@@ -616,8 +635,8 @@ pre,
 pre > code {
   line-height: 1.1;
   color: rgba(0, 0, 0, 1);
-  font-family: "Fantasque Sans Mono", "Inconsolata", "DejaVu Sans Mono",
-    monospace;
+  font-family:
+    "Fantasque Sans Mono", "Inconsolata", "DejaVu Sans Mono", monospace;
   font-weight: 600;
   text-rendering: optimizeSpeed;
   font-size: 0.9em;
@@ -627,8 +646,8 @@ pre > code {
   color: rgba(51, 51, 51, 0.8);
 }
 kbd {
-  font-family: "Fantasque Sans Mono", "Inconsolata", "DejaVu Sans Mono",
-    monospace;
+  font-family:
+    "Fantasque Sans Mono", "Inconsolata", "DejaVu Sans Mono", monospace;
   display: inline-block;
   color: rgba(0, 0, 0, 0.8);
   font-size: 0.65em;
@@ -637,8 +656,12 @@ kbd {
   border: 1px solid #ccc;
   -webkit-border-radius: 3px;
   border-radius: 3px;
-  -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 0.1em white inset;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 0.1em #fff inset;
+  -webkit-box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.2),
+    0 0 0 0.1em white inset;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.2),
+    0 0 0 0.1em #fff inset;
   margin: 0 0.15em;
   padding: 0.2em 0.5em;
   vertical-align: middle;
@@ -786,7 +809,7 @@ body.toc2 #header > h1:nth-last-child(2) {
   margin: 0.5em 0;
 }
 #toc ul {
-  font-family: "Cairo", "DejaVu Sans", sans-serif;
+  font-family: "Dosis", "DejaVu Sans", sans-serif;
   list-style-type: none;
 }
 #toc li {
@@ -1011,8 +1034,8 @@ table.tableblock > .title,
 .hdlist > .title {
   text-rendering: optimizeLegibility;
   text-align: left;
-  font-family: "Cairo", "DejaVu Serif", serif;
-  font-size: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
   font-style: italic;
 }
 table.tableblock > caption.title {
@@ -1042,7 +1065,7 @@ table.tableblock #preamble > .sectionbody > .paragraph:first-of-type p {
 }
 .admonitionblock > table td.icon .title {
   font-weight: bold;
-  font-family: "Cairo", "DejaVu Sans", sans-serif;
+  font-family: "", "DejaVu Sans", sans-serif;
   text-transform: uppercase;
 }
 .admonitionblock > table td.content {
@@ -1279,7 +1302,7 @@ table.pyhltable .linenodiv {
   margin: 0 1em 1.25em 1em;
 }
 .verseblock pre {
-  font-family: "Cairo", "DejaVu Sans", sans;
+  font-family: "Dosis", "DejaVu Sans", sans;
   font-size: 1.15rem;
   color: rgba(0, 0, 0, 0.85);
   font-weight: 300;
@@ -1796,7 +1819,7 @@ span.icon > .fa {
   width: 1.67em;
   height: 1.67em;
   line-height: 1.67em;
-  font-family: "Cairo", "DejaVu Sans", sans-serif;
+  font-family: "Dosis", "DejaVu Sans", sans-serif;
   font-style: normal;
   font-weight: bold;
 }

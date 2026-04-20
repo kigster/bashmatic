@@ -241,6 +241,31 @@ function is.integer() {
   [[ $1 =~ ^[+-]?[0-9]+$ ]]
 }
 
+# @description checks if a given number is between min and max
+# @usage is.integer.between  min number max
+function is.integer.between() {
+  local min=$1; shift
+  local number=$1; shift
+  local max=$1; shift
+  
+  is.integer ${number} || return 1
+  is.blank "${min}" || {
+    if [[ ${number} -lt ${min} ]]; then
+      return 2
+    fi
+  }  
+  is.blank "${max}" || {
+    if [[ ${number} -gt ${max} ]]; then
+      return 3
+    fi
+  }  
+  if [[ ${number} -gt ${min} && ${number} -lt ${max} ]]; then
+    return 0
+  else
+    return 4
+  fi
+}
+
 # @description returns success if the argument is an integer
 function is.an-integer() {
   is.integer "$@"
