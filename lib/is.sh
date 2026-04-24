@@ -181,7 +181,7 @@ function is.an-existing-file() {
 function is.a-function.invoke() {
   local func="$1"
   shift
-  is.a-function "${func}" && eval "${func} \"$@\""
+  is.a-function "${func}" && eval "${func} \"$*\""
 }
 
 # @description verifies that the argument is a valid shell function
@@ -248,7 +248,7 @@ function is.integer.between() {
   local number=$1; shift
   local max=$1; shift
   
-  is.integer ${number} || return 1
+  is.integer "${number}" || return 1
   is.blank "${min}" || {
     if [[ ${number} -lt ${min} ]]; then
       return 2
