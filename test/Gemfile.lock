@@ -14,11 +14,16 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
+    awesome_print (1.9.2)
+    base62-rb (0.3.1)
     base64 (0.3.0)
     bigdecimal (4.1.2)
+    colored2 (4.0.3)
     concurrent-ruby (1.3.6)
-    connection_pool (3.0.2)
+    connection_pool (2.5.5)
     drb (2.2.3)
+    hashie (5.1.0)
+      logger
     i18n (1.14.8)
       concurrent-ruby (~> 1.0)
     json (2.19.4)
@@ -26,10 +31,44 @@ GEM
     minitest (6.0.5)
       drb (~> 2.0)
       prism (~> 1.5)
+    pastel (0.8.0)
+      tty-color (~> 0.5)
     prism (1.9.0)
+    rbtree (0.4.6)
+    redis (5.4.1)
+      redis-client (>= 0.22.0)
+    redis-client (0.28.0)
+      connection_pool
     securerandom (0.4.1)
+    simple-feed (3.2.0)
+      activesupport
+      awesome_print
+      base62-rb
+      colored2
+      connection_pool (~> 2)
+      hashie
+      redis
+      sorted_set
+      tty-box
+      tty-screen
+    sorted_set (1.1.0)
+      rbtree
+    strings (0.2.1)
+      strings-ansi (~> 0.2)
+      unicode-display_width (>= 1.5, < 3.0)
+      unicode_utils (~> 1.4)
+    strings-ansi (0.2.0)
+    tty-box (0.7.0)
+      pastel (~> 0.8)
+      strings (~> 0.2.0)
+      tty-cursor (~> 0.7)
+    tty-color (0.6.0)
+    tty-cursor (0.7.1)
+    tty-screen (0.8.2)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    unicode-display_width (2.6.0)
+    unicode_utils (1.4.0)
     uri (1.1.1)
 
 PLATFORMS
@@ -38,6 +77,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (~> 8)
+  simple-feed (= 3.2.0)
 
 BUNDLED WITH
    2.7.2
