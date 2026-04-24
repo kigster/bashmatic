@@ -120,6 +120,8 @@ function specs.install.bats.sources() {
     printf "${bldgrn}YES ✔"
     ok:
     info "NOTE: you can clean/reinstall bats framework by passing -r / --reinstall flag."
+    # Self-heal existing installs affected by the `exec env` vs PATH-shim bug.
+    specs.bats.pin-env-absolute
   else
     printf "${bldred}NOPE 𐄂"
     not-ok:
@@ -160,8 +162,30 @@ function specs.install.bats.sources() {
   run "cd ${ProjectRoot}"
   run 'hash -r'
 
+  # The upstream bats launcher re-execs via `exec env ...` (unqualified), so
+  # any PATH shim named `env` (e.g. the uv installer shim at
+  # ~/.local/bin/env) silently swallows the call and bats produces no
+  # output. Pin the env lookup to the real binary.
+  specs.bats.pin-env-absolute
+
   [[ ${PATH} =~ ${ProjectRoot}/bin ]] ||
     export PATH="${ProjectRoot}/bin:${ProjectRoot}/test/bin:${PATH}"
+}
+
+function specs.bats.pin-env-absolute() {
+  local real_env
+  real_env="$(command -v /usr/bin/env 2>/dev/null || true)"
+  [[ -z ${real_env} ]] && return 0
+  local launcher
+  for launcher in "${BatsPrefix}/bin/bats" "${BatsPrefix}/libexec/bats-core/bats"; do
+    [[ -f ${launcher} ]] || continue
+    if grep -q '^exec env ' "${launcher}" 2>/dev/null; then
+      local sed_cmd
+      sed_cmd="$(command -v gsed || command -v sed)"
+      "${sed_cmd}" -i.bak "s|^exec env |exec ${real_env} |" "${launcher}" 2>/dev/null && \
+        rm -f "${launcher}.bak"
+    fi
+  done
 }
 
 function specs.install() {

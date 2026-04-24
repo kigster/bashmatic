@@ -80,6 +80,15 @@ function moo() {
   is.integer 1235987897
 }
 
+@test "is.integer.between(min, integer, max)" {
+  set -e
+  is.integer.between 343 345 346 &&
+  ! is.integer.between 0 -1 1 &&
+  is.integer.between 1 2 100 &&
+  is.integer.between 1 9 10 &&
+  is.integer.between -20 -2 0
+}
+
 @test "is.integer(not integer)" {
   set -e
   ! is.integer ""     &&

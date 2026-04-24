@@ -1,7 +1,7 @@
 [separator=—]
 = Bashmatic® — BASH-based DSL helpers for humans, sysadmins, and fun.
 // vim: ft=asciidoc
-:author: Version v3.6.1
+:author: Version v3.7.0
 :doctype: book
 :source-highlighter: rouge
 :rouge-style: base16.monokai
@@ -10,7 +10,6 @@
 :sectnums: 9
 :icons: font
 :license: MIT
-
 
 == CI Matrix
 
@@ -130,7 +129,7 @@ Perhaps the easiest way to install _Bashmatic®_ is using `curl` as shown below.
 
 First, make sure that you have Curl installed, run `which curl` to see. Then copy/paste this command into your Terminal.
 
-=== 1. Automated Install
+=== Automated Install
 
 icon:arrow-down[3x, color="yellow"]
 
@@ -148,7 +147,7 @@ Where:
 
 TIP: The URL _https://bashmatic.re1.re_ redirects to the HEAD of the https://raw.githubusercontent.com/kigster/bashmatic/main/bin/bashmatic-install[`bin/bashmatic-install`] script in the Github Bashmatic Repo. We use this URL so that we retain the ability to redirect the installation to a different script in the future, if need be.
 
-=== 2. Automated Install, More Explicit
+=== Automatic Install — Unpacked
 
 If you prefer to be able to examine the script before executing code piped straight off the Internet, I don't blame you. You are cautious and smart. 
 
@@ -198,7 +197,6 @@ bash -c "$(curl -fsSL https://bashmatic.re1.re); \
 
 If you have your SSH keys installed both locally, and the public key was configured with your account on Github, you might want to install Bashmatic using `git@github.com:kigster/bashmatic` origin, instead of the default `https://github.com/kigster/bashmatic`:
 
-
 Here is the complete list of options accepted by the installer:
 
 image::doc/img/bashmatic-install.png[Installer,width=99%,align=left,border=5,margin=10]
@@ -223,7 +221,7 @@ The last part my require some explanation.
 
 Now, you may or may not want to load Bashmatic on login. 
 
-===== If you load Bashmatic on login (the default installer mode):
+==== If you load Bashmatic on login (the default installer mode):
 
 In other words, you have something like this in your `~/.bashrc`:
 
@@ -250,7 +248,6 @@ real  0m0.134s
 user  0m0.078s
 sys	  0m0.074s
 ----
-
 ====
 
 If the above command shows the output you see above, when you grep your `bashrc` or `zshrc`, then all Bashmatic Functions will be loaded into your shell. This could be very convenient, for instance, 
@@ -263,7 +260,7 @@ If the above command shows the output you see above, when you grep your `bashrc`
 
 NOTICE: Bashmatic takes no more than 200-300ms to load typically. That said, you might not want to have this many shell functions in your environment, so in that case you can skip login hook by passing `-l` or `--skip-on-login`.
 
-===== If you do not want to load Bashnmatic on login
+==== If you do not want to load Bashnmatic on login
 
 Install it with:
 
@@ -349,7 +346,7 @@ function install_bashmatic() {
 }
 ----
 
-==== Discovering Available Functions
+=== Discovering Available Functions
 
 To discover the breadth of available functions, type the following command to see all imported shell functions:
 

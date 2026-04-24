@@ -10,7 +10,7 @@ function adoc-header() {
 
 cat <<EOF
 :pdf-fontsdir: ${BASHMATIC_HOME}./fonts;GEM_FONTS_DIR
-:pdf-theme: ${BASHMATIC_HOME}/.asciidoc-pdf-theme-titilium.yml
+:pdf-theme: ${BASHMATIC_HOME}/.asciidoc-pdf-theme.yml
 :source-highlighter: rouge
 :rouge-style: base16.monokai
 :safe: unsafe
@@ -183,9 +183,9 @@ EOF
   rm -f "${out} ${temp}"
   echo
   [[ -s ${target} ]] && \
-    success "File ${target} has been re-generated, and is of size $(file.size.mb "${target}")"
-
-  info "HINT: to reduce size of the PDF run ${bldgrn}pdf-reduce ${target}"
+    panel-green "File ${target} has been re-generated, and is of size $(file.size.mb "${target}")" \
+            "HINT: to reduce the size of this PDF, run pdf-reduce ${target}. However, you" \
+            "may loose some font or OCR information."
   echo
 }
 

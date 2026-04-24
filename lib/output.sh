@@ -37,6 +37,9 @@ function output.screen-width.actual() {
     ;;
   esac
 
+  # stty returns nothing when stdin isn't a TTY (pipes, CI, test runners).
+  # Fall back to COLUMNS or the configured max so callers always get a number.
+  [[ ${w} =~ ^[0-9]+$ ]] || w="${COLUMNS:-${LibOutput__MaxWidth:-${LibOutput__MaxWidth__Default:-100}}}"
   printf -- "%d" "${w}"
 }
 
@@ -56,6 +59,7 @@ function output.screen-height.actual() {
     ;;
   esac
 
+  [[ ${h} =~ ^[0-9]+$ ]] || h="${LINES:-${LibOutput__MinHeight:-${LibOutput__MinHeight__Default:-20}}}"
   printf -- "%d" "${h}"
 }
 

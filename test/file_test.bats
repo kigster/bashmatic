@@ -25,15 +25,15 @@ source lib/bashmatic.sh
 
 @test 'file.count.lines()' {
   local lines
-  lines=$(file.count.lines test/fixtures/Gemfile.lock)
+  lines=$(file.count.lines test/fixtures/sonet.txt)
   set -e
-  assert_equal "${lines}" "220"
+  assert_equal "${lines}" "20"
 }
 
 @test 'file.count.words()' {
-  local words=$(file.count.words test/fixtures/Gemfile.lock)
+  local words=$(file.count.words test/fixtures/sonet.txt)
   set -e
-  assert_equal "${words}" "534"
+  assert_equal "${words}" "114"
 }
 
 @test 'file.print-normalized-name' {

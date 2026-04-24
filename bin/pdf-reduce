@@ -56,7 +56,7 @@ function pdf.do.shrink() {
   local outfile="$2"
   local resolution="$3"
 
-  h1 "Starting PDF reduction..." \
+  h2bg "Starting PDF reduction..." \
     "Source File: → ${bldgrn}${infile}" \
     "Destination: → ${bldblu}${outfile}" \
     "Resolution:  → ${bldcyn}${resolution}"
@@ -70,10 +70,18 @@ function pdf.do.shrink() {
   local code=0
 
   width=$((width - 10))
-  inf "Starting conversion, please wait..."
 
+  local gs_cmd=$(brew --prefix)/bin/gs
+
+  command -v ${gs_cmd} || {
+    panel.green "Installing Ghostscript" 
+    run.set-next abort-on-error
+    run "brew install ghostscript"
+  }
+
+  inf "Starting conversion, please wait..."
   (
-    $(brew --prefix)/bin/gs \
+    ${gs_cmd} \
       -q -dNOPAUSE -dBATCH -dSAFER \
       -sDEVICE=pdfwrite \
       -dCompatibilityLevel=1.3 \
@@ -91,20 +99,29 @@ function pdf.do.shrink() {
       "${infile}"; code=$?; touch "${finish}"
   )
 
-  ((code)) && ui.closer.no_ok:
+  ((code)) && ui.closer.not_ok:
   ((code)) || ui.closer.ok:
 
-  rm -f "${finish}"
-  
   if [[ "${code}" -eq 0 ]]; then
     local size_old="$(file.size "${infile}")"
     local size_new="$(file.size "${outfile}")"
     local delta=$((100 - 100 * size_new / size_old))
+    local compression=$((100 * size_new / size_old))
     finished=1
   fi
 
+  local delete_compressed=0
+
+  if [[ ${compression} -gt 80 ]]; then
+    warning "Compressly only achived ${compression}%% compared to original, skipping"
+    delete_compressed=1
+    return 1
+  fi
+
+  ${deleted_compressed} && run "rm -rfv ${finish}"
+
   ((finished)) && \
-    success "File ${infile} has been reduced in size, and is now $(file.size.mb "${outfile}") — a ${delta}%% reduction."
+    panel.green "File ${infile} has been reduced in size." "and is now $(file.size.mb "${outfile}") — a ${delta}%% reduction."
 
   ((finished)) || { error "Did not properly finish."; return 1; } 
 }

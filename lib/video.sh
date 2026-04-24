@@ -322,4 +322,94 @@ function video.compress-mp4-file() {
   # return 0
 }
 
-# for file in $(ls -1 *.mov); do video.shrink "${file}"; done
+function video.date-time.from.epoch() {
+  local filename="$1" # without extension
+  local title=$(printf -- "%s" "${filename/.${filename##*.}/}" | sed -E 's/_/ /g; s/VID //g')
+  [[ -z "${title}" ]] && title="${filename}"
+  if [[ "${#title}" -eq 14 && "${title}" =~ ^[0-9]+$ ]]; then
+    title=$(date -j -f "%Y%m%d%H%M%S" "$title" "+%A, %B %-d, %Y @ %I:%M:%S %p")
+  fi
+  printf -- "%s" "${title}"
+}
+
+# @description Joins many videos into a single video, with a black
+# clip with text on top of each video.
+# @arg1 Extension of the videos to join, defaults to AVI
+# @arg2 Font file to use, defsaults to ${BASHMATIC_HOME}/.fonts/barlowcondensed-semibold.ttf
+# @arg3 Duration of the black clip, defaults to 2 seconds
+function video.join.many.by-extension() {
+  local extension="${1:-"AVI"}"
+  local fontfile="${2:-"${BASHMATIC_HOME}/.fonts/barlowcondensed-semibold.ttf"}"
+  local file title short
+
+  if [[ -z "$*" ]]; then
+    warning "USAGE: video.join.many.by-extension <extension> <fontfile> <duration>"
+    echo -e " \n
+  DESCRIPTION: inserts a 2-second pause for the file titles to be displayed with text on top of each video.
+    The font file is optional, defaults to ${BASHMATIC_HOME}/.fonts/barlowcondensed-semibold.ttf.
+
+    Current Settings:
+     • Extension:     ${extension}
+     • Font file:     ${fontfile}
+     • Total Files:   $(find . -maxdepth 1 -iname "*.${extension}" -type f | wc -l | tr -d ' ')]" 
+  fi
+ 
+  [[ -d ${BASHMATIC_HOME}/.fonts ]] || {
+    cd "${BASHMATIC_HOME}" || exit 1
+    [[ -d .fonts ]] || tar xzf .fonts.tar.gz
+  }
+
+  [[ -s ${fontfile} ]] || {
+    error "Font file [${fontfile}] does not exist. Defaulting to:"
+    fontfile="${BASHMATIC_HOME}/.fonts/arvo-bold.ttf"
+    [[ ! -s ${fontfile} ]] && {
+      error "Font file [${fontfile}] does not exist. Please check bashmatic is properly installed."
+      return 1
+    }
+  }
+
+  local title
+  local -a files
+  # Lower Case the Extension
+  extension="${extension,,}"
+  # Assign to an array case insensitively
+  mapfile -t files < <(find . -maxdepth 1 -iname "*.${extension}" -type f)
+
+  h3bg "Discovered ${#files[@]} files with extension ${extension}" \
+    "Will be joining sorted by filename." "Below please provide the name of the final movie."
+
+  local title
+  run.ui.ask-user-value title "Please enter the title of the final movie:"
+  [[ -z "${title}" ]] && {
+    error "Title is required. Please try again."
+    run.ui.ask-user-value title "Please enter the title of the final movie:"
+    [[ -z "${title}" ]] && {
+      error "Title is required. Exiting."
+      return 1
+    }
+  }
+
+  local output_filename="$(echo "${title}" | tr '[:upper:]' '[:lower:]' | tr -cd 'A-Za-z0-9._-' | sed -E 's/ /-/g')"
+  local temp_dir="$(mktemp -d)"
+
+  for file in "${files[@]}"; do
+    inf "porcessing: ${txtylw}${file}${clr}"
+
+    short="$(basename "${file}")"
+    ext="${short##*.}"
+    title=$(video.date-time.from.epoch "${short/.${ext}/}")
+    card="${temp_dir}/card_${short}.mp4"
+
+    # make a black clip with text
+    ffmpeg -f lavfi -i color=black:s=1280x720:d=2 \
+      -vf "drawtext=fontfile=${fontfile}:text='${title}':fontcolor=white:fontsize=36:x=(w-text_w)/2:y=(h-text_h)/2" \
+      -c:v libx264 -pix_fmt yuv420p "${card}"
+
+    echo "file '$PWD/$card'" >>"${temp_dir}/files.txt"
+    echo "file '$PWD/$file'" >>"${temp_dir}/files.txt"
+  done
+
+  mv "${temp_dir}/files.txt" .
+
+  ffmpeg -f concat -safe 0 -i "files.txt" -c:v libx264 -crf 18 -y "${output_filename}.mp4"
+}
