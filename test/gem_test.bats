@@ -2,7 +2,7 @@
 # vim: ft=bash
 
 export simple_feed_version="3.2.0"
-export activesupport_version="8.1.2"
+export activesupport_version="8.1.3"
 
 setup() {
   load test_helper

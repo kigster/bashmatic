@@ -579,7 +579,9 @@ function run.filter-out-sensitive-vars() {
 
 function run.variables-starting-with() {
   local prefix="${1}"
-  env |
+  # Use absolute /usr/bin/env to bypass any PATH-shim named `env`
+  # (e.g. ~/.local/bin/env installed by `uv`) that produces no output.
+  /usr/bin/env |
     grep -E -e "^${prefix}" |
     grep '=' |
     sedx 's/=.*//g' |
@@ -589,7 +591,7 @@ function run.variables-starting-with() {
 
 function run.variables-ending-with() {
   local suffix="${1}"
-  env |
+  /usr/bin/env |
     grep -E -e ".*${suffix}=.*\$" |
     grep -v -E "${SENSITIVE_VARS_REGEX}" |
     grep '=' |
