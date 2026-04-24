@@ -1,8 +1,41 @@
 # Changelog
 
+## [Unreleased](https://github.com/kigster/bashmatic/tree/HEAD)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.7.0...HEAD)
+
+**Merged pull requests:**
+
+- Version 3.7.0: PDF tooling, installer hardening, video join helper, specs fix [\#225](https://github.com/kigster/bashmatic/pull/225) ([kigster](https://github.com/kigster))
+
+## [v3.7.0](https://github.com/kigster/bashmatic/tree/v3.7.0) (2026-04-24)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.6.2...v3.7.0)
+
+## [v3.6.2](https://github.com/kigster/bashmatic/tree/v3.6.2) (2026-02-06)
+
+[Full Changelog](https://github.com/kigster/bashmatic/compare/v3.6.1...v3.6.2)
+
+**Merged pull requests:**
+
+- Add net.host.ip\(\) Functions, Bats Test Infrastructure Improvements, and Version 3.6.1 [\#214](https://github.com/kigster/bashmatic/pull/214) ([kigster](https://github.com/kigster))
+
 ## [v3.6.1](https://github.com/kigster/bashmatic/tree/v3.6.1) (2026-02-06)
 
 [Full Changelog](https://github.com/kigster/bashmatic/compare/v3.5.0...v3.6.1)
+
+**Merged pull requests:**
+
+- Upgrading Gemfile [\#218](https://github.com/kigster/bashmatic/pull/218) ([kigster](https://github.com/kigster))
+- Fix to realpath\(\) and git tests [\#217](https://github.com/kigster/bashmatic/pull/217) ([kigster](https://github.com/kigster))
+- Adding letsencrypt.ssl function [\#216](https://github.com/kigster/bashmatic/pull/216) ([kigster](https://github.com/kigster))
+- Fixes to video encoding and pdf-reduce [\#215](https://github.com/kigster/bashmatic/pull/215) ([kigster](https://github.com/kigster))
+- Testing out a different PDF theme [\#213](https://github.com/kigster/bashmatic/pull/213) ([kigster](https://github.com/kigster))
+- \[Snyk\] Security upgrade ruby from 3.4.5-slim to 3.4.8-slim [\#212](https://github.com/kigster/bashmatic/pull/212) ([kigster](https://github.com/kigster))
+- Version 3.5.1 ¿ regenerated all documentation and [\#211](https://github.com/kigster/bashmatic/pull/211) ([kigster](https://github.com/kigster))
+- Restoring install-psqlrc and is-site-up scripts and fixing git-smart [\#210](https://github.com/kigster/bashmatic/pull/210) ([kigster](https://github.com/kigster))
+- Adding Ruby Benchmark and Bashmatic Loading Example; [\#206](https://github.com/kigster/bashmatic/pull/206) ([kigster](https://github.com/kigster))
+- \[Snyk\] Security upgrade ruby from 3.4.3-slim to 3.4.5-slim [\#205](https://github.com/kigster/bashmatic/pull/205) ([kigster](https://github.com/kigster))
 
 ## [v3.5.0](https://github.com/kigster/bashmatic/tree/v3.5.0) (2025-07-02)
 
