@@ -23,7 +23,7 @@ CURRENT_DIR 			:= $(notdir $(patsubst %/,%,$(dir $(MAKEFILE_PATH))))
 # BASHMATIC VARIABLES
 BASHMATIC_HOME			:= $(shell dirname $(MAKEFILE_PATH))
 BASHMATIC_VERSION		:= $(shell cat .version)
-BASHMATIC_TAG			:= "v$(BASHMATIC_VERSION)"
+BASHMATIC_TAG			:= v$(BASHMATIC_VERSION)
 BASHMATIC_RELEASE		:= "Release for Tag $(BASHMATIC_TAG)"
 BASHMATIC_GEMFILE		:= $(BASHMATIC_HOME)/Gemfile
 BASHMATIC_GEMS			:= $(HOME)/.bundle/gems/bashmatic
