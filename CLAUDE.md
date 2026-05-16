@@ -1,6 +1,5 @@
-# Bashmatic® — Project Guide for Claude
+# Bashmatic® — Project Guide for Claudens (“a BASH DSL for humans”), focused on
 
-> A BASH framework of ~900 helper functions (“a BASH DSL for humans”), focused on
 > beautiful terminal output, consistent command execution, and self-documenting
 > scripts. Loads in under 200ms. MIT licensed.
 

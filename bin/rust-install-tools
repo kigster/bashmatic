@@ -1,0 +1,251 @@
+#!/usr/bin/env bash
+#
+# install-rust-cli.sh — opinionated installer for modern Rust CLI/TUI tools.
+# Skips anything already installed; for the rest, prints a colorful h2bg
+# banner describing the tool, then installs it via cargo-binstall.
+
+set +e
+
+# Re-exec under modern bash if we landed in bash 3 (macOS /bin/bash).
+if [[ -n ${BASH_VERSION} && ${BASH_VERSION:0:1} -lt 4 ]]; then
+  for __new_bash in /opt/homebrew/bin/bash /usr/local/bin/bash; do
+    if [[ -x ${__new_bash} ]]; then
+      exec "${__new_bash}" "$0" "$@"
+    fi
+  done
+fi
+
+export OLD_IFS="${IFS}"
+
+# Parent of bin/ when this script lives in the bashmatic checkout.
+_rust_tools_bashmatic_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+[[ -z "${BASHMATIC_HOME:-}" ]] && export BASHMATIC_HOME="${_rust_tools_bashmatic_root}"
+
+if [[ ! -d "${HOME}/.bashmatic" ]]; then
+  echo "→ Installing bashmatic..."
+  if [[ -x "${_rust_tools_bashmatic_root}/bin/bashmatic-install" ]]; then
+    "${_rust_tools_bashmatic_root}/bin/bashmatic-install" -q -l
+    elses
+    bash -c "$(curl -fsSL https://bashmatic.re1.re)" _ -q -l || \
+      bash -c "$(curl -fsSL https://raw.githubusercontent.com/kigster/bashmatic/master/bin/bashmatic-install)" _ -q -l
+  fi
+fi
+export BASHMATIC_HOME="${HOME}/.bashmatic"
+
+# shellcheck source=/dev/null
+source "${BASHMATIC_HOME}/init"
+
+# --- Bootstrap cargo-binstall (so we don't compile everything from source) ---
+if ! command -v cargo-binstall >/dev/null 2>&1; then
+  h3bg "cargo-binstall — fetches prebuilt Cargo binaries instead of compiling"
+  cargo install cargo-binstall
+fi
+
+# --- Tool catalog: binary | crate | one-line description ---
+# ============================================================================
+# Rust CLI tools, grouped by category. Format: binary|crate|description
+# ============================================================================
+
+TOOLS=(
+  # --- Shell & Prompt ---
+  "atuin   |atuin   |Synced shell history with searchable TUI"
+  "nu      |nu      |Nushell: structured-data shell"
+  "starship|starship|Minimal, blazing-fast cross-shell prompt"
+  "zoxide  |zoxide  |Smarter cd that learns your habits (frecency)"
+
+  # --- File Management ---
+  "bat  |bat    |Cat clone with syntax highlighting and paging"
+  "broot|broot  |Tree-style file navigator"
+  "dua  |dua-cli|Interactive TUI disk-usage explorer"
+  "dust |du-dust|Sorted disk-usage tree, drop-in du replacement"
+  "erd  |erdtree|Modern tree with file-size and gitignore support"
+  "eza  |eza    |Modern ls with tree view, git status, and icons"
+  "fd   |fd-find|Find replacement: gitignore-aware, parallel, sane defaults"
+  "xplr |xplr   |Hackable, minimal, fast TUI file explorer"
+  "yazi |yazi-fm|Async TUI file manager with image previews"
+
+  # --- System Monitoring ---
+  "bandwhich|bandwhich|Per-process and per-connection bandwidth monitor"
+  "btm      |bottom   |Ratatui system monitor: top/htop replacement"
+  "kmon     |kmon     |Linux kernel module manager TUI"
+  "pgtop    |pgtop    |Postgres activity monitor, top-like"
+  "procs    |procs    |Modern ps: tree mode, search, color"
+
+  # --- Cargo / Rust dev ---
+  "bacon         |bacon         |Background cargo check/clippy/test TUI"
+  "cargo-audit   |cargo-audit   |Audit Cargo.lock for known security advisories"
+  "cargo-binstall|cargo-binstall|Install Rust binaries from prebuilt artifacts"
+  "cargo-deb     |cargo-deb     |Build .deb packages from Cargo metadata"
+  "cargo-deny    |cargo-deny    |Lint dependencies for licenses, bans, advisories"
+  "cargo-generate|cargo-generate|Scaffold new projects from git templates"
+  "cargo-liner   |cargo-liner   |Declarative cargo install via liner.toml"
+  "cargo-machete |cargo-machete |Find and remove unused Cargo dependencies"
+  "cargo-nextest |cargo-nextest |Next-gen test runner: parallel, retry, faster"
+
+  # --- Git & VCS ---
+  "delta    |git-delta |Beautiful syntax-highlighted git diff pager"
+  "difft    |difftastic|Syntax-aware structural diff, not line diff"
+  "git-cliff|git-cliff |Generate changelog from conventional commits"
+  "gitui    |gitui     |Full-featured git TUI: stage, commit, branch, blame"
+  "jj       |jj-cli    |Jujutsu: git-compatible VCS, rethought UX"
+  "mergiraf |mergiraf  |AST-aware git merge driver, resolves false conflicts"
+  "serie    |serie     |Git log graph viewer (ratatui)"
+
+  # --- Data Inspection ---
+  "csvlens|csvlens    |Interactive CSV pager with column-aware scrolling"
+  "gobang |gobang     |Cross-database SQL client TUI"
+  "hexyl  |hexyl      |Colored, structured hex viewer"
+  "jless  |jless      |Interactive JSON/YAML viewer"
+  "qsv    |qsv        |CSV/data swiss-army knife, 50+ subcommands"
+  "rg     |ripgrep    |Lightning-fast recursive grep"
+  "rga    |ripgrep_all|ripgrep for PDFs, ebooks, archives, SQLite"
+  "tokei  |tokei      |Count lines of code by language, blazing fast"
+
+  # --- Networking ---
+  "gping   |gping   |Ping with a live latency graph"
+  "monolith|monolith|Save complete web pages as single HTML files"
+  "oha     |oha     |HTTP load tester with a live TUI"
+  "slumber |slumber |YAML-driven HTTP API client TUI"
+  "trip    |trippy  |Network diagnostics: traceroute + ping + MTR in one"
+  "xh      |xh      |HTTPie-style HTTP client, fast and ergonomic"
+
+  # --- Productivity & TUI ---
+  "fzf-make       |fzf-make       |Interactive Makefile/justfile target picker"
+  "gpg-tui        |gpg-tui        |TUI for managing GPG keys"
+  "kdash          |kdash          |Kubernetes dashboard TUI"
+  "mprocs         |mprocs         |Run multiple commands in parallel in a TUI"
+  "or             |octorus        |GitHub PR review TUI built for Helix users"
+  "oxker          |oxker          |Docker container TUI: logs, exec, stats"
+  "presenterm     |presenterm     |Markdown slide presentations in the terminal"
+  "sk             |skim           |Rust fuzzy finder, fzf alternative"
+  "taskwarrior-tui|taskwarrior-tui|TUI front-end for Taskwarrior"
+  "tickrs         |tickrs         |Stock ticker dashboard in the terminal"
+  "tldr           |tealdeer       |tldr-pages client: cheatsheets for commands"
+  "topgrade       |topgrade       |Update everything: brew, cargo, npm, pip, apt..."
+  "tv             |television     |Channel-based fuzzy finder, scales past fzf"
+  "zellij         |zellij         |Modern terminal multiplexer, tmux alternative"
+
+  # --- Editors ---
+  "hx|helix-term|Post-modern modal editor with built-in LSP"
+
+  # --- Workflow & Automation ---
+  "just |just |Project-scoped command runner, not a build system"
+  "mise |mise |Polyglot runtime + env vars + tasks (replaces asdf, nvm, direnv)"
+  "ouch |ouch |One verb works for every archive format"
+  "pueue|pueue|Persistent task queue daemon, survives SSH disconnects"
+
+  # --- AI / LLM ---
+  "aichat|aichat|Multi-provider LLM CLI with RAG, agents, shell assist"
+
+  # --- Terminal Recording & Sharing ---
+  "agg      |agg      |asciinema cast to animated GIF (crate is stale; see note above)"
+  "asciinema|asciinema|Terminal session recorder, now in Rust (v3+)"
+
+  # --- Build, Benchmark & Test ---
+  "hyperfine|hyperfine|Statistical CLI benchmarking tool"
+
+  # --- Text Processing ---
+  "choose|choose  |Human-friendly column selector, cut/awk subset"
+  "sd    |sd      |Saner regex find-and-replace, simpler than sed"
+  "sg    |ast-grep|Tree-sitter structural search/rewrite, pattern-as-code"
+  "srgn  |srgn    |Surgical search-replace via tree-sitter queries"
+)
+
+
+installed=0
+skipped=0
+failed=()
+
+_cargo_install_root="${CARGO_INSTALL_ROOT:-${CARGO_HOME:-${HOME}/.cargo}}"
+_cargo_bin_path="${_cargo_install_root}/bin"
+[[ -d "${_cargo_bin_path}" ]] && export PATH="$PATH:${_cargo_bin_path}"
+
+cargo_install_list="$(cargo install --list 2>/dev/null || true)"
+
+function print-status() {
+  local status="$1"; shift
+  local desc="$*"; shift
+
+  printf "%-60s |${clr} %-60s " "${status}" "${desc}"
+}
+
+function print-bin-crate() {
+  local bin="$1"
+  local crate="$2"
+  printf "%-16s → %-16s" "${bin}" "${crate}"
+}
+
+for entry in "${TOOLS[@]}"; do
+  bin=
+  crate=
+  desc=
+
+  IFS='|' read -r bin crate desc <<<"${entry}"
+
+  bin="$(echo "${bin}" | tr -d ' ')"
+  crate="$(echo "${crate}" | tr -d ' ')"
+
+  if command -v ${bin} >/dev/null 2>&1; then
+    h.green "$(print-status "✓ $(print-bin-crate "${bin}" "${crate}") is pre-installed" "${desc}")"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+  if [[ -x "${_cargo_install_root}/bin/${bin}" ]]; then
+    h.green "$(print-status "✓ $(print-bin-crate "${bin}" "${crate}") exists, but not in \$PATH" "${desc}")"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+  if [[ -n "${cargo_install_list}" ]] && printf '%s\n' "${cargo_install_list}" | grep -q "^${crate} v"; then
+    h.green "$(print-status "✓ $(print-bin-crate "${bin}" "${crate}") was installed by cargo" "${desc}")"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+    h.yellow "$(print-status "✓ $(print-bin-crate "${bin}" "${crate}") is installing" "${desc}")"
+  if cargo binstall -y ${crate} >/dev/null 2>&1; then
+    installed=$((installed + 1))
+  else
+    warn "binstall of ${crate} failed, attempting to build from sources..."
+    if cargo install ${crate} >/dev/null 2>&1; then
+      installed=$((installed + 1))
+    else
+      warning "failed to install ${bin} (${crate})"
+      failed+=("${bin} (${crate})")
+      continue
+    fi
+  fi
+done
+
+hr
+info "Installation completed. All the tools with their descriptions will be shown below."
+sleep 3
+hr
+
+h1bg "Summary" "installed: ${installed}" "skipped: ${skipped}"  "failed: ${#failed[@]}"
+
+if (( ${#failed[@]} > 0 )); then
+  warn "The following did not install cleanly:"
+  for f in "${failed[@]}"; do
+    echo "  • ${f}"
+  done
+  echo
+  echo "Tip: try \`cargo install <crate>\` directly — binstall sometimes can't find a"
+  echo "prebuilt for your platform, but a from-source build will still work."
+fi
+
+tool_col_width=15
+
+catalog_lines=(
+  "$(printf '%-*s  %s' "${tool_col_width}" 'Tool' 'Description')"
+)
+
+for entry in "${TOOLS[@]}"; do
+  IFS='|' read -r bin crate desc <<<"${entry}"
+  catalog_lines+=("$(printf '%-*s  %s' "${tool_col_width}" "${bin}" "${desc}")")
+done
+
+h4bg "${catalog_lines[@]}"
+
+export IFS="${OLD_IFS}"
