@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 #
-# install-rust-cli.sh — opinionated installer for modern Rust CLI/TUI tools.
+# rust-install-tools — opinionated installer for modern Rust CLI/TUI tools.
 # Skips anything already installed; for the rest, prints a colorful h2bg
 # banner describing the tool, then installs it via cargo-binstall.
+#
+# USAGE:
+#    # We need BASH version 4+
+#    brew install bash # MacOS only
+#
+#    # Then we can just run this script or do it from the Public Gist.
+#    curl -fsSL https://bit.ly/install-rust-tools | /opt/homebrew/bin/bash
 
 set +e
 
