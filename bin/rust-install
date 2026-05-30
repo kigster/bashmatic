@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# vim: ft=bash
+#
+set +e
+
+# Re-exec under modern bash if we landed in bash 3 (macOS /bin/bash).
+# Without this, sourcing parts of bashmatic from bash 3 misbehaves and
+# leaves the user in odd states. Done before anything else.
+if [[ -n ${BASH_VERSION} && ${BASH_VERSION:0:1} -lt 4 ]]; then
+  for __new_bash in /opt/homebrew/bin/bash /usr/local/bin/bash; do
+    if [[ -x ${__new_bash} ]]; then
+      exec "${__new_bash}" "$0" "$@"
+    fi
+  done
+fi
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1; pwd -P)")"
+
+if [[ $(uname -s) == Darwin ]] ; then
+  command -v brew >/dev/null && {
+    brew update
+    [[ ${BASH_VERSION:0:1} -lt 4 ]] && brew install bash
+    export PATH="$(brew --prefix)/bin:$PATH"
+  }
+fi
+
+[[ -z ${BASHMATIC_HOME} ]] && export BASHMATIC_HOME="${HOME}/.bashmatic"
+[[ -d ${BASHMATIC_HOME} ]] || bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"
+[[ -d ${BASHMATIC_HOME} ]] || {
+  echo "Can't find Bashmatic, even after attempting an installation."
+  echo "Please install Bashmatic with the following command line:"
+  echo 'bash -c "$(curl -fsSL https://bashmatic.re1.re); bashmatic-install"'
+  exit 1
+}
+
+# shellcheck source=/dev/null
+source "${BASHMATIC_HOME}/lib/color.sh"
+source "${BASHMATIC_HOME}/lib/output.sh"
+source "${BASHMATIC_HOME}/lib/output-boxes.sh"
+source "${BASHMATIC_HOME}/lib/output-admonitions.sh"
+source "${BASHMATIC_HOME}/lib/output-utils.sh"
+source "${BASHMATIC_HOME}/lib/runtime.sh"
+source "${BASHMATIC_HOME}/lib/time.sh"
+source "${BASHMATIC_HOME}/lib/util.sh"
+
+command -v rustc >/dev/null && command -v cargo >/dev/null && {
+  printf "${txtgrn}Rust is already installed.${clr}\n" 2>/dev/null
+  exit 0
+}
+
+readonly __rust_rustup_home=/opt/rust/rustup
+readonly __rust_cargo_home=/opt/rust/cargo
+
+run "sudo mkdir -p \"${__rust_rustup_home}\" \"${__rust_cargo_home}\""
+run "sudo chown -R \"$(id -un)\":\"$(id -gn)\" /opt/rust"
+
+export RUSTUP_HOME="${__rust_rustup_home}"
+export CARGO_HOME="${__rust_cargo_home}"
+
+run "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path"
+
+declare -a local_shells_done=()
+
+while IFS= read -r shell_path || [[ -n ${shell_path} ]]; do
+  [[ -z ${shell_path// } ]] && continue
+  [[ ${shell_path} =~ ^[[:space:]]*# ]] && continue
+  shell="$(basename "${shell_path}")"
+  # shellcheck disable=SC2076
+  if [[ " ${local_shells_done[*]} " =~ " ${shell} " ]]; then
+    continue
+  fi
+  info "Installing hooks into ${SHELL_RC} for ${shell}..."
+  local_shells_done+=( "${shell}" )
+
+  SHELL_RC="${HOME}/.${shell}rc"
+  if [[ ! -s ${SHELL_RC} ]] ; then
+    touch "${SHELL_RC}"
+  fi
+  echo "Installing hooks into ${SHELL_RC} for ${shell}..."
+  if [[ -f ${SHELL_RC} ]] && ! grep -q 'RUSTUP_HOME=/opt/rust/rustup' "${SHELL_RC}" 2>/dev/null; then
+    echo "Appending Rust Initialization for ${shell} → ${SHELL_RC}"
+    {
+      echo "export RUSTUP_HOME=${__rust_rustup_home}"
+      echo "export CARGO_HOME=${__rust_cargo_home}"
+      echo "export PATH=\"${__rust_rustup_home}/bin:${__rust_cargo_home}/bin:\${PATH}\""
+    } >> "${SHELL_RC}"
+  fi
+done < /etc/shells
+

@@ -541,6 +541,8 @@ function os.yaml() {
 # Main Flow
 #———————————————————————————————————————————————————————————————————————————
 
+unalias find 2>/dev/null
+unalias ls 2>/dev/null
 
 # resolve BASHMATIC_HOME if necessary
 __bashmatic.prerequisites

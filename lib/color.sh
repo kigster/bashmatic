@@ -5,10 +5,21 @@
 #
 # Any modifications, © 2016-2026 Konstantin Gredeskoul, All rights reserved. MIT License.
 
-export BashMatic__ColorLoaded=${BashMatic__ColorLoaded:-"0"}
+# Detect the runtime shell. Do NOT use ${SHELL} — that is the login shell,
+# not the shell currently executing this file. Do NOT exec into another shell
+# from this library: color.sh is sourced by scripts (bin/*) and by interactive
+# zsh sessions; replacing the current process here breaks both.
+if [[ -n ${ZSH_VERSION} ]] ; then
+  export GLOBAL="typeset -gx"
+elif [[ -n ${BASH_VERSION} && ${BASH_VERSION:0:1} -ge 4 ]] ; then
+  export GLOBAL="declare -g"
+else
+  # bash 3 (e.g. macOS /bin/bash) or unknown shell: fall back to declare.
+  # Scripts that need bash 4+ should re-exec themselves at their entry point.
+  export GLOBAL="declare"
+fi
 
-[[ -z ${GLOBAL} ]] && export GLOBAL="declare "
-[[ ${SHELL} =~ zsh ]] && export GLOBAL="declare -g "
+export BashMatic__ColorLoaded=${BashMatic__ColorLoaded:-"0"}
 
 if [[ ${BashMatic__ColorLoaded} -ne 1 ]]; then
   DECLARATIONS="
@@ -130,7 +141,6 @@ if [[ ${BashMatic__ColorLoaded} -ne 1 ]]; then
   "
 
   eval "${DECLARATIONS}"
-
 fi
 
 function reset-color() {
