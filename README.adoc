@@ -92,7 +92,7 @@ _Bashmatic®_ offers a huge range of ever-growing helper functions for running c
 
 NOTE: A good portion of the helpers within *_Bashmatic®_ are written for OS-X, although many useful functions will also work under linux.*  Our entire  test suite runs on Ubuntu. There is an effort underway to convert Homebrew-specific functions to OS-neutral helpers such as `package.install` that would work equally well on linux.
 
-Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of pubic functions (nearly 500 of those) can be found in the https://github.com/kigster/bashmatic/blob/main/doc/FUNCTIONS.adoc[functions index page].
+Start exploring _Bashmatic®_ below with our examples section. When you are ready, the complete entire set of public functions (nearly 500 of those) can be found in the https://github.com/kigster/bashmatic/blob/main/doc/FUNCTIONS.adoc[functions index page].
 
 And, finally, don't worry, *_Bashmatic®_* is totally open source and free to use and extend. We just like the way it looks with a little *®* :) 
 
